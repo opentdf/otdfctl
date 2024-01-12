@@ -8,12 +8,9 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/charmbracelet/huh"
 	"github.com/opentdf/tructl/pkg/cli"
 	"github.com/opentdf/tructl/pkg/handlers"
 	"github.com/spf13/cobra"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 // attributesCmd represents the attributes command
@@ -37,8 +34,7 @@ var attributeGetCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		id, err := strconv.Atoi(args[0])
 		if err != nil {
-			fmt.Println(cli.ErrorMessage("Invalid ID", err))
-			os.Exit(1)
+			cli.ExitWithError("Invalid ID", err)
 		}
 
 		close := cli.GrpcConnect(cmd)
@@ -47,12 +43,8 @@ var attributeGetCmd = &cobra.Command{
 		attr, err := handlers.GetAttribute(id)
 		if err != nil {
 			errMsg := fmt.Sprintf("Could not find attribute (%d)", id)
-			if e, ok := status.FromError(err); ok && e.Code() == codes.NotFound {
-				fmt.Println(cli.ErrorMessage(errMsg+" not found", nil))
-				os.Exit(1)
-			}
-			fmt.Println(cli.ErrorMessage(errMsg, err))
-			os.Exit(1)
+			cli.ExitWithNotFoundError(errMsg, err)
+			cli.ExitWithError(errMsg, err)
 		}
 
 		fmt.Println(cli.SuccessMessage("Attribute found"))
@@ -79,8 +71,7 @@ var attributesListCmd = &cobra.Command{
 
 		attrs, err := handlers.ListAttributes()
 		if err != nil {
-			fmt.Println(cli.ErrorMessage("Could not get attributes", err))
-			return
+			cli.ExitWithError("Could not get attributes", err)
 		}
 
 		t := cli.NewTable()
@@ -115,8 +106,7 @@ var attributesCreateCmd = &cobra.Command{
 		description := flagHelper.GetRequiredString("description")
 
 		if _, err := handlers.CreateAttribute(name, rule, values, namespace, description); err != nil {
-			fmt.Println(cli.ErrorMessage("Could not create attribute", err))
-			os.Exit(1)
+			cli.ExitWithError("Could not create attribute", err)
 		}
 
 		fmt.Println(cli.SuccessMessage("Attribute created"))
@@ -149,40 +139,16 @@ var attributesDeleteCmd = &cobra.Command{
 		attr, err := handlers.GetAttribute(id)
 		if err != nil {
 			errMsg := fmt.Sprintf("Could not find attribute (%d)", id)
-			if e, ok := status.FromError(err); ok && e.Code() == codes.NotFound {
-				fmt.Println(cli.ErrorMessage(errMsg+" not found", nil))
-				os.Exit(1)
-			}
-			fmt.Println(cli.ErrorMessage(errMsg, err))
-			os.Exit(1)
+			cli.ExitWithNotFoundError(errMsg, err)
+			cli.ExitWithError(errMsg, err)
 		}
 
-		// prompt for confirmation
-		var confirm bool
-		err = huh.NewConfirm().
-			Title(fmt.Sprintf("Are you sure you want to delete attribute:\n\n\t%s", attr.Fqn)).
-			Affirmative("yes").
-			Negative("no").
-			Value(&confirm).
-			Run()
-		if err != nil {
-			fmt.Println(cli.ErrorMessage("Confirmation prompt failed", err))
-			os.Exit(1)
-		}
-
-		if !confirm {
-			fmt.Println(cli.ErrorMessage("Aborted", nil))
-			os.Exit(1)
-		}
+		cli.ConfirmDelete("attribute", attr.Fqn)
 
 		if err := handlers.DeleteAttribute(id); err != nil {
 			errMsg := fmt.Sprintf("Could not delete attribute (%d)", id)
-			if e, ok := status.FromError(err); ok && e.Code() == codes.NotFound {
-				fmt.Println(cli.ErrorMessage(errMsg+" not found", nil))
-				os.Exit(1)
-			}
-			fmt.Println(cli.ErrorMessage(errMsg, err))
-			os.Exit(1)
+			cli.ExitWithNotFoundError(errMsg, err)
+			cli.ExitWithError(errMsg, err)
 		}
 
 		fmt.Println(cli.SuccessMessage("Attribute deleted"))
