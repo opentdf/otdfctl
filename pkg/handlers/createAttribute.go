@@ -44,6 +44,65 @@ func CreateAttribute(name string, rule string, values []string, namespace string
 	})
 }
 
+func UpdateAttribute(
+	Id int32,
+	name string,
+	rule string,
+	values []string,
+	groupBy []string,
+	resourceId int32,
+	resourceVersion int32,
+	resourceName string,
+	resourceNamespace string,
+	resourceFqn string,
+	resourceDescription string,
+	resourceDependencies []string,
+) (*attributesv1.UpdateAttributeResponse, error) {
+	var attrValues []*attributesv1.AttributeDefinitionValue
+	for _, v := range values {
+		if v != "" {
+			attrValues = append(attrValues, &attributesv1.AttributeDefinitionValue{Value: v})
+		}
+	}
+
+	var attrGroupBy []*attributesv1.AttributeDefinitionValue
+	for _, v := range groupBy {
+		if v != "" {
+			attrGroupBy = append(attrGroupBy, &attributesv1.AttributeDefinitionValue{Value: v})
+		}
+	}
+
+	var dependencies []*commonv1.ResourceDependency
+	for _, v := range resourceDependencies {
+		if v != "" {
+			dependencies = append(dependencies, &commonv1.ResourceDependency{Namespace: v})
+		}
+	}
+
+	client := attributesv1.NewAttributesServiceClient(grpc.Conn)
+	return client.UpdateAttribute(grpc.Context, &attributesv1.UpdateAttributeRequest{
+		Id: Id,
+		Definition: &attributesv1.AttributeDefinition{
+			Name:    name,
+			Rule:    GetAttributeRuleFromReadableString(rule),
+			Values:  attrValues,
+			GroupBy: attrGroupBy,
+			Descriptor_: &commonv1.ResourceDescriptor{
+				Type:         commonv1.PolicyResourceType_POLICY_RESOURCE_TYPE_ATTRIBUTE_DEFINITION,
+				Id:           resourceId,
+				Version:      resourceVersion,
+				Name:         resourceName,
+				Namespace:    resourceNamespace,
+				Fqn:          resourceFqn,
+				Description:  resourceDescription,
+				Dependencies: dependencies,
+			},
+		},
+	})
+}
+
+// TODO: do we implement all methods for attribute groups as well, or attributes alone?
+
 func GetAttributeRuleOptions() []string {
 	return []string{
 		AttributeRuleAllOf,
