@@ -117,17 +117,18 @@ var attributesCreateCmd = &cobra.Command{
 		if _, err := handlers.CreateAttribute(name, rule, values, namespace, description); err != nil {
 			fmt.Println(cli.ErrorMessage("Could not create attribute", err))
 			os.Exit(1)
-		} else {
-			fmt.Println(cli.SuccessMessage("Attribute created"))
-			tbl := cli.NewTable()
-			tbl.Headers("Property", "Value")
-			tbl.Row("Name", name)
-			tbl.Row("Rule", rule)
-			tbl.Row("Values", cli.CommaSeparated(values))
-			tbl.Row("Namespace", namespace)
-			tbl.Row("Description", description)
-			fmt.Print(tbl.Render())
 		}
+
+		fmt.Println(cli.SuccessMessage("Attribute created"))
+		fmt.Println(
+			cli.NewTabular().Rows([][]string{
+				{"Name", name},
+				{"Rule", rule},
+				{"Values", cli.CommaSeparated(values)},
+				{"Namespace", namespace},
+				{"Description", description},
+			}...).Render(),
+		)
 	},
 }
 
