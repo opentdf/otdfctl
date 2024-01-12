@@ -1,2 +1,0 @@
-# tructl
-OpenTDF CLI
