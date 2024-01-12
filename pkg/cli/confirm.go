@@ -16,12 +16,11 @@ func ConfirmDelete(resource string, id string) {
 		Value(&confirm).
 		Run()
 	if err != nil {
-		fmt.Println(ErrorMessage("Confirmation prompt failed", err))
-		os.Exit(1)
+		ExitWithError("Confirmation prompt failed", err)
 	}
 
 	if !confirm {
 		fmt.Println(ErrorMessage("Aborted", nil))
-		os.Exit(1)
+		os.Exit(0)
 	}
 }
