@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"fmt"
+
 	attributesv1 "github.com/opentdf/opentdf-v2-poc/gen/attributes/v1"
 	commonv1 "github.com/opentdf/opentdf-v2-poc/gen/common/v1"
 	"github.com/opentdf/tructl/pkg/grpc"
@@ -15,12 +17,65 @@ const (
 	AttributeRuleUnspecified = "UNSPECIFIED"
 )
 
-func ListAttributes() (*attributesv1.ListAttributesResponse, error) {
-	client := attributesv1.NewAttributesServiceClient(grpc.Conn)
-	return client.ListAttributes(grpc.Context, &attributesv1.ListAttributesRequest{})
+type Attribute struct {
+	Name        string
+	Rule        string
+	Values      []string
+	Namespace   string
+	Description string
+	Fqn         string
 }
 
-func CreateAttribute(name string, rule string, values []string, namespace string, description string) (*attributesv1.CreateAttributeResponse, error) {
+func GetAttribute(id int) (Attribute, error) {
+	client := attributesv1.NewAttributesServiceClient(grpc.Conn)
+	resp, err := client.GetAttribute(grpc.Context, &attributesv1.GetAttributeRequest{
+		Id: int32(id),
+	})
+	if err != nil {
+		return Attribute{}, err
+	}
+
+	values := []string{}
+	for _, v := range resp.Definition.Values {
+		values = append(values, v.Value)
+	}
+
+	return Attribute{
+		Name:        resp.Definition.Name,
+		Rule:        GetAttributeRuleFromAttributeType(resp.Definition.Rule),
+		Values:      values,
+		Namespace:   resp.Definition.Descriptor_.Namespace,
+		Description: resp.Definition.Descriptor_.Description,
+		Fqn:         GetAttributeFqn(resp.Definition),
+	}, nil
+}
+
+func ListAttributes() ([]Attribute, error) {
+	client := attributesv1.NewAttributesServiceClient(grpc.Conn)
+	resp, err := client.ListAttributes(grpc.Context, &attributesv1.ListAttributesRequest{})
+	if err != nil {
+		return nil, err
+	}
+
+	var attrs []Attribute
+	for _, attr := range resp.Definitions {
+		values := []string{}
+		for _, v := range attr.Values {
+			values = append(values, v.Value)
+		}
+		attrs = append(attrs, Attribute{
+			Name:        attr.Name,
+			Rule:        GetAttributeRuleFromAttributeType(attr.Rule),
+			Values:      values,
+			Namespace:   attr.Descriptor_.Namespace,
+			Description: attr.Descriptor_.Description,
+		})
+	}
+
+	return attrs, err
+}
+
+func CreateAttribute(name string, rule string, values []string, namespace string, description string) (Attribute, error) {
 	var attrValues []*attributesv1.AttributeDefinitionValue
 	for _, v := range values {
 		if v != "" {
@@ -29,7 +84,7 @@ func CreateAttribute(name string, rule string, values []string, namespace string
 	}
 
 	client := attributesv1.NewAttributesServiceClient(grpc.Conn)
-	return client.CreateAttribute(grpc.Context, &attributesv1.CreateAttributeRequest{
+	_, err := client.CreateAttribute(grpc.Context, &attributesv1.CreateAttributeRequest{
 		Definition: &attributesv1.AttributeDefinition{
 			Name:   name,
 			Rule:   GetAttributeRuleFromReadableString(rule),
@@ -42,6 +97,31 @@ func CreateAttribute(name string, rule string, values []string, namespace string
 			},
 		},
 	})
+	if err != nil {
+		return Attribute{}, err
+	}
+
+	return Attribute{
+		Name:        name,
+		Rule:        rule,
+		Values:      values,
+		Namespace:   namespace,
+		Description: description,
+	}, nil
+}
+
+func DeleteAttribute(id int) error {
+	client := attributesv1.NewAttributesServiceClient(grpc.Conn)
+
+	_, err := client.DeleteAttribute(grpc.Context, &attributesv1.DeleteAttributeRequest{
+		Id: int32(id),
+	})
+
+	return err
+}
+
+func GetAttributeFqn(resp *attributesv1.AttributeDefinition) string {
+	return fmt.Sprintf("https://%s/attr/%s", resp.Descriptor_.Namespace, resp.Name)
 }
 
 func GetAttributeRuleOptions() []string {
