@@ -292,13 +292,11 @@ func init() {
 	attributesCreateCmd.Flags().StringP("description", "d", "", "Description of the attribute")
 
 	attributesCmd.AddCommand(attributeUpdateCmd)
-	// NOTE: I can't find the ID of created/listed attributes anywhere in grpc responses? Where is this located?
 	attributeUpdateCmd.Flags().Int32P("id", "i", 0, "Id of the attribute")
 	attributeUpdateCmd.Flags().StringP("name", "n", "", "Name of the attribute")
 	attributeUpdateCmd.Flags().StringP("rule", "r", "", "Rule of the attribute")
 	attributeUpdateCmd.Flags().StringSliceVarP(&attrValues, "values", "v", []string{}, "Values of the attribute")
 	attributeUpdateCmd.Flags().StringSliceVarP(&groupBy, "group-by", "g", []string{}, "GroupBy of the attribute")
-	// TODO: again, can any of these be defaulted/inferred via lookup?
 	attributeUpdateCmd.Flags().StringSliceVarP(&resourceDependencies, "resource-dependencies", "d", []string{}, "ResourceDependencies of the attribute definition descriptor")
 	attributeUpdateCmd.Flags().Int32P("resource-id", "I", 0, "ResourceId of the attribute definition descriptor")
 	attributeUpdateCmd.Flags().Int32P("resource-version", "V", 0, "ResourceVersion of the attribute definition descriptor")
