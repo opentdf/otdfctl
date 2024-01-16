@@ -18,6 +18,7 @@ const (
 )
 
 type Attribute struct {
+	Id          int32
 	Name        string
 	Rule        string
 	Values      []string
@@ -41,12 +42,13 @@ func GetAttribute(id int) (Attribute, error) {
 	}
 
 	return Attribute{
+		Id:          resp.Definition.Descriptor_.Id,
 		Name:        resp.Definition.Name,
 		Rule:        GetAttributeRuleFromAttributeType(resp.Definition.Rule),
 		Values:      values,
 		Namespace:   resp.Definition.Descriptor_.Namespace,
 		Description: resp.Definition.Descriptor_.Description,
-		Fqn:         GetAttributeFqn(resp.Definition),
+		Fqn:         GetAttributeFqn(resp.Definition.Descriptor_.Namespace, resp.Definition.Name),
 	}, nil
 }
 
@@ -64,6 +66,7 @@ func ListAttributes() ([]Attribute, error) {
 			values = append(values, v.Value)
 		}
 		attrs = append(attrs, Attribute{
+			Id:          attr.Descriptor_.Id,
 			Name:        attr.Name,
 			Rule:        GetAttributeRuleFromAttributeType(attr.Rule),
 			Values:      values,
@@ -111,7 +114,7 @@ func CreateAttribute(name string, rule string, values []string, namespace string
 }
 
 func UpdateAttribute(
-	Id int32,
+	id int32,
 	name string,
 	rule string,
 	values []string,
@@ -120,7 +123,6 @@ func UpdateAttribute(
 	resourceVersion int32,
 	resourceName string,
 	resourceNamespace string,
-	resourceFqn string,
 	resourceDescription string,
 	resourceDependencies []string,
 ) (*attributesv1.UpdateAttributeResponse, error) {
@@ -147,7 +149,7 @@ func UpdateAttribute(
 
 	client := attributesv1.NewAttributesServiceClient(grpc.Conn)
 	return client.UpdateAttribute(grpc.Context, &attributesv1.UpdateAttributeRequest{
-		Id: Id,
+		Id: id,
 		Definition: &attributesv1.AttributeDefinition{
 			Name:    name,
 			Rule:    GetAttributeRuleFromReadableString(rule),
@@ -159,7 +161,7 @@ func UpdateAttribute(
 				Version:      resourceVersion,
 				Name:         resourceName,
 				Namespace:    resourceNamespace,
-				Fqn:          resourceFqn,
+				Fqn:          GetAttributeFqn(resourceNamespace, resourceName),
 				Description:  resourceDescription,
 				Dependencies: dependencies,
 			},
@@ -177,8 +179,8 @@ func DeleteAttribute(id int) error {
 	return err
 }
 
-func GetAttributeFqn(resp *attributesv1.AttributeDefinition) string {
-	return fmt.Sprintf("https://%s/attr/%s", resp.Descriptor_.Namespace, resp.Name)
+func GetAttributeFqn(namespace string, name string) string {
+	return fmt.Sprintf("https://%s/attr/%s", namespace, name)
 }
 
 func GetAttributeRuleOptions() []string {
