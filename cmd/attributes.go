@@ -194,7 +194,7 @@ var attributeUpdateCmd = &cobra.Command{
 		})
 
 		resourceDependencies := flagHelper.GetStringSlice("resource-dependencies", resourceDependencies, cli.FlagHelperStringSliceOptions{
-			Min: 1,
+			Min: 0,
 		})
 
 		resourceId := flagHelper.GetRequiredInt32("resource-id")
