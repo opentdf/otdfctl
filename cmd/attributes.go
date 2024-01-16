@@ -5,6 +5,7 @@ package cmd
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/charmbracelet/bubbles/table"
 	"github.com/opentdf/tructl/pkg/grpc"
@@ -48,6 +49,7 @@ var attributesListCmd = &cobra.Command{
 		}
 
 		columns := []table.Column{
+			{Title: "Id", Width: 10},
 			{Title: "Namespace", Width: 20},
 			{Title: "Name", Width: 20},
 			{Title: "Rule", Width: 20},
@@ -65,6 +67,7 @@ var attributesListCmd = &cobra.Command{
 			}
 
 			rows = append(rows, table.Row{
+				strconv.Itoa(int(attr.Descriptor_.Id)),
 				attr.Descriptor_.Namespace,
 				attr.Name,
 				handlers.GetAttributeRuleFromAttributeType(attr.Rule),
