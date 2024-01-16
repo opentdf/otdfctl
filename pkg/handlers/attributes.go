@@ -101,7 +101,7 @@ func UpdateAttribute(
 	})
 }
 
-// TODO: do we implement all methods for attribute groups as well, or attributes alone?
+// TODO: attribute groups CRUD
 
 func GetAttributeRuleOptions() []string {
 	return []string{
