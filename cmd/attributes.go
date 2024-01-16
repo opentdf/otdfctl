@@ -5,9 +5,10 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"strconv"
 
-	"github.com/charmbracelet/bubbles/table"
-	"github.com/opentdf/tructl/pkg/grpc"
+	"github.com/opentdf/tructl/pkg/cli"
 	"github.com/opentdf/tructl/pkg/handlers"
 	"github.com/spf13/cobra"
 )
@@ -26,57 +27,64 @@ to quickly create a Cobra application.`,
 
 var attrValues []string
 
+var attributeGetCmd = &cobra.Command{
+	Use:   "get <id>",
+	Short: "Get an attribute",
+	Args:  cobra.ExactArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		id, err := strconv.Atoi(args[0])
+		if err != nil {
+			cli.ExitWithError("Invalid ID", err)
+		}
+
+		close := cli.GrpcConnect(cmd)
+		defer close()
+
+		attr, err := handlers.GetAttribute(id)
+		if err != nil {
+			errMsg := fmt.Sprintf("Could not find attribute (%d)", id)
+			cli.ExitWithNotFoundError(errMsg, err)
+			cli.ExitWithError(errMsg, err)
+		}
+
+		fmt.Println(cli.SuccessMessage("Attribute found"))
+		fmt.Println(
+			cli.NewTabular().
+				Rows([][]string{
+					{"Name", attr.Name},
+					{"Rule", attr.Rule},
+					{"Values", cli.CommaSeparated(attr.Values)},
+					{"Namespace", attr.Namespace},
+					{"Description", attr.Description},
+				}...).Render(),
+		)
+	},
+}
+
 // List attributes
 var attributesListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List attributes",
 	Run: func(cmd *cobra.Command, args []string) {
-		if err := grpc.Connect(cmd.Flag("host").Value.String()); err != nil {
-			fmt.Println(err)
-			return
-		}
-		defer grpc.Conn.Close()
+		close := cli.GrpcConnect(cmd)
+		defer close()
 
-		resp, err := handlers.ListAttributes()
+		attrs, err := handlers.ListAttributes()
 		if err != nil {
-			fmt.Println(err)
-			return
+			cli.ExitWithError("Could not get attributes", err)
 		}
 
-		columns := []table.Column{
-			{Title: "Namespace", Width: 20},
-			{Title: "Name", Width: 20},
-			{Title: "Rule", Width: 20},
-			{Title: "Values", Width: 20},
-		}
-
-		rows := []table.Row{}
-		for _, attr := range resp.Definitions {
-			values := ""
-			for i, v := range attr.Values {
-				if i != 0 {
-					values += ", "
-				}
-				values += v.Value
-			}
-
-			rows = append(rows, table.Row{
-				attr.Descriptor_.Namespace,
+		t := cli.NewTable()
+		t.Headers("Namespace", "Name", "Rule", "Values")
+		for _, attr := range attrs {
+			t.Row(
+				attr.Namespace,
 				attr.Name,
-				handlers.GetAttributeRuleFromAttributeType(attr.Rule),
-				values,
-			})
+				attr.Rule,
+				cli.CommaSeparated(attr.Values),
+			)
 		}
-
-		t := table.New(
-			table.WithColumns(columns),
-			table.WithRows(rows),
-			table.WithFocused(false),
-			table.WithHeight(7),
-		)
-
-		t.Update("")
-		fmt.Print(t.View())
+		fmt.Print(t.Render())
 	},
 }
 
@@ -85,56 +93,82 @@ var attributesCreateCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Create an attribute",
 	Run: func(cmd *cobra.Command, args []string) {
-		if err := grpc.Connect(cmd.Flag("host").Value.String()); err != nil {
-			fmt.Println(err)
-			return
-		}
-		defer grpc.Conn.Close()
+		close := cli.GrpcConnect(cmd)
+		defer close()
 
-		name := cmd.Flag("name").Value.String()
-		if name == "" {
-			fmt.Println("Name is required")
-			return
-		}
+		flagHelper := cli.NewFlagHelper(cmd)
+		name := flagHelper.GetRequiredString("name")
+		rule := flagHelper.GetRequiredString("rule")
+		values := flagHelper.GetRequiredStringSlice("values", attrValues, cli.FlagHelperStringSliceOptions{
+			Min: 1,
+		})
+		namespace := flagHelper.GetRequiredString("namespace")
+		description := flagHelper.GetRequiredString("description")
 
-		rule := cmd.Flag("rule").Value.String()
-		if rule == "" {
-			fmt.Println("Rule is required")
-			return
+		if _, err := handlers.CreateAttribute(name, rule, values, namespace, description); err != nil {
+			cli.ExitWithError("Could not create attribute", err)
 		}
 
-		if len(attrValues) == 0 {
-			fmt.Println("Values is required")
-			return
-		}
-
-		namespace := cmd.Flag("namespace").Value.String()
-		if namespace == "" {
-			fmt.Println("Namespace is required")
-			return
-		}
-
-		description := cmd.Flag("description").Value.String()
-		if description == "" {
-			fmt.Println("Description is required")
-			return
-		}
-
-		if resp, err := handlers.CreateAttribute(name, rule, attrValues, namespace, description); err != nil {
-			fmt.Println(err)
-			return
-		} else {
-			fmt.Println(resp)
-		}
+		fmt.Println(cli.SuccessMessage("Attribute created"))
+		fmt.Println(
+			cli.NewTabular().Rows([][]string{
+				{"Name", name},
+				{"Rule", rule},
+				{"Values", cli.CommaSeparated(values)},
+				{"Namespace", namespace},
+				{"Description", description},
+			}...).Render(),
+		)
 	},
 }
 
-// TODO: Update an attribute
+var attributesDeleteCmd = &cobra.Command{
+	Use:   "delete <id>",
+	Short: "Delete an attribute",
+	Args:  cobra.ExactArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		id, err := strconv.Atoi(args[0])
+		if err != nil {
+			fmt.Println(cli.ErrorMessage("Invalid ID", err))
+			os.Exit(1)
+		}
 
-// TODO: Delete an attribute
+		close := cli.GrpcConnect(cmd)
+		defer close()
+
+		attr, err := handlers.GetAttribute(id)
+		if err != nil {
+			errMsg := fmt.Sprintf("Could not find attribute (%d)", id)
+			cli.ExitWithNotFoundError(errMsg, err)
+			cli.ExitWithError(errMsg, err)
+		}
+
+		cli.ConfirmDelete("attribute", attr.Fqn)
+
+		if err := handlers.DeleteAttribute(id); err != nil {
+			errMsg := fmt.Sprintf("Could not delete attribute (%d)", id)
+			cli.ExitWithNotFoundError(errMsg, err)
+			cli.ExitWithError(errMsg, err)
+		}
+
+		fmt.Println(cli.SuccessMessage("Attribute deleted"))
+		fmt.Println(
+			cli.NewTabular().
+				Rows([][]string{
+					{"Name", attr.Name},
+					{"Rule", attr.Rule},
+					{"Values", cli.CommaSeparated(attr.Values)},
+					{"Namespace", attr.Namespace},
+					{"Description", attr.Description},
+				}...).Render(),
+		)
+	},
+}
 
 func init() {
 	rootCmd.AddCommand(attributesCmd)
+
+	attributesCmd.AddCommand(attributeGetCmd)
 
 	attributesCmd.AddCommand(attributesListCmd)
 
@@ -144,4 +178,6 @@ func init() {
 	attributesCreateCmd.Flags().StringSliceVarP(&attrValues, "values", "v", []string{}, "Values of the attribute")
 	attributesCreateCmd.Flags().StringP("namespace", "s", "", "Namespace of the attribute")
 	attributesCreateCmd.Flags().StringP("description", "d", "", "Description of the attribute")
+
+	attributesCmd.AddCommand(attributesDeleteCmd)
 }
