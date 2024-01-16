@@ -9,7 +9,6 @@ import (
 	"strconv"
 
 	"github.com/opentdf/tructl/pkg/cli"
-	"github.com/opentdf/tructl/pkg/grpc"
 	"github.com/opentdf/tructl/pkg/handlers"
 	"github.com/spf13/cobra"
 )
@@ -56,6 +55,7 @@ var attributeGetCmd = &cobra.Command{
 		fmt.Println(
 			cli.NewTabular().
 				Rows([][]string{
+					{"Id", strconv.Itoa(int(attr.Id))},
 					{"Name", attr.Name},
 					{"Rule", attr.Rule},
 					{"Values", cli.CommaSeparated(attr.Values)},
@@ -83,14 +83,14 @@ var attributesListCmd = &cobra.Command{
 		t.Headers("Id", "Namespace", "Name", "Rule", "Values")
 		for _, attr := range attrs {
 			t.Row(
-				attr.Id,
+				strconv.Itoa(int(attr.Id)),
 				attr.Namespace,
 				attr.Name,
 				attr.Rule,
 				cli.CommaSeparated(attr.Values),
 			)
 		}
-		fmt.Print(t.Render())
+		fmt.Println(t.Render())
 	},
 }
 
@@ -105,7 +105,7 @@ var attributesCreateCmd = &cobra.Command{
 		flagHelper := cli.NewFlagHelper(cmd)
 		name := flagHelper.GetRequiredString("name")
 		rule := flagHelper.GetRequiredString("rule")
-		values := flagHelper.GetRequiredStringSlice("values", attrValues, cli.FlagHelperStringSliceOptions{
+		values := flagHelper.GetStringSlice("values", attrValues, cli.FlagHelperStringSliceOptions{
 			Min: 1,
 		})
 		namespace := flagHelper.GetRequiredString("namespace")
@@ -171,108 +171,55 @@ var attributesDeleteCmd = &cobra.Command{
 	},
 }
 
-// TODO: think about how to improve this. Passing a 12 flags/args in a CLI is very challenging...
 // Update one attribute
 var attributeUpdateCmd = &cobra.Command{
 	Use:   "update",
 	Short: "Update an attribute",
 	Run: func(cmd *cobra.Command, args []string) {
-		if err := grpc.Connect(cmd.Flag("host").Value.String()); err != nil {
-			fmt.Println(err)
-			return
-		}
-		defer grpc.Conn.Close()
+		close := cli.GrpcConnect(cmd)
+		defer close()
 
-		Id, e := cmd.Flags().GetInt32("id")
-		if e != nil {
-			fmt.Println("Flag 'id' is required")
-			return
-		}
+		flagHelper := cli.NewFlagHelper(cmd)
 
-		name := cmd.Flag("name").Value.String()
-		if name == "" {
-			fmt.Println("Flag 'name' is required")
-			return
-		}
+		id := flagHelper.GetRequiredInt32("id")
+		name := flagHelper.GetRequiredString("name")
+		rule := flagHelper.GetRequiredString("rule")
 
-		rule := cmd.Flag("rule").Value.String()
-		if rule == "" || handlers.GetAttributeRuleFromReadableString(rule) == 0 {
-			fmt.Printf("Flag 'rule' is required and must be one of: %v", handlers.GetAttributeRuleOptions())
-			return
-		}
+		values := flagHelper.GetStringSlice("values", attrValues, cli.FlagHelperStringSliceOptions{
+			Min: 1,
+		})
 
-		// Would this memory leak since the var is in scope to create & update both?
-		// TODO: check the same for groupBy, dependencies
-		if len(attrValues) == 0 {
-			fmt.Println("Flag 'values' is required")
-			return
-		}
+		groupBy := flagHelper.GetStringSlice("group-by", groupBy, cli.FlagHelperStringSliceOptions{
+			Min: 0,
+		})
 
-		if len(groupBy) == 0 {
-			fmt.Println("Flag 'group-by' is required")
-			return
-		}
+		resourceDependencies := flagHelper.GetStringSlice("resource-dependencies", resourceDependencies, cli.FlagHelperStringSliceOptions{
+			Min: 1,
+		})
 
-		if len(resourceDependencies) == 0 {
-			fmt.Println("Flag 'resource-dependencies' is required")
-			return
-		}
+		resourceId := flagHelper.GetRequiredInt32("resource-id")
+		resourceVersion := flagHelper.GetRequiredInt32("resource-version")
+		resourceName := flagHelper.GetRequiredString("resource-name")
+		resourceNamespace := flagHelper.GetRequiredString("resource-namespace")
+		resourceDescription := flagHelper.GetRequiredString("resource-description")
 
-		// TODO: are all of these required, or can some be defaulted / looked up?
-		resourceId, e := cmd.Flags().GetInt32("resource-id")
-		if e != nil {
-			fmt.Println("Flag 'resource-id' is required")
-			return
-		}
-
-		resourceVersion, e := cmd.Flags().GetInt32("res-version")
-		if e != nil {
-			fmt.Println("Flag 'resource-version' is required")
-			return
-		}
-
-		resourceName := cmd.Flag("resource-name").Value.String()
-		if resourceName == "" {
-			fmt.Println("Flag 'resource-name' is required")
-			return
-		}
-
-		resourceNamespace := cmd.Flag("resource-namespace").Value.String()
-		if resourceNamespace == "" {
-			fmt.Println("Flag 'resource-namespace' is required")
-			return
-		}
-
-		resourceFqn := cmd.Flag("resource-fqn").Value.String()
-		if resourceFqn == "" {
-			fmt.Println("Flag 'resource-fqn' is required")
-			return
-		}
-
-		resourceDescription := cmd.Flag("resource-description").Value.String()
-		if resourceDescription == "" {
-			fmt.Println("Flag 'resource-description' is required")
-			return
-		}
-
-		if resp, err := handlers.UpdateAttribute(
-			Id,
+		if _, err := handlers.UpdateAttribute(
+			id,
 			name,
 			rule,
-			attrValues,
+			values,
 			groupBy,
 			resourceId,
 			resourceVersion,
 			resourceName,
 			resourceNamespace,
-			resourceFqn,
 			resourceDescription,
 			resourceDependencies,
 		); err != nil {
-			fmt.Println(err)
+			cli.ExitWithError("Could not update attribute", err)
 			return
 		} else {
-			fmt.Println(resp)
+			fmt.Println(cli.SuccessMessage(fmt.Sprintf("Attribute id: %d updated.", id)))
 		}
 	},
 }
@@ -302,7 +249,6 @@ func init() {
 	attributeUpdateCmd.Flags().Int32P("resource-version", "V", 0, "ResourceVersion of the attribute definition descriptor")
 	attributeUpdateCmd.Flags().StringP("resource-name", "N", "", "ResourceName of the attribute definition descriptor")
 	attributeUpdateCmd.Flags().StringP("resource-namespace", "S", "", "ResourceNamespace of the attribute definition descriptor")
-	attributeUpdateCmd.Flags().StringP("resource-fqn", "F", "", "ResourceFqn of the attribute")
 	attributeUpdateCmd.Flags().StringP("resource-description", "D", "", "ResourceDescription of the attribute definition descriptor")
 
 	attributesCmd.AddCommand(attributesDeleteCmd)
