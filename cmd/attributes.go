@@ -174,8 +174,8 @@ var attributeUpdateCmd = &cobra.Command{
 	Use:   "update",
 	Short: "Update an attribute",
 	Run: func(cmd *cobra.Command, args []string) {
-		close := cli.GrpcConnect(cmd)
-		defer close()
+		h := cli.NewHandler(cmd)
+		defer h.Close()
 
 		flagHelper := cli.NewFlagHelper(cmd)
 
@@ -201,7 +201,7 @@ var attributeUpdateCmd = &cobra.Command{
 		resourceNamespace := flagHelper.GetRequiredString("resource-namespace")
 		resourceDescription := flagHelper.GetRequiredString("resource-description")
 
-		if _, err := handlers.UpdateAttribute(
+		if _, err := h.UpdateAttribute(
 			id,
 			name,
 			rule,
