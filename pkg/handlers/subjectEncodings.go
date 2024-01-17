@@ -3,6 +3,7 @@ package handlers
 import (
 	acsev1 "github.com/opentdf/opentdf-v2-poc/gen/acse/v1"
 	commonv1 "github.com/opentdf/opentdf-v2-poc/gen/common/v1"
+	attributesv1 "github.com/opentdf/opentdf-v2-poc/gen/attributes/v1"
 
 	"github.com/opentdf/tructl/pkg/grpc"
 )
@@ -18,6 +19,34 @@ type SubjectMapping struct {
 	SubjectAttr   string
 	SubjectValues []string
 	Operator      string // human-readable
+}
+
+func CreateSubjectMapping(mapping SubjectMapping, description string, resourceDeps []string, attrRefName string, attrRefLabels map[string]string) error {
+	client := acsev1.NewSubjectEncodingServiceClient(grpc.Conn)
+
+	// Hierarchy: prefer 1st name, 2nd labels in order
+	ref := &attributesv1.AttributeValueReference{}
+	if attrRefName != "" {
+		ref.Ref = &commonv1.ResourceSelector_Name{Name: attrRefName}
+	} else if len(attrRefLabels) > 0 {
+		ref.Ref = &attributesv1.AttributeValueReference_AttributeValue{
+			AttributeValue: &attributesv1.AttributeValue{
+				Descriptor_: &commonv1.ResourceDescriptor{
+					Name: "resource-selector-labels",
+		},
+		}
+	}
+
+	_, err := client.CreateSubjectMapping(grpc.Context, &acsev1.CreateSubjectMappingRequest{
+		SubjectMapping: &acsev1.SubjectMapping{
+			Descriptor_:      &commonv1.ResourceDescriptor{Name: mapping.Name},
+			SubjectAttribute: mapping.SubjectAttr,
+			SubjectValues:    mapping.SubjectValues,
+			Operator:         GetSubjectMappingOperatorFromReadableOperatorString(mapping.Operator),
+			AttributeValueRef: ref,
+		},
+	})
+	return err
 }
 
 func GetSubjectMapping(id int) (SubjectMapping, error) {
@@ -37,13 +66,13 @@ func GetSubjectMapping(id int) (SubjectMapping, error) {
 	}, nil
 }
 
-func ListSubjectMappings(resourceSelectorName string, resourceSelectorLabels map[string]string) ([]SubjectMapping, error) {
+func ListSubjectMappings(attrRefName string, resourceSelectorLabels map[string]string) ([]SubjectMapping, error) {
 	client := acsev1.NewSubjectEncodingServiceClient(grpc.Conn)
 
 	// Hierarchy: prefer 1st name, 2nd labels in order
 	s := &commonv1.ResourceSelector{}
-	if resourceSelectorName != "" {
-		s.Selector = &commonv1.ResourceSelector_Name{Name: resourceSelectorName}
+	if attrRefName != "" {
+		s.Selector = &commonv1.ResourceSelector_Name{Name: attrRefName}
 	} else if len(resourceSelectorLabels) > 0 {
 		s.Selector = &commonv1.ResourceSelector_LabelSelector_{
 			LabelSelector: &commonv1.ResourceSelector_LabelSelector{

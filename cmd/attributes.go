@@ -189,7 +189,7 @@ var attributeUpdateCmd = &cobra.Command{
 			Min: 0,
 		})
 
-		resourceDependencies := flagHelper.GetStringSlice("resource-dependencies", resourceDependencies, cli.FlagHelperListOptions{
+		resourceDeps := flagHelper.GetStringSlice("resource-dependencies", resourceDependencies, cli.FlagHelperListOptions{
 			Min: 0,
 		})
 
@@ -210,7 +210,7 @@ var attributeUpdateCmd = &cobra.Command{
 			resourceName,
 			resourceNamespace,
 			resourceDescription,
-			resourceDependencies,
+			resourceDeps,
 		); err != nil {
 			cli.ExitWithError("Could not update attribute", err)
 			return

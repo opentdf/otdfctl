@@ -124,7 +124,7 @@ func UpdateAttribute(
 	resourceName string,
 	resourceNamespace string,
 	resourceDescription string,
-	resourceDependencies []string,
+	resourceDeps []string,
 ) (*attributesv1.UpdateAttributeResponse, error) {
 	var attrValues []*attributesv1.AttributeDefinitionValue
 	for _, v := range values {
@@ -141,7 +141,7 @@ func UpdateAttribute(
 	}
 
 	var dependencies []*commonv1.ResourceDependency
-	for _, v := range resourceDependencies {
+	for _, v := range resourceDeps {
 		if v != "" {
 			dependencies = append(dependencies, &commonv1.ResourceDependency{Namespace: v})
 		}
