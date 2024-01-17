@@ -101,7 +101,7 @@ var attributesCreateCmd = &cobra.Command{
 		flagHelper := cli.NewFlagHelper(cmd)
 		name := flagHelper.GetRequiredString("name")
 		rule := flagHelper.GetRequiredString("rule")
-		values := flagHelper.GetStringSlice("values", attrValues, cli.FlagHelperStringSliceOptions{
+		values := flagHelper.GetStringSlice("values", attrValues, cli.FlagHelperListOptions{
 			Min: 1,
 		})
 		namespace := flagHelper.GetRequiredString("namespace")
@@ -181,15 +181,15 @@ var attributeUpdateCmd = &cobra.Command{
 		name := flagHelper.GetRequiredString("name")
 		rule := flagHelper.GetRequiredString("rule")
 
-		values := flagHelper.GetStringSlice("values", attrValues, cli.FlagHelperStringSliceOptions{
+		values := flagHelper.GetStringSlice("values", attrValues, cli.FlagHelperListOptions{
 			Min: 1,
 		})
 
-		groupBy := flagHelper.GetStringSlice("group-by", groupBy, cli.FlagHelperStringSliceOptions{
+		groupBy := flagHelper.GetStringSlice("group-by", groupBy, cli.FlagHelperListOptions{
 			Min: 0,
 		})
 
-		resourceDependencies := flagHelper.GetStringSlice("resource-dependencies", resourceDependencies, cli.FlagHelperStringSliceOptions{
+		resourceDependencies := flagHelper.GetStringSlice("resource-dependencies", resourceDependencies, cli.FlagHelperListOptions{
 			Min: 0,
 		})
 

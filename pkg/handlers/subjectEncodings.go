@@ -2,6 +2,8 @@ package handlers
 
 import (
 	acsev1 "github.com/opentdf/opentdf-v2-poc/gen/acse/v1"
+	commonv1 "github.com/opentdf/opentdf-v2-poc/gen/common/v1"
+
 	"github.com/opentdf/tructl/pkg/grpc"
 )
 
@@ -35,10 +37,23 @@ func GetSubjectMapping(id int) (SubjectMapping, error) {
 	}, nil
 }
 
-func ListSubjectMappings() ([]SubjectMapping, error) {
+func ListSubjectMappings(resourceSelectorName string, resourceSelectorLabels map[string]string) ([]SubjectMapping, error) {
 	client := acsev1.NewSubjectEncodingServiceClient(grpc.Conn)
+
+	// Hierarchy: prefer 1st name, 2nd labels in order
+	s := &commonv1.ResourceSelector{}
+	if resourceSelectorName != "" {
+		s.Selector = &commonv1.ResourceSelector_Name{Name: resourceSelectorName}
+	} else if len(resourceSelectorLabels) > 0 {
+		s.Selector = &commonv1.ResourceSelector_LabelSelector_{
+			LabelSelector: &commonv1.ResourceSelector_LabelSelector{
+				Labels: resourceSelectorLabels,
+			},
+		}
+	}
+
 	resp, err := client.ListSubjectMappings(grpc.Context, &acsev1.ListSubjectMappingsRequest{
-		// TODO: selector?
+		Selector: s,
 	})
 	if err != nil {
 		return nil, err
@@ -55,6 +70,14 @@ func ListSubjectMappings() ([]SubjectMapping, error) {
 	}
 
 	return mappings, nil
+}
+
+func DeleteSubjectMapping(id int) error {
+	client := acsev1.NewSubjectEncodingServiceClient(grpc.Conn)
+	_, err := client.DeleteSubjectMapping(grpc.Context, &acsev1.DeleteSubjectMappingRequest{
+		Id: int32(id),
+	})
+	return err
 }
 
 func GetSubjectMappingOperatorFromIota(operator acsev1.SubjectMapping_Operator) string {

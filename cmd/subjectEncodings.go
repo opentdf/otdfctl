@@ -9,18 +9,20 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// acse represents the Access Control Subject Encodings command
-var subjectEncodingsCmd = &cobra.Command{
-	Use:   "subject encodings",
-	Short: "Access Control Subject Encodings CRUD operations",
-	Long: `Manage your configured Subject Encoding Mappings [Create, Get one, List all, Update, Delete]
+var resourceSelectorLabels []string
+
+// acse represents the Access Control Subject Mappings command
+var subjectMappingsCmd = &cobra.Command{
+	Use:   "subject mappings",
+	Short: "Access Control Subject Mappings/Encodings CRUD operations",
+	Long: `Manage your configured Subject Mappings/Encodings [Create, Get one, List all, Update, Delete]
 	through use of this CLI.`,
 }
 
-// Get one Access Control Subject Encoding
-var subjectEncodingsMappingGetCmd = &cobra.Command{
+// Get one Access Control Subject Mapping
+var subjectMappingsGetCmd = &cobra.Command{
 	Use:   "get <id>",
-	Short: "Get an Access Control Subject Encoding",
+	Short: "Get an Access Control Subject Mapping",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		id, err := strconv.Atoi(args[0])
@@ -34,11 +36,11 @@ var subjectEncodingsMappingGetCmd = &cobra.Command{
 		mapping, err := handlers.GetSubjectMapping(id)
 		if err != nil {
 			errMsg := fmt.Sprintf("Could not find attribute (%d)", id)
-			cli.ExitWithNotFoundError(errMsg, err)
+			cli.ExitIfNotFoundError(errMsg, err)
 			cli.ExitWithError(errMsg, err)
 		}
 
-		fmt.Println(cli.SuccessMessage("Access Control Subject Encoding Mapping found"))
+		fmt.Println(cli.SuccessMessage("Access Control Subject Mapping found"))
 		fmt.Println(
 			cli.NewTabular().
 				Rows([][]string{
@@ -51,24 +53,35 @@ var subjectEncodingsMappingGetCmd = &cobra.Command{
 	},
 }
 
-// List all access control subject encodings
-var subjectEncodingsListCmd = &cobra.Command{
+// List all access control subject mappings
+var subjectMappingsListCmd = &cobra.Command{
 	Use:   "list",
-	Short: "list Access Control Subject Encodings",
-	Args:  cobra.ExactArgs(1),
+	Short: "list Access Control Subject Mappings",
 	Run: func(cmd *cobra.Command, args []string) {
 		close := cli.GrpcConnect(cmd)
 		defer close()
 
-		// TODO: selector?
+		var (
+			selectorName   string
+			selectorLabels map[string]string
+		)
 
-		mappings, err := handlers.ListSubjectMappings()
+		h := cli.NewFlagHelper(cmd)
+
+		selectorName = h.GetOptionalString("resource-selector-name")
+		if selectorName == "" {
+			if len(resourceSelectorLabels) == 0 {
+				cli.ExitWithError("Either resource-selector-name or resource-selector-labels must be specified", nil)
+			}
+			selectorLabels = h.GetKeyValuesMap("resource-selector-labels", resourceSelectorLabels, cli.FlagHelperListOptions{Min: 1})
+		}
+
+		mappings, err := handlers.ListSubjectMappings(selectorName, selectorLabels)
 		if err != nil {
-			cli.ExitWithError("Could not list subject encodings", err)
+			cli.ExitWithError("Could not list subject mappings", err)
 		}
 
 		t := cli.NewTable()
-		// TODO: accurate table columns
 		t.Headers("Name", "Subject Attribute", "Operator", "Subject Values")
 		for _, m := range mappings {
 			t.Row(
@@ -82,9 +95,56 @@ var subjectEncodingsListCmd = &cobra.Command{
 	},
 }
 
-func init() {
-	rootCmd.AddCommand(subjectEncodingsCmd)
+// Delete one Access Control Subject Mapping
+var subjectMappingsDeleteCmd = &cobra.Command{
+	Use:   "delete <id>",
+	Short: "Delete an Access Control Subject Mapping",
+	Args:  cobra.ExactArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		id, err := strconv.Atoi(args[0])
+		if err != nil {
+			cli.ExitWithError("Invalid ID", err)
+		}
 
-	subjectEncodingsCmd.AddCommand(subjectEncodingsMappingGetCmd)
-	subjectEncodingsCmd.AddCommand(subjectEncodingsListCmd)
+		close := cli.GrpcConnect(cmd)
+		defer close()
+
+		mapping, err := handlers.GetSubjectMapping(id)
+		if err != nil {
+			errMsg := fmt.Sprintf("Could not find subject mapping (%d)", id)
+			cli.ExitIfNotFoundError(errMsg, err)
+			cli.ExitWithError(errMsg, err)
+		}
+
+		cli.ConfirmDelete("subject mapping", mapping.Name)
+
+		if err := handlers.DeleteSubjectMapping(id); err != nil {
+			errMsg := fmt.Sprintf("Could not delete subject mapping (%d)", id)
+			cli.ExitIfNotFoundError(errMsg, err)
+			cli.ExitWithError(errMsg, err)
+		}
+
+		fmt.Println(cli.SuccessMessage("Access Control Subject Mapping deleted"))
+		fmt.Println(
+			cli.NewTabular().
+				Rows([][]string{
+					{"Name", mapping.Name},
+					{"Subject Attribute", mapping.SubjectAttr},
+					{"Operator", mapping.Operator},
+					{"Subject Values", cli.CommaSeparated(mapping.SubjectValues)},
+				}...).Render(),
+		)
+	},
+}
+
+func init() {
+	rootCmd.AddCommand(subjectMappingsCmd)
+
+	subjectMappingsCmd.AddCommand(subjectMappingsGetCmd)
+
+	subjectMappingsCmd.AddCommand(subjectMappingsListCmd)
+	attributeUpdateCmd.Flags().StringP("resource-selector-name", "n", "", "Resource Selector Name")
+	attributeUpdateCmd.Flags().StringSliceVarP(&resourceSelectorLabels, "resource-selector-labels", "l", []string{}, "Resource Selector Labels defined as <key>::<value>")
+
+	subjectMappingsCmd.AddCommand(subjectMappingsDeleteCmd)
 }
