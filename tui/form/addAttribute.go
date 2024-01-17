@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/charmbracelet/huh"
-	attributes "github.com/opentdf/opentdf-v2-poc/gen/attributes/v1"
+	attributes "github.com/opentdf/opentdf-v2-poc/sdk/attributes"
 )
 
 type AttributeDefinition struct {
