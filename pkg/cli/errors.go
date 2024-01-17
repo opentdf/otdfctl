@@ -15,7 +15,7 @@ func ExitWithError(errMsg string, err error) {
 	}
 }
 
-func ExitWithNotFoundError(errMsg string, err error) {
+func ExitIfNotFoundError(errMsg string, err error) {
 	if e, ok := status.FromError(err); ok && e.Code() == codes.NotFound {
 		fmt.Println(ErrorMessage(errMsg+" not found", nil))
 		os.Exit(1)

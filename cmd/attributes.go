@@ -43,7 +43,7 @@ var attributeGetCmd = &cobra.Command{
 		attr, err := handlers.GetAttribute(id)
 		if err != nil {
 			errMsg := fmt.Sprintf("Could not find attribute (%d)", id)
-			cli.ExitWithNotFoundError(errMsg, err)
+			cli.ExitIfNotFoundError(errMsg, err)
 			cli.ExitWithError(errMsg, err)
 		}
 
@@ -141,7 +141,7 @@ var attributesDeleteCmd = &cobra.Command{
 		attr, err := handlers.GetAttribute(id)
 		if err != nil {
 			errMsg := fmt.Sprintf("Could not find attribute (%d)", id)
-			cli.ExitWithNotFoundError(errMsg, err)
+			cli.ExitIfNotFoundError(errMsg, err)
 			cli.ExitWithError(errMsg, err)
 		}
 
@@ -149,7 +149,7 @@ var attributesDeleteCmd = &cobra.Command{
 
 		if err := handlers.DeleteAttribute(id); err != nil {
 			errMsg := fmt.Sprintf("Could not delete attribute (%d)", id)
-			cli.ExitWithNotFoundError(errMsg, err)
+			cli.ExitIfNotFoundError(errMsg, err)
 			cli.ExitWithError(errMsg, err)
 		}
 
