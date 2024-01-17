@@ -3,7 +3,7 @@ module github.com/opentdf/tructl
 go 1.21.3
 
 require (
-	github.com/opentdf/opentdf-v2-poc v0.0.0-20240103192012-f7b86a6a5af7
+	github.com/opentdf/opentdf-v2-poc v0.0.0-20240117211630-7bd7f34d78e1
 	github.com/spf13/cobra v1.8.0
 	google.golang.org/grpc v1.60.1
 )
