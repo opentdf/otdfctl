@@ -3,8 +3,8 @@ package handlers
 import (
 	"fmt"
 
-	attributesv1 "github.com/opentdf/opentdf-v2-poc/gen/attributes/v1"
-	commonv1 "github.com/opentdf/opentdf-v2-poc/gen/common/v1"
+	"github.com/opentdf/opentdf-v2-poc/sdk/attributes"
+	"github.com/opentdf/opentdf-v2-poc/sdk/common"
 	"github.com/opentdf/tructl/pkg/grpc"
 )
 
@@ -27,9 +27,8 @@ type Attribute struct {
 	Fqn         string
 }
 
-func GetAttribute(id int) (Attribute, error) {
-	client := attributesv1.NewAttributesServiceClient(grpc.Conn)
-	resp, err := client.GetAttribute(grpc.Context, &attributesv1.GetAttributeRequest{
+func (h Handler) GetAttribute(id int) (Attribute, error) {
+	resp, err := h.sdk.Attributes.GetAttribute(h.ctx, &attributes.GetAttributeRequest{
 		Id: int32(id),
 	})
 	if err != nil {
@@ -52,9 +51,8 @@ func GetAttribute(id int) (Attribute, error) {
 	}, nil
 }
 
-func ListAttributes() ([]Attribute, error) {
-	client := attributesv1.NewAttributesServiceClient(grpc.Conn)
-	resp, err := client.ListAttributes(grpc.Context, &attributesv1.ListAttributesRequest{})
+func (h Handler) ListAttributes() ([]Attribute, error) {
+	resp, err := h.sdk.Attributes.ListAttributes(h.ctx, &attributes.ListAttributesRequest{})
 	if err != nil {
 		return nil, err
 	}
@@ -78,24 +76,23 @@ func ListAttributes() ([]Attribute, error) {
 	return attrs, err
 }
 
-func CreateAttribute(name string, rule string, values []string, namespace string, description string) (Attribute, error) {
-	var attrValues []*attributesv1.AttributeDefinitionValue
+func (h Handler) CreateAttribute(name string, rule string, values []string, namespace string, description string) (Attribute, error) {
+	var attrValues []*attributes.AttributeDefinitionValue
 	for _, v := range values {
 		if v != "" {
-			attrValues = append(attrValues, &attributesv1.AttributeDefinitionValue{Value: v})
+			attrValues = append(attrValues, &attributes.AttributeDefinitionValue{Value: v})
 		}
 	}
 
-	client := attributesv1.NewAttributesServiceClient(grpc.Conn)
-	_, err := client.CreateAttribute(grpc.Context, &attributesv1.CreateAttributeRequest{
-		Definition: &attributesv1.AttributeDefinition{
+	_, err := h.sdk.Attributes.CreateAttribute(h.ctx, &attributes.CreateAttributeRequest{
+		Definition: &attributes.AttributeDefinition{
 			Name:   name,
 			Rule:   GetAttributeRuleFromReadableString(rule),
 			Values: attrValues,
-			Descriptor_: &commonv1.ResourceDescriptor{
+			Descriptor_: &common.ResourceDescriptor{
 				Namespace:   namespace,
 				Name:        name,
-				Type:        commonv1.PolicyResourceType_POLICY_RESOURCE_TYPE_ATTRIBUTE_DEFINITION,
+				Type:        common.PolicyResourceType_POLICY_RESOURCE_TYPE_ATTRIBUTE_DEFINITION,
 				Description: description,
 			},
 		},
@@ -113,7 +110,7 @@ func CreateAttribute(name string, rule string, values []string, namespace string
 	}, nil
 }
 
-func UpdateAttribute(
+func (h *Handler) UpdateAttribute(
 	id int32,
 	name string,
 	rule string,
@@ -125,38 +122,37 @@ func UpdateAttribute(
 	resourceNamespace string,
 	resourceDescription string,
 	resourceDependencies []string,
-) (*attributesv1.UpdateAttributeResponse, error) {
-	var attrValues []*attributesv1.AttributeDefinitionValue
+) (*attributes.UpdateAttributeResponse, error) {
+	var attrValues []*attributes.AttributeDefinitionValue
 	for _, v := range values {
 		if v != "" {
-			attrValues = append(attrValues, &attributesv1.AttributeDefinitionValue{Value: v})
+			attrValues = append(attrValues, &attributes.AttributeDefinitionValue{Value: v})
 		}
 	}
 
-	var attrGroupBy []*attributesv1.AttributeDefinitionValue
+	var attrGroupBy []*attributes.AttributeDefinitionValue
 	for _, v := range groupBy {
 		if v != "" {
-			attrGroupBy = append(attrGroupBy, &attributesv1.AttributeDefinitionValue{Value: v})
+			attrGroupBy = append(attrGroupBy, &attributes.AttributeDefinitionValue{Value: v})
 		}
 	}
 
-	var dependencies []*commonv1.ResourceDependency
+	var dependencies []*common.ResourceDependency
 	for _, v := range resourceDependencies {
 		if v != "" {
-			dependencies = append(dependencies, &commonv1.ResourceDependency{Namespace: v})
+			dependencies = append(dependencies, &common.ResourceDependency{Namespace: v})
 		}
 	}
 
-	client := attributesv1.NewAttributesServiceClient(grpc.Conn)
-	return client.UpdateAttribute(grpc.Context, &attributesv1.UpdateAttributeRequest{
+	return h.sdk.Attributes.UpdateAttribute(grpc.Context, &attributes.UpdateAttributeRequest{
 		Id: id,
-		Definition: &attributesv1.AttributeDefinition{
+		Definition: &attributes.AttributeDefinition{
 			Name:    name,
 			Rule:    GetAttributeRuleFromReadableString(rule),
 			Values:  attrValues,
 			GroupBy: attrGroupBy,
-			Descriptor_: &commonv1.ResourceDescriptor{
-				Type:         commonv1.PolicyResourceType_POLICY_RESOURCE_TYPE_ATTRIBUTE_DEFINITION,
+			Descriptor_: &common.ResourceDescriptor{
+				Type:         common.PolicyResourceType_POLICY_RESOURCE_TYPE_ATTRIBUTE_DEFINITION,
 				Id:           resourceId,
 				Version:      resourceVersion,
 				Name:         resourceName,
@@ -169,10 +165,8 @@ func UpdateAttribute(
 	})
 }
 
-func DeleteAttribute(id int) error {
-	client := attributesv1.NewAttributesServiceClient(grpc.Conn)
-
-	_, err := client.DeleteAttribute(grpc.Context, &attributesv1.DeleteAttributeRequest{
+func (h Handler) DeleteAttribute(id int) error {
+	_, err := h.sdk.Attributes.DeleteAttribute(h.ctx, &attributes.DeleteAttributeRequest{
 		Id: int32(id),
 	})
 
@@ -192,31 +186,31 @@ func GetAttributeRuleOptions() []string {
 	}
 }
 
-func GetAttributeRuleFromAttributeType(rule attributesv1.AttributeDefinition_AttributeRuleType) string {
+func GetAttributeRuleFromAttributeType(rule attributes.AttributeDefinition_AttributeRuleType) string {
 	switch rule {
-	case attributesv1.AttributeDefinition_ATTRIBUTE_RULE_TYPE_ALL_OF:
+	case attributes.AttributeDefinition_ATTRIBUTE_RULE_TYPE_ALL_OF:
 		return AttributeRuleAllOf
-	case attributesv1.AttributeDefinition_ATTRIBUTE_RULE_TYPE_ANY_OF:
+	case attributes.AttributeDefinition_ATTRIBUTE_RULE_TYPE_ANY_OF:
 		return AttributeRuleAnyOf
-	case attributesv1.AttributeDefinition_ATTRIBUTE_RULE_TYPE_HIERARCHICAL:
+	case attributes.AttributeDefinition_ATTRIBUTE_RULE_TYPE_HIERARCHICAL:
 		return AttributeRuleHierarchy
-	case attributesv1.AttributeDefinition_ATTRIBUTE_RULE_TYPE_UNSPECIFIED:
+	case attributes.AttributeDefinition_ATTRIBUTE_RULE_TYPE_UNSPECIFIED:
 		return AttributeRuleUnspecified
 	default:
 		return ""
 	}
 }
 
-func GetAttributeRuleFromReadableString(rule string) attributesv1.AttributeDefinition_AttributeRuleType {
+func GetAttributeRuleFromReadableString(rule string) attributes.AttributeDefinition_AttributeRuleType {
 	switch rule {
 	case AttributeRuleAllOf:
-		return attributesv1.AttributeDefinition_ATTRIBUTE_RULE_TYPE_ALL_OF
+		return attributes.AttributeDefinition_ATTRIBUTE_RULE_TYPE_ALL_OF
 	case AttributeRuleAnyOf:
-		return attributesv1.AttributeDefinition_ATTRIBUTE_RULE_TYPE_ANY_OF
+		return attributes.AttributeDefinition_ATTRIBUTE_RULE_TYPE_ANY_OF
 	case AttributeRuleHierarchy:
-		return attributesv1.AttributeDefinition_ATTRIBUTE_RULE_TYPE_HIERARCHICAL
+		return attributes.AttributeDefinition_ATTRIBUTE_RULE_TYPE_HIERARCHICAL
 	case AttributeRuleUnspecified:
-		return attributesv1.AttributeDefinition_ATTRIBUTE_RULE_TYPE_UNSPECIFIED
+		return attributes.AttributeDefinition_ATTRIBUTE_RULE_TYPE_UNSPECIFIED
 	}
-	return attributesv1.AttributeDefinition_ATTRIBUTE_RULE_TYPE_UNSPECIFIED
+	return attributes.AttributeDefinition_ATTRIBUTE_RULE_TYPE_UNSPECIFIED
 }
