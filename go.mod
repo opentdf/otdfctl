@@ -8,7 +8,7 @@ require (
 	github.com/charmbracelet/huh v0.2.3
 	github.com/charmbracelet/lipgloss v0.9.1
 	github.com/opentdf/opentdf-v2-poc v0.0.0-20240103192012-f7b86a6a5af7
-	github.com/opentdf/opentdf-v2-poc/sdk v0.0.0-20240117153907-4c2ad4cfa630
+	github.com/opentdf/opentdf-v2-poc/sdk v0.0.0-20240117221500-8dfca6a159a8
 	github.com/spf13/cobra v1.8.0
 	google.golang.org/grpc v1.60.1
 )

@@ -77,6 +77,8 @@ github.com/opentdf/opentdf-v2-poc/sdk v0.0.0-20240117134358-3d2a619ec033 h1:ayfa
 github.com/opentdf/opentdf-v2-poc/sdk v0.0.0-20240117134358-3d2a619ec033/go.mod h1:jjvtfVYKaaQTbovM40KRC5aVmgGmkxgacxgtEd8W7zM=
 github.com/opentdf/opentdf-v2-poc/sdk v0.0.0-20240117153907-4c2ad4cfa630 h1:U2/7fQ5OHFcHeJ/FApCOJJCCVD6SbHcbN9qvL4nZXOw=
 github.com/opentdf/opentdf-v2-poc/sdk v0.0.0-20240117153907-4c2ad4cfa630/go.mod h1:jjvtfVYKaaQTbovM40KRC5aVmgGmkxgacxgtEd8W7zM=
+github.com/opentdf/opentdf-v2-poc/sdk v0.0.0-20240117221500-8dfca6a159a8 h1:gzCWVrbeAF585gCWC5WhacHcjoTeYh+e0XaslIgbUFk=
+github.com/opentdf/opentdf-v2-poc/sdk v0.0.0-20240117221500-8dfca6a159a8/go.mod h1:jjvtfVYKaaQTbovM40KRC5aVmgGmkxgacxgtEd8W7zM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 h1:Jamvg5psRIccs7FGNTlIRMkT8wgtp5eCXdBlqhYGL6U=
 github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
