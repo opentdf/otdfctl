@@ -9,7 +9,6 @@ import (
 	"strconv"
 
 	"github.com/opentdf/tructl/pkg/cli"
-	"github.com/opentdf/tructl/pkg/handlers"
 	"github.com/spf13/cobra"
 )
 
@@ -32,15 +31,15 @@ var attributeGetCmd = &cobra.Command{
 	Short: "Get an attribute",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
+		h := cli.NewHandler(cmd)
+		defer h.Close()
+
 		id, err := strconv.Atoi(args[0])
 		if err != nil {
 			cli.ExitWithError("Invalid ID", err)
 		}
 
-		close := cli.GrpcConnect(cmd)
-		defer close()
-
-		attr, err := handlers.GetAttribute(id)
+		attr, err := h.GetAttribute(id)
 		if err != nil {
 			errMsg := fmt.Sprintf("Could not find attribute (%d)", id)
 			cli.ExitIfNotFoundError(errMsg, err)
@@ -67,10 +66,10 @@ var attributesListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List attributes",
 	Run: func(cmd *cobra.Command, args []string) {
-		close := cli.GrpcConnect(cmd)
-		defer close()
+		h := cli.NewHandler(cmd)
+		defer h.Close()
 
-		attrs, err := handlers.ListAttributes()
+		attrs, err := h.ListAttributes()
 		if err != nil {
 			cli.ExitWithError("Could not get attributes", err)
 		}
@@ -95,8 +94,8 @@ var attributesCreateCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Create an attribute",
 	Run: func(cmd *cobra.Command, args []string) {
-		close := cli.GrpcConnect(cmd)
-		defer close()
+		h := cli.NewHandler(cmd)
+		defer h.Close()
 
 		flagHelper := cli.NewFlagHelper(cmd)
 		name := flagHelper.GetRequiredString("name")
@@ -107,7 +106,7 @@ var attributesCreateCmd = &cobra.Command{
 		namespace := flagHelper.GetRequiredString("namespace")
 		description := flagHelper.GetRequiredString("description")
 
-		if _, err := handlers.CreateAttribute(name, rule, values, namespace, description); err != nil {
+		if _, err := h.CreateAttribute(name, rule, values, namespace, description); err != nil {
 			cli.ExitWithError("Could not create attribute", err)
 		}
 
@@ -129,16 +128,15 @@ var attributesDeleteCmd = &cobra.Command{
 	Short: "Delete an attribute",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
+		h := cli.NewHandler(cmd)
+		defer h.Close()
+
 		id, err := strconv.Atoi(args[0])
 		if err != nil {
 			fmt.Println(cli.ErrorMessage("Invalid ID", err))
 			os.Exit(1)
 		}
-
-		close := cli.GrpcConnect(cmd)
-		defer close()
-
-		attr, err := handlers.GetAttribute(id)
+		attr, err := h.GetAttribute(id)
 		if err != nil {
 			errMsg := fmt.Sprintf("Could not find attribute (%d)", id)
 			cli.ExitIfNotFoundError(errMsg, err)
@@ -147,7 +145,7 @@ var attributesDeleteCmd = &cobra.Command{
 
 		cli.ConfirmDelete("attribute", attr.Fqn)
 
-		if err := handlers.DeleteAttribute(id); err != nil {
+		if err := h.DeleteAttribute(id); err != nil {
 			errMsg := fmt.Sprintf("Could not delete attribute (%d)", id)
 			cli.ExitIfNotFoundError(errMsg, err)
 			cli.ExitWithError(errMsg, err)
@@ -172,8 +170,8 @@ var attributeUpdateCmd = &cobra.Command{
 	Use:   "update",
 	Short: "Update an attribute",
 	Run: func(cmd *cobra.Command, args []string) {
-		close := cli.GrpcConnect(cmd)
-		defer close()
+		h := cli.NewHandler(cmd)
+		defer h.Close()
 
 		flagHelper := cli.NewFlagHelper(cmd)
 
@@ -199,7 +197,7 @@ var attributeUpdateCmd = &cobra.Command{
 		resourceNamespace := flagHelper.GetRequiredString("resource-namespace")
 		resourceDescription := flagHelper.GetRequiredString("resource-description")
 
-		if _, err := handlers.UpdateAttribute(
+		if _, err := h.UpdateAttribute(
 			id,
 			name,
 			rule,
