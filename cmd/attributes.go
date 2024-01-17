@@ -24,7 +24,11 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 }
 
-var attrValues []string
+var (
+	attrValues           []string
+	groupBy              []string
+	resourceDependencies []string
+)
 
 var attributeGetCmd = &cobra.Command{
 	Use:   "get <id>",
@@ -50,6 +54,7 @@ var attributeGetCmd = &cobra.Command{
 		fmt.Println(
 			cli.NewTabular().
 				Rows([][]string{
+					{"Id", strconv.Itoa(int(attr.Id))},
 					{"Name", attr.Name},
 					{"Rule", attr.Rule},
 					{"Values", cli.CommaSeparated(attr.Values)},
@@ -74,16 +79,17 @@ var attributesListCmd = &cobra.Command{
 		}
 
 		t := cli.NewTable()
-		t.Headers("Namespace", "Name", "Rule", "Values")
+		t.Headers("Id", "Namespace", "Name", "Rule", "Values")
 		for _, attr := range attrs {
 			t.Row(
+				strconv.Itoa(int(attr.Id)),
 				attr.Namespace,
 				attr.Name,
 				attr.Rule,
 				cli.CommaSeparated(attr.Values),
 			)
 		}
-		fmt.Print(t.Render())
+		fmt.Println(t.Render())
 	},
 }
 
@@ -98,7 +104,7 @@ var attributesCreateCmd = &cobra.Command{
 		flagHelper := cli.NewFlagHelper(cmd)
 		name := flagHelper.GetRequiredString("name")
 		rule := flagHelper.GetRequiredString("rule")
-		values := flagHelper.GetRequiredStringSlice("values", attrValues, cli.FlagHelperStringSliceOptions{
+		values := flagHelper.GetStringSlice("values", attrValues, cli.FlagHelperStringSliceOptions{
 			Min: 1,
 		})
 		namespace := flagHelper.GetRequiredString("namespace")
@@ -163,6 +169,59 @@ var attributesDeleteCmd = &cobra.Command{
 	},
 }
 
+// Update one attribute
+var attributeUpdateCmd = &cobra.Command{
+	Use:   "update",
+	Short: "Update an attribute",
+	Run: func(cmd *cobra.Command, args []string) {
+		close := cli.GrpcConnect(cmd)
+		defer close()
+
+		flagHelper := cli.NewFlagHelper(cmd)
+
+		id := flagHelper.GetRequiredInt32("id")
+		name := flagHelper.GetRequiredString("name")
+		rule := flagHelper.GetRequiredString("rule")
+
+		values := flagHelper.GetStringSlice("values", attrValues, cli.FlagHelperStringSliceOptions{
+			Min: 1,
+		})
+
+		groupBy := flagHelper.GetStringSlice("group-by", groupBy, cli.FlagHelperStringSliceOptions{
+			Min: 0,
+		})
+
+		resourceDependencies := flagHelper.GetStringSlice("resource-dependencies", resourceDependencies, cli.FlagHelperStringSliceOptions{
+			Min: 0,
+		})
+
+		resourceId := flagHelper.GetRequiredInt32("resource-id")
+		resourceVersion := flagHelper.GetRequiredInt32("resource-version")
+		resourceName := flagHelper.GetRequiredString("resource-name")
+		resourceNamespace := flagHelper.GetRequiredString("resource-namespace")
+		resourceDescription := flagHelper.GetRequiredString("resource-description")
+
+		if _, err := handlers.UpdateAttribute(
+			id,
+			name,
+			rule,
+			values,
+			groupBy,
+			resourceId,
+			resourceVersion,
+			resourceName,
+			resourceNamespace,
+			resourceDescription,
+			resourceDependencies,
+		); err != nil {
+			cli.ExitWithError("Could not update attribute", err)
+			return
+		} else {
+			fmt.Println(cli.SuccessMessage(fmt.Sprintf("Attribute id: %d updated.", id)))
+		}
+	},
+}
+
 func init() {
 	rootCmd.AddCommand(attributesCmd)
 
@@ -176,6 +235,19 @@ func init() {
 	attributesCreateCmd.Flags().StringSliceVarP(&attrValues, "values", "v", []string{}, "Values of the attribute")
 	attributesCreateCmd.Flags().StringP("namespace", "s", "", "Namespace of the attribute")
 	attributesCreateCmd.Flags().StringP("description", "d", "", "Description of the attribute")
+
+	attributesCmd.AddCommand(attributeUpdateCmd)
+	attributeUpdateCmd.Flags().Int32P("id", "i", 0, "Id of the attribute")
+	attributeUpdateCmd.Flags().StringP("name", "n", "", "Name of the attribute")
+	attributeUpdateCmd.Flags().StringP("rule", "r", "", "Rule of the attribute")
+	attributeUpdateCmd.Flags().StringSliceVarP(&attrValues, "values", "v", []string{}, "Values of the attribute")
+	attributeUpdateCmd.Flags().StringSliceVarP(&groupBy, "group-by", "g", []string{}, "GroupBy of the attribute")
+	attributeUpdateCmd.Flags().StringSliceVarP(&resourceDependencies, "resource-dependencies", "d", []string{}, "ResourceDependencies of the attribute definition descriptor")
+	attributeUpdateCmd.Flags().Int32P("resource-id", "I", 0, "ResourceId of the attribute definition descriptor")
+	attributeUpdateCmd.Flags().Int32P("resource-version", "V", 0, "ResourceVersion of the attribute definition descriptor")
+	attributeUpdateCmd.Flags().StringP("resource-name", "N", "", "ResourceName of the attribute definition descriptor")
+	attributeUpdateCmd.Flags().StringP("resource-namespace", "S", "", "ResourceNamespace of the attribute definition descriptor")
+	attributeUpdateCmd.Flags().StringP("resource-description", "D", "", "ResourceDescription of the attribute definition descriptor")
 
 	attributesCmd.AddCommand(attributesDeleteCmd)
 }
