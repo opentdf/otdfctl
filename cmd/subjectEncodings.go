@@ -27,32 +27,29 @@ var subjectMappingsCreateCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Create an Access Control Subject Mapping",
 	Run: func(cmd *cobra.Command, args []string) {
-		var (
-			attrRefLabels map[string]string
-		)
-		close := cli.GrpcConnect(cmd)
-		defer close()
+		var attrRefLabels map[string]string
+		h := cli.NewHandler(cmd)
+		defer h.Close()
 
-		h := cli.NewFlagHelper(cmd)
+		flagHelper := cli.NewFlagHelper(cmd)
 
-		
-		name := h.GetRequiredString("name")
-		description := h.GetOptionalString("description")
-		resourceDeps := h.GetStringSlice("resource-dependencies", resourceDependencies, cli.FlagHelperListOptions{Min: 0})
+		name := flagHelper.GetRequiredString("name")
+		description := flagHelper.GetOptionalString("description")
+		resourceDeps := flagHelper.GetStringSlice("resource-dependencies", resourceDependencies, cli.FlagHelperListOptions{Min: 0})
 
-		operator := h.GetRequiredString("operator")
-		subjectAttr := h.GetRequiredString("subject-attribute")
-		subjectValues := h.GetStringSlice("subject-values", subjectValues, cli.FlagHelperListOptions{Min: 1})
+		operator := flagHelper.GetRequiredString("operator")
+		subjectAttr := flagHelper.GetRequiredString("subject-attribute")
+		subjectValues := flagHelper.GetStringSlice("subject-values", subjectValues, cli.FlagHelperListOptions{Min: 1})
 
-		attrRefName := h.GetOptionalString("attribute-ref-name")
+		attrRefName := flagHelper.GetOptionalString("attribute-ref-name")
 		if attrRefName == "" {
 			if len(attrValueLabels) == 0 { // optional, we'll ignore for now
 				cli.ExitWithError("Either attribute-ref-name or attribute-ref-labels must be specified", nil)
 			}
-			attrRefLabels = h.GetKeyValuesMap("attribute-ref-labels", attrValueLabels, cli.FlagHelperListOptions{Min: 1})
+			attrRefLabels = flagHelper.GetKeyValuesMap("attribute-ref-labels", attrValueLabels, cli.FlagHelperListOptions{Min: 1})
 		}
 
-		if err := handlers.CreateSubjectMapping(
+		if err := h.CreateSubjectMapping(
 			handlers.SubjectMapping{
 				Name:          name,
 				Operator:      operator,
@@ -91,10 +88,10 @@ var subjectMappingsGetCmd = &cobra.Command{
 			cli.ExitWithError("Invalid ID", err)
 		}
 
-		close := cli.GrpcConnect(cmd)
-		defer close()
+		h := cli.NewHandler(cmd)
+		defer h.Close()
 
-		mapping, err := handlers.GetSubjectMapping(id)
+		mapping, err := h.GetSubjectMapping(id)
 		if err != nil {
 			errMsg := fmt.Sprintf("Could not find attribute (%d)", id)
 			cli.ExitIfNotFoundError(errMsg, err)
@@ -119,25 +116,25 @@ var subjectMappingsListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "list Access Control Subject Mappings",
 	Run: func(cmd *cobra.Command, args []string) {
-		close := cli.GrpcConnect(cmd)
-		defer close()
+		h := cli.NewHandler(cmd)
+		defer h.Close()
 
 		var (
 			selectorName   string
 			selectorLabels map[string]string
 		)
 
-		h := cli.NewFlagHelper(cmd)
+		flagHelper := cli.NewFlagHelper(cmd)
 
-		selectorName = h.GetOptionalString("resource-selector-name")
+		selectorName = flagHelper.GetOptionalString("resource-selector-name")
 		if selectorName == "" {
 			if len(resourceSelectorLabels) == 0 {
 				cli.ExitWithError("Either resource-selector-name or resource-selector-labels must be specified", nil)
 			}
-			selectorLabels = h.GetKeyValuesMap("resource-selector-labels", resourceSelectorLabels, cli.FlagHelperListOptions{Min: 1})
+			selectorLabels = flagHelper.GetKeyValuesMap("resource-selector-labels", resourceSelectorLabels, cli.FlagHelperListOptions{Min: 1})
 		}
 
-		mappings, err := handlers.ListSubjectMappings(selectorName, selectorLabels)
+		mappings, err := h.ListSubjectMappings(selectorName, selectorLabels)
 		if err != nil {
 			cli.ExitWithError("Could not list subject mappings", err)
 		}
@@ -167,10 +164,10 @@ var subjectMappingsDeleteCmd = &cobra.Command{
 			cli.ExitWithError("Invalid ID", err)
 		}
 
-		close := cli.GrpcConnect(cmd)
-		defer close()
+		h := cli.NewHandler(cmd)
+		defer h.Close()
 
-		mapping, err := handlers.GetSubjectMapping(id)
+		mapping, err := h.GetSubjectMapping(id)
 		if err != nil {
 			errMsg := fmt.Sprintf("Could not find subject mapping (%d)", id)
 			cli.ExitIfNotFoundError(errMsg, err)
@@ -179,7 +176,7 @@ var subjectMappingsDeleteCmd = &cobra.Command{
 
 		cli.ConfirmDelete("subject mapping", mapping.Name)
 
-		if err := handlers.DeleteSubjectMapping(id); err != nil {
+		if err := h.DeleteSubjectMapping(id); err != nil {
 			errMsg := fmt.Sprintf("Could not delete subject mapping (%d)", id)
 			cli.ExitIfNotFoundError(errMsg, err)
 			cli.ExitWithError(errMsg, err)

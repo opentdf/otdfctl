@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/charmbracelet/huh"
-	attributesv1 "github.com/opentdf/opentdf-v2-poc/gen/attributes/v1"
+	attributes "github.com/opentdf/opentdf-v2-poc/gen/attributes/v1"
 )
 
 type AttributeDefinition struct {
@@ -13,7 +13,7 @@ type AttributeDefinition struct {
 	Description string
 	Labels      map[string]string
 	Type        string
-	Rule        attributesv1.AttributeDefinition_AttributeRuleType
+	Rule        attributes.AttributeDefinition_AttributeRuleType
 	Values      []string
 }
 
@@ -40,13 +40,13 @@ func AddAttribute() (AttributeDefinition, error) {
 				Value(&attr.Description),
 
 			// Select Rule
-			huh.NewSelect[attributesv1.AttributeDefinition_AttributeRuleType]().
+			huh.NewSelect[attributes.AttributeDefinition_AttributeRuleType]().
 				Title("Rule").
 				Options(
-					huh.NewOption("All Of", attributesv1.AttributeDefinition_ATTRIBUTE_RULE_TYPE_ALL_OF),
-					huh.NewOption("Any Of", attributesv1.AttributeDefinition_ATTRIBUTE_RULE_TYPE_ANY_OF),
-					huh.NewOption("Hierarchical", attributesv1.AttributeDefinition_ATTRIBUTE_RULE_TYPE_HIERARCHICAL),
-					huh.NewOption("Unspecified", attributesv1.AttributeDefinition_ATTRIBUTE_RULE_TYPE_UNSPECIFIED),
+					huh.NewOption("All Of", attributes.AttributeDefinition_ATTRIBUTE_RULE_TYPE_ALL_OF),
+					huh.NewOption("Any Of", attributes.AttributeDefinition_ATTRIBUTE_RULE_TYPE_ANY_OF),
+					huh.NewOption("Hierarchical", attributes.AttributeDefinition_ATTRIBUTE_RULE_TYPE_HIERARCHICAL),
+					huh.NewOption("Unspecified", attributes.AttributeDefinition_ATTRIBUTE_RULE_TYPE_UNSPECIFIED),
 				).
 				Value(&attr.Rule),
 		),
