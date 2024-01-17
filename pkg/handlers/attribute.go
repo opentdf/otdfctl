@@ -18,6 +18,7 @@ const (
 )
 
 type Attribute struct {
+	Id          int32
 	Name        string
 	Rule        string
 	Values      []string
@@ -41,12 +42,13 @@ func GetAttribute(id int) (Attribute, error) {
 	}
 
 	return Attribute{
+		Id:          resp.Definition.Descriptor_.Id,
 		Name:        resp.Definition.Name,
 		Rule:        GetAttributeRuleFromAttributeType(resp.Definition.Rule),
 		Values:      values,
 		Namespace:   resp.Definition.Descriptor_.Namespace,
 		Description: resp.Definition.Descriptor_.Description,
-		Fqn:         GetAttributeFqn(resp.Definition),
+		Fqn:         GetAttributeFqn(resp.Definition.Descriptor_.Namespace, resp.Definition.Name),
 	}, nil
 }
 
@@ -64,6 +66,7 @@ func ListAttributes() ([]Attribute, error) {
 			values = append(values, v.Value)
 		}
 		attrs = append(attrs, Attribute{
+			Id:          attr.Descriptor_.Id,
 			Name:        attr.Name,
 			Rule:        GetAttributeRuleFromAttributeType(attr.Rule),
 			Values:      values,
@@ -110,6 +113,62 @@ func CreateAttribute(name string, rule string, values []string, namespace string
 	}, nil
 }
 
+func UpdateAttribute(
+	id int32,
+	name string,
+	rule string,
+	values []string,
+	groupBy []string,
+	resourceId int32,
+	resourceVersion int32,
+	resourceName string,
+	resourceNamespace string,
+	resourceDescription string,
+	resourceDependencies []string,
+) (*attributesv1.UpdateAttributeResponse, error) {
+	var attrValues []*attributesv1.AttributeDefinitionValue
+	for _, v := range values {
+		if v != "" {
+			attrValues = append(attrValues, &attributesv1.AttributeDefinitionValue{Value: v})
+		}
+	}
+
+	var attrGroupBy []*attributesv1.AttributeDefinitionValue
+	for _, v := range groupBy {
+		if v != "" {
+			attrGroupBy = append(attrGroupBy, &attributesv1.AttributeDefinitionValue{Value: v})
+		}
+	}
+
+	var dependencies []*commonv1.ResourceDependency
+	for _, v := range resourceDependencies {
+		if v != "" {
+			dependencies = append(dependencies, &commonv1.ResourceDependency{Namespace: v})
+		}
+	}
+
+	client := attributesv1.NewAttributesServiceClient(grpc.Conn)
+	return client.UpdateAttribute(grpc.Context, &attributesv1.UpdateAttributeRequest{
+		Id: id,
+		Definition: &attributesv1.AttributeDefinition{
+			Name:    name,
+			Rule:    GetAttributeRuleFromReadableString(rule),
+			Values:  attrValues,
+			GroupBy: attrGroupBy,
+			Descriptor_: &commonv1.ResourceDescriptor{
+				Type:         commonv1.PolicyResourceType_POLICY_RESOURCE_TYPE_ATTRIBUTE_DEFINITION,
+				Id:           resourceId,
+				Version:      resourceVersion,
+				Name:         resourceName,
+				Namespace:    resourceNamespace,
+				Fqn:          GetAttributeFqn(resourceNamespace, resourceName),
+				Description:  resourceDescription,
+				Dependencies: dependencies,
+			},
+		},
+	})
+}
+
 func DeleteAttribute(id int) error {
 	client := attributesv1.NewAttributesServiceClient(grpc.Conn)
 
@@ -120,8 +179,8 @@ func DeleteAttribute(id int) error {
 	return err
 }
 
-func GetAttributeFqn(resp *attributesv1.AttributeDefinition) string {
-	return fmt.Sprintf("https://%s/attr/%s", resp.Descriptor_.Namespace, resp.Name)
+func GetAttributeFqn(namespace string, name string) string {
+	return fmt.Sprintf("https://%s/attr/%s", namespace, name)
 }
 
 func GetAttributeRuleOptions() []string {
