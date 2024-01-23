@@ -73,10 +73,6 @@ github.com/olekukonko/tablewriter v0.0.5 h1:P2Ga83D34wi1o9J6Wh1mRuqd4mF/x/lgBS7N
 github.com/olekukonko/tablewriter v0.0.5/go.mod h1:hPp6KlRPjbx+hW8ykQs1w3UBbZlj6HuIJcUGPhkA7kY=
 github.com/opentdf/opentdf-v2-poc v0.0.0-20240103192012-f7b86a6a5af7 h1:HNjw5eh96WrW2n/3synRy1HLWXq3B74vexlCvm0S4FI=
 github.com/opentdf/opentdf-v2-poc v0.0.0-20240103192012-f7b86a6a5af7/go.mod h1:LLpGcqmnvPAhOuLnaP2Tsej2pKOllsoM1Ar80dqJuqk=
-github.com/opentdf/opentdf-v2-poc/sdk v0.0.0-20240117134358-3d2a619ec033 h1:ayfatFfvfxZMoquVHqWMSG9E8NgoH0LXlPWguthQd4Q=
-github.com/opentdf/opentdf-v2-poc/sdk v0.0.0-20240117134358-3d2a619ec033/go.mod h1:jjvtfVYKaaQTbovM40KRC5aVmgGmkxgacxgtEd8W7zM=
-github.com/opentdf/opentdf-v2-poc/sdk v0.0.0-20240117153907-4c2ad4cfa630 h1:U2/7fQ5OHFcHeJ/FApCOJJCCVD6SbHcbN9qvL4nZXOw=
-github.com/opentdf/opentdf-v2-poc/sdk v0.0.0-20240117153907-4c2ad4cfa630/go.mod h1:jjvtfVYKaaQTbovM40KRC5aVmgGmkxgacxgtEd8W7zM=
 github.com/opentdf/opentdf-v2-poc/sdk v0.0.0-20240117221500-8dfca6a159a8 h1:gzCWVrbeAF585gCWC5WhacHcjoTeYh+e0XaslIgbUFk=
 github.com/opentdf/opentdf-v2-poc/sdk v0.0.0-20240117221500-8dfca6a159a8/go.mod h1:jjvtfVYKaaQTbovM40KRC5aVmgGmkxgacxgtEd8W7zM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
