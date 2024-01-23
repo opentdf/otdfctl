@@ -4,6 +4,7 @@ import (
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/opentdf/tructl/tui/constants"
+	"github.com/charmbracelet/lipgloss"
 )
 
 type AttributeModel struct {
@@ -12,6 +13,7 @@ type AttributeModel struct {
 
 type AttributeItem struct {
 	id          int
+	title string
 	namespace   string
 	name        string
 	description string
@@ -22,6 +24,23 @@ type AttributeItem struct {
 func (m AttributeItem) FilterValue() string {
 	return m.name
 }
+// type AppMenuItem struct {
+// 	id          menuState
+// 	title       string
+// 	description string
+// }
+
+// func (m AppMenuItem) FilterValue() string {
+// 	return m.title
+// }
+
+// func (m AppMenuItem) Title() string {
+// 	return m.title
+// }
+
+// func (m AppMenuItem) Description() string {
+// 	return m.description
+// }
 
 func InitAttributeView() AttributeModel {
 	// TODO: fetch items from API
@@ -29,15 +48,19 @@ func InitAttributeView() AttributeModel {
 	m := AttributeModel{}
 	m.list = list.New([]list.Item{}, list.NewDefaultDelegate(), constants.WindowSize.Width, constants.WindowSize.Height)
 	m.list.Title = "Attributes"
+	// m.list.SetItems([]list.Item{
+	// 	AttributeItem{
+	// 		id:          1,
+	// 		namespace:   "demo.com",
+	// 		name:        "relto",
+	// 		title: 	 "Relationship To",
+	// 		rule:        "heirarchical",
+	// 		description: "The relto attribute is used to describe the relationship of the resource to the country of origin.",
+	// 		values:      []string{"USA", "GBR"},
+	// 	},
+	// })
 	m.list.SetItems([]list.Item{
-		AttributeItem{
-			id:          1,
-			namespace:   "demo.com",
-			name:        "relto",
-			rule:        "heirarchical",
-			description: "The relto attribute is used to describe the relationship of the resource to the country of origin.",
-			values:      []string{"USA", "GBR"},
-		},
+		AppMenuItem{title: "relto", description: "The relto attribute is used to describe the relationship of the resource to the country of origin.", id: 1},
 	})
 	return m
 }
@@ -63,13 +86,17 @@ func (m AttributeModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// show the add attribute form
 			// InitAttributeCreateView()
 			return m, nil
+		// case "enter":
+		// 	return m, View()
 		}
 	}
 	return m, nil
 }
 
 func (m AttributeModel) View() string {
-	return m.list.View()
+	// return m.list.View()
+	lipgloss.NewStyle().Padding(1, 2, 1, 2)
+	return lipgloss.JoinVertical(lipgloss.Top, m.list.View())
 }
 
 // func AddAttribute() {

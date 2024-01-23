@@ -5,6 +5,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/opentdf/tructl/tui/constants"
+	"log"
 )
 
 const (
@@ -68,18 +69,28 @@ func (m AppMenu) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.list.SetSize(msg.Width, msg.Height)
 		return m, nil
 	case tea.KeyMsg:
+		log.Println(msg.String())
 		switch msg.String() {
 		case "ctrl+c", "q":
 			return m, tea.Quit
 		case "ctrl+d":
 			return m, nil
 		case "enter":
+			log.Println("standard logger")
 			switch m.list.SelectedItem().(AppMenuItem).id {
 			case attributeMenu:
 				attributeView := InitAttributeView()
 				am, cmd := attributeView.Update(constants.WindowSize)
 				m.view = am
-				return m, cmd
+				// m.view.list.SetItems([]list.Item{
+				// 	AppMenuItem{title: "Namespaces", description: "Manage namespaces", id: namespaceMenu},
+				// 	AppMenuItem{title: "Attributes", description: "Manage attributes", id: attributeMenu},
+				// 	AppMenuItem{title: "Entitlements", description: "Manage entitlements", id: entitlementMenu},
+				// 	AppMenuItem{title: "Resource Encodings", description: "Manage resource encodings", id: resourceEncodingMenu},
+				// 	AppMenuItem{title: "Subject Encodings", description: "Manage subject encodings", id: subjectEncodingMenu},
+				// })
+				// m.list = attributeView.list
+				return am, cmd
 			}
 		}
 	}
