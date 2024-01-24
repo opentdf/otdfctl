@@ -5,7 +5,6 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/opentdf/tructl/tui/constants"
-	"log"
 )
 
 const (
@@ -69,14 +68,12 @@ func (m AppMenu) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.list.SetSize(msg.Width, msg.Height)
 		return m, nil
 	case tea.KeyMsg:
-		log.Println(msg.String())
 		switch msg.String() {
 		case "ctrl+c", "q":
 			return m, tea.Quit
 		case "ctrl+d":
 			return m, nil
 		case "enter":
-			log.Println("standard logger")
 			switch m.list.SelectedItem().(AppMenuItem).id {
 			case attributeMenu:
 				attributeView := InitAttributeView()

@@ -73,8 +73,9 @@ func (m AttributeModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// show the add attribute form
 			// InitAttributeCreateView()
 			return m, nil
-		// case "enter":
-		// 	return m, View()
+		case "enter":
+			return m, tea.Quit
+			// return m, m.View()
 		}
 	}
 	return m, nil
