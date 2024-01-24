@@ -24,6 +24,17 @@ type AttributeItem struct {
 func (m AttributeItem) FilterValue() string {
 	return m.name
 }
+// func (m AttributeItem) FilterValue() string {
+// 	return m.title
+// }
+
+func (m AttributeItem) Title() string {
+	return m.name
+}
+
+func (m AttributeItem) Description() string {
+	return m.description
+}
 // type AppMenuItem struct {
 // 	id          menuState
 // 	title       string
@@ -48,20 +59,29 @@ func InitAttributeView() AttributeModel {
 	m := AttributeModel{}
 	m.list = list.New([]list.Item{}, list.NewDefaultDelegate(), constants.WindowSize.Width, constants.WindowSize.Height)
 	m.list.Title = "Attributes"
-	// m.list.SetItems([]list.Item{
-	// 	AttributeItem{
-	// 		id:          1,
-	// 		namespace:   "demo.com",
-	// 		name:        "relto",
-	// 		title: 	 "Relationship To",
-	// 		rule:        "heirarchical",
-	// 		description: "The relto attribute is used to describe the relationship of the resource to the country of origin.",
-	// 		values:      []string{"USA", "GBR"},
-	// 	},
-	// })
 	m.list.SetItems([]list.Item{
-		AppMenuItem{title: "relto", description: "The relto attribute is used to describe the relationship of the resource to the country of origin.", id: 1},
+		AttributeItem{
+			id:          1,
+			namespace:   "demo.com",
+			name:        "relto",
+			// title: 	 "Relationship To",
+			rule:        "heirarchical",
+			description: "The relto attribute is used to describe the relationship of the resource to the country of origin.",
+			values:      []string{"USA", "GBR"},
+		},
+		// AttributeItem{
+		// 	id:          1,
+		// 	namespace:   "demo.com",
+		// 	name:        "relto",
+		// 	title: 	 "Relationship To",
+		// 	rule:        "heirarchical",
+		// 	description: "The relto attribute is used to describe the relationship of the resource to the country of origin.",
+		// 	values:      []string{"USA", "GBR"},
+		// },
 	})
+	// m.list.SetItems([]list.Item{
+	// 	AppMenuItem{title: "relto", description: "The relto attribute is used to describe the relationship of the resource to the country of origin.", id: 1},
+	// })
 	return m
 }
 
