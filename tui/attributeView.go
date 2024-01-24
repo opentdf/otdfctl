@@ -13,7 +13,6 @@ type AttributeModel struct {
 
 type AttributeItem struct {
 	id          int
-	title string
 	namespace   string
 	name        string
 	description string
@@ -24,9 +23,6 @@ type AttributeItem struct {
 func (m AttributeItem) FilterValue() string {
 	return m.name
 }
-// func (m AttributeItem) FilterValue() string {
-// 	return m.title
-// }
 
 func (m AttributeItem) Title() string {
 	return m.name
@@ -35,23 +31,6 @@ func (m AttributeItem) Title() string {
 func (m AttributeItem) Description() string {
 	return m.description
 }
-// type AppMenuItem struct {
-// 	id          menuState
-// 	title       string
-// 	description string
-// }
-
-// func (m AppMenuItem) FilterValue() string {
-// 	return m.title
-// }
-
-// func (m AppMenuItem) Title() string {
-// 	return m.title
-// }
-
-// func (m AppMenuItem) Description() string {
-// 	return m.description
-// }
 
 func InitAttributeView() AttributeModel {
 	// TODO: fetch items from API
@@ -64,24 +43,12 @@ func InitAttributeView() AttributeModel {
 			id:          1,
 			namespace:   "demo.com",
 			name:        "relto",
-			// title: 	 "Relationship To",
 			rule:        "heirarchical",
 			description: "The relto attribute is used to describe the relationship of the resource to the country of origin.",
 			values:      []string{"USA", "GBR"},
 		},
-		// AttributeItem{
-		// 	id:          1,
-		// 	namespace:   "demo.com",
-		// 	name:        "relto",
-		// 	title: 	 "Relationship To",
-		// 	rule:        "heirarchical",
-		// 	description: "The relto attribute is used to describe the relationship of the resource to the country of origin.",
-		// 	values:      []string{"USA", "GBR"},
-		// },
 	})
-	// m.list.SetItems([]list.Item{
-	// 	AppMenuItem{title: "relto", description: "The relto attribute is used to describe the relationship of the resource to the country of origin.", id: 1},
-	// })
+
 	return m
 }
 

@@ -82,14 +82,6 @@ func (m AppMenu) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				attributeView := InitAttributeView()
 				am, cmd := attributeView.Update(constants.WindowSize)
 				m.view = am
-				// m.view.list.SetItems([]list.Item{
-				// 	AppMenuItem{title: "Namespaces", description: "Manage namespaces", id: namespaceMenu},
-				// 	AppMenuItem{title: "Attributes", description: "Manage attributes", id: attributeMenu},
-				// 	AppMenuItem{title: "Entitlements", description: "Manage entitlements", id: entitlementMenu},
-				// 	AppMenuItem{title: "Resource Encodings", description: "Manage resource encodings", id: resourceEncodingMenu},
-				// 	AppMenuItem{title: "Subject Encodings", description: "Manage subject encodings", id: subjectEncodingMenu},
-				// })
-				// m.list = attributeView.list
 				return am, cmd
 			}
 		}
