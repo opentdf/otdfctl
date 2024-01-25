@@ -1,113 +1,124 @@
 package tui
 
 import (
-	"github.com/charmbracelet/bubbles/list"
+	"fmt"
+	"strings"
+
+	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/opentdf/tructl/tui/constants"
 	"github.com/charmbracelet/lipgloss"
 )
 
-type AttributeModel struct {
-	list list.Model
+// You generally won't need this unless you're processing stuff with
+// complicated ANSI escape sequences. Turn it on if you notice flickering.
+//
+// Also keep in mind that high performance rendering only works for programs
+// that use the full size of the terminal. We're enabling that below with
+// tea.EnterAltScreen().
+const useHighPerformanceRenderer = false
+
+var (
+	titleStyle = func() lipgloss.Style {
+		b := lipgloss.RoundedBorder()
+		b.Right = "├"
+		return lipgloss.NewStyle().BorderStyle(b).Padding(0, 1)
+	}()
+
+	infoStyle = func() lipgloss.Style {
+		b := lipgloss.RoundedBorder()
+		b.Left = "┤"
+		return titleStyle.Copy().BorderStyle(b)
+	}()
+)
+
+type AttributeView struct {
+	content  string
+	title    string
+	ready    bool
+	viewport viewport.Model
 }
 
-type AttributeItem struct {
-	id          int
-	namespace   string
-	name        string
-	description string
-	rule        string
-	values      []string
-}
-
-func (m AttributeItem) FilterValue() string {
-	return m.name
-}
-
-func (m AttributeItem) Title() string {
-	return m.name
-}
-
-func (m AttributeItem) Description() string {
-	return m.description
-}
-
-func InitAttributeView() AttributeModel {
-	// TODO: fetch items from API
-
-	m := AttributeModel{}
-	m.list = list.New([]list.Item{}, list.NewDefaultDelegate(), constants.WindowSize.Width, constants.WindowSize.Height)
-	m.list.Title = "Attributes"
-	m.list.SetItems([]list.Item{
-		AttributeItem{
-			id:          1,
-			namespace:   "demo.com",
-			name:        "relto",
-			rule:        "heirarchical",
-			description: "The relto attribute is used to describe the relationship of the resource to the country of origin.",
-			values:      []string{"USA", "GBR"},
-		},
-	})
-
-	return m
-}
-
-func (m AttributeModel) Init() tea.Cmd {
+func (m AttributeView) Init() tea.Cmd {
 	return nil
 }
 
-func (m AttributeModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m AttributeView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var (
+		cmd  tea.Cmd
+		cmds []tea.Cmd
+	)
 
 	switch msg := msg.(type) {
-	case tea.WindowSizeMsg:
-		constants.WindowSize = msg
-		m.list.SetSize(msg.Width, msg.Height)
-		return m, nil
 	case tea.KeyMsg:
-		switch msg.String() {
-		case "ctrl+c", "q":
+		if k := msg.String(); k == "ctrl+c" || k == "q" || k == "esc" {
 			return m, tea.Quit
-		case "ctrl+[":
-			return InitAppMenu()
-		case "c":
-			// show the add attribute form
-			// InitAttributeCreateView()
-			return m, nil
-		case "enter":
-			return m, tea.Quit
-			// return m, m.View()
+		}
+
+	case tea.WindowSizeMsg:
+		headerHeight := lipgloss.Height(m.headerView())
+		footerHeight := lipgloss.Height(m.footerView())
+		verticalMarginHeight := headerHeight + footerHeight
+
+		if !m.ready {
+			// Since this program is using the full size of the viewport we
+			// need to wait until we've received the window dimensions before
+			// we can initialize the viewport. The initial dimensions come in
+			// quickly, though asynchronously, which is why we wait for them
+			// here.
+			m.viewport = viewport.New(msg.Width, msg.Height-verticalMarginHeight)
+			m.viewport.YPosition = headerHeight
+			m.viewport.HighPerformanceRendering = useHighPerformanceRenderer
+			m.viewport.SetContent(m.content)
+			m.ready = true
+
+			// This is only necessary for high performance rendering, which in
+			// most cases you won't need.
+			//
+			// Render the viewport one line below the header.
+			m.viewport.YPosition = headerHeight + 1
+		} else {
+			m.viewport.Width = msg.Width
+			m.viewport.Height = msg.Height - verticalMarginHeight
+		}
+
+		if useHighPerformanceRenderer {
+			// Render (or re-render) the whole viewport. Necessary both to
+			// initialize the viewport and when the window is resized.
+			//
+			// This is needed for high-performance rendering only.
+			cmds = append(cmds, viewport.Sync(m.viewport))
 		}
 	}
-	return m, nil
+
+	// Handle keyboard and mouse events in the viewport
+	m.viewport, cmd = m.viewport.Update(msg)
+	cmds = append(cmds, cmd)
+
+	return m, tea.Batch(cmds...)
 }
 
-func (m AttributeModel) View() string {
-	// return m.list.View()
-	lipgloss.NewStyle().Padding(1, 2, 1, 2)
-	return lipgloss.JoinVertical(lipgloss.Top, m.list.View())
+func (m AttributeView) View() string {
+	if !m.ready {
+		return "\n  Initializing..."
+	}
+	return fmt.Sprintf("%s\n%s\n%s", m.headerView(), m.viewport.View(), m.footerView())
 }
 
-// func AddAttribute() {
-// 	var namespace string
+func (m AttributeView) headerView() string {
+	title := titleStyle.Render(m.title)
+	line := strings.Repeat("─", max(0, m.viewport.Width-lipgloss.Width(title)))
+	return lipgloss.JoinHorizontal(lipgloss.Center, title, line)
+}
 
-// 	form := huh.NewForm(
-// 		huh.NewGroup(
-// 			huh.NewSelect[string]().
-// 				Title("Namespace").
-// 				Options(
-// 					huh.NewOption("demo.com", "demo.com"),
-// 					huh.NewOption("demo.net", "demo.net"),
-// 				).
-// 				Validate(func(str string) error {
-// 					// Check if namespace exists
-// 					fmt.Println(str)
-// 					return nil
-// 				}).
-// 				Value(&namespace),
-// 		),
-// 	)
+func (m AttributeView) footerView() string {
+	info := infoStyle.Render(fmt.Sprintf("%3.f%%", m.viewport.ScrollPercent()*100))
+	line := strings.Repeat("─", max(0, m.viewport.Width-lipgloss.Width(info)))
+	return lipgloss.JoinHorizontal(lipgloss.Center, line, info)
+}
 
-// 	if err := form.Run(); err != nil {
-// 		return
-// 	}
-// }
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
