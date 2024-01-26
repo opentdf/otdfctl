@@ -80,29 +80,6 @@ func SetupViewport(m AttributeView, msg tea.WindowSizeMsg) (AttributeView, []tea
 	return m, cmds
 }
 
-func InitAttributeView(content string) (AttributeView, tea.Cmd) {
-	m := AttributeView{}
-	m.title = "Attribute"
-	m.content = content
-	m.width = constants.WindowSize.Width
-	m.height = constants.WindowSize.Height
-	m.viewport = viewport.New(m.width, m.height)
-	m.viewport.SetContent(m.content)
-	m.viewport.HighPerformanceRendering = useHighPerformanceRenderer
-	msg := tea.WindowSizeMsg{Width: m.width, Height: m.height}
-	var (
-		cmd  tea.Cmd
-		cmds []tea.Cmd
-	)
-	m, cmds = SetupViewport(m, msg)
-	// Handle keyboard and mouse events in the viewport
-	m.viewport, cmd = m.viewport.Update(msg)
-	cmds = append(cmds, cmd)
-	tea.Batch(cmds...)
-
-	return m, tea.Batch(cmds...)
-}
-
 func (m AttributeView) Init() tea.Cmd {
 	return nil
 }
@@ -115,17 +92,16 @@ func (m AttributeView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		// if k := msg.String(); k == "ctrl+c" || k == "q" || k == "esc" {
-		// 	return m, tea.Quit
-		// }
 		switch msg.String() {
 		case "ctrl+c", "q":
 			return m, tea.Quit
 		case "backspace":
-			m.viewport.SetContent("")
+			// m.viewport.SetContent("")
+			// m.Update(tea.WindowSizeMsg{Width: constants.WindowSize.Width, Height: constants.WindowSize.Height})
+			// tea.ClearScreen()
 			attributeList := InitAttributeList()
-			return attributeList.Update(constants.WindowSize)
-			// return InitAttributeList(), nil
+			am, cmd := attributeList.Update(tea.WindowSizeMsg{Width: constants.WindowSize.Width, Height: constants.WindowSize.Height})
+			return am, tea.Sequence(tea.ClearScreen, cmd)
 		}
 
 	case tea.WindowSizeMsg:
