@@ -76,8 +76,8 @@ func (m AppMenu) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "enter":
 			switch m.list.SelectedItem().(AppMenuItem).id {
 			case attributeMenu:
-				attributeView := InitAttributeView()
-				am, cmd := attributeView.Update(constants.WindowSize)
+				attributeList := InitAttributeList()
+				am, cmd := attributeList.Update(constants.WindowSize)
 				m.view = am
 				return am, cmd
 			}

@@ -7,6 +7,7 @@ import (
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/opentdf/tructl/tui/constants"
 )
 
 // You generally won't need this unless you're processing stuff with
@@ -15,7 +16,7 @@ import (
 // Also keep in mind that high performance rendering only works for programs
 // that use the full size of the terminal. We're enabling that below with
 // tea.EnterAltScreen().
-const useHighPerformanceRenderer = false
+const useHighPerformanceRenderer = true
 
 var (
 	titleStyle = func() lipgloss.Style {
@@ -32,13 +33,130 @@ var (
 )
 
 type AttributeView struct {
-	content  string
-	title    string
-	ready    bool
-	viewport viewport.Model
+	width, height int
+	content       string
+	title         string
+	ready         bool
+	viewport      viewport.Model
+}
+
+func SetupViewport(m AttributeView, msg tea.WindowSizeMsg) []tea.Cmd {
+	var (
+		cmds []tea.Cmd
+	)
+	headerHeight := lipgloss.Height(m.headerView())
+	footerHeight := lipgloss.Height(m.footerView())
+	verticalMarginHeight := headerHeight + footerHeight
+
+	if !m.ready {
+		// Since this program is using the full size of the viewport we
+		// need to wait until we've received the window dimensions before
+		// we can initialize the viewport. The initial dimensions come in
+		// quickly, though asynchronously, which is why we wait for them
+		// here.
+		m.viewport = viewport.New(msg.Width, msg.Height-verticalMarginHeight)
+		m.viewport.YPosition = headerHeight
+		m.viewport.HighPerformanceRendering = useHighPerformanceRenderer
+		m.viewport.SetContent(m.content)
+		m.ready = true
+
+		// This is only necessary for high performance rendering, which in
+		// most cases you won't need.
+		//
+		// Render the viewport one line below the header.
+		m.viewport.YPosition = headerHeight + 1
+	} else {
+		m.viewport.Width = msg.Width
+		m.viewport.Height = msg.Height - verticalMarginHeight
+	}
+
+	if useHighPerformanceRenderer {
+		// Render (or re-render) the whole viewport. Necessary both to
+		// initialize the viewport and when the window is resized.
+		//
+		// This is needed for high-performance rendering only.
+		cmds = append(cmds, viewport.Sync(m.viewport))
+	}
+	return cmds
+}
+
+func InitAttributeView(content string) (AttributeView, tea.Cmd) {
+	// m := AttributeView{}
+	// m.title = "Attribute"
+	// m.content = "Hello, world!"
+	// m.width = constants.WindowSize.Width
+	// m.height = constants.WindowSize.Height
+	// m.ready = true
+	// m.viewport = viewport.New(m.width, m.height)
+	// m.viewport.SetContent(m.content)
+	// m.Update(tea.WindowSizeMsg{Width: m.width, Height: m.height})
+	// // m.viewport.HighPerformanceRendering = useHighPerformanceRenderer
+	m := AttributeView{}
+	m.title = "Attribute"
+	m.content = content
+	m.width = constants.WindowSize.Width
+	m.height = constants.WindowSize.Height
+	// m.ready = true
+	m.viewport = viewport.New(m.width, m.height)
+	m.viewport.SetContent(m.content)
+	m.viewport.HighPerformanceRendering = useHighPerformanceRenderer
+	msg := tea.WindowSizeMsg{Width: m.width, Height: m.height}
+	// m.Update(msg)
+
+	headerHeight := lipgloss.Height(m.headerView())
+	footerHeight := lipgloss.Height(m.footerView())
+	verticalMarginHeight := headerHeight + footerHeight
+	var (
+		cmd  tea.Cmd
+		cmds []tea.Cmd
+	)
+	if !m.ready {
+		// Since this program is using the full size of the viewport we
+		// need to wait until we've received the window dimensions before
+		// we can initialize the viewport. The initial dimensions come in
+		// quickly, though asynchronously, which is why we wait for them
+		// here.
+		m.viewport = viewport.New(m.width, m.height-verticalMarginHeight)
+		m.viewport.YPosition = headerHeight
+		m.viewport.HighPerformanceRendering = useHighPerformanceRenderer
+		m.viewport.SetContent(m.content)
+		m.ready = true
+
+		// This is only necessary for high performance rendering, which in
+		// most cases you won't need.
+		//
+		// Render the viewport one line below the header.
+		m.viewport.YPosition = headerHeight + 1
+	} else {
+		m.viewport.Width = m.width
+		m.viewport.Height = m.height - verticalMarginHeight
+	}
+
+	if useHighPerformanceRenderer {
+		// Render (or re-render) the whole viewport. Necessary both to
+		// initialize the viewport and when the window is resized.
+		//
+		// This is needed for high-performance rendering only.
+		cmds = append(cmds, viewport.Sync(m.viewport))
+	}
+
+	// Handle keyboard and mouse events in the viewport
+	m.viewport, cmd = m.viewport.Update(msg)
+	cmds = append(cmds, cmd)
+	tea.Batch(cmds...)
+
+	return m, tea.Batch(cmds...)
 }
 
 func (m AttributeView) Init() tea.Cmd {
+	// m.width = constants.WindowSize.Width
+	// m.height = constants.WindowSize.Height
+	// m.ready = true
+	// m.viewport = viewport.New(m.width, m.height)
+	// m.viewport.SetContent(m.content)
+	// m.viewport.HighPerformanceRendering = useHighPerformanceRenderer
+	// m.Update(tea.WindowSizeMsg{Width: m.width, Height: m.height})
+	// return func() tea.Msg { return tea.WindowSizeMsg{Width: m.width, Height: m.height} }
 	return nil
 }
 
@@ -55,39 +173,7 @@ func (m AttributeView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 	case tea.WindowSizeMsg:
-		headerHeight := lipgloss.Height(m.headerView())
-		footerHeight := lipgloss.Height(m.footerView())
-		verticalMarginHeight := headerHeight + footerHeight
-
-		if !m.ready {
-			// Since this program is using the full size of the viewport we
-			// need to wait until we've received the window dimensions before
-			// we can initialize the viewport. The initial dimensions come in
-			// quickly, though asynchronously, which is why we wait for them
-			// here.
-			m.viewport = viewport.New(msg.Width, msg.Height-verticalMarginHeight)
-			m.viewport.YPosition = headerHeight
-			m.viewport.HighPerformanceRendering = useHighPerformanceRenderer
-			m.viewport.SetContent(m.content)
-			m.ready = true
-
-			// This is only necessary for high performance rendering, which in
-			// most cases you won't need.
-			//
-			// Render the viewport one line below the header.
-			m.viewport.YPosition = headerHeight + 1
-		} else {
-			m.viewport.Width = msg.Width
-			m.viewport.Height = msg.Height - verticalMarginHeight
-		}
-
-		if useHighPerformanceRenderer {
-			// Render (or re-render) the whole viewport. Necessary both to
-			// initialize the viewport and when the window is resized.
-			//
-			// This is needed for high-performance rendering only.
-			cmds = append(cmds, viewport.Sync(m.viewport))
-		}
+		cmds = SetupViewport(m, msg)
 	}
 
 	// Handle keyboard and mouse events in the viewport

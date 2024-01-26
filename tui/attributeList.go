@@ -34,7 +34,7 @@ func (m AttributeItem) Description() string {
 	return m.description
 }
 
-func InitAttributeView() AttributeList {
+func InitAttributeList() AttributeList {
 	// TODO: fetch items from API
 
 	m := AttributeList{}
@@ -77,7 +77,9 @@ func (m AttributeList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		case "enter":
 			item := m.list.Items()[0].(AttributeItem)
-			return AttributeView{title: "Attribute", content: fmt.Sprintf("Name: %s\nNamespace: %s\nRule: %s\nDescription: %s\nValues: %s", item.name, item.namespace, item.rule, item.description, item.values)}, func() tea.Msg { return nil }
+			content := fmt.Sprintf("Name: %s\nNamespace: %s\nRule: %s\nDescription: %s\nValues: %s", item.name, item.namespace, item.rule, item.description, item.values)
+			// return AttributeView{title: "Attribute", content: fmt.Sprintf("Name: %s\nNamespace: %s\nRule: %s\nDescription: %s\nValues: %s", item.name, item.namespace, item.rule, item.description, item.values)}.Init(), func() tea.Msg { return nil }
+			return InitAttributeView(content) //, func() tea.Msg { return nil }
 		}
 	}
 	return m, nil
