@@ -97,7 +97,6 @@ func (m AttributeList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "enter":
 			item := m.list.Items()[0].(AttributeItem)
 			attr_keys := []string{"Name", "Namespace", "Rule", "Description", "Values"}
-			// attr_vals := []string{item.name, item.namespace, item.rule, item.description, fmt.Sprintf("[%s]", strings.Join(item.values, ", "))}
 			content := fmt.Sprintf(
 				CreateFormat(len(attr_keys)),
 				StyleAttr(attr_keys[0]), item.name,
