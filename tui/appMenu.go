@@ -40,7 +40,7 @@ type AppMenu struct {
 	view tea.Model
 }
 
-func InitAppMenu() (tea.Model, tea.Cmd) {
+func InitAppMenu() (AppMenu, tea.Cmd) {
 	m := AppMenu{
 		view: nil,
 	}

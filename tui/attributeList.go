@@ -88,6 +88,7 @@ func (m AttributeList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case "ctrl+[", "backspace":
 			am, _ := InitAppMenu()
+			am.list.Select(1)
 			return am.Update(WindowMsg())
 		case "c":
 			// show the add attribute form
