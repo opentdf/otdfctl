@@ -3,7 +3,6 @@ package tui
 import (
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 	"github.com/opentdf/tructl/tui/constants"
 )
 
@@ -90,8 +89,5 @@ func (m AppMenu) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m AppMenu) View() string {
-	// return m.list.View()
-	// create a new view with a list view as the main view
-	lipgloss.NewStyle().Padding(1, 2, 1, 2)
-	return lipgloss.JoinVertical(lipgloss.Top, m.list.View())
+	return ViewList(m.list)
 }

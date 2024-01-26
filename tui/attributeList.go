@@ -60,11 +60,18 @@ func (m AttributeList) Init() tea.Cmd {
 	return nil
 }
 
-func styleAttr(attr string) string {
+func StyleAttr(attr string) string {
 	return lipgloss.NewStyle().
-		Bold(true).
-		Foreground(lipgloss.Color("#EE6FF8")).
+		Foreground(constants.Magenta).
 		Render(attr)
+}
+
+func CreateFormat(num int) string {
+	var format string
+	for i := 0; i < num; i++ {
+		format += "%s %s\n"
+	}
+	return format
 }
 
 func (m AttributeList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -89,17 +96,17 @@ func (m AttributeList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		case "enter":
 			item := m.list.Items()[0].(AttributeItem)
-
+			attr_keys := []string{"Name", "Namespace", "Rule", "Description", "Values"}
+			// attr_vals := []string{item.name, item.namespace, item.rule, item.description, fmt.Sprintf("[%s]", strings.Join(item.values, ", "))}
 			content := fmt.Sprintf(
-				"%s %s\n%s %s\n%s %s\n%s %s\n%s %s",
-				styleAttr("Name"), item.name,
-				styleAttr("Namespace"), item.namespace,
-				styleAttr("Rule"), item.rule,
-				styleAttr("Description"), item.description,
-				styleAttr("Values"), item.values,
+				CreateFormat(len(attr_keys)),
+				StyleAttr(attr_keys[0]), item.name,
+				StyleAttr(attr_keys[1]), item.namespace,
+				StyleAttr(attr_keys[2]), item.rule,
+				StyleAttr(attr_keys[3]), item.description,
+				StyleAttr(attr_keys[4]), item.values,
 			)
 			wrapped := wordwrap.String(content, m.width)
-			// return InitAttributeView(content)
 			am := AttributeView{}
 			am.title = "Attribute"
 			am.content = wrapped
@@ -110,9 +117,7 @@ func (m AttributeList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m AttributeList) View() string {
-	// return m.list.View()
-	lipgloss.NewStyle().Padding(1, 2, 1, 2)
-	return lipgloss.JoinVertical(lipgloss.Top, m.list.View())
+	return ViewList(m.list)
 }
 
 // func AddAttribute() {

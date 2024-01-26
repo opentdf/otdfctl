@@ -46,8 +46,8 @@ func SetupViewport(m AttributeView, msg tea.WindowSizeMsg) (AttributeView, []tea
 	var (
 		cmds []tea.Cmd
 	)
-	headerHeight := lipgloss.Height(m.headerView())
-	footerHeight := lipgloss.Height(m.footerView())
+	headerHeight := lipgloss.Height(m.CreateHeader())
+	footerHeight := lipgloss.Height(m.CreateFooter())
 	verticalMarginHeight := headerHeight + footerHeight
 	m.width = msg.Width
 	if !m.ready {
@@ -59,8 +59,6 @@ func SetupViewport(m AttributeView, msg tea.WindowSizeMsg) (AttributeView, []tea
 		m.viewport = viewport.New(msg.Width, msg.Height-verticalMarginHeight)
 		m.viewport.YPosition = headerHeight
 		m.viewport.HighPerformanceRendering = useHighPerformanceRenderer
-		// wrapped := wordwrap.String(m.content, msg.Width)
-		// m.viewport.SetContent(wrapped)
 		m.ready = true
 
 		// This is only necessary for high performance rendering, which in
@@ -99,13 +97,9 @@ func (m AttributeView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c", "q":
 			return m, tea.Quit
 		case "backspace":
-			// m.viewport.HighPerformanceRendering = false
-			// _, cmd1 := m.viewport.Update(msg)
-			// cmd2 := viewport.Sync(m.viewport)
 			attributeList := InitAttributeList()
 			am, cmd := attributeList.Update(tea.WindowSizeMsg{Width: constants.WindowSize.Width, Height: constants.WindowSize.Height})
 			return am, tea.Sequence(
-				// cmd1, cmd2,
 				tea.ClearScreen, cmd)
 		}
 
@@ -126,29 +120,21 @@ func (m AttributeView) View() string {
 	}
 	wrapped := wordwrap.String(m.content, m.width)
 	m.viewport.SetContent(wrapped)
-	return fmt.Sprintf("%s\n%s\n%s", m.headerView(), m.viewport.View(), m.footerView())
+	return fmt.Sprintf("%s\n%s\n%s", m.CreateHeader(), m.viewport.View(), m.CreateFooter())
 }
 
-func (m AttributeView) headerView() string {
-	title := titleStyle.
-		// Foreground(lipgloss.Color("#00FFFF")).
-		Render(m.title)
-	line := strings.Repeat("─", max(0, m.viewport.Width-lipgloss.Width(title)))
-	// line = lipgloss.NewStyle().Foreground(lipgloss.Color("#00FFFF")).Render(line)
+func CreateLine(width int, text string) string {
+	return strings.Repeat("─", max(0, width-lipgloss.Width(text)))
+}
+
+func (m AttributeView) CreateHeader() string {
+	title := titleStyle.Render(m.title)
+	line := CreateLine(m.viewport.Width, title)
 	return lipgloss.JoinHorizontal(lipgloss.Center, title, line)
-	// return title
 }
 
-func (m AttributeView) footerView() string {
+func (m AttributeView) CreateFooter() string {
 	info := infoStyle.Render(fmt.Sprintf("%3.f%%", m.viewport.ScrollPercent()*100))
-	line := strings.Repeat("─", max(0, m.viewport.Width-lipgloss.Width(info)))
+	line := CreateLine(m.viewport.Width, info)
 	return lipgloss.JoinHorizontal(lipgloss.Center, line, info)
-	// return ""
-}
-
-func max(a, b int) int {
-	if a > b {
-		return a
-	}
-	return b
 }
