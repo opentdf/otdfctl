@@ -88,8 +88,7 @@ func (m AttributeList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case "ctrl+[", "backspace":
 			am, _ := InitAppMenu()
-			return am.Update(tea.WindowSizeMsg{Width: constants.WindowSize.Width, Height: constants.WindowSize.Height})
-			// return am, cmd
+			return am.Update(WindowMsg())
 		case "c":
 			// show the add attribute form
 			// InitAttributeCreateView()
@@ -109,7 +108,7 @@ func (m AttributeList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			am := AttributeView{}
 			am.title = "Attribute"
 			am.content = wrapped
-			return am.Update(tea.WindowSizeMsg{Width: constants.WindowSize.Width, Height: constants.WindowSize.Height})
+			return am.Update(WindowMsg())
 		}
 	}
 	return m, nil

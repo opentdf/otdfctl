@@ -44,3 +44,7 @@ func ViewList(m list.Model) string {
 	lipgloss.NewStyle().Padding(1, 2, 1, 2)
 	return lipgloss.JoinVertical(lipgloss.Top, m.View())
 }
+
+func WindowMsg() tea.WindowSizeMsg {
+	return tea.WindowSizeMsg{Width: constants.WindowSize.Width, Height: constants.WindowSize.Height}
+}

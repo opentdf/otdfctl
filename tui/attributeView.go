@@ -8,7 +8,6 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/muesli/reflow/wordwrap"
-	"github.com/opentdf/tructl/tui/constants"
 )
 
 // You generally won't need this unless you're processing stuff with
@@ -98,7 +97,7 @@ func (m AttributeView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case "backspace":
 			attributeList := InitAttributeList()
-			return attributeList.Update(tea.WindowSizeMsg{Width: constants.WindowSize.Width, Height: constants.WindowSize.Height})
+			return attributeList.Update(WindowMsg())
 		}
 
 	case tea.WindowSizeMsg:
