@@ -81,27 +81,15 @@ func SetupViewport(m AttributeView, msg tea.WindowSizeMsg) []tea.Cmd {
 }
 
 func InitAttributeView(content string) (AttributeView, tea.Cmd) {
-	// m := AttributeView{}
-	// m.title = "Attribute"
-	// m.content = "Hello, world!"
-	// m.width = constants.WindowSize.Width
-	// m.height = constants.WindowSize.Height
-	// m.ready = true
-	// m.viewport = viewport.New(m.width, m.height)
-	// m.viewport.SetContent(m.content)
-	// m.Update(tea.WindowSizeMsg{Width: m.width, Height: m.height})
-	// // m.viewport.HighPerformanceRendering = useHighPerformanceRenderer
 	m := AttributeView{}
 	m.title = "Attribute"
 	m.content = content
 	m.width = constants.WindowSize.Width
 	m.height = constants.WindowSize.Height
-	// m.ready = true
 	m.viewport = viewport.New(m.width, m.height)
 	m.viewport.SetContent(m.content)
 	m.viewport.HighPerformanceRendering = useHighPerformanceRenderer
 	msg := tea.WindowSizeMsg{Width: m.width, Height: m.height}
-	// m.Update(msg)
 
 	headerHeight := lipgloss.Height(m.headerView())
 	footerHeight := lipgloss.Height(m.footerView())
@@ -149,14 +137,6 @@ func InitAttributeView(content string) (AttributeView, tea.Cmd) {
 }
 
 func (m AttributeView) Init() tea.Cmd {
-	// m.width = constants.WindowSize.Width
-	// m.height = constants.WindowSize.Height
-	// m.ready = true
-	// m.viewport = viewport.New(m.width, m.height)
-	// m.viewport.SetContent(m.content)
-	// m.viewport.HighPerformanceRendering = useHighPerformanceRenderer
-	// m.Update(tea.WindowSizeMsg{Width: m.width, Height: m.height})
-	// return func() tea.Msg { return tea.WindowSizeMsg{Width: m.width, Height: m.height} }
 	return nil
 }
 
