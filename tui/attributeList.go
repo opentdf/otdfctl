@@ -77,8 +77,15 @@ func (m AttributeList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		case "enter":
 			item := m.list.Items()[0].(AttributeItem)
-			content := fmt.Sprintf("Name: %s\nNamespace: %s\nRule: %s\nDescription: %s\nValues: %s", item.name, item.namespace, item.rule, item.description, item.values)
-			return InitAttributeView(content)
+			content := fmt.Sprintf(
+				"Name: %s\nNamespace: %s\nRule: %s\nDescription: %s\nValues: %s",
+				item.name, item.namespace, item.rule, item.description, item.values,
+			)
+			// return InitAttributeView(content)
+			am := AttributeView{}
+			am.title = "Attribute"
+			am.content = content
+			return am.Update(tea.WindowSizeMsg{Width: constants.WindowSize.Width, Height: constants.WindowSize.Height})
 		}
 	}
 	return m, nil

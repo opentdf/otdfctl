@@ -40,7 +40,7 @@ type AttributeView struct {
 	viewport      viewport.Model
 }
 
-func SetupViewport(m AttributeView, msg tea.WindowSizeMsg) []tea.Cmd {
+func SetupViewport(m AttributeView, msg tea.WindowSizeMsg) (AttributeView, []tea.Cmd) {
 	var (
 		cmds []tea.Cmd
 	)
@@ -77,7 +77,7 @@ func SetupViewport(m AttributeView, msg tea.WindowSizeMsg) []tea.Cmd {
 		// This is needed for high-performance rendering only.
 		cmds = append(cmds, viewport.Sync(m.viewport))
 	}
-	return cmds
+	return m, cmds
 }
 
 func InitAttributeView(content string) (AttributeView, tea.Cmd) {
@@ -90,44 +90,11 @@ func InitAttributeView(content string) (AttributeView, tea.Cmd) {
 	m.viewport.SetContent(m.content)
 	m.viewport.HighPerformanceRendering = useHighPerformanceRenderer
 	msg := tea.WindowSizeMsg{Width: m.width, Height: m.height}
-
-	headerHeight := lipgloss.Height(m.headerView())
-	footerHeight := lipgloss.Height(m.footerView())
-	verticalMarginHeight := headerHeight + footerHeight
 	var (
 		cmd  tea.Cmd
 		cmds []tea.Cmd
 	)
-	if !m.ready {
-		// Since this program is using the full size of the viewport we
-		// need to wait until we've received the window dimensions before
-		// we can initialize the viewport. The initial dimensions come in
-		// quickly, though asynchronously, which is why we wait for them
-		// here.
-		m.viewport = viewport.New(m.width, m.height-verticalMarginHeight)
-		m.viewport.YPosition = headerHeight
-		m.viewport.HighPerformanceRendering = useHighPerformanceRenderer
-		m.viewport.SetContent(m.content)
-		m.ready = true
-
-		// This is only necessary for high performance rendering, which in
-		// most cases you won't need.
-		//
-		// Render the viewport one line below the header.
-		m.viewport.YPosition = headerHeight + 1
-	} else {
-		m.viewport.Width = m.width
-		m.viewport.Height = m.height - verticalMarginHeight
-	}
-
-	if useHighPerformanceRenderer {
-		// Render (or re-render) the whole viewport. Necessary both to
-		// initialize the viewport and when the window is resized.
-		//
-		// This is needed for high-performance rendering only.
-		cmds = append(cmds, viewport.Sync(m.viewport))
-	}
-
+	m, cmds = SetupViewport(m, msg)
 	// Handle keyboard and mouse events in the viewport
 	m.viewport, cmd = m.viewport.Update(msg)
 	cmds = append(cmds, cmd)
@@ -148,12 +115,21 @@ func (m AttributeView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		if k := msg.String(); k == "ctrl+c" || k == "q" || k == "esc" {
+		// if k := msg.String(); k == "ctrl+c" || k == "q" || k == "esc" {
+		// 	return m, tea.Quit
+		// }
+		switch msg.String() {
+		case "ctrl+c", "q":
 			return m, tea.Quit
+		case "backspace":
+			m.viewport.SetContent("")
+			attributeList := InitAttributeList()
+			return attributeList.Update(constants.WindowSize)
+			// return InitAttributeList(), nil
 		}
 
 	case tea.WindowSizeMsg:
-		cmds = SetupViewport(m, msg)
+		m, cmds = SetupViewport(m, msg)
 	}
 
 	// Handle keyboard and mouse events in the viewport
