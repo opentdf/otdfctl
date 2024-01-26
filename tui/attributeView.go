@@ -98,9 +98,7 @@ func (m AttributeView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case "backspace":
 			attributeList := InitAttributeList()
-			am, cmd := attributeList.Update(tea.WindowSizeMsg{Width: constants.WindowSize.Width, Height: constants.WindowSize.Height})
-			return am, tea.Sequence(
-				tea.ClearScreen, cmd)
+			return attributeList.Update(tea.WindowSizeMsg{Width: constants.WindowSize.Width, Height: constants.WindowSize.Height})
 		}
 
 	case tea.WindowSizeMsg:
