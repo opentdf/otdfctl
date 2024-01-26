@@ -60,6 +60,13 @@ func (m AttributeList) Init() tea.Cmd {
 	return nil
 }
 
+func styleAttr(attr string) string {
+	return lipgloss.NewStyle().
+		Bold(true).
+		Foreground(lipgloss.Color("#EE6FF8")).
+		Render(attr)
+}
+
 func (m AttributeList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
@@ -84,8 +91,12 @@ func (m AttributeList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			item := m.list.Items()[0].(AttributeItem)
 
 			content := fmt.Sprintf(
-				"\nNAME: %s\nNAMESPACE: %s\nRULE: %s\nDESCRIPTION: %s\nVALUES: %s",
-				item.name, item.namespace, item.rule, item.description, item.values,
+				"%s %s\n%s %s\n%s %s\n%s %s\n%s %s",
+				styleAttr("Name"), item.name,
+				styleAttr("Namespace"), item.namespace,
+				styleAttr("Rule"), item.rule,
+				styleAttr("Description"), item.description,
+				styleAttr("Values"), item.values,
 			)
 			wrapped := wordwrap.String(content, m.width)
 			// return InitAttributeView(content)

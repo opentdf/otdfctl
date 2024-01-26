@@ -130,15 +130,20 @@ func (m AttributeView) View() string {
 }
 
 func (m AttributeView) headerView() string {
-	title := titleStyle.Render(m.title)
+	title := titleStyle.
+		// Foreground(lipgloss.Color("#00FFFF")).
+		Render(m.title)
 	line := strings.Repeat("─", max(0, m.viewport.Width-lipgloss.Width(title)))
+	// line = lipgloss.NewStyle().Foreground(lipgloss.Color("#00FFFF")).Render(line)
 	return lipgloss.JoinHorizontal(lipgloss.Center, title, line)
+	// return title
 }
 
 func (m AttributeView) footerView() string {
 	info := infoStyle.Render(fmt.Sprintf("%3.f%%", m.viewport.ScrollPercent()*100))
 	line := strings.Repeat("─", max(0, m.viewport.Width-lipgloss.Width(info)))
 	return lipgloss.JoinHorizontal(lipgloss.Center, line, info)
+	// return ""
 }
 
 func max(a, b int) int {
