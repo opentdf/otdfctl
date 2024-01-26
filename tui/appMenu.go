@@ -78,7 +78,7 @@ func (m AppMenu) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case attributeMenu:
 				attributeList := InitAttributeList()
 				am, cmd := attributeList.Update(constants.WindowSize)
-				m.view = am
+				// m.view = am
 				return am, cmd
 			}
 		}

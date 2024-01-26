@@ -16,7 +16,8 @@ import (
 // Also keep in mind that high performance rendering only works for programs
 // that use the full size of the terminal. We're enabling that below with
 // tea.EnterAltScreen().
-const useHighPerformanceRenderer = true
+// Setting this to true is causing issues and preventing items from rendering
+const useHighPerformanceRenderer = false
 
 var (
 	titleStyle = func() lipgloss.Style {
@@ -96,9 +97,6 @@ func (m AttributeView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c", "q":
 			return m, tea.Quit
 		case "backspace":
-			// m.viewport.SetContent("")
-			// m.Update(tea.WindowSizeMsg{Width: constants.WindowSize.Width, Height: constants.WindowSize.Height})
-			// tea.ClearScreen()
 			attributeList := InitAttributeList()
 			am, cmd := attributeList.Update(tea.WindowSizeMsg{Width: constants.WindowSize.Width, Height: constants.WindowSize.Height})
 			return am, tea.Sequence(tea.ClearScreen, cmd)

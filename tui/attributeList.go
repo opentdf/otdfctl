@@ -45,7 +45,7 @@ func InitAttributeList() AttributeList {
 			id:          1,
 			namespace:   "demo.com",
 			name:        "relto",
-			rule:        "heirarchical",
+			rule:        "hierarchical",
 			description: "The relto attribute is used to describe the relationship of the resource to the country of origin.",
 			values:      []string{"USA", "GBR"},
 		},
@@ -70,7 +70,9 @@ func (m AttributeList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c", "q":
 			return m, tea.Quit
 		case "ctrl+[", "backspace":
-			return InitAppMenu()
+			am, _ := InitAppMenu()
+			return am.Update(tea.WindowSizeMsg{Width: constants.WindowSize.Width, Height: constants.WindowSize.Height})
+			// return am, cmd
 		case "c":
 			// show the add attribute form
 			// InitAttributeCreateView()
