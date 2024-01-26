@@ -6,11 +6,13 @@ import (
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/muesli/reflow/wordwrap"
 	"github.com/opentdf/tructl/tui/constants"
 )
 
 type AttributeList struct {
-	list list.Model
+	list  list.Model
+	width int
 }
 
 type AttributeItem struct {
@@ -64,6 +66,7 @@ func (m AttributeList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		constants.WindowSize = msg
 		m.list.SetSize(msg.Width, msg.Height)
+		m.width = msg.Width
 		return m, nil
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -79,14 +82,16 @@ func (m AttributeList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		case "enter":
 			item := m.list.Items()[0].(AttributeItem)
+
 			content := fmt.Sprintf(
-				"Name: %s\nNamespace: %s\nRule: %s\nDescription: %s\nValues: %s",
+				"\nNAME: %s\nNAMESPACE: %s\nRULE: %s\nDESCRIPTION: %s\nVALUES: %s",
 				item.name, item.namespace, item.rule, item.description, item.values,
 			)
+			wrapped := wordwrap.String(content, m.width)
 			// return InitAttributeView(content)
 			am := AttributeView{}
 			am.title = "Attribute"
-			am.content = content
+			am.content = wrapped
 			return am.Update(tea.WindowSizeMsg{Width: constants.WindowSize.Width, Height: constants.WindowSize.Height})
 		}
 	}

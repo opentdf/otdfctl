@@ -7,6 +7,7 @@ import (
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/muesli/reflow/wordwrap"
 	"github.com/opentdf/tructl/tui/constants"
 )
 
@@ -48,7 +49,7 @@ func SetupViewport(m AttributeView, msg tea.WindowSizeMsg) (AttributeView, []tea
 	headerHeight := lipgloss.Height(m.headerView())
 	footerHeight := lipgloss.Height(m.footerView())
 	verticalMarginHeight := headerHeight + footerHeight
-
+	m.width = msg.Width
 	if !m.ready {
 		// Since this program is using the full size of the viewport we
 		// need to wait until we've received the window dimensions before
@@ -58,7 +59,8 @@ func SetupViewport(m AttributeView, msg tea.WindowSizeMsg) (AttributeView, []tea
 		m.viewport = viewport.New(msg.Width, msg.Height-verticalMarginHeight)
 		m.viewport.YPosition = headerHeight
 		m.viewport.HighPerformanceRendering = useHighPerformanceRenderer
-		m.viewport.SetContent(m.content)
+		// wrapped := wordwrap.String(m.content, msg.Width)
+		// m.viewport.SetContent(wrapped)
 		m.ready = true
 
 		// This is only necessary for high performance rendering, which in
@@ -97,9 +99,14 @@ func (m AttributeView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c", "q":
 			return m, tea.Quit
 		case "backspace":
+			// m.viewport.HighPerformanceRendering = false
+			// _, cmd1 := m.viewport.Update(msg)
+			// cmd2 := viewport.Sync(m.viewport)
 			attributeList := InitAttributeList()
 			am, cmd := attributeList.Update(tea.WindowSizeMsg{Width: constants.WindowSize.Width, Height: constants.WindowSize.Height})
-			return am, tea.Sequence(tea.ClearScreen, cmd)
+			return am, tea.Sequence(
+				// cmd1, cmd2,
+				tea.ClearScreen, cmd)
 		}
 
 	case tea.WindowSizeMsg:
@@ -117,6 +124,8 @@ func (m AttributeView) View() string {
 	if !m.ready {
 		return "\n  Initializing..."
 	}
+	wrapped := wordwrap.String(m.content, m.width)
+	m.viewport.SetContent(wrapped)
 	return fmt.Sprintf("%s\n%s\n%s", m.headerView(), m.viewport.View(), m.footerView())
 }
 
