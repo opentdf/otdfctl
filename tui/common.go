@@ -5,7 +5,9 @@ import (
 	"log"
 	"os"
 
+	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/opentdf/tructl/tui/constants"
 )
 
@@ -30,4 +32,19 @@ func StartTea() error {
 		os.Exit(1)
 	}
 	return nil
+}
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+func ViewList(m list.Model) string {
+	lipgloss.NewStyle().Padding(1, 2, 1, 2)
+	return lipgloss.JoinVertical(lipgloss.Top, m.View())
+}
+
+func WindowMsg() tea.WindowSizeMsg {
+	return tea.WindowSizeMsg{Width: constants.WindowSize.Width, Height: constants.WindowSize.Height}
 }

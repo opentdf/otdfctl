@@ -3,7 +3,6 @@ package tui
 import (
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 	"github.com/opentdf/tructl/tui/constants"
 )
 
@@ -41,7 +40,7 @@ type AppMenu struct {
 	view tea.Model
 }
 
-func InitAppMenu() (tea.Model, tea.Cmd) {
+func InitAppMenu() (AppMenu, tea.Cmd) {
 	m := AppMenu{
 		view: nil,
 	}
@@ -76,10 +75,9 @@ func (m AppMenu) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "enter":
 			switch m.list.SelectedItem().(AppMenuItem).id {
 			case attributeMenu:
-				attributeView := InitAttributeView()
-				am, cmd := attributeView.Update(constants.WindowSize)
-				m.view = am
-				return m, cmd
+				attributeList := InitAttributeList()
+				am, cmd := attributeList.Update(WindowMsg())
+				return am, cmd
 			}
 		}
 	}
@@ -90,8 +88,5 @@ func (m AppMenu) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m AppMenu) View() string {
-	// return m.list.View()
-	// create a new view with a list view as the main view
-	lipgloss.NewStyle().Padding(1, 2, 1, 2)
-	return lipgloss.JoinVertical(lipgloss.Top, m.list.View())
+	return ViewList(m.list)
 }
