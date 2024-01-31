@@ -1,9 +1,9 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 
 	"github.com/opentdf/tructl/pkg/cli"
@@ -32,21 +32,21 @@ or different attributes tied to each.
 	}
 
 	namespaceGetCmd = &cobra.Command{
-		Use:   "get <id>",
-		Short: "Get a namespace",
+		Use:   "get",
+		Short: "Get a namespace by id",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			h := cli.NewHandler(cmd)
 			defer h.Close()
 
-			id, err := strconv.Atoi(args[0])
-			if err != nil {
-				cli.ExitWithError("Invalid ID", err)
+			id := args[0]
+			if id == "" {
+				cli.ExitWithError("Invalid ID", errors.New(id))
 			}
 
 			ns, err := h.GetNamespace(id)
 			if err != nil {
-				errMsg := fmt.Sprintf("Could not find namespace (%d)", id)
+				errMsg := fmt.Sprintf("Could not find namespace (%s)", id)
 				cli.ExitWithNotFoundError(errMsg, err)
 				cli.ExitWithError(errMsg, err)
 			}
@@ -55,7 +55,7 @@ or different attributes tied to each.
 			fmt.Println(
 				cli.NewTabular().
 					Rows([][]string{
-						{"Id", strconv.Itoa(int(ns.Id))},
+						{"Id", ns.Id},
 						{"Name", ns.Name},
 					}...).Render(),
 			)
@@ -78,7 +78,7 @@ or different attributes tied to each.
 			t.Headers("Id", "Name")
 			for _, ns := range list {
 				t.Row(
-					strconv.Itoa(int(ns.Id)),
+					ns.Id,
 					ns.Name,
 				)
 			}
@@ -88,7 +88,7 @@ or different attributes tied to each.
 
 	namespacesCreateCmd = &cobra.Command{
 		Use:   "create",
-		Short: "Create a new namespace",
+		Short: "Create a new namespace, i.e. 'https://example.com'",
 		Run: func(cmd *cobra.Command, args []string) {
 			h := cli.NewHandler(cmd)
 			defer h.Close()
@@ -112,21 +112,21 @@ or different attributes tied to each.
 	}
 
 	namespaceDeleteCmd = &cobra.Command{
-		Use:   "delete <id>",
-		Short: "Delete a namespace",
+		Use:   "delete",
+		Short: "Delete a namespace by id",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			h := cli.NewHandler(cmd)
 			defer h.Close()
 
-			id, err := strconv.Atoi(args[0])
-			if err != nil {
-				fmt.Println(cli.ErrorMessage("Invalid ID", err))
+			id := args[0]
+			if id == "" {
+				fmt.Println(cli.ErrorMessage("Invalid ID", errors.New(id)))
 				os.Exit(1)
 			}
 			ns, err := h.GetNamespace(id)
 			if err != nil {
-				errMsg := fmt.Sprintf("Could not find namespace (%d)", id)
+				errMsg := fmt.Sprintf("Could not find namespace (%s)", id)
 				cli.ExitWithNotFoundError(errMsg, err)
 				cli.ExitWithError(errMsg, err)
 			}
@@ -134,7 +134,7 @@ or different attributes tied to each.
 			cli.ConfirmDelete("namespace", ns.Name)
 
 			if err := h.DeleteNamespace(id); err != nil {
-				errMsg := fmt.Sprintf("Could not delete namespace (%d)", id)
+				errMsg := fmt.Sprintf("Could not delete namespace (%s)", id)
 				cli.ExitWithNotFoundError(errMsg, err)
 				cli.ExitWithError(errMsg, err)
 			}
@@ -160,7 +160,7 @@ or different attributes tied to each.
 
 			flagHelper := cli.NewFlagHelper(cmd)
 
-			id := flagHelper.GetRequiredInt32("id")
+			id := flagHelper.GetRequiredString("id")
 			name := flagHelper.GetRequiredString("name")
 
 			if _, err := h.UpdateNamespace(
@@ -170,7 +170,7 @@ or different attributes tied to each.
 				cli.ExitWithError("Could not update namespace", err)
 				return
 			} else {
-				fmt.Println(cli.SuccessMessage(fmt.Sprintf("Namespace id: (%d) updated. Name set to (%s).", id, name)))
+				fmt.Println(cli.SuccessMessage(fmt.Sprintf("Namespace id: (%s) updated. Name set to (%s).", id, name)))
 			}
 		},
 	}
@@ -187,7 +187,7 @@ func init() {
 	namespacesCreateCmd.Flags().StringP("name", "n", "", "Name value of the namespace")
 
 	namespacesCmd.AddCommand(namespaceUpdateCmd)
-	namespaceUpdateCmd.Flags().Int32P("id", "i", 0, "Id of the namespace")
+	namespaceUpdateCmd.Flags().StringP("id", "i", "", "Id of the namespace")
 	namespaceUpdateCmd.Flags().StringP("name", "n", "", "Name value of the namespace")
 
 	namespacesCmd.AddCommand(namespaceDeleteCmd)
