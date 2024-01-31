@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/opentdf/opentdf-v2-poc/sdk/common"
@@ -62,6 +63,17 @@ func getMetadataRows(m *common.Metadata) [][]string {
 			metadataRows = append(metadataRows, []string{"Description", m.Description})
 		}
 		return metadataRows
+	}
+	return nil
+}
+
+func unMarshalMetadata(m string) *common.MetadataMutable {
+	if m != "" {
+		metadata := &common.MetadataMutable{}
+		if err := json.Unmarshal([]byte(m), metadata); err != nil {
+			cli.ExitWithError("Could not unmarshal metadata", err)
+		}
+		return metadata
 	}
 	return nil
 }

@@ -10,7 +10,7 @@ type Table table.Table
 func NewTable() *table.Table {
 	t := table.New()
 	return t.Border(lipgloss.NormalBorder()).
-		Width(80).
+		Width(120).
 		BorderStyle(lipgloss.NewStyle().Foreground(lipgloss.ANSIColor(25))).
 		StyleFunc(func(row, col int) lipgloss.Style {
 			switch {

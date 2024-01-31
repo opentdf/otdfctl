@@ -5,6 +5,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/opentdf/opentdf-v2-poc/sdk/common"
 	"github.com/opentdf/opentdf-v2-poc/sdk/subjectmapping"
 )
 
@@ -36,7 +37,7 @@ func (h Handler) ListSubjectMappings() ([]*subjectmapping.SubjectMapping, error)
 	return resp.SubjectMappings, nil
 }
 
-func (h Handler) CreateNewSubjectMapping(attributeValueId string, subjectAttribute string, subjectValues []string, operator string) (*subjectmapping.SubjectMapping, error) {
+func (h Handler) CreateNewSubjectMapping(attributeValueId string, subjectAttribute string, subjectValues []string, operator string, metadata *common.MetadataMutable) (*subjectmapping.SubjectMapping, error) {
 	if !slices.Contains(SubjectMappingOperatorEnumChoices, operator) {
 		return nil, fmt.Errorf("Invalid operator. Must be one of [%s]" + strings.Join(SubjectMappingOperatorEnumChoices, ", "))
 	}
@@ -47,6 +48,7 @@ func (h Handler) CreateNewSubjectMapping(attributeValueId string, subjectAttribu
 			SubjectAttribute: subjectAttribute,
 			SubjectValues:    subjectValues,
 			Operator:         GetSubjectMappingOperatorFromChoice(operator),
+			Metadata:         metadata,
 		},
 	})
 	if err != nil {

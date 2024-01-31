@@ -57,8 +57,8 @@ same attribute and namespace.
 			rows := [][]string{
 				{"Id", mapping.Id},
 				{"Subject Attribute", mapping.SubjectAttribute},
-				{"Subject Values", strings.Join(mapping.SubjectValues, ", ")},
 				{"Operator", handlers.GetSubjectMappingOperatorChoiceFromEnum(mapping.Operator)},
+				{"Subject Values", strings.Join(mapping.SubjectValues, ", ")},
 				// TODO: render attribute here somehow
 				// {"Attribute Value", mapping.AttributeValue.Value},
 			}
@@ -88,17 +88,31 @@ same attribute and namespace.
 				cli.ExitWithError("Could not get subject mappings", err)
 			}
 
-			t := cli.NewTable()
+			t := cli.NewTable().Width(180)
 			t.Headers("Id", "Subject Attribute", "Subject Values", "Operator" /* "Attribute Value",*/, "Metadata")
-			for _, ns := range list {
-				t.Row(
-					ns.Id,
-					ns.SubjectAttribute,
-					strings.Join(ns.SubjectValues, ", "),
-					handlers.GetSubjectMappingOperatorChoiceFromEnum(ns.Operator),
+			for _, sm := range list {
+				rowCells := []string{
+					sm.Id,
+					sm.SubjectAttribute,
+					handlers.GetSubjectMappingOperatorChoiceFromEnum(sm.Operator),
+					strings.Join(sm.SubjectValues, ", "),
 					// TODO: attribute values
-					// TODO: metadata rows
-				)
+				}
+
+				// TODO: get this metadata rendering properly in a consistent way for reuse
+				// if mdRows := getMetadataRows(sm.Metadata); mdRows != nil {
+				// 	mdTable := cli.NewTable(50)
+				// 	mdHeaders := []string{}
+				// 	mdRow := []string{}
+				// 	for _, md := range mdRows {
+				// 		mdHeaders = append(mdHeaders, md[0])
+				// 		mdRow = append(mdRow, md[1])
+				// 	}
+				// 	mdTable.Headers(mdHeaders...)
+				// 	mdTable.Row(mdRow...)
+				// 	rowCells = append(rowCells, mdTable.Render())
+				// }
+				t.Row(rowCells...)
 			}
 			fmt.Println(t.Render())
 		},
@@ -114,11 +128,13 @@ same attribute and namespace.
 			flagHelper := cli.NewFlagHelper(cmd)
 			attrValueId := flagHelper.GetRequiredString("attribute-value-id")
 			subjectAttribute := flagHelper.GetRequiredString("subject-attribute")
-			subjectValues := flagHelper.GetStringSlice("subject-values", subjectValues, cli.FlagHelperStringSliceOptions{ Min: 1 })
+			subjectValues := flagHelper.GetStringSlice("subject-values", subjectValues, cli.FlagHelperStringSliceOptions{Min: 1})
 			operator := flagHelper.GetRequiredString("operator")
-			// TODO: metadata
 
-			mapping, err := h.CreateNewSubjectMapping(attrValueId, subjectAttribute, subjectValues, operator)
+			m := flagHelper.GetOptionalString("metadata")
+			metadata := unMarshalMetadata(m)
+
+			mapping, err := h.CreateNewSubjectMapping(attrValueId, subjectAttribute, subjectValues, operator, metadata)
 			if err != nil {
 				cli.ExitWithError("Could not create subject mapping", err)
 			}
@@ -158,14 +174,14 @@ same attribute and namespace.
 			// 	fmt.Println(cli.ErrorMessage("Invalid ID", errors.New(id)))
 			// 	os.Exit(1)
 			// }
-			// ns, err := h.GetSubjectMapping(id)
+			// sm, err := h.GetSubjectMapping(id)
 			// if err != nil {
 			// 	errMsg := fmt.Sprintf("Could not find subject mapping (%s)", id)
 			// 	cli.ExitWithNotFoundError(errMsg, err)
 			// 	cli.ExitWithError(errMsg, err)
 			// }
 
-			// cli.ConfirmDelete("subject mapping", ns.Name)
+			// cli.ConfirmDelete("subject mapping", sm.Name)
 
 			// if err := h.DeleteSubjectMapping(id); err != nil {
 			// 	errMsg := fmt.Sprintf("Could not delete subject mapping (%s)", id)
@@ -177,8 +193,8 @@ same attribute and namespace.
 			// fmt.Println(
 			// 	cli.NewTabular().
 			// 		Rows([][]string{
-			// 			{"Id", ns.Id},
-			// 			{"Name", ns.Name},
+			// 			{"Id", sm.Id},
+			// 			{"Name", sm.Name},
 			// 		}...).Render(),
 			// )
 		},
@@ -221,11 +237,15 @@ func init() {
 	subjectMappingCreateCmd.Flags().StringP("subject-attribute", "s", "", "Subject attribute")
 	subjectMappingCreateCmd.Flags().StringSliceVarP(&subjectValues, "subject-values", "v", []string{}, "Subject values")
 	subjectMappingCreateCmd.Flags().StringP("operator", "o", "", "Operator")
-
+	subjectMappingCreateCmd.Flags().StringP("metadata", "m", "", "Metadata (optional): labels and description")
 
 	subjectMappingsCmd.AddCommand(subjectMappingUpdateCmd)
 	subjectMappingUpdateCmd.Flags().StringP("id", "i", "", "Id of the subject mapping")
-	subjectMappingUpdateCmd.Flags().StringP("name", "n", "", "Name value of the subject mapping")
+	subjectMappingUpdateCmd.Flags().StringP("attribute-value-id", "a", "", "Id of the attribute value")
+	subjectMappingUpdateCmd.Flags().StringP("subject-attribute", "s", "", "Subject attribute")
+	subjectMappingUpdateCmd.Flags().StringSliceVarP(&subjectValues, "subject-values", "v", []string{}, "Subject values")
+	subjectMappingUpdateCmd.Flags().StringP("operator", "o", "", "Operator")
+	subjectMappingUpdateCmd.Flags().StringP("metadata", "m", "", "Metadata (optional): labels and description")
 
 	subjectMappingsCmd.AddCommand(subjectMappingDeleteCmd)
 }
