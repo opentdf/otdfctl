@@ -52,3 +52,6 @@ require (
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240102182953-50ed04b92917 // indirect
 	google.golang.org/protobuf v1.32.0 // indirect
 )
+
+// temporarily use local platform sdk until branch `policy-config-changes` is merged into `main` there
+replace github.com/opentdf/opentdf-v2-poc/sdk => ../opentdf-v2-poc/sdk
