@@ -74,8 +74,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.Type {
 		case tea.KeyBackspace:
-			// attributeList := InitAttributeList()
-			// return attributeList.Update(WindowMsg())
 			return InitAttributeList()
 		case tea.KeyEnter:
 			if m.focused == len(m.inputs)-1 {

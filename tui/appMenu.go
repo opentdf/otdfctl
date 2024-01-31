@@ -76,9 +76,6 @@ func (m AppMenu) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			switch m.list.SelectedItem().(AppMenuItem).id {
 			case attributeMenu:
 				return InitAttributeList()
-				// attributeList := InitAttributeList()
-				// am, cmd := attributeList.Update(WindowMsg())
-				// return am, cmd
 			}
 		}
 	}
