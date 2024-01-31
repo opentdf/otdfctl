@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/opentdf/opentdf-v2-poc/sdk/common"
 	"github.com/opentdf/tructl/pkg/cli"
 	"github.com/spf13/cobra"
 )
@@ -42,6 +43,27 @@ func renderDSTable() string {
 
 func renderDSMessages() string {
 	return cli.SuccessMessage("Success message") + "\n" + cli.ErrorMessage("Error message", nil)
+}
+
+func getMetadataRows(m *common.Metadata) [][]string {
+	if m != nil {
+		metadataRows := [][]string{
+			{"Created At", m.CreatedAt.String()},
+			{"Updated At", m.UpdatedAt.String()},
+		}
+		if m.Labels != nil {
+			labelRows := []string{}
+			for k, v := range m.Labels {
+				labelRows = append(labelRows, fmt.Sprintf("%s: %s", k, v))
+			}
+			metadataRows = append(metadataRows, []string{"Labels", cli.CommaSeparated(labelRows)})
+		}
+		if m.Description != "" {
+			metadataRows = append(metadataRows, []string{"Description", m.Description})
+		}
+		return metadataRows
+	}
+	return nil
 }
 
 func init() {
