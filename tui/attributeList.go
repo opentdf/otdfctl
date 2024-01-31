@@ -94,6 +94,10 @@ func (m AttributeList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// show the add attribute form
 			// InitAttributeCreateView()
 			return m, nil
+		case "e":
+			// item := m.list.Items()[0].(AttributeItem)
+			// attr_keys := []string{"Name", "Namespace", "Rule", "Description", "Values"}
+			return initialModel(), nil
 		case "enter":
 			item := m.list.Items()[0].(AttributeItem)
 			attr_keys := []string{"Name", "Namespace", "Rule", "Description", "Values"}

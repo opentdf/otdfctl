@@ -5,13 +5,6 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-var P *tea.Program
-
-var WindowSize struct {
-	Width  int
-	Height int
-}
-
 var (
 	P *tea.Program
 
