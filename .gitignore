@@ -1,3 +1,6 @@
 
 .DS_Store
 debug.log
+bin/LLMGen_index/
+bin/LLMGen/
+LLMGen_logs.log
