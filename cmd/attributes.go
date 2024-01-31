@@ -3,259 +3,259 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 */
 package cmd
 
-import (
-	"fmt"
-	"os"
-	"strconv"
-	"strings"
+// import (
+// 	"fmt"
+// 	"os"
+// 	"strconv"
+// 	"strings"
 
-	"github.com/opentdf/tructl/pkg/cli"
-	"github.com/spf13/cobra"
-)
+// 	"github.com/opentdf/tructl/pkg/cli"
+// 	"github.com/spf13/cobra"
+// )
 
-var (
-	attrValues           []string
-	groupBy              []string
-	resourceDependencies []string
+// var (
+// 	attrValues           []string
+// 	groupBy              []string
+// 	resourceDependencies []string
 
-	attributeCommands = []string{
-		attributesCreateCmd.Use,
-		attributeGetCmd.Use,
-		attributesListCmd.Use,
-		attributeUpdateCmd.Use,
-		attributesDeleteCmd.Use,
-	}
+// 	attributeCommands = []string{
+// 		attributesCreateCmd.Use,
+// 		attributeGetCmd.Use,
+// 		attributesListCmd.Use,
+// 		attributeUpdateCmd.Use,
+// 		attributesDeleteCmd.Use,
+// 	}
 
-	attributesCmd = &cobra.Command{
-		Use:   "attributes",
-		Short: "Manage attributes [" + strings.Join(attributeCommands, ", ") + "]",
-		Long: `
-Attributes - commands to manage attributes within the platform.
-		
-Attributes are used to to define the properties of a piece of data. These attributes will then be
-used to define the access controls based on subject encodings and entity entitlements.
-`,
-	}
+// 	attributesCmd = &cobra.Command{
+// 		Use:   "attributes",
+// 		Short: "Manage attributes [" + strings.Join(attributeCommands, ", ") + "]",
+// 		Long: `
+// Attributes - commands to manage attributes within the platform.
 
-	attributeGetCmd = &cobra.Command{
-		Use:   "get <id>",
-		Short: "Get an attribute",
-		Args:  cobra.ExactArgs(1),
-		Run: func(cmd *cobra.Command, args []string) {
-			h := cli.NewHandler(cmd)
-			defer h.Close()
+// Attributes are used to to define the properties of a piece of data. These attributes will then be
+// used to define the access controls based on subject encodings and entity entitlements.
+// `,
+// 	}
 
-			id, err := strconv.Atoi(args[0])
-			if err != nil {
-				cli.ExitWithError("Invalid ID", err)
-			}
+// 	attributeGetCmd = &cobra.Command{
+// 		Use:   "get <id>",
+// 		Short: "Get an attribute",
+// 		Args:  cobra.ExactArgs(1),
+// 		Run: func(cmd *cobra.Command, args []string) {
+// 			h := cli.NewHandler(cmd)
+// 			defer h.Close()
 
-			attr, err := h.GetAttribute(id)
-			if err != nil {
-				errMsg := fmt.Sprintf("Could not find attribute (%d)", id)
-				cli.ExitWithNotFoundError(errMsg, err)
-				cli.ExitWithError(errMsg, err)
-			}
+// 			id, err := strconv.Atoi(args[0])
+// 			if err != nil {
+// 				cli.ExitWithError("Invalid ID", err)
+// 			}
 
-			fmt.Println(cli.SuccessMessage("Attribute found"))
-			fmt.Println(
-				cli.NewTabular().
-					Rows([][]string{
-						{"Id", strconv.Itoa(int(attr.Id))},
-						{"Name", attr.Name},
-						{"Rule", attr.Rule},
-						{"Values", cli.CommaSeparated(attr.Values)},
-						{"Namespace", attr.Namespace},
-						{"Description", attr.Description},
-					}...).Render(),
-			)
-		},
-	}
+// 			attr, err := h.GetAttribute(id)
+// 			if err != nil {
+// 				errMsg := fmt.Sprintf("Could not find attribute (%d)", id)
+// 				cli.ExitWithNotFoundError(errMsg, err)
+// 				cli.ExitWithError(errMsg, err)
+// 			}
 
-	// List attributes
-	attributesListCmd = &cobra.Command{
-		Use:   "list",
-		Short: "List attributes",
-		Run: func(cmd *cobra.Command, args []string) {
-			h := cli.NewHandler(cmd)
-			defer h.Close()
+// 			fmt.Println(cli.SuccessMessage("Attribute found"))
+// 			fmt.Println(
+// 				cli.NewTabular().
+// 					Rows([][]string{
+// 						{"Id", strconv.Itoa(int(attr.Id))},
+// 						{"Name", attr.Name},
+// 						{"Rule", attr.Rule},
+// 						{"Values", cli.CommaSeparated(attr.Values)},
+// 						{"Namespace", attr.Namespace},
+// 						{"Description", attr.Description},
+// 					}...).Render(),
+// 			)
+// 		},
+// 	}
 
-			attrs, err := h.ListAttributes()
-			if err != nil {
-				cli.ExitWithError("Could not get attributes", err)
-			}
+// 	// List attributes
+// 	attributesListCmd = &cobra.Command{
+// 		Use:   "list",
+// 		Short: "List attributes",
+// 		Run: func(cmd *cobra.Command, args []string) {
+// 			h := cli.NewHandler(cmd)
+// 			defer h.Close()
 
-			t := cli.NewTable()
-			t.Headers("Id", "Namespace", "Name", "Rule", "Values")
-			for _, attr := range attrs {
-				t.Row(
-					strconv.Itoa(int(attr.Id)),
-					attr.Namespace,
-					attr.Name,
-					attr.Rule,
-					cli.CommaSeparated(attr.Values),
-				)
-			}
-			fmt.Println(t.Render())
-		},
-	}
+// 			attrs, err := h.ListAttributes()
+// 			if err != nil {
+// 				cli.ExitWithError("Could not get attributes", err)
+// 			}
 
-	// Create an attribute
-	attributesCreateCmd = &cobra.Command{
-		Use:   "create",
-		Short: "Create an attribute",
-		Run: func(cmd *cobra.Command, args []string) {
-			h := cli.NewHandler(cmd)
-			defer h.Close()
+// 			t := cli.NewTable()
+// 			t.Headers("Id", "Namespace", "Name", "Rule", "Values")
+// 			for _, attr := range attrs {
+// 				t.Row(
+// 					strconv.Itoa(int(attr.Id)),
+// 					attr.Namespace,
+// 					attr.Name,
+// 					attr.Rule,
+// 					cli.CommaSeparated(attr.Values),
+// 				)
+// 			}
+// 			fmt.Println(t.Render())
+// 		},
+// 	}
 
-			flagHelper := cli.NewFlagHelper(cmd)
-			name := flagHelper.GetRequiredString("name")
-			rule := flagHelper.GetRequiredString("rule")
-			values := flagHelper.GetStringSlice("values", attrValues, cli.FlagHelperStringSliceOptions{
-				Min: 1,
-			})
-			namespace := flagHelper.GetRequiredString("namespace")
-			description := flagHelper.GetRequiredString("description")
+// 	// Create an attribute
+// 	attributesCreateCmd = &cobra.Command{
+// 		Use:   "create",
+// 		Short: "Create an attribute",
+// 		Run: func(cmd *cobra.Command, args []string) {
+// 			h := cli.NewHandler(cmd)
+// 			defer h.Close()
 
-			if _, err := h.CreateAttribute(name, rule, values, namespace, description); err != nil {
-				cli.ExitWithError("Could not create attribute", err)
-			}
+// 			flagHelper := cli.NewFlagHelper(cmd)
+// 			name := flagHelper.GetRequiredString("name")
+// 			rule := flagHelper.GetRequiredString("rule")
+// 			values := flagHelper.GetStringSlice("values", attrValues, cli.FlagHelperStringSliceOptions{
+// 				Min: 1,
+// 			})
+// 			namespace := flagHelper.GetRequiredString("namespace")
+// 			description := flagHelper.GetRequiredString("description")
 
-			fmt.Println(cli.SuccessMessage("Attribute created"))
-			fmt.Println(
-				cli.NewTabular().Rows([][]string{
-					{"Name", name},
-					{"Rule", rule},
-					{"Values", cli.CommaSeparated(values)},
-					{"Namespace", namespace},
-					{"Description", description},
-				}...).Render(),
-			)
-		},
-	}
+// 			if _, err := h.CreateAttribute(name, rule, values, namespace, description); err != nil {
+// 				cli.ExitWithError("Could not create attribute", err)
+// 			}
 
-	attributesDeleteCmd = &cobra.Command{
-		Use:   "delete <id>",
-		Short: "Delete an attribute",
-		Args:  cobra.ExactArgs(1),
-		Run: func(cmd *cobra.Command, args []string) {
-			h := cli.NewHandler(cmd)
-			defer h.Close()
+// 			fmt.Println(cli.SuccessMessage("Attribute created"))
+// 			fmt.Println(
+// 				cli.NewTabular().Rows([][]string{
+// 					{"Name", name},
+// 					{"Rule", rule},
+// 					{"Values", cli.CommaSeparated(values)},
+// 					{"Namespace", namespace},
+// 					{"Description", description},
+// 				}...).Render(),
+// 			)
+// 		},
+// 	}
 
-			id, err := strconv.Atoi(args[0])
-			if err != nil {
-				fmt.Println(cli.ErrorMessage("Invalid ID", err))
-				os.Exit(1)
-			}
-			attr, err := h.GetAttribute(id)
-			if err != nil {
-				errMsg := fmt.Sprintf("Could not find attribute (%d)", id)
-				cli.ExitWithNotFoundError(errMsg, err)
-				cli.ExitWithError(errMsg, err)
-			}
+// 	attributesDeleteCmd = &cobra.Command{
+// 		Use:   "delete <id>",
+// 		Short: "Delete an attribute",
+// 		Args:  cobra.ExactArgs(1),
+// 		Run: func(cmd *cobra.Command, args []string) {
+// 			h := cli.NewHandler(cmd)
+// 			defer h.Close()
 
-			cli.ConfirmDelete("attribute", attr.Fqn)
+// 			id, err := strconv.Atoi(args[0])
+// 			if err != nil {
+// 				fmt.Println(cli.ErrorMessage("Invalid ID", err))
+// 				os.Exit(1)
+// 			}
+// 			attr, err := h.GetAttribute(id)
+// 			if err != nil {
+// 				errMsg := fmt.Sprintf("Could not find attribute (%d)", id)
+// 				cli.ExitWithNotFoundError(errMsg, err)
+// 				cli.ExitWithError(errMsg, err)
+// 			}
 
-			if err := h.DeleteAttribute(id); err != nil {
-				errMsg := fmt.Sprintf("Could not delete attribute (%d)", id)
-				cli.ExitWithNotFoundError(errMsg, err)
-				cli.ExitWithError(errMsg, err)
-			}
+// 			cli.ConfirmDelete("attribute", attr.Fqn)
 
-			fmt.Println(cli.SuccessMessage("Attribute deleted"))
-			fmt.Println(
-				cli.NewTabular().
-					Rows([][]string{
-						{"Name", attr.Name},
-						{"Rule", attr.Rule},
-						{"Values", cli.CommaSeparated(attr.Values)},
-						{"Namespace", attr.Namespace},
-						{"Description", attr.Description},
-					}...).Render(),
-			)
-		},
-	}
+// 			if err := h.DeleteAttribute(id); err != nil {
+// 				errMsg := fmt.Sprintf("Could not delete attribute (%d)", id)
+// 				cli.ExitWithNotFoundError(errMsg, err)
+// 				cli.ExitWithError(errMsg, err)
+// 			}
 
-	// Update one attribute
-	attributeUpdateCmd = &cobra.Command{
-		Use:   "update",
-		Short: "Update an attribute",
-		Run: func(cmd *cobra.Command, args []string) {
-			h := cli.NewHandler(cmd)
-			defer h.Close()
+// 			fmt.Println(cli.SuccessMessage("Attribute deleted"))
+// 			fmt.Println(
+// 				cli.NewTabular().
+// 					Rows([][]string{
+// 						{"Name", attr.Name},
+// 						{"Rule", attr.Rule},
+// 						{"Values", cli.CommaSeparated(attr.Values)},
+// 						{"Namespace", attr.Namespace},
+// 						{"Description", attr.Description},
+// 					}...).Render(),
+// 			)
+// 		},
+// 	}
 
-			flagHelper := cli.NewFlagHelper(cmd)
+// 	// Update one attribute
+// 	attributeUpdateCmd = &cobra.Command{
+// 		Use:   "update",
+// 		Short: "Update an attribute",
+// 		Run: func(cmd *cobra.Command, args []string) {
+// 			h := cli.NewHandler(cmd)
+// 			defer h.Close()
 
-			id := flagHelper.GetRequiredInt32("id")
-			name := flagHelper.GetRequiredString("name")
-			rule := flagHelper.GetRequiredString("rule")
+// 			flagHelper := cli.NewFlagHelper(cmd)
 
-			values := flagHelper.GetStringSlice("values", attrValues, cli.FlagHelperStringSliceOptions{
-				Min: 1,
-			})
+// 			id := flagHelper.GetRequiredInt32("id")
+// 			name := flagHelper.GetRequiredString("name")
+// 			rule := flagHelper.GetRequiredString("rule")
 
-			groupBy := flagHelper.GetStringSlice("group-by", groupBy, cli.FlagHelperStringSliceOptions{
-				Min: 0,
-			})
+// 			values := flagHelper.GetStringSlice("values", attrValues, cli.FlagHelperStringSliceOptions{
+// 				Min: 1,
+// 			})
 
-			resourceDependencies := flagHelper.GetStringSlice("resource-dependencies", resourceDependencies, cli.FlagHelperStringSliceOptions{
-				Min: 0,
-			})
+// 			groupBy := flagHelper.GetStringSlice("group-by", groupBy, cli.FlagHelperStringSliceOptions{
+// 				Min: 0,
+// 			})
 
-			resourceId := flagHelper.GetRequiredInt32("resource-id")
-			resourceVersion := flagHelper.GetRequiredInt32("resource-version")
-			resourceName := flagHelper.GetRequiredString("resource-name")
-			resourceNamespace := flagHelper.GetRequiredString("resource-namespace")
-			resourceDescription := flagHelper.GetRequiredString("resource-description")
+// 			resourceDependencies := flagHelper.GetStringSlice("resource-dependencies", resourceDependencies, cli.FlagHelperStringSliceOptions{
+// 				Min: 0,
+// 			})
 
-			if _, err := h.UpdateAttribute(
-				id,
-				name,
-				rule,
-				values,
-				groupBy,
-				resourceId,
-				resourceVersion,
-				resourceName,
-				resourceNamespace,
-				resourceDescription,
-				resourceDependencies,
-			); err != nil {
-				cli.ExitWithError("Could not update attribute", err)
-				return
-			} else {
-				fmt.Println(cli.SuccessMessage(fmt.Sprintf("Attribute id: %d updated.", id)))
-			}
-		},
-	}
-)
+// 			resourceId := flagHelper.GetRequiredInt32("resource-id")
+// 			resourceVersion := flagHelper.GetRequiredInt32("resource-version")
+// 			resourceName := flagHelper.GetRequiredString("resource-name")
+// 			resourceNamespace := flagHelper.GetRequiredString("resource-namespace")
+// 			resourceDescription := flagHelper.GetRequiredString("resource-description")
 
-func init() {
-	rootCmd.AddCommand(attributesCmd)
+// 			if _, err := h.UpdateAttribute(
+// 				id,
+// 				name,
+// 				rule,
+// 				values,
+// 				groupBy,
+// 				resourceId,
+// 				resourceVersion,
+// 				resourceName,
+// 				resourceNamespace,
+// 				resourceDescription,
+// 				resourceDependencies,
+// 			); err != nil {
+// 				cli.ExitWithError("Could not update attribute", err)
+// 				return
+// 			} else {
+// 				fmt.Println(cli.SuccessMessage(fmt.Sprintf("Attribute id: %d updated.", id)))
+// 			}
+// 		},
+// 	}
+// )
 
-	attributesCmd.AddCommand(attributeGetCmd)
+// func init() {
+// 	rootCmd.AddCommand(attributesCmd)
 
-	attributesCmd.AddCommand(attributesListCmd)
+// 	attributesCmd.AddCommand(attributeGetCmd)
 
-	attributesCmd.AddCommand(attributesCreateCmd)
-	attributesCreateCmd.Flags().StringP("name", "n", "", "Name of the attribute")
-	attributesCreateCmd.Flags().StringP("rule", "r", "", "Rule of the attribute")
-	attributesCreateCmd.Flags().StringSliceVarP(&attrValues, "values", "v", []string{}, "Values of the attribute")
-	attributesCreateCmd.Flags().StringP("namespace", "s", "", "Namespace of the attribute")
-	attributesCreateCmd.Flags().StringP("description", "d", "", "Description of the attribute")
+// 	attributesCmd.AddCommand(attributesListCmd)
 
-	attributesCmd.AddCommand(attributeUpdateCmd)
-	attributeUpdateCmd.Flags().Int32P("id", "i", 0, "Id of the attribute")
-	attributeUpdateCmd.Flags().StringP("name", "n", "", "Name of the attribute")
-	attributeUpdateCmd.Flags().StringP("rule", "r", "", "Rule of the attribute")
-	attributeUpdateCmd.Flags().StringSliceVarP(&attrValues, "values", "v", []string{}, "Values of the attribute")
-	attributeUpdateCmd.Flags().StringSliceVarP(&groupBy, "group-by", "g", []string{}, "GroupBy of the attribute")
-	attributeUpdateCmd.Flags().StringSliceVarP(&resourceDependencies, "resource-dependencies", "d", []string{}, "ResourceDependencies of the attribute definition descriptor")
-	attributeUpdateCmd.Flags().Int32P("resource-id", "I", 0, "ResourceId of the attribute definition descriptor")
-	attributeUpdateCmd.Flags().Int32P("resource-version", "V", 0, "ResourceVersion of the attribute definition descriptor")
-	attributeUpdateCmd.Flags().StringP("resource-name", "N", "", "ResourceName of the attribute definition descriptor")
-	attributeUpdateCmd.Flags().StringP("resource-namespace", "S", "", "ResourceNamespace of the attribute definition descriptor")
-	attributeUpdateCmd.Flags().StringP("resource-description", "D", "", "ResourceDescription of the attribute definition descriptor")
+// 	attributesCmd.AddCommand(attributesCreateCmd)
+// 	attributesCreateCmd.Flags().StringP("name", "n", "", "Name of the attribute")
+// 	attributesCreateCmd.Flags().StringP("rule", "r", "", "Rule of the attribute")
+// 	attributesCreateCmd.Flags().StringSliceVarP(&attrValues, "values", "v", []string{}, "Values of the attribute")
+// 	attributesCreateCmd.Flags().StringP("namespace", "s", "", "Namespace of the attribute")
+// 	attributesCreateCmd.Flags().StringP("description", "d", "", "Description of the attribute")
 
-	attributesCmd.AddCommand(attributesDeleteCmd)
-}
+// 	attributesCmd.AddCommand(attributeUpdateCmd)
+// 	attributeUpdateCmd.Flags().Int32P("id", "i", 0, "Id of the attribute")
+// 	attributeUpdateCmd.Flags().StringP("name", "n", "", "Name of the attribute")
+// 	attributeUpdateCmd.Flags().StringP("rule", "r", "", "Rule of the attribute")
+// 	attributeUpdateCmd.Flags().StringSliceVarP(&attrValues, "values", "v", []string{}, "Values of the attribute")
+// 	attributeUpdateCmd.Flags().StringSliceVarP(&groupBy, "group-by", "g", []string{}, "GroupBy of the attribute")
+// 	attributeUpdateCmd.Flags().StringSliceVarP(&resourceDependencies, "resource-dependencies", "d", []string{}, "ResourceDependencies of the attribute definition descriptor")
+// 	attributeUpdateCmd.Flags().Int32P("resource-id", "I", 0, "ResourceId of the attribute definition descriptor")
+// 	attributeUpdateCmd.Flags().Int32P("resource-version", "V", 0, "ResourceVersion of the attribute definition descriptor")
+// 	attributeUpdateCmd.Flags().StringP("resource-name", "N", "", "ResourceName of the attribute definition descriptor")
+// 	attributeUpdateCmd.Flags().StringP("resource-namespace", "S", "", "ResourceNamespace of the attribute definition descriptor")
+// 	attributeUpdateCmd.Flags().StringP("resource-description", "D", "", "ResourceDescription of the attribute definition descriptor")
+
+// 	attributesCmd.AddCommand(attributesDeleteCmd)
+// }
