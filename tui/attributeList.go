@@ -36,7 +36,7 @@ func (m AttributeItem) Description() string {
 	return m.description
 }
 
-func InitAttributeList() AttributeList {
+func InitAttributeList() (tea.Model, tea.Cmd) {
 	// TODO: fetch items from API
 
 	m := AttributeList{}
@@ -52,8 +52,7 @@ func InitAttributeList() AttributeList {
 			values:      []string{"USA", "GBR"},
 		},
 	})
-
-	return m
+	return m.Update(WindowMsg())
 }
 
 func (m AttributeList) Init() tea.Cmd {
