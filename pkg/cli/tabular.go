@@ -54,5 +54,10 @@ func PrintSuccessTable(cmd *cobra.Command, id string, t *table.Table) {
 		"///" + strings.Repeat(" ", (padding/2)) + msg.helper + strings.Repeat(" ", (padding/2)+(padding%2)) + "///" + "\n" +
 		strings.Repeat("/", width)
 
+	if t == nil {
+		fmt.Println(successMessage + "\n" + jsonDirections + "\n")
+		return
+	}
+
 	fmt.Println(successMessage + "\n" + t.Render() + "\n" + jsonDirections + "\n")
 }
