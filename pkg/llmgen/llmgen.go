@@ -113,6 +113,19 @@ func KnowledgeBaseChat(query string) (LLMGenOutputObject, error) {
 	}, nil
 }
 
+func CLIAgent(query string) (LLMGenOutputObject, error) {
+	_, reader, _ := _run_binary(NewLLMGenArgs(query, "/api/cli/help"))
+	var output string
+	output, _ = _collectAndPrintOutput(reader)
+
+	// Return the captured output.
+	return LLMGenOutputObject{
+		Output:        output,
+		OriginalQuery: query,
+		ExtraData:     string(output),
+	}, nil
+}
+
 // RawInference executes a given command and streams the output.
 // It returns LLMGenOutputObject containing the complete output after execution.
 // func RawInference(function string, query string) (LLMGenOutputObject, error) {

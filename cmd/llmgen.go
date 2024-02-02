@@ -12,10 +12,15 @@ var llmgenCmd = &cobra.Command{
 	Short: "Just a simple test mode for our llmgen integration",
 	Run: func(cmd *cobra.Command, args []string) {
 		var userQuery string
+		// var route string
 		// var function string
 		if len(args) > 0 {
 			userQuery = args[0]
 		}
+
+		// if len(args) > 1 {
+		// 	route = args[1]
+		// }
 
 		if userQuery == "" {
 			fmt.Println("Error: No query provided. Please provide a query.")
@@ -24,7 +29,11 @@ var llmgenCmd = &cobra.Command{
 		print("thinking...\n\n")
 		// llmgen.RawInference(function, userQuery)
 		// llmgen.RawInference(userQuery)
-		llmgen.KnowledgeBaseChat("What in the heck is the DSP?")
+		// if route == "cliAgent" {
+		// 	llmgen.CLIAgent(userQuery)
+		// } else {
+		llmgen.KnowledgeBaseChat(userQuery)
+		// }
 	},
 }
 
