@@ -7,10 +7,12 @@ import (
 
 type Table table.Table
 
+var defaultTableWidth = 120
+
 func NewTable() *table.Table {
 	t := table.New()
 	return t.Border(lipgloss.NormalBorder()).
-		Width(120).
+		Width(defaultTableWidth).
 		BorderStyle(lipgloss.NewStyle().Foreground(lipgloss.ANSIColor(25))).
 		StyleFunc(func(row, col int) lipgloss.Style {
 			switch {
