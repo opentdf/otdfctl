@@ -243,7 +243,7 @@ func init() {
 	subjectMappingUpdateCmd.Flags().StringP("attribute-value-id", "a", "", "Id of the attribute value")
 	subjectMappingUpdateCmd.Flags().StringP("subject-attribute", "s", "", "Subject attribute")
 	subjectMappingUpdateCmd.Flags().StringSliceVarP(&subjectValues, "subject-values", "v", []string{}, "Subject values")
-	subjectMappingUpdateCmd.Flags().StringP("operator", "o", "", "Operator")
+	subjectMappingUpdateCmd.Flags().StringP("operator", "o", "", "Operator: [IN, NOT_IN]")
 	subjectMappingUpdateCmd.Flags().StringP("metadata", "m", "", "Metadata (optional): labels and description")
 
 	subjectMappingsCmd.AddCommand(subjectMappingDeleteCmd)
