@@ -160,10 +160,8 @@ or different attributes tied to each.
 				name,
 			); err != nil {
 				cli.ExitWithError("Could not update namespace", err)
-				return
-			} else {
-				fmt.Println(cli.SuccessMessage(fmt.Sprintf("Namespace id: (%s) updated. Name set to (%s).", id, name)))
 			}
+			fmt.Println(cli.SuccessMessage(fmt.Sprintf("Namespace id: (%s) updated. Name set to (%s).", id, name)))
 		},
 	}
 )
