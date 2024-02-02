@@ -58,7 +58,7 @@ func (h Handler) CreateNewSubjectMapping(attributeValueId string, subjectAttribu
 	return resp.SubjectMapping, nil
 }
 
-func (h Handler) UpdateSubjectMapping(id string, attributeValueId string, subjectAttribute string, subjectValues []string, operator string) (*subjectmapping.SubjectMapping, error) {
+func (h Handler) UpdateSubjectMapping(id string, attributeValueId string, subjectAttribute string, subjectValues []string, operator string, metadata *common.MetadataMutable) (*subjectmapping.SubjectMapping, error) {
 	if !slices.Contains(SubjectMappingOperatorEnumChoices, operator) {
 		return nil, fmt.Errorf("Invalid operator. Must be one of [%s]" + strings.Join(SubjectMappingOperatorEnumChoices, ", "))
 	}
@@ -70,6 +70,7 @@ func (h Handler) UpdateSubjectMapping(id string, attributeValueId string, subjec
 			SubjectAttribute: subjectAttribute,
 			SubjectValues:    subjectValues,
 			Operator:         GetSubjectMappingOperatorFromChoice(operator),
+			Metadata:         metadata,
 		},
 	})
 	if err != nil {
