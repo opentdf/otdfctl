@@ -2,8 +2,8 @@ package cli
 
 import (
 	"fmt"
-	"strings"
 
+	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/lipgloss/table"
 	"github.com/spf13/cobra"
 )
@@ -19,7 +19,6 @@ func getJsonHelper(command string) string {
 }
 
 func PrintSuccessTable(cmd *cobra.Command, id string, t *table.Table) {
-	width := defaultTableWidth
 	resource := cmd.Parent().Use
 
 	var msg struct {
@@ -47,17 +46,13 @@ func PrintSuccessTable(cmd *cobra.Command, id string, t *table.Table) {
 		msg.helper = ""
 	}
 
-	successMessage := SuccessMessage(msg.verb) + "\n"
-
-	padding := (width - len(msg.helper) - 6)
-	jsonDirections := "\n" + strings.Repeat("/", width) + "\n" +
-		"///" + strings.Repeat(" ", (padding/2)) + msg.helper + strings.Repeat(" ", (padding/2)+(padding%2)) + "///" + "\n" +
-		strings.Repeat("/", width)
+	successMessage := SuccessMessage(msg.verb)
+	jsonDirections := FooterMessage(msg.helper)
 
 	if t == nil {
-		fmt.Println(successMessage + "\n" + jsonDirections + "\n")
+		fmt.Println(lipgloss.JoinVertical(lipgloss.Top, successMessage, jsonDirections))
 		return
 	}
 
-	fmt.Println(successMessage + "\n" + t.Render() + "\n" + jsonDirections + "\n")
+	fmt.Println(lipgloss.JoinVertical(lipgloss.Top, successMessage, t.Render(), jsonDirections))
 }
