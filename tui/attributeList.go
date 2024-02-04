@@ -16,7 +16,7 @@ type AttributeList struct {
 }
 
 type AttributeItem struct {
-	id          int
+	id          string
 	namespace   string
 	name        string
 	description string
@@ -44,7 +44,7 @@ func InitAttributeList() (tea.Model, tea.Cmd) {
 	m.list.Title = "Attributes"
 	m.list.SetItems([]list.Item{
 		AttributeItem{
-			id:          1,
+			id:          "8a6755f2-efa8-4758-b893-af9a488e0bea",
 			namespace:   "demo.com",
 			name:        "relto",
 			rule:        "hierarchical",
@@ -65,7 +65,7 @@ func StyleAttr(attr string) string {
 		Render(attr)
 }
 
-func CreateFormat(num int) string {
+func CreateViewFormat(num int) string {
 	var format string
 	for i := 0; i < num; i++ {
 		format += "%s %s\n"
@@ -94,19 +94,20 @@ func (m AttributeList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// InitAttributeCreateView()
 			return m, nil
 		case "e":
-			// item := m.list.Items()[0].(AttributeItem)
-			// attr_keys := []string{"Name", "Namespace", "Rule", "Description", "Values"}
-			return initialModel(), nil
+			item := m.list.Items()[0].(AttributeItem)
+			attr_keys := []string{"Id", "Name", "Namespace", "Rule", "Description", "Values"}
+			return InitAttributeEdit(attr_keys, item)
 		case "enter":
 			item := m.list.Items()[0].(AttributeItem)
-			attr_keys := []string{"Name", "Namespace", "Rule", "Description", "Values"}
+			attr_keys := []string{"Id", "Name", "Namespace", "Rule", "Description", "Values"}
 			content := fmt.Sprintf(
-				CreateFormat(len(attr_keys)),
-				StyleAttr(attr_keys[0]), item.name,
-				StyleAttr(attr_keys[1]), item.namespace,
-				StyleAttr(attr_keys[2]), item.rule,
-				StyleAttr(attr_keys[3]), item.description,
-				StyleAttr(attr_keys[4]), item.values,
+				CreateViewFormat(len(attr_keys)),
+				StyleAttr(attr_keys[0]), item.id,
+				StyleAttr(attr_keys[1]), item.name,
+				StyleAttr(attr_keys[2]), item.namespace,
+				StyleAttr(attr_keys[3]), item.rule,
+				StyleAttr(attr_keys[4]), item.description,
+				StyleAttr(attr_keys[5]), item.values,
 			)
 			wrapped := wordwrap.String(content, m.width)
 			am := AttributeView{}
