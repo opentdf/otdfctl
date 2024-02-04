@@ -36,22 +36,30 @@ func (m AttributeItem) Description() string {
 	return m.description
 }
 
-func InitAttributeList() (tea.Model, tea.Cmd) {
+func InitAttributeList(items []AttributeItem) (tea.Model, tea.Cmd) {
 	// TODO: fetch items from API
 
 	m := AttributeList{}
 	m.list = list.New([]list.Item{}, list.NewDefaultDelegate(), constants.WindowSize.Width, constants.WindowSize.Height)
 	m.list.Title = "Attributes"
-	m.list.SetItems([]list.Item{
-		AttributeItem{
-			id:          "8a6755f2-efa8-4758-b893-af9a488e0bea",
-			namespace:   "demo.com",
-			name:        "relto",
-			rule:        "hierarchical",
-			description: "The relto attribute is used to describe the relationship of the resource to the country of origin.",
-			values:      []string{"USA", "GBR"},
-		},
-	})
+	if len(items) > 0 {
+		var items_ []list.Item
+		for _, item := range items {
+			items_ = append(items_, item)
+		}
+		m.list.SetItems(items_)
+	} else {
+		m.list.SetItems([]list.Item{
+			AttributeItem{
+				id:          "8a6755f2-efa8-4758-b893-af9a488e0bea",
+				namespace:   "demo.com",
+				name:        "relto",
+				rule:        "hierarchical",
+				description: "The relto attribute is used to describe the relationship of the resource to the country of origin.",
+				values:      []string{"USA", "GBR"},
+			},
+		})
+	}
 	return m.Update(WindowMsg())
 }
 

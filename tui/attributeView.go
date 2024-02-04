@@ -96,7 +96,7 @@ func (m AttributeView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c", "q":
 			return m, tea.Quit
 		case "backspace":
-			return InitAttributeList()
+			return InitAttributeList([]AttributeItem{})
 		}
 
 	case tea.WindowSizeMsg:

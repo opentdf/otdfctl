@@ -75,7 +75,7 @@ func (m AppMenu) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "enter":
 			switch m.list.SelectedItem().(AppMenuItem).id {
 			case attributeMenu:
-				return InitAttributeList()
+				return InitAttributeList([]AttributeItem{})
 			}
 		}
 	}
