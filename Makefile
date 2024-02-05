@@ -16,7 +16,7 @@ OUT_DIR=./target
 
 # Targets for building the project for different platforms
 .PHONY: build-darwin-amd64 build-darwin-arm64 build-linux-amd64 build-linux-arm build-linux-arm64 build-windows-amd64 build-windows-arm build-windows-arm64
-build: build-darwin-amd64 build-darwin-arm64 build-linux-amd64 build-linux-arm build-linux-arm64 build-windows-amd64 build-windows-arm build-windows-arm64
+build: clean build-darwin-amd64 build-darwin-arm64 build-linux-amd64 build-linux-arm build-linux-arm64 build-windows-amd64 build-windows-arm build-windows-arm64
 
 # Build commands for each platform
 build-darwin-amd64:
@@ -50,7 +50,7 @@ run: build
 
 # Target for testing the project
 .PHONY: test
-test:
+test: build
 	go test -v ./...
 
 # Target for cleaning up the output directory
