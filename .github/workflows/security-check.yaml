@@ -13,7 +13,15 @@ jobs:
       GOPRIVATE: github.com/opentdf/opentdf-v2-poc/*
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - run: git config --global url.https://${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/.insteadOf https://github.com/
+      - name: Generate a token
+        id: generate_token
+        uses: actions/create-github-app-token@v1.5.0
+        with:
+          app-id: '416599'
+          private-key: '${{ secrets.GH_APP_PRIVATE_KEY }}'
+          owner: ${{ github.repository_owner }}
+          repositories: 'opentdf-v2-poc'
+      - run: git config --global url.https://${{ steps.generate_token.outputs.token }}@github.com/.insteadOf https://github.com/
       - id: govulncheck
         uses: golang/govulncheck-action@v1
         with:
