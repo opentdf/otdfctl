@@ -11,9 +11,9 @@ jobs:
     name: Run govulncheck
     env:
       GOPRIVATE: github.com/opentdf/opentdf-v2-poc/*
-      GH_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - run: git config --global url.https://$GH_ACCESS_TOKEN@github.com/.insteadOf https://github.com/
+      - run: git config --global url.https://${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/.insteadOf https://github.com/
       - id: govulncheck
         uses: golang/govulncheck-action@v1
         with:
