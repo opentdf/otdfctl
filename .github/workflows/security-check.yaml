@@ -14,7 +14,7 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - run: |
-          if [ #${{ secrets.GH_APP_PRIVATE_KEY }} -gt 0 ]; then
+          if [ #"${{ secrets.GH_APP_PRIVATE_KEY }}" -gt 0 ]; then
             echo "Token was found provided!"
           else
             echo "Wow, such empty."
