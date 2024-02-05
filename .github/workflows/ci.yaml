@@ -1,4 +1,4 @@
-name: 'CI: 🧹 Lint, 🧪 Unit & e2e Tests'
+name: 'CI'
 
 on:
   pull_request:
