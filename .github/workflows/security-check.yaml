@@ -13,12 +13,6 @@ jobs:
       GOPRIVATE: github.com/opentdf/opentdf-v2-poc/*
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - run: |
-          if [ -n "${{ secrets.GH_APP_PRIVATE_KEY }}" ]; then
-            echo "Token was found provided!"
-          else
-            echo "Wow, such empty."
-          fi
       - name: Generate a token
         id: generate_token
         uses: actions/create-github-app-token@v1.5.0
