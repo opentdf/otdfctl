@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/opentdf/opentdf-v2-poc/sdk/attributes"
 	"github.com/opentdf/tructl/pkg/cli"
 	"github.com/spf13/cobra"
 )
@@ -44,19 +45,46 @@ used to define the access controls based on subject encodings and entity entitle
 			values := flagHelper.GetStringSlice("values", attrValues, cli.FlagHelperStringSliceOptions{})
 			namespace := flagHelper.GetRequiredString("namespace")
 
-			if _, err := h.CreateAttribute(name, rule, values, namespace); err != nil {
+			attr, err := h.CreateAttribute(name, rule, namespace)
+			if err != nil {
 				cli.ExitWithError("Could not create attribute", err)
 			}
+
+			// create attribute values
+			attrValues := make([]*attributes.Value, 0, len(values))
+			valueErrors := make(map[string]error)
+			for _, value := range values {
+				v, err := h.CreateAttributeValue(attr.Id, value)
+				if err != nil {
+					valueErrors[value] = err
+				}
+				attrValues = append(attrValues, v)
+			}
+
+			a := cli.GetSimpleAttribute(&attributes.Attribute{
+				Id:        attr.Id,
+				Name:      attr.Name,
+				Rule:      attr.Rule,
+				Values:    attrValues,
+				Namespace: attr.Namespace,
+			})
 
 			fmt.Println(cli.SuccessMessage("Attribute created"))
 			fmt.Println(
 				cli.NewTabular().Rows([][]string{
-					{"Name", name},
-					{"Rule", rule},
-					{"Values", cli.CommaSeparated(values)},
-					{"Namespace", namespace},
+					{"Name", a.Name},
+					{"Rule", a.Rule},
+					{"Values", cli.CommaSeparated(a.Values)},
+					{"Namespace", a.Namespace},
 				}...).Render(),
 			)
+
+			if len(valueErrors) > 0 {
+				fmt.Println(cli.ErrorMessage("Error creating attribute values", nil))
+				for value, err := range valueErrors {
+					cli.ErrorMessage(value, err)
+				}
+			}
 		},
 	}
 

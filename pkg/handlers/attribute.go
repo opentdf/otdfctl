@@ -48,7 +48,7 @@ func (h Handler) ListAttributes() ([]*attributes.Attribute, error) {
 	return resp.Attributes, err
 }
 
-func (h Handler) CreateAttribute(name string, rule string, values []string, namespace string) (*attributes.Attribute, error) {
+func (h Handler) CreateAttribute(name string, rule string, namespace string) (*attributes.Attribute, error) {
 	r, err := GetAttributeRuleFromReadableString(rule)
 	if err != nil {
 		return nil, err
@@ -67,31 +67,14 @@ func (h Handler) CreateAttribute(name string, rule string, values []string, name
 		return nil, err
 	}
 
-	// short-circuit if there are no values
-	if len(values) == 0 {
-		return resp.Attribute, nil
-	}
-
-	// create attribute values
 	attr := resp.Attribute
-	attrValues := make([]*attributes.Value, 0, len(values))
-	valueErrors := make(map[string]error)
-	for _, value := range values {
-		v, err := h.CreateAttributeValue(attr.Id, value)
-		if err != nil {
-			valueErrors[value] = err
-		}
-		attrValues = append(attrValues, v)
-	}
 
-	// return the attribute and any errors
 	return &attributes.Attribute{
 		Id:        attr.Id,
 		Name:      attr.Name,
 		Rule:      attr.Rule,
-		Values:    attrValues,
 		Namespace: attr.Namespace,
-	}, &CreateAttributeError{ValueErrors: valueErrors}
+	}, nil
 }
 
 func (h *Handler) UpdateAttribute(
