@@ -1,9 +1,7 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/opentdf/tructl/pkg/cli"
@@ -34,15 +32,12 @@ or different attributes tied to each.
 	namespaceGetCmd = &cobra.Command{
 		Use:   "get",
 		Short: "Get a namespace by id",
-		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			h := cli.NewHandler(cmd)
 			defer h.Close()
 
-			id := args[0]
-			if id == "" {
-				cli.ExitWithError("Invalid ID", errors.New(id))
-			}
+			flagHelper := cli.NewFlagHelper(cmd)
+			id := flagHelper.GetRequiredString("id")
 
 			ns, err := h.GetNamespace(id)
 			if err != nil {
@@ -114,16 +109,13 @@ or different attributes tied to each.
 	namespaceDeleteCmd = &cobra.Command{
 		Use:   "delete",
 		Short: "Delete a namespace by id",
-		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			h := cli.NewHandler(cmd)
 			defer h.Close()
 
-			id := args[0]
-			if id == "" {
-				fmt.Println(cli.ErrorMessage("Invalid ID", errors.New(id)))
-				os.Exit(1)
-			}
+			flagHelper := cli.NewFlagHelper(cmd)
+			id := flagHelper.GetRequiredString("id")
+
 			ns, err := h.GetNamespace(id)
 			if err != nil {
 				errMsg := fmt.Sprintf("Could not find namespace (%s)", id)
@@ -168,10 +160,8 @@ or different attributes tied to each.
 				name,
 			); err != nil {
 				cli.ExitWithError("Could not update namespace", err)
-				return
-			} else {
-				fmt.Println(cli.SuccessMessage(fmt.Sprintf("Namespace id: (%s) updated. Name set to (%s).", id, name)))
 			}
+			fmt.Println(cli.SuccessMessage(fmt.Sprintf("Namespace id: (%s) updated. Name set to (%s).", id, name)))
 		},
 	}
 )
@@ -180,6 +170,7 @@ func init() {
 	rootCmd.AddCommand(namespacesCmd)
 
 	namespacesCmd.AddCommand(namespaceGetCmd)
+	namespaceGetCmd.Flags().StringP("id", "i", "", "Id of the namespace")
 
 	namespacesCmd.AddCommand(namespacesListCmd)
 
@@ -191,4 +182,5 @@ func init() {
 	namespaceUpdateCmd.Flags().StringP("name", "n", "", "Name value of the namespace")
 
 	namespacesCmd.AddCommand(namespaceDeleteCmd)
+	namespaceDeleteCmd.Flags().StringP("id", "i", "", "Id of the namespace")
 }

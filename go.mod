@@ -3,12 +3,11 @@ module github.com/opentdf/tructl
 go 1.21.5
 
 require (
-	github.com/charmbracelet/bubbles v0.17.1
+	github.com/charmbracelet/bubbles v0.17.2-0.20240108170749-ec883029c8e6
 	github.com/charmbracelet/bubbletea v0.25.0
-	github.com/charmbracelet/huh v0.2.3
+	github.com/charmbracelet/huh v0.3.0
 	github.com/charmbracelet/lipgloss v0.9.1
-	github.com/opentdf/opentdf-v2-poc v0.0.0-20240103192012-f7b86a6a5af7
-	github.com/opentdf/opentdf-v2-poc/sdk v0.0.0-20240117221500-8dfca6a159a8
+	github.com/opentdf/opentdf-v2-poc/sdk v0.0.0-20240205152004-112638bc4937
 	github.com/spf13/cobra v1.8.0
 	google.golang.org/grpc v1.60.1
 )
@@ -23,7 +22,9 @@ require (
 	github.com/charmbracelet/glamour v0.6.0 // indirect
 	github.com/containerd/console v1.0.4-0.20230313162750-1ae8d489ac81 // indirect
 	github.com/dlclark/regexp2 v1.10.0 // indirect
+	github.com/golang-jwt/jwt/v4 v4.5.0 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
+	github.com/google/uuid v1.4.0 // indirect
 	github.com/gorilla/css v1.0.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.19.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
@@ -37,6 +38,7 @@ require (
 	github.com/muesli/reflow v0.3.0 // indirect
 	github.com/muesli/termenv v0.15.2 // indirect
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
+	github.com/opentdf/opentdf-v2-poc v0.0.0-20240205152004-112638bc4937 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/sahilm/fuzzy v0.1.1-0.20230530133925-c48e322e2a8f // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
