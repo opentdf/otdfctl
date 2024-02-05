@@ -12,8 +12,7 @@ jobs:
     steps:
       - id: govulncheck
         uses: golang/govulncheck-action@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
+          github-token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           go-version-file: go.mod
           go-package: ./...
