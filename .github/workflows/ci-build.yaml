@@ -4,9 +4,8 @@ on:
   pull_request:
     branches:
       - main
-
 jobs:
-  golangci:
+  build-targets:
     name: lint
     runs-on: ubuntu-22.04
     steps:
