@@ -11,14 +11,14 @@ jobs:
   build-targets:
     name: lint
     runs-on: ubuntu-22.04
+    env:
+      GOPRIVATE: "github.com/opentdf/*"
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-go@v4
         with:
           go-version: '1.21'
           cache: false
-      - name: set-env-vars
-        run: go env -w "GOPRIVATE=github.com/opentdf/*"
       - name: make-targets
         run: make build
       - name: smoke-test
