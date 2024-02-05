@@ -9,7 +9,7 @@ on:
       - main
 jobs:
   build-targets:
-    name: lint
+    name: build-targets
     runs-on: ubuntu-22.04
     env:
       GOPRIVATE: "github.com/opentdf/*"
@@ -19,6 +19,8 @@ jobs:
         with:
           go-version: '1.21'
           cache: false
+      - name: print-vars
+        run: echo "${GOPRIVATE}"
       - name: make-targets
         run: make build
       - name: smoke-test
