@@ -13,6 +13,12 @@ jobs:
       GOPRIVATE: github.com/opentdf/opentdf-v2-poc/*
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
+      - run: |
+          if [ ${#${{ secrets.GH_APP_PRIVATE_KEY }}} -gt 0 ]; then
+            echo "Token was found provided!"
+          else
+            echo "Wow, such empty."
+          fi
       - name: Generate a token
         id: generate_token
         uses: actions/create-github-app-token@v1.5.0
@@ -21,12 +27,6 @@ jobs:
           private-key: '${{ secrets.GH_APP_PRIVATE_KEY }}'
           owner: ${{ github.repository_owner }}
           repositories: 'opentdf-v2-poc'
-      - run: |
-          if [ ${#${{ steps.generate_token.outputs.token }}} -gt 0 ]; then
-            echo "Token was found"
-          else
-            echo "Token is empty."
-          fi
       - run: git config --global url.https://${{ steps.generate_token.outputs.token }}@github.com/.insteadOf https://github.com/
       - id: govulncheck
         uses: golang/govulncheck-action@v1
