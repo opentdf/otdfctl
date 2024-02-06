@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - feat/implement-ci-build-workflow
-  pull_request:
-    branches:
       - main
 jobs:
   build-targets:
@@ -42,25 +40,22 @@ jobs:
       - run: git config --global url.https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/.insteadOf https://github.com/
       - name: make-targets
         env:
-          SEM_VER: ${{ steps.version.outputs.major-version }}.${{ steps.version.outputs.minor-version }}.${{ steps.version.outputs.patch-version }}
+          SEM_VER: ${{ steps.version.outputs.version }}
         run: make build
       - name: smoke-test
         run: go test ./... -short -race -cover
       - name: Release
-        # env:
-            # SEM_VER: ${{ steps.version.outputs.major-version }}.${{ steps.version.outputs.minor-version }}.${{ steps.version.outputs.patch-version }}
-            # BIN_NAME: tructl
         uses: softprops/action-gh-release@v1
         with:
           files: | 
-            ./target/$BIN_NAME-$SEM_VER-darwin-amd64
-            ./target/$BIN_NAME-$SEM_VER-darwin-arm64
-            ./target/$BIN_NAME-$SEM_VER-linux-amd64
-            ./target/$BIN_NAME-$SEM_VER-linux-arm
-            ./target/$BIN_NAME-$SEM_VER-linux-arm64
-            ./target/$BIN_NAME-$SEM_VER-windows-amd64.exe
-            ./target/$BIN_NAME-$SEM_VER-windows-arm.exe
-            ./target/$BIN_NAME-$SEM_VER-windows-arm64.exe
+            "./target/$BIN_NAME-$SEM_VER-darwin-amd64"
+            "./target/$BIN_NAME-$SEM_VER-darwin-arm64"
+            "./target/$BIN_NAME-$SEM_VER-linux-amd64"
+            "./target/$BIN_NAME-$SEM_VER-linux-arm"
+            "./target/$BIN_NAME-$SEM_VER-linux-arm64"
+            "./target/$BIN_NAME-$SEM_VER-windows-amd64.exe"
+            "./target/$BIN_NAME-$SEM_VER-windows-arm.exe"
+            "./target/$BIN_NAME-$SEM_VER-windows-arm64.exe"
             
           body: "This is a test release, and will be removed"
           tag_name: ${{ steps.version.outputs.version }}
