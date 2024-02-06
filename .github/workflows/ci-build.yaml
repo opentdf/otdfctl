@@ -26,8 +26,9 @@ jobs:
         with:
           scheme: semver
           increment: patch
+          pep440: false
       - name: print-version
-        run: echo ${{ steps.version.outputs.version }}
+        run: echo Incrementing Version ${{ steps.version.outputs.current-version }} -> ${{ steps.version.outputs.version }}
       # special app the virtru eng team created, to grab a token for accessing other org repos, in a secure way
       - name: Generate a token
         id: generate_token
@@ -40,16 +41,15 @@ jobs:
       - run: git config --global url.https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/.insteadOf https://github.com/
       - name: make-targets
         env:
-          SEM_VER: ${{ steps.version.outputs.version }}
+          SEM_VER: ${{ steps.version.outputs.major-version }}.${{ steps.version.outputs.minor-version }}.${{ steps.version.outputs.patch-version }}
         run: make build
       - name: smoke-test
         run: go test ./... -short -race -cover
       - name: Release
-        env:
-            SEM_VER: ${{ steps.version.outputs.version }}
-            BIN_NAME: tructl
+        # env:
+            # SEM_VER: ${{ steps.version.outputs.major-version }}.${{ steps.version.outputs.minor-version }}.${{ steps.version.outputs.patch-version }}
+            # BIN_NAME: tructl
         uses: softprops/action-gh-release@v1
-        # if: startsWith(github.ref, 'refs/tags/')
         with:
           files: | 
             ./target/$BIN_NAME-$SEM_VER-darwin-amd64
