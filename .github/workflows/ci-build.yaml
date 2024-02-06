@@ -17,6 +17,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+          cache: false
       - name: Get next version
         uses: reecetech/version-increment@2023.9.3
         id: version
@@ -35,10 +38,6 @@ jobs:
           owner: ${{ github.repository_owner }}
           repositories: 'opentdf-v2-poc'
       - run: git config --global url.https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/.insteadOf https://github.com/
-     
-        with:
-          go-version: '1.21'
-          cache: false
       - name: make-targets
         env:
           SEM_VER: ${{ steps.version.outputs.version }}
