@@ -1,5 +1,16 @@
 name: 'CI - Build'
-on: workflow_dispatch
+on: 
+  workflow_dispatch:
+    inputs:
+      versionBumpType:
+        description: 'Version Bump Type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
 jobs:
   build-targets:
     name: build-targets
@@ -19,7 +30,7 @@ jobs:
         with:
           release_branch: main
           scheme: semver
-          increment: patch
+          increment: ${{ github.event.inputs.versionBumpType }}
           pep440: false
       - name: print-version
         run: echo Incrementing Version ${{ steps.version.outputs.current-version }} -> ${{ steps.version.outputs.version }}
