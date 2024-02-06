@@ -12,17 +12,17 @@ import (
 var (
 	attrValues []string
 
-	attributeCommands = []string{
-		attributesCreateCmd.Use,
-		attributeGetCmd.Use,
-		attributesListCmd.Use,
-		attributeUpdateCmd.Use,
-		attributesDeleteCmd.Use,
+	policy_attributeCommands = []string{
+		policy_attributesCreateCmd.Use,
+		policy_attributeGetCmd.Use,
+		policy_attributesListCmd.Use,
+		policy_attributeUpdateCmd.Use,
+		policy_attributesDeleteCmd.Use,
 	}
 
-	attributesCmd = &cobra.Command{
+	policy_attributesCmd = &cobra.Command{
 		Use:   "attributes",
-		Short: "Manage attributes [" + strings.Join(attributeCommands, ", ") + "]",
+		Short: "Manage attributes [" + strings.Join(policy_attributeCommands, ", ") + "]",
 		Long: `
 Attributes - commands to manage attributes within the platform.
 
@@ -32,7 +32,7 @@ used to define the access controls based on subject encodings and entity entitle
 	}
 
 	// Create an attribute
-	attributesCreateCmd = &cobra.Command{
+	policy_attributesCreateCmd = &cobra.Command{
 		Use:   "create",
 		Short: "Create an attribute",
 		Run: func(cmd *cobra.Command, args []string) {
@@ -89,7 +89,7 @@ used to define the access controls based on subject encodings and entity entitle
 	}
 
 	// Get an attribute
-	attributeGetCmd = &cobra.Command{
+	policy_attributeGetCmd = &cobra.Command{
 		Use:   "get",
 		Short: "Get an attribute",
 		Run: func(cmd *cobra.Command, args []string) {
@@ -122,7 +122,7 @@ used to define the access controls based on subject encodings and entity entitle
 	}
 
 	// List attributes
-	attributesListCmd = &cobra.Command{
+	policy_attributesListCmd = &cobra.Command{
 		Use:   "list",
 		Short: "List attributes",
 		Run: func(cmd *cobra.Command, args []string) {
@@ -150,7 +150,7 @@ used to define the access controls based on subject encodings and entity entitle
 		},
 	}
 
-	attributesDeleteCmd = &cobra.Command{
+	policy_attributesDeleteCmd = &cobra.Command{
 		Use:   "delete",
 		Short: "Delete an attribute",
 		Run: func(cmd *cobra.Command, args []string) {
@@ -191,7 +191,7 @@ used to define the access controls based on subject encodings and entity entitle
 	}
 
 	// Update one attribute
-	attributeUpdateCmd = &cobra.Command{
+	policy_attributeUpdateCmd = &cobra.Command{
 		Use:   "update",
 		Short: "Update an attribute",
 		Run: func(cmd *cobra.Command, args []string) {
@@ -214,25 +214,25 @@ func init() {
 	policyCmd.AddCommand(attributesCmd)
 
 	// Create an attribute
-	attributesCmd.AddCommand(attributesCreateCmd)
-	attributesCreateCmd.Flags().StringP("name", "n", "", "Name of the attribute")
-	attributesCreateCmd.Flags().StringP("rule", "r", "", "Rule of the attribute")
-	attributesCreateCmd.Flags().StringSliceVarP(&attrValues, "values", "v", []string{}, "Values of the attribute")
-	attributesCreateCmd.Flags().StringP("namespace", "s", "", "Namespace of the attribute")
-	attributesCreateCmd.Flags().StringP("description", "d", "", "Description of the attribute")
+	policy_attributesCmd.AddCommand(attributesCreateCmd)
+	policy_attributesCreateCmd.Flags().StringP("name", "n", "", "Name of the attribute")
+	policy_attributesCreateCmd.Flags().StringP("rule", "r", "", "Rule of the attribute")
+	policy_attributesCreateCmd.Flags().StringSliceVarP(&attrValues, "values", "v", []string{}, "Values of the attribute")
+	policy_attributesCreateCmd.Flags().StringP("namespace", "s", "", "Namespace of the attribute")
+	policy_attributesCreateCmd.Flags().StringP("description", "d", "", "Description of the attribute")
 
 	// Get an attribute
-	attributesCmd.AddCommand(attributeGetCmd)
-	attributeGetCmd.Flags().StringP("id", "i", "", "Id of the attribute")
+	policy_attributesCmd.AddCommand(attributeGetCmd)
+	policy_attributeGetCmd.Flags().StringP("id", "i", "", "Id of the attribute")
 
 	// List attributes
-	attributesCmd.AddCommand(attributesListCmd)
+	policy_attributesCmd.AddCommand(attributesListCmd)
 
 	// Update an attribute
-	attributesCmd.AddCommand(attributeUpdateCmd)
-	attributeUpdateCmd.Flags().StringP("id", "i", "", "Id of the attribute")
+	policy_attributesCmd.AddCommand(attributeUpdateCmd)
+	policy_attributeUpdateCmd.Flags().StringP("id", "i", "", "Id of the attribute")
 
 	// Delete an attribute
-	attributesCmd.AddCommand(attributesDeleteCmd)
-	attributesDeleteCmd.Flags().StringP("id", "i", "", "Id of the attribute")
+	policy_attributesCmd.AddCommand(attributesDeleteCmd)
+	policy_attributesDeleteCmd.Flags().StringP("id", "i", "", "Id of the attribute")
 }
