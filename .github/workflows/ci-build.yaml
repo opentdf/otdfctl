@@ -12,15 +12,23 @@ jobs:
     name: build-targets
     runs-on: ubuntu-22.04
     env:
-      GOPRIVATE: "github.com/opentdf/*"
+      GOPRIVATE: github.com/opentdf/opentdf-v2-poc/*
     steps:
+      # special app the virtru eng team created, to grab a token for accessing other org repos, in a secure way
+      - name: Generate a token
+        id: generate_token
+        uses: actions/create-github-app-token@v1.5.0
+        with:
+          app-id: '416599'
+          private-key: '${{ secrets.GH_APP_PRIVATE_KEY }}'
+          owner: ${{ github.repository_owner }}
+          repositories: 'opentdf-v2-poc'
+      - run: git config --global url.https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/.insteadOf https://github.com/
       - uses: actions/checkout@v3
       - uses: actions/setup-go@v4
         with:
           go-version: '1.21'
           cache: false
-      - name: print-vars
-        run: echo "${GOPRIVATE}"
       - name: make-targets
         run: make build
       - name: smoke-test
