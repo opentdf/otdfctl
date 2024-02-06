@@ -13,7 +13,18 @@ jobs:
     runs-on: ubuntu-22.04
     env:
       GOPRIVATE: github.com/opentdf/opentdf-v2-poc/*
+      BIN_NAME: tructl
     steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v4
+      - name: Get next version
+        uses: reecetech/version-increment@2023.9.3
+        id: version
+        with:
+          scheme: semver
+          increment: patch
+      - name: print-version
+        run: echo ${{ steps.version.outputs.version }}
       # special app the virtru eng team created, to grab a token for accessing other org repos, in a secure way
       - name: Generate a token
         id: generate_token
@@ -24,22 +35,34 @@ jobs:
           owner: ${{ github.repository_owner }}
           repositories: 'opentdf-v2-poc'
       - run: git config --global url.https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/.insteadOf https://github.com/
-      - uses: actions/checkout@v3
-      - uses: actions/setup-go@v4
+     
         with:
           go-version: '1.21'
           cache: false
       - name: make-targets
+        env:
+          SEM_VER: ${{ steps.version.outputs.version }}
         run: make build
       - name: smoke-test
         run: go test ./... -short -race -cover
       - name: Release
+        env:
+            SEM_VER: ${{ steps.version.outputs.version }}
         uses: softprops/action-gh-release@v1
         # if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: ./target/tructl-darwin-arm64
+          files: | 
+            ./target/$(BIN_NAME)-${SEM_VER}-darwin-amd64
+            ./target/$(BIN_NAME)-${SEM_VER}-darwin-arm64
+            ./target/$(BIN_NAME)-${SEM_VER}-linux-amd64
+            ./target/$(BIN_NAME)-${SEM_VER}-linux-arm
+            ./target/$(BIN_NAME)-${SEM_VER}-linux-arm64
+            ./target/$(BIN_NAME)-${SEM_VER}-windows-amd64.exe
+            ./target/$(BIN_NAME)-${SEM_VER}-windows-arm.exe
+            ./target/$(BIN_NAME)-${SEM_VER}-windows-arm64.exe
+            
           body: "This is a test release, and will be removed"
-          tag_name: "test-release"
+          tag_name: ${{ steps.version.outputs.version }}
           repository: opentdf/tructl
           generate_release_notes: true
 
