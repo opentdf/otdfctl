@@ -40,22 +40,22 @@ func InitAttributeList(items []AttributeItem) (tea.Model, tea.Cmd) {
 	m.list = list.New([]list.Item{}, list.NewDefaultDelegate(), constants.WindowSize.Width, constants.WindowSize.Height)
 	m.list.Title = "Attributes"
 	if len(items) > 0 {
-		var items_ []list.Item
+		var newItems []list.Item
 		for _, item := range items {
-			items_ = append(items_, item)
+			newItems = append(newItems, item)
 		}
-		m.list.SetItems(items_)
+		m.list.SetItems(newItems)
 	} else {
-		m.list.SetItems([]list.Item{
-			AttributeItem{
-				id:          "8a6755f2-efa8-4758-b893-af9a488e0bea",
-				namespace:   "demo.com",
-				name:        "relto",
-				rule:        "hierarchical",
-				description: "The relto attribute is used to describe the relationship of the resource to the country of origin.",
-				values:      []string{"USA", "GBR"},
-			},
-		})
+		// m.list.SetItems([]list.Item{
+		// 	AttributeItem{
+		// 		id:          "8a6755f2-efa8-4758-b893-af9a488e0bea",
+		// 		namespace:   "demo.com",
+		// 		name:        "relto",
+		// 		rule:        "hierarchical",
+		// 		description: "The relto attribute is used to describe the relationship of the resource to the country of origin.",
+		// 		values:      []string{"USA", "GBR"},
+		// 	},
+		// })
 	}
 	return m.Update(WindowMsg())
 }
@@ -79,7 +79,7 @@ func CreateViewFormat(num int) string {
 }
 
 func (m AttributeList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-
+	attr_keys := []string{"Id", "Name", "Namespace", "Rule", "Description", "Values"}
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		constants.WindowSize = msg
@@ -97,15 +97,17 @@ func (m AttributeList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "c":
 			// show the add attribute form
 			// InitAttributeCreateView()
-			return m, nil
+			// return m, nil
+			// attr_keys := []string{"Id", "Name", "Namespace", "Rule", "Description", "Values"}
+			return InitAttributeView(attr_keys, AttributeItem{}, "[Create Attribute]")
 		// case "e":
 		// 	item := m.list.Items()[0].(AttributeItem)
 		// 	attr_keys := []string{"Id", "Name", "Namespace", "Rule", "Description", "Values"}
 		// 	return InitAttributeView(attr_keys, item)
-		case "enter":
+		case "enter", "e":
 			item := m.list.Items()[0].(AttributeItem)
-			attr_keys := []string{"Id", "Name", "Namespace", "Rule", "Description", "Values"}
-			return InitAttributeView(attr_keys, item)
+			// attr_keys := []string{"Id", "Name", "Namespace", "Rule", "Description", "Values"}
+			return InitAttributeView(attr_keys, item, "[Edit Attribute]")
 		}
 	}
 	return m, nil

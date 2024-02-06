@@ -64,6 +64,7 @@ type AttributeView struct {
 	ready         bool
 	viewport      viewport.Model
 	width, height int
+	original      AttributeItem
 }
 
 func SetupViewport(m AttributeView, msg tea.WindowSizeMsg) (AttributeView, []tea.Cmd) {
@@ -109,7 +110,7 @@ func SetupViewport(m AttributeView, msg tea.WindowSizeMsg) (AttributeView, []tea
 	return m, cmds
 }
 
-func InitAttributeView(names []string, item AttributeItem) (tea.Model, tea.Cmd) {
+func InitAttributeView(names []string, item AttributeItem, title string) (tea.Model, tea.Cmd) {
 	var inputs []interface{}
 
 	ti0 := textinput.New()
@@ -138,11 +139,12 @@ func InitAttributeView(names []string, item AttributeItem) (tea.Model, tea.Cmd) 
 	inputs = append(inputs, ti5)
 
 	m := AttributeView{
-		keys:    names,
-		inputs:  inputs,
-		focused: 0,
-		err:     nil,
-		title:   "[Edit Attribute]",
+		keys:     names,
+		inputs:   inputs,
+		focused:  0,
+		err:      nil,
+		title:    title,
+		original: item,
 	}
 	return m.Update(WindowMsg())
 }
@@ -165,6 +167,7 @@ func (m AttributeView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.Type {
+
 		case tea.KeyShiftLeft: //, tea.KeyBackspace:
 			return InitAttributeList([]AttributeItem{})
 		case tea.KeyShiftRight:
