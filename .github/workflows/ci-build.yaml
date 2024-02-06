@@ -29,7 +29,7 @@ jobs:
           increment: patch
           pep440: false
       - name: print-version
-        run: echo Incrementing Version ${{ steps.version.outputs.current-version }} -> ${{ steps.version.outputs.major-version }}.${{ steps.version.outputs.minor-version }}.${{ steps.version.outputs.patch-version }}
+        run: echo Incrementing Version ${{ steps.version.outputs.current-version }} -> ${{ steps.version.outputs.version }}
       # special app the virtru eng team created, to grab a token for accessing other org repos, in a secure way
       - name: Generate a token
         id: generate_token
