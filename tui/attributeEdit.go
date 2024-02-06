@@ -39,8 +39,6 @@ var (
 	continueStyle = lipgloss.NewStyle().Foreground(cyan)
 )
 
-const useHighPerformanceRenderer2 = false
-
 var (
 	titleStyle2 = func() lipgloss.Style {
 		b := lipgloss.RoundedBorder()
@@ -82,7 +80,7 @@ func SetupViewport2(m AttributeEdit, msg tea.WindowSizeMsg) (AttributeEdit, []te
 		// here.
 		m.viewport = viewport.New(msg.Width, msg.Height-verticalMarginHeight)
 		m.viewport.YPosition = headerHeight
-		m.viewport.HighPerformanceRendering = useHighPerformanceRenderer2
+		m.viewport.HighPerformanceRendering = useHighPerformanceRenderer
 		m.ready = true
 
 		// This is only necessary for high performance rendering, which in
@@ -99,7 +97,7 @@ func SetupViewport2(m AttributeEdit, msg tea.WindowSizeMsg) (AttributeEdit, []te
 	// cmds = append(cmds, cmd)
 	// m.viewport.GotoBottom()
 	// cmds = append(cmds, viewport.Sync(m.viewport))
-	if useHighPerformanceRenderer2 {
+	if useHighPerformanceRenderer {
 		// Render (or re-render) the whole viewport. Necessary both to
 		// initialize the viewport and when the window is resized.
 		//
@@ -278,10 +276,7 @@ func CreateEditFormat(num int) string {
 }
 
 func (m AttributeEdit) View() string {
-	content := fmt.Sprintf(CreateEditFormat(len(m.inputs))+"\n%s",
-		// "[Edit Attribute]",
-		// inputStyle.Width(len(m.keys[id])).Render(m.keys[id]),
-		// m.inputs[id].(textinput.Model).View(),
+	content := fmt.Sprintf(CreateEditFormat(len(m.inputs)),
 		inputStyle.Width(len(m.keys[id])).Render(m.keys[id]),
 		m.inputs[id].(textinput.Model).View(),
 		inputStyle.Width(len(m.keys[name])).Render(m.keys[name]),
@@ -295,8 +290,8 @@ func (m AttributeEdit) View() string {
 		inputStyle.Width(len(m.keys[values])).Render(m.keys[values]),
 		// fmt.Sprintf("[%s]", m.inputs[values].View()),
 		m.inputs[values].(textinput.Model).View(),
-		continueStyle.Render("<<Save>>"),
-	) + "\n"
+		// continueStyle.Render("<<Save>>"),
+	)
 
 	if !m.ready {
 		return "\n  Initializing..."
@@ -327,7 +322,7 @@ func (m AttributeEdit) CreateHeader2() string {
 }
 
 func (m AttributeEdit) CreateFooter2() string {
-	info := infoStyle2.Render(fmt.Sprintf("%3.f%%", m.viewport.ScrollPercent()*100))
+	info := infoStyle2.Render(fmt.Sprintf("Discard: Shift + < | Save: Shift + > | Scroll: %3.f%%", m.viewport.ScrollPercent()*100))
 	line := CreateLine(m.viewport.Width, info)
 	return lipgloss.JoinHorizontal(lipgloss.Center, line, info)
 }
