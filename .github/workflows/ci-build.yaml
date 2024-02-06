@@ -1,8 +1,5 @@
 name: 'CI - Build'
-on:
-  push:
-    branches:
-      - main
+on: workflow_dispatch
 jobs:
   build-targets:
     name: build-targets
@@ -12,15 +9,15 @@ jobs:
       BIN_NAME: tructl
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-go@v4
+      - uses: actions/setup-go@v5
         with:
-          go-version: '1.21'
+          go-version-file: './go.mod'
           cache: false
       - name: Get next version
         uses: reecetech/version-increment@2023.9.3
         id: version
         with:
-          release_branch: feat/implement-ci-build-workflow
+          release_branch: main
           scheme: semver
           increment: patch
           pep440: false
