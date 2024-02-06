@@ -167,7 +167,7 @@ or different attributes tied to each.
 )
 
 func init() {
-	rootCmd.AddCommand(namespacesCmd)
+	policyCmd.AddCommand(namespacesCmd)
 
 	namespacesCmd.AddCommand(namespaceGetCmd)
 	namespaceGetCmd.Flags().StringP("id", "i", "", "Id of the namespace")

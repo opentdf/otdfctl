@@ -211,7 +211,7 @@ used to define the access controls based on subject encodings and entity entitle
 )
 
 func init() {
-	rootCmd.AddCommand(attributesCmd)
+	policyCmd.AddCommand(attributesCmd)
 
 	// Create an attribute
 	attributesCmd.AddCommand(attributesCreateCmd)

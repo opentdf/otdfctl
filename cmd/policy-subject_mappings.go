@@ -224,7 +224,7 @@ same attribute and namespace.
 )
 
 func init() {
-	rootCmd.AddCommand(subjectMappingsCmd)
+	policyCmd.AddCommand(subjectMappingsCmd)
 
 	subjectMappingsCmd.AddCommand(subjectMappingGetCmd)
 	subjectMappingGetCmd.Flags().StringP("id", "i", "", "Id of the subject mapping")
