@@ -79,7 +79,7 @@ func CreateViewFormat(num int) string {
 }
 
 func (m AttributeList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	attr_keys := []string{"Id", "Name", "Namespace", "Rule", "Description", "Values"}
+
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		constants.WindowSize = msg
@@ -95,19 +95,9 @@ func (m AttributeList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			am.list.Select(1)
 			return am.Update(WindowMsg())
 		case "c":
-			// show the add attribute form
-			// InitAttributeCreateView()
-			// return m, nil
-			// attr_keys := []string{"Id", "Name", "Namespace", "Rule", "Description", "Values"}
-			return InitAttributeView(attr_keys, AttributeItem{}, "[Create Attribute]")
-		// case "e":
-		// 	item := m.list.Items()[0].(AttributeItem)
-		// 	attr_keys := []string{"Id", "Name", "Namespace", "Rule", "Description", "Values"}
-		// 	return InitAttributeView(attr_keys, item)
+			return InitAttributeView(m.list.Items(), len(m.list.Items()))
 		case "enter", "e":
-			item := m.list.Items()[0].(AttributeItem)
-			// attr_keys := []string{"Id", "Name", "Namespace", "Rule", "Description", "Values"}
-			return InitAttributeView(attr_keys, item, "[Edit Attribute]")
+			return InitAttributeView(m.list.Items(), m.list.Index())
 		}
 	}
 	return m, nil

@@ -6,6 +6,7 @@ import (
 
 	// "log"
 
+	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/textarea"
 	"github.com/charmbracelet/bubbles/textinput"
 	"github.com/charmbracelet/bubbles/viewport"
@@ -110,8 +111,17 @@ func SetupViewport(m AttributeView, msg tea.WindowSizeMsg) (AttributeView, []tea
 	return m, cmds
 }
 
-func InitAttributeView(names []string, item AttributeItem, title string) (tea.Model, tea.Cmd) {
+func InitAttributeView(items []list.Item, idx int) (tea.Model, tea.Cmd) {
+	attr_keys := []string{"Id", "Name", "Namespace", "Rule", "Description", "Values"}
 	var inputs []interface{}
+	title := "Attribute]"
+	item := AttributeItem{}
+	if idx >= len(items) {
+		title = "[Create " + title
+	} else {
+		title = "[Edit " + title
+		item = items[idx].(AttributeItem)
+	}
 
 	ti0 := textinput.New()
 	ti0.Focus()
@@ -139,7 +149,7 @@ func InitAttributeView(names []string, item AttributeItem, title string) (tea.Mo
 	inputs = append(inputs, ti5)
 
 	m := AttributeView{
-		keys:     names,
+		keys:     attr_keys,
 		inputs:   inputs,
 		focused:  0,
 		err:      nil,
