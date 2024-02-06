@@ -1,12 +1,9 @@
 package tui
 
 import (
-	"fmt"
-
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/muesli/reflow/wordwrap"
 	"github.com/opentdf/tructl/tui/constants"
 )
 
@@ -101,27 +98,14 @@ func (m AttributeList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// show the add attribute form
 			// InitAttributeCreateView()
 			return m, nil
-		case "e":
-			item := m.list.Items()[0].(AttributeItem)
-			attr_keys := []string{"Id", "Name", "Namespace", "Rule", "Description", "Values"}
-			return InitAttributeEdit(attr_keys, item)
+		// case "e":
+		// 	item := m.list.Items()[0].(AttributeItem)
+		// 	attr_keys := []string{"Id", "Name", "Namespace", "Rule", "Description", "Values"}
+		// 	return InitAttributeView(attr_keys, item)
 		case "enter":
 			item := m.list.Items()[0].(AttributeItem)
 			attr_keys := []string{"Id", "Name", "Namespace", "Rule", "Description", "Values"}
-			content := fmt.Sprintf(
-				CreateViewFormat(len(attr_keys)),
-				StyleAttr(attr_keys[0]), item.id,
-				StyleAttr(attr_keys[1]), item.name,
-				StyleAttr(attr_keys[2]), item.namespace,
-				StyleAttr(attr_keys[3]), item.rule,
-				StyleAttr(attr_keys[4]), item.description,
-				StyleAttr(attr_keys[5]), item.values,
-			)
-			wrapped := wordwrap.String(content, m.width)
-			am := AttributeView{}
-			am.title = "Attribute"
-			am.content = wrapped
-			return am.Update(WindowMsg())
+			return InitAttributeView(attr_keys, item)
 		}
 	}
 	return m, nil
