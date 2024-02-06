@@ -1,5 +1,4 @@
 name: 'CI - Build'
-
 on:
   push:
     branches:
@@ -42,8 +41,6 @@ jobs:
         env:
           SEM_VER: ${{ steps.version.outputs.version }}
         run: make build
-      - name: debug-env-vars
-        run: echo ${TARGET_DARWIN_AMD64} ${TARGET_DARWIN_ARM64} ${TARGET_LINUX_AMD64} ${TARGET_LINUX_ARM} ${TARGET_LINUX_ARM64} ${TARGET_WINDOWS_AMD64} ${TARGET_WINDOWS_ARM} ${TARGET_WINDOWS_ARM64}
       - name: smoke-test
         run: go test ./... -short -race -cover
       - name: Release
