@@ -180,12 +180,17 @@ func (m AttributeView) Init() tea.Cmd {
 	return textinput.Blink
 }
 
+func (m AttributeView) IsNew() bool {
+	return m.idx >= len(m.list)
+}
+
 func (m AttributeView) ChangeMode() AttributeView {
-	if m.idx < len(m.list) {
-		m.editMode = !m.editMode
-	} else {
-		m.editMode = true
-	}
+	// if m.idx < len(m.list) {
+	// 	m.editMode = !m.editMode
+	// } else {
+	// 	m.editMode = true
+	// }
+	m.editMode = m.IsNew() || !m.editMode
 	return m
 }
 
@@ -208,7 +213,7 @@ func (m AttributeView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return InitAttributeList(m.list)
 		case tea.KeyShiftRight:
 			// return saveModel, saveCmd
-			if m.idx < len(m.list) {
+			if !m.IsNew() {
 				m.list[m.idx] = list.Item(item)
 			} else {
 				m.list = append(m.list, list.Item(item))
@@ -223,7 +228,7 @@ func (m AttributeView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.nextInput()
 		case tea.KeyCtrlC, tea.KeyEsc:
 			if m.editMode {
-				m = m.ChangeMode()
+				m.editMode = false
 			} else {
 				return m, tea.Quit
 			}
@@ -277,7 +282,7 @@ func (m AttributeView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	var cmd tea.Cmd
-	if m.editMode || m.idx >= len(m.list) && !editing {
+	if m.editMode || m.IsNew() && !editing {
 		for i := range m.inputs {
 			if i == description {
 				m.inputs[i], cmd = m.inputs[i].(textarea.Model).Update(msg)
@@ -356,10 +361,10 @@ func (m AttributeView) CreateHeader() string {
 
 func (m AttributeView) CreateFooter() string {
 	var prefix string
-	if m.editMode {
+	if m.editMode || m.IsNew() {
 		prefix = "discard: shift + left arrow | save: shift + right arrow"
 	} else {
-		prefix = "enter edit mode: i"
+		prefix = "enter edit mode: i | go back: shift + left arrow"
 	}
 	info := infoStyle.Render(fmt.Sprintf(prefix+" | scroll: %3.f%%", m.viewport.ScrollPercent()*100))
 	line := CreateLine(m.viewport.Width, info)

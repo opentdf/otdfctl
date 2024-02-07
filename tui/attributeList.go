@@ -107,6 +107,13 @@ func (m AttributeList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return InitAttributeView(m.list.Items(), len(m.list.Items()))
 		case "enter", "e":
 			return InitAttributeView(m.list.Items(), m.list.Index())
+		case "ctrl+d":
+			m.list.RemoveItem(m.list.Index())
+			newIndex := m.list.Index() - 1
+			if newIndex < 0 {
+				newIndex = 0
+			}
+			m.list.Select(newIndex)
 		}
 	}
 	return m, nil
