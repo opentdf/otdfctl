@@ -9,17 +9,17 @@ import (
 )
 
 var (
-	namespacesCommands = []string{
-		namespacesCreateCmd.Use,
-		namespaceGetCmd.Use,
-		namespacesListCmd.Use,
-		namespaceUpdateCmd.Use,
-		namespaceDeleteCmd.Use,
+	policy_namespacesCommands = []string{
+		policy_namespacesCreateCmd.Use,
+		policy_namespaceGetCmd.Use,
+		policy_namespacesListCmd.Use,
+		policy_namespaceUpdateCmd.Use,
+		policy_namespaceDeleteCmd.Use,
 	}
 
-	namespacesCmd = &cobra.Command{
+	policy_namespacesCmd = &cobra.Command{
 		Use:   "namespaces",
-		Short: "Manage namespaces [" + strings.Join(namespacesCommands, ", ") + "]",
+		Short: "Manage namespaces [" + strings.Join(policy_namespacesCommands, ", ") + "]",
 		Long: `
 Namespaces - commands to manage attribute namespaces within the platform.
 		
@@ -29,7 +29,7 @@ or different attributes tied to each.
 `,
 	}
 
-	namespaceGetCmd = &cobra.Command{
+	policy_namespaceGetCmd = &cobra.Command{
 		Use:   "get",
 		Short: "Get a namespace by id",
 		Run: func(cmd *cobra.Command, args []string) {
@@ -57,7 +57,7 @@ or different attributes tied to each.
 		},
 	}
 
-	namespacesListCmd = &cobra.Command{
+	policy_namespacesListCmd = &cobra.Command{
 		Use:   "list",
 		Short: "List namespaces",
 		Run: func(cmd *cobra.Command, args []string) {
@@ -81,7 +81,7 @@ or different attributes tied to each.
 		},
 	}
 
-	namespacesCreateCmd = &cobra.Command{
+	policy_namespacesCreateCmd = &cobra.Command{
 		Use:   "create",
 		Short: "Create a new namespace, i.e. 'https://example.com'",
 		Run: func(cmd *cobra.Command, args []string) {
@@ -106,7 +106,7 @@ or different attributes tied to each.
 		},
 	}
 
-	namespaceDeleteCmd = &cobra.Command{
+	policy_namespaceDeleteCmd = &cobra.Command{
 		Use:   "delete",
 		Short: "Delete a namespace by id",
 		Run: func(cmd *cobra.Command, args []string) {
@@ -143,7 +143,7 @@ or different attributes tied to each.
 	}
 
 	// Update one namespace
-	namespaceUpdateCmd = &cobra.Command{
+	policy_namespaceUpdateCmd = &cobra.Command{
 		Use:   "update",
 		Short: "Update a namespace",
 		Run: func(cmd *cobra.Command, args []string) {
@@ -167,20 +167,20 @@ or different attributes tied to each.
 )
 
 func init() {
-	rootCmd.AddCommand(namespacesCmd)
+	policyCmd.AddCommand(policy_namespacesCmd)
 
-	namespacesCmd.AddCommand(namespaceGetCmd)
-	namespaceGetCmd.Flags().StringP("id", "i", "", "Id of the namespace")
+	policy_namespacesCmd.AddCommand(policy_namespaceGetCmd)
+	policy_namespaceGetCmd.Flags().StringP("id", "i", "", "Id of the namespace")
 
-	namespacesCmd.AddCommand(namespacesListCmd)
+	policy_namespacesCmd.AddCommand(policy_namespacesListCmd)
 
-	namespacesCmd.AddCommand(namespacesCreateCmd)
-	namespacesCreateCmd.Flags().StringP("name", "n", "", "Name value of the namespace")
+	policy_namespacesCmd.AddCommand(policy_namespacesCreateCmd)
+	policy_namespacesCreateCmd.Flags().StringP("name", "n", "", "Name value of the namespace")
 
-	namespacesCmd.AddCommand(namespaceUpdateCmd)
-	namespaceUpdateCmd.Flags().StringP("id", "i", "", "Id of the namespace")
-	namespaceUpdateCmd.Flags().StringP("name", "n", "", "Name value of the namespace")
+	policy_namespacesCmd.AddCommand(policy_namespaceUpdateCmd)
+	policy_namespaceUpdateCmd.Flags().StringP("id", "i", "", "Id of the namespace")
+	policy_namespaceUpdateCmd.Flags().StringP("name", "n", "", "Name value of the namespace")
 
-	namespacesCmd.AddCommand(namespaceDeleteCmd)
-	namespaceDeleteCmd.Flags().StringP("id", "i", "", "Id of the namespace")
+	policy_namespacesCmd.AddCommand(policy_namespaceDeleteCmd)
+	policy_namespaceDeleteCmd.Flags().StringP("id", "i", "", "Id of the namespace")
 }

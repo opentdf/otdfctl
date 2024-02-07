@@ -11,19 +11,19 @@ import (
 )
 
 var (
-	subjectMappingsCmds = []string{
-		subjectMappingCreateCmd.Use,
-		subjectMappingGetCmd.Use,
-		subjectMappingsListCmd.Use,
-		subjectMappingUpdateCmd.Use,
-		subjectMappingDeleteCmd.Use,
+	policy_subjectMappingsCmds = []string{
+		policy_subjectMappingCreateCmd.Use,
+		policy_subjectMappingGetCmd.Use,
+		policy_subjectMappingsListCmd.Use,
+		policy_subjectMappingUpdateCmd.Use,
+		policy_subjectMappingDeleteCmd.Use,
 	}
 
 	subjectValues []string
 
-	subjectMappingsCmd = &cobra.Command{
+	policy_subjectMappingsCmd = &cobra.Command{
 		Use:   "subject-mappings",
-		Short: "Manage subject mappings [" + strings.Join(subjectMappingsCmds, ", ") + "]",
+		Short: "Manage subject mappings [" + strings.Join(policy_subjectMappingsCmds, ", ") + "]",
 		Long: `
 Subject Mappings - commands to manage relationships between subjects (PEs, NPEs, etc) and attributes.
 		
@@ -34,7 +34,7 @@ same attribute and namespace.
 `,
 	}
 
-	subjectMappingGetCmd = &cobra.Command{
+	policy_subjectMappingGetCmd = &cobra.Command{
 		Use:   "get",
 		Short: "Get a subject mapping by id",
 		Run: func(cmd *cobra.Command, args []string) {
@@ -74,7 +74,7 @@ same attribute and namespace.
 		},
 	}
 
-	subjectMappingsListCmd = &cobra.Command{
+	policy_subjectMappingsListCmd = &cobra.Command{
 		Use:   "list",
 		Short: "List subject mappings",
 		Run: func(cmd *cobra.Command, args []string) {
@@ -111,7 +111,7 @@ same attribute and namespace.
 		},
 	}
 
-	subjectMappingCreateCmd = &cobra.Command{
+	policy_subjectMappingCreateCmd = &cobra.Command{
 		Use:   "create",
 		Short: "Create a new subject mapping",
 		Run: func(cmd *cobra.Command, args []string) {
@@ -159,7 +159,7 @@ same attribute and namespace.
 		},
 	}
 
-	subjectMappingDeleteCmd = &cobra.Command{
+	policy_subjectMappingDeleteCmd = &cobra.Command{
 		Use:   "delete",
 		Short: "Delete a subject mapping by id",
 		Run: func(cmd *cobra.Command, args []string) {
@@ -189,7 +189,7 @@ same attribute and namespace.
 		},
 	}
 
-	subjectMappingUpdateCmd = &cobra.Command{
+	policy_subjectMappingUpdateCmd = &cobra.Command{
 		Use:   "update",
 		Short: "Update a subject mapping",
 		Run: func(cmd *cobra.Command, args []string) {
@@ -224,28 +224,28 @@ same attribute and namespace.
 )
 
 func init() {
-	rootCmd.AddCommand(subjectMappingsCmd)
+	policyCmd.AddCommand(policy_subjectMappingsCmd)
 
-	subjectMappingsCmd.AddCommand(subjectMappingGetCmd)
-	subjectMappingGetCmd.Flags().StringP("id", "i", "", "Id of the subject mapping")
+	policy_subjectMappingsCmd.AddCommand(policy_subjectMappingGetCmd)
+	policy_subjectMappingGetCmd.Flags().StringP("id", "i", "", "Id of the subject mapping")
 
-	subjectMappingsCmd.AddCommand(subjectMappingsListCmd)
+	policy_subjectMappingsCmd.AddCommand(policy_subjectMappingsListCmd)
 
-	subjectMappingsCmd.AddCommand(subjectMappingCreateCmd)
-	subjectMappingCreateCmd.Flags().StringP("attribute-value-id", "a", "", "Id of the attribute value")
-	subjectMappingCreateCmd.Flags().StringP("subject-attribute", "s", "", "Subject attribute")
-	subjectMappingCreateCmd.Flags().StringSliceVarP(&subjectValues, "subject-values", "v", []string{}, "Subject values")
-	subjectMappingCreateCmd.Flags().StringP("operator", "o", "", "Operator")
-	subjectMappingCreateCmd.Flags().StringP("metadata", "m", "", "Metadata (optional): labels and description")
+	policy_subjectMappingsCmd.AddCommand(policy_subjectMappingCreateCmd)
+	policy_subjectMappingCreateCmd.Flags().StringP("attribute-value-id", "a", "", "Id of the attribute value")
+	policy_subjectMappingCreateCmd.Flags().StringP("subject-attribute", "s", "", "Subject attribute")
+	policy_subjectMappingCreateCmd.Flags().StringSliceVarP(&subjectValues, "subject-values", "v", []string{}, "Subject values")
+	policy_subjectMappingCreateCmd.Flags().StringP("operator", "o", "", "Operator")
+	policy_subjectMappingCreateCmd.Flags().StringP("metadata", "m", "", "Metadata (optional): labels and description")
 
-	subjectMappingsCmd.AddCommand(subjectMappingUpdateCmd)
-	subjectMappingUpdateCmd.Flags().StringP("id", "i", "", "Id of the subject mapping")
-	subjectMappingUpdateCmd.Flags().StringP("attribute-value-id", "a", "", "Id of the attribute value")
-	subjectMappingUpdateCmd.Flags().StringP("subject-attribute", "s", "", "Subject attribute")
-	subjectMappingUpdateCmd.Flags().StringSliceVarP(&subjectValues, "subject-values", "v", []string{}, "Subject values")
-	subjectMappingUpdateCmd.Flags().StringP("operator", "o", "", "Operator: [IN, NOT_IN]")
-	subjectMappingUpdateCmd.Flags().StringP("metadata", "m", "", "Metadata (optional): labels and description")
+	policy_subjectMappingsCmd.AddCommand(policy_subjectMappingUpdateCmd)
+	policy_subjectMappingUpdateCmd.Flags().StringP("id", "i", "", "Id of the subject mapping")
+	policy_subjectMappingUpdateCmd.Flags().StringP("attribute-value-id", "a", "", "Id of the attribute value")
+	policy_subjectMappingUpdateCmd.Flags().StringP("subject-attribute", "s", "", "Subject attribute")
+	policy_subjectMappingUpdateCmd.Flags().StringSliceVarP(&subjectValues, "subject-values", "v", []string{}, "Subject values")
+	policy_subjectMappingUpdateCmd.Flags().StringP("operator", "o", "", "Operator: [IN, NOT_IN]")
+	policy_subjectMappingUpdateCmd.Flags().StringP("metadata", "m", "", "Metadata (optional): labels and description")
 
-	subjectMappingsCmd.AddCommand(subjectMappingDeleteCmd)
-	subjectMappingDeleteCmd.Flags().StringP("id", "i", "", "Id of the subject mapping")
+	policy_subjectMappingsCmd.AddCommand(policy_subjectMappingDeleteCmd)
+	policy_subjectMappingDeleteCmd.Flags().StringP("id", "i", "", "Id of the subject mapping")
 }
