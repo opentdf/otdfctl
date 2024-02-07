@@ -65,7 +65,7 @@ type AttributeView struct {
 	ready         bool
 	viewport      viewport.Model
 	width, height int
-	original      AttributeItem
+	list          []AttributeItem
 }
 
 func SetupViewport(m AttributeView, msg tea.WindowSizeMsg) (AttributeView, []tea.Cmd) {
@@ -147,14 +147,18 @@ func InitAttributeView(items []list.Item, idx int) (tea.Model, tea.Cmd) {
 	ti5 := textinput.New()
 	ti5.SetValue(strings.Join(item.values, ","))
 	inputs = append(inputs, ti5)
+	var attrItems []AttributeItem
+	for _, item := range items {
+		attrItems = append(attrItems, item.(AttributeItem))
+	}
 
 	m := AttributeView{
-		keys:     attr_keys,
-		inputs:   inputs,
-		focused:  0,
-		err:      nil,
-		title:    title,
-		original: item,
+		keys:    attr_keys,
+		inputs:  inputs,
+		focused: 0,
+		err:     nil,
+		title:   title,
+		list:    attrItems,
 	}
 	return m.Update(WindowMsg())
 }
@@ -173,15 +177,16 @@ func (m AttributeView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		description: m.inputs[description].(textarea.Model).Value(),
 		values:      strings.Split(m.inputs[values].(textinput.Model).Value(), ","),
 	}
-	saveModel, saveCmd := InitAttributeList([]AttributeItem{item})
+	// saveModel, saveCmd := InitAttributeList([]AttributeItem{item})
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.Type {
-
 		case tea.KeyShiftLeft: //, tea.KeyBackspace:
-			return InitAttributeList([]AttributeItem{})
+			return InitAttributeList(m.list)
 		case tea.KeyShiftRight:
-			return saveModel, saveCmd
+			// return saveModel, saveCmd
+			//
+			return InitAttributeList()
 		case tea.KeyEnter:
 			// if m.focused == len(m.inputs)-1 {
 			// 	return saveModel, saveCmd
