@@ -56,6 +56,11 @@ var (
 	}()
 )
 
+// type TextWrapper struct{}
+
+// func View(m TextWrapper)  {}
+// func Value(m TextWrapper) {}
+
 type AttributeView struct {
 	inputs        []interface{}
 	focused       int
@@ -67,6 +72,7 @@ type AttributeView struct {
 	width, height int
 	list          []list.Item
 	idx           int
+	editMode      bool
 }
 
 func SetupViewport(m AttributeView, msg tea.WindowSizeMsg) (AttributeView, []tea.Cmd) {
@@ -77,6 +83,9 @@ func SetupViewport(m AttributeView, msg tea.WindowSizeMsg) (AttributeView, []tea
 	footerHeight := lipgloss.Height(m.CreateFooter())
 	verticalMarginHeight := headerHeight + footerHeight
 	m.width = msg.Width
+	// area := m.inputs[description].(textarea.Model)
+	// area.SetWidth(msg.Width)
+	// m.inputs[description] = area
 	if !m.ready {
 		// Since this program is using the full size of the viewport we
 		// need to wait until we've received the window dimensions before
@@ -142,6 +151,7 @@ func InitAttributeView(items []list.Item, idx int) (tea.Model, tea.Cmd) {
 	inputs = append(inputs, ti3)
 
 	ti4 := textarea.New()
+	ti4.ShowLineNumbers = false
 	ti4.SetValue(item.description)
 	inputs = append(inputs, ti4)
 
@@ -154,13 +164,14 @@ func InitAttributeView(items []list.Item, idx int) (tea.Model, tea.Cmd) {
 	// }
 
 	m := AttributeView{
-		keys:    attr_keys,
-		inputs:  inputs,
-		focused: 0,
-		err:     nil,
-		title:   title,
-		list:    items,
-		idx:     idx,
+		keys:     attr_keys,
+		inputs:   inputs,
+		focused:  0,
+		err:      nil,
+		title:    title,
+		list:     items,
+		idx:      idx,
+		editMode: idx >= len(items),
 	}
 	return m.Update(WindowMsg())
 }
@@ -169,8 +180,18 @@ func (m AttributeView) Init() tea.Cmd {
 	return textinput.Blink
 }
 
+func (m AttributeView) ChangeMode() AttributeView {
+	if m.idx < len(m.list) {
+		m.editMode = !m.editMode
+	} else {
+		m.editMode = true
+	}
+	return m
+}
+
 func (m AttributeView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd // = make([]tea.Cmd, len(m.inputs))
+	var editing bool
 	item := AttributeItem{
 		id:          m.inputs[id].(textinput.Model).Value(),
 		name:        m.inputs[name].(textinput.Model).Value(),
@@ -201,11 +222,30 @@ func (m AttributeView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// }
 			m.nextInput()
 		case tea.KeyCtrlC, tea.KeyEsc:
-			return m, tea.Quit
+			if m.editMode {
+				m = m.ChangeMode()
+			} else {
+				return m, tea.Quit
+			}
 		case tea.KeyShiftTab, tea.KeyCtrlP, tea.KeyUp:
 			m.prevInput()
 		case tea.KeyTab, tea.KeyCtrlN, tea.KeyDown:
 			m.nextInput()
+		}
+		if msg.String() == "i" && !m.editMode {
+			editing = true
+			m = m.ChangeMode()
+			var cmd tea.Cmd
+			if m.focused == description {
+				tempArea := m.inputs[m.focused].(textarea.Model)
+				cmd = tempArea.Cursor.SetMode(0)
+				m.inputs[m.focused] = tempArea
+			} else {
+				tempInput := m.inputs[m.focused].(textinput.Model)
+				cmd = tempInput.Cursor.SetMode(0)
+				m.inputs[m.focused] = tempInput
+			}
+			return m, cmd
 		}
 		for i := range m.inputs {
 			if i == description {
@@ -237,14 +277,15 @@ func (m AttributeView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	var cmd tea.Cmd
-
-	for i := range m.inputs {
-		if i == description {
-			m.inputs[i], cmd = m.inputs[i].(textarea.Model).Update(msg)
-		} else {
-			m.inputs[i], cmd = m.inputs[i].(textinput.Model).Update(msg)
+	if m.editMode || m.idx >= len(m.list) && !editing {
+		for i := range m.inputs {
+			if i == description {
+				m.inputs[i], cmd = m.inputs[i].(textarea.Model).Update(msg)
+			} else {
+				m.inputs[i], cmd = m.inputs[i].(textinput.Model).Update(msg)
+			}
+			cmds = append(cmds, cmd)
 		}
-		cmds = append(cmds, cmd)
 	}
 	m.viewport, cmd = m.viewport.Update(msg)
 	cmds = append(cmds, cmd)
@@ -253,8 +294,14 @@ func (m AttributeView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func CreateEditFormat(num int) string {
 	var format string
+	prefix := "\n%s"
+	postfix := "%s\n"
+	var middle string
 	for i := 0; i < num; i++ {
-		format += "\n%s %s\n"
+		if i == description {
+			middle = "\n"
+		}
+		format += prefix + middle + postfix
 	}
 	return format
 }
@@ -308,7 +355,13 @@ func (m AttributeView) CreateHeader() string {
 }
 
 func (m AttributeView) CreateFooter() string {
-	info := infoStyle.Render(fmt.Sprintf("discard: shift + left arrow | save: shift + right arrow | scroll: %3.f%%", m.viewport.ScrollPercent()*100))
+	var prefix string
+	if m.editMode {
+		prefix = "discard: shift + left arrow | save: shift + right arrow"
+	} else {
+		prefix = "enter edit mode: i"
+	}
+	info := infoStyle.Render(fmt.Sprintf(prefix+" | scroll: %3.f%%", m.viewport.ScrollPercent()*100))
 	line := CreateLine(m.viewport.Width, info)
 	return lipgloss.JoinHorizontal(lipgloss.Center, line, info)
 }
