@@ -224,21 +224,21 @@ same attribute and namespace.
 )
 
 func init() {
-	policyCmd.AddCommand(subjectMappingsCmd)
+	policyCmd.AddCommand(policy_subjectMappingsCmd)
 
-	policy_subjectMappingsCmd.AddCommand(subjectMappingGetCmd)
+	policy_subjectMappingsCmd.AddCommand(policy_subjectMappingGetCmd)
 	policy_subjectMappingGetCmd.Flags().StringP("id", "i", "", "Id of the subject mapping")
 
-	policy_subjectMappingsCmd.AddCommand(subjectMappingsListCmd)
+	policy_subjectMappingsCmd.AddCommand(policy_subjectMappingsListCmd)
 
-	policy_subjectMappingsCmd.AddCommand(subjectMappingCreateCmd)
+	policy_subjectMappingsCmd.AddCommand(policy_subjectMappingCreateCmd)
 	policy_subjectMappingCreateCmd.Flags().StringP("attribute-value-id", "a", "", "Id of the attribute value")
 	policy_subjectMappingCreateCmd.Flags().StringP("subject-attribute", "s", "", "Subject attribute")
 	policy_subjectMappingCreateCmd.Flags().StringSliceVarP(&subjectValues, "subject-values", "v", []string{}, "Subject values")
 	policy_subjectMappingCreateCmd.Flags().StringP("operator", "o", "", "Operator")
 	policy_subjectMappingCreateCmd.Flags().StringP("metadata", "m", "", "Metadata (optional): labels and description")
 
-	policy_subjectMappingsCmd.AddCommand(subjectMappingUpdateCmd)
+	policy_subjectMappingsCmd.AddCommand(policy_subjectMappingUpdateCmd)
 	policy_subjectMappingUpdateCmd.Flags().StringP("id", "i", "", "Id of the subject mapping")
 	policy_subjectMappingUpdateCmd.Flags().StringP("attribute-value-id", "a", "", "Id of the attribute value")
 	policy_subjectMappingUpdateCmd.Flags().StringP("subject-attribute", "s", "", "Subject attribute")
@@ -246,6 +246,6 @@ func init() {
 	policy_subjectMappingUpdateCmd.Flags().StringP("operator", "o", "", "Operator: [IN, NOT_IN]")
 	policy_subjectMappingUpdateCmd.Flags().StringP("metadata", "m", "", "Metadata (optional): labels and description")
 
-	policy_subjectMappingsCmd.AddCommand(subjectMappingDeleteCmd)
+	policy_subjectMappingsCmd.AddCommand(policy_subjectMappingDeleteCmd)
 	policy_subjectMappingDeleteCmd.Flags().StringP("id", "i", "", "Id of the subject mapping")
 }

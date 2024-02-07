@@ -167,20 +167,20 @@ or different attributes tied to each.
 )
 
 func init() {
-	policyCmd.AddCommand(namespacesCmd)
+	policyCmd.AddCommand(policy_namespacesCmd)
 
-	policy_namespacesCmd.AddCommand(namespaceGetCmd)
+	policy_namespacesCmd.AddCommand(policy_namespaceGetCmd)
 	policy_namespaceGetCmd.Flags().StringP("id", "i", "", "Id of the namespace")
 
-	policy_namespacesCmd.AddCommand(namespacesListCmd)
+	policy_namespacesCmd.AddCommand(policy_namespacesListCmd)
 
-	policy_namespacesCmd.AddCommand(namespacesCreateCmd)
+	policy_namespacesCmd.AddCommand(policy_namespacesCreateCmd)
 	policy_namespacesCreateCmd.Flags().StringP("name", "n", "", "Name value of the namespace")
 
-	policy_namespacesCmd.AddCommand(namespaceUpdateCmd)
+	policy_namespacesCmd.AddCommand(policy_namespaceUpdateCmd)
 	policy_namespaceUpdateCmd.Flags().StringP("id", "i", "", "Id of the namespace")
 	policy_namespaceUpdateCmd.Flags().StringP("name", "n", "", "Name value of the namespace")
 
-	policy_namespacesCmd.AddCommand(namespaceDeleteCmd)
+	policy_namespacesCmd.AddCommand(policy_namespaceDeleteCmd)
 	policy_namespaceDeleteCmd.Flags().StringP("id", "i", "", "Id of the namespace")
 }

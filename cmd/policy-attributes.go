@@ -211,10 +211,10 @@ used to define the access controls based on subject encodings and entity entitle
 )
 
 func init() {
-	policyCmd.AddCommand(attributesCmd)
+	policyCmd.AddCommand(policy_attributesCmd)
 
 	// Create an attribute
-	policy_attributesCmd.AddCommand(attributesCreateCmd)
+	policy_attributesCmd.AddCommand(policy_attributesCreateCmd)
 	policy_attributesCreateCmd.Flags().StringP("name", "n", "", "Name of the attribute")
 	policy_attributesCreateCmd.Flags().StringP("rule", "r", "", "Rule of the attribute")
 	policy_attributesCreateCmd.Flags().StringSliceVarP(&attrValues, "values", "v", []string{}, "Values of the attribute")
@@ -222,17 +222,17 @@ func init() {
 	policy_attributesCreateCmd.Flags().StringP("description", "d", "", "Description of the attribute")
 
 	// Get an attribute
-	policy_attributesCmd.AddCommand(attributeGetCmd)
+	policy_attributesCmd.AddCommand(policy_attributeGetCmd)
 	policy_attributeGetCmd.Flags().StringP("id", "i", "", "Id of the attribute")
 
 	// List attributes
-	policy_attributesCmd.AddCommand(attributesListCmd)
+	policy_attributesCmd.AddCommand(policy_attributesListCmd)
 
 	// Update an attribute
-	policy_attributesCmd.AddCommand(attributeUpdateCmd)
+	policy_attributesCmd.AddCommand(policy_attributeUpdateCmd)
 	policy_attributeUpdateCmd.Flags().StringP("id", "i", "", "Id of the attribute")
 
 	// Delete an attribute
-	policy_attributesCmd.AddCommand(attributesDeleteCmd)
+	policy_attributesCmd.AddCommand(policy_attributesDeleteCmd)
 	policy_attributesDeleteCmd.Flags().StringP("id", "i", "", "Id of the attribute")
 }
