@@ -33,30 +33,31 @@ func (m AttributeItem) Description() string {
 	return m.description
 }
 
-func InitAttributeList(items []AttributeItem) (tea.Model, tea.Cmd) {
+func InitAttributeList(items []list.Item) (tea.Model, tea.Cmd) {
 	// TODO: fetch items from API
 
 	m := AttributeList{}
 	m.list = list.New([]list.Item{}, list.NewDefaultDelegate(), constants.WindowSize.Width, constants.WindowSize.Height)
 	m.list.Title = "Attributes"
-	if len(items) > 0 {
-		var newItems []list.Item
-		for _, item := range items {
-			newItems = append(newItems, item)
-		}
-		m.list.SetItems(newItems)
-	} else {
-		// m.list.SetItems([]list.Item{
-		// 	AttributeItem{
-		// 		id:          "8a6755f2-efa8-4758-b893-af9a488e0bea",
-		// 		namespace:   "demo.com",
-		// 		name:        "relto",
-		// 		rule:        "hierarchical",
-		// 		description: "The relto attribute is used to describe the relationship of the resource to the country of origin.",
-		// 		values:      []string{"USA", "GBR"},
-		// 	},
-		// })
-	}
+	m.list.SetItems(items)
+	// if len(items) > 0 {
+	// 	var newItems []list.Item
+	// 	for _, item := range items {
+	// 		newItems = append(newItems, item)
+	// 	}
+	// 	m.list.SetItems(newItems)
+	// } else {
+	// 	// m.list.SetItems([]list.Item{
+	// 	// 	AttributeItem{
+	// 	// 		id:          "8a6755f2-efa8-4758-b893-af9a488e0bea",
+	// 	// 		namespace:   "demo.com",
+	// 	// 		name:        "relto",
+	// 	// 		rule:        "hierarchical",
+	// 	// 		description: "The relto attribute is used to describe the relationship of the resource to the country of origin.",
+	// 	// 		values:      []string{"USA", "GBR"},
+	// 	// 	},
+	// 	// })
+	// }
 	return m.Update(WindowMsg())
 }
 
@@ -94,6 +95,14 @@ func (m AttributeList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			am, _ := InitAppMenu()
 			am.list.Select(1)
 			return am.Update(WindowMsg())
+		case "down", "j":
+			if m.list.Index() < len(m.list.Items())-1 {
+				m.list.Select(m.list.Index() + 1)
+			}
+		case "up", "k":
+			if m.list.Index() > 0 {
+				m.list.Select(m.list.Index() - 1)
+			}
 		case "c":
 			return InitAttributeView(m.list.Items(), len(m.list.Items()))
 		case "enter", "e":

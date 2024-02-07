@@ -65,7 +65,8 @@ type AttributeView struct {
 	ready         bool
 	viewport      viewport.Model
 	width, height int
-	list          []AttributeItem
+	list          []list.Item
+	idx           int
 }
 
 func SetupViewport(m AttributeView, msg tea.WindowSizeMsg) (AttributeView, []tea.Cmd) {
@@ -147,10 +148,10 @@ func InitAttributeView(items []list.Item, idx int) (tea.Model, tea.Cmd) {
 	ti5 := textinput.New()
 	ti5.SetValue(strings.Join(item.values, ","))
 	inputs = append(inputs, ti5)
-	var attrItems []AttributeItem
-	for _, item := range items {
-		attrItems = append(attrItems, item.(AttributeItem))
-	}
+	// var attrItems []AttributeItem
+	// for _, item := range items {
+	// 	attrItems = append(attrItems, item.(AttributeItem))
+	// }
 
 	m := AttributeView{
 		keys:    attr_keys,
@@ -158,7 +159,8 @@ func InitAttributeView(items []list.Item, idx int) (tea.Model, tea.Cmd) {
 		focused: 0,
 		err:     nil,
 		title:   title,
-		list:    attrItems,
+		list:    items,
+		idx:     idx,
 	}
 	return m.Update(WindowMsg())
 }
@@ -168,7 +170,7 @@ func (m AttributeView) Init() tea.Cmd {
 }
 
 func (m AttributeView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	var cmds []tea.Cmd = make([]tea.Cmd, len(m.inputs))
+	var cmds []tea.Cmd // = make([]tea.Cmd, len(m.inputs))
 	item := AttributeItem{
 		id:          m.inputs[id].(textinput.Model).Value(),
 		name:        m.inputs[name].(textinput.Model).Value(),
@@ -185,8 +187,14 @@ func (m AttributeView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return InitAttributeList(m.list)
 		case tea.KeyShiftRight:
 			// return saveModel, saveCmd
-			//
-			return InitAttributeList()
+			if m.idx < len(m.list) {
+				m.list[m.idx] = list.Item(item)
+			} else {
+				m.list = append(m.list, list.Item(item))
+			}
+
+			return InitAttributeList(m.list)
+			// return InitAttributeList()
 		case tea.KeyEnter:
 			// if m.focused == len(m.inputs)-1 {
 			// 	return saveModel, saveCmd

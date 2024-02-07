@@ -77,16 +77,15 @@ func (m AppMenu) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case attributeMenu:
 				// l := list.New([]list.Item{}, list.NewDefaultDelegate(), constants.WindowSize.Width, constants.WindowSize.Height)
 				// var al AttributeList
-				al, cmd := InitAttributeList([]AttributeItem{
-					{
-						id:          "8a6755f2-efa8-4758-b893-af9a488e0bea",
-						namespace:   "demo.com",
-						name:        "relto",
-						rule:        "hierarchical",
-						description: "The relto attribute is used to describe the relationship of the resource to the country of origin.",
-						values:      []string{"USA", "GBR"},
-					},
-				})
+				item := AttributeItem{
+					id:          "8a6755f2-efa8-4758-b893-af9a488e0bea",
+					namespace:   "demo.com",
+					name:        "relto",
+					rule:        "hierarchical",
+					description: "The relto attribute is used to describe the relationship of the resource to the country of origin.",
+					values:      []string{"USA", "GBR"},
+				}
+				al, cmd := InitAttributeList([]list.Item{item})
 				// // al = al.(AttributeList)
 				// l := al.(AttributeList).list
 				// l.SetItems([]list.Item{
