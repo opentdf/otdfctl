@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	// "log"
-
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/textarea"
 	"github.com/charmbracelet/bubbles/textinput"
@@ -15,10 +13,6 @@ import (
 	"github.com/muesli/reflow/wordwrap"
 	"github.com/opentdf/tructl/tui/constants"
 )
-
-// type (
-// 	errMsg error
-// )
 
 const (
 	id = iota
@@ -83,9 +77,7 @@ func SetupViewport(m AttributeView, msg tea.WindowSizeMsg) (AttributeView, []tea
 	footerHeight := lipgloss.Height(m.CreateFooter())
 	verticalMarginHeight := headerHeight + footerHeight
 	m.width = msg.Width
-	// area := m.inputs[description].(textarea.Model)
-	// area.SetWidth(msg.Width)
-	// m.inputs[description] = area
+
 	if !m.ready {
 		// Since this program is using the full size of the viewport we
 		// need to wait until we've received the window dimensions before
@@ -106,11 +98,7 @@ func SetupViewport(m AttributeView, msg tea.WindowSizeMsg) (AttributeView, []tea
 		m.viewport.Width = msg.Width
 		m.viewport.Height = msg.Height - verticalMarginHeight
 	}
-	// var cmd tea.Cmd
-	// m.viewport, cmd = m.viewport.Update(tea.KeyPgDown)
-	// cmds = append(cmds, cmd)
-	// m.viewport.GotoBottom()
-	// cmds = append(cmds, viewport.Sync(m.viewport))
+
 	if useHighPerformanceRenderer {
 		// Render (or re-render) the whole viewport. Necessary both to
 		// initialize the viewport and when the window is resized.
@@ -158,10 +146,6 @@ func InitAttributeView(items []list.Item, idx int) (tea.Model, tea.Cmd) {
 	ti5 := textinput.New()
 	ti5.SetValue(strings.Join(item.values, ","))
 	inputs = append(inputs, ti5)
-	// var attrItems []AttributeItem
-	// for _, item := range items {
-	// 	attrItems = append(attrItems, item.(AttributeItem))
-	// }
 
 	m := AttributeView{
 		keys:     attr_keys,
@@ -185,11 +169,6 @@ func (m AttributeView) IsNew() bool {
 }
 
 func (m AttributeView) ChangeMode() AttributeView {
-	// if m.idx < len(m.list) {
-	// 	m.editMode = !m.editMode
-	// } else {
-	// 	m.editMode = true
-	// }
 	m.editMode = m.IsNew() || !m.editMode
 	return m
 }
@@ -205,18 +184,16 @@ func (m AttributeView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		description: m.inputs[description].(textarea.Model).Value(),
 		values:      strings.Split(m.inputs[values].(textinput.Model).Value(), ","),
 	}
-	// saveModel, saveCmd := InitAttributeList([]AttributeItem{item})
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.Type {
-		case tea.KeyShiftLeft: //, tea.KeyBackspace:
+		case tea.KeyShiftLeft:
 			listIdx := m.idx
 			if m.IsNew() {
 				listIdx -= 1
 			}
 			return InitAttributeList(m.list, listIdx)
 		case tea.KeyShiftRight:
-			// return saveModel, saveCmd
 			if !m.IsNew() {
 				m.list[m.idx] = list.Item(item)
 			} else {
@@ -224,11 +201,7 @@ func (m AttributeView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 			return InitAttributeList(m.list, m.idx)
-			// return InitAttributeList()
 		case tea.KeyEnter:
-			// if m.focused == len(m.inputs)-1 {
-			// 	return saveModel, saveCmd
-			// }
 			m.nextInput()
 		case tea.KeyCtrlC, tea.KeyEsc:
 			if m.editMode {
