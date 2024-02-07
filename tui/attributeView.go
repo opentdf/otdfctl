@@ -210,7 +210,11 @@ func (m AttributeView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.Type {
 		case tea.KeyShiftLeft: //, tea.KeyBackspace:
-			return InitAttributeList(m.list)
+			listIdx := m.idx
+			if m.IsNew() {
+				listIdx -= 1
+			}
+			return InitAttributeList(m.list, listIdx)
 		case tea.KeyShiftRight:
 			// return saveModel, saveCmd
 			if !m.IsNew() {
@@ -219,7 +223,7 @@ func (m AttributeView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.list = append(m.list, list.Item(item))
 			}
 
-			return InitAttributeList(m.list)
+			return InitAttributeList(m.list, m.idx)
 			// return InitAttributeList()
 		case tea.KeyEnter:
 			// if m.focused == len(m.inputs)-1 {

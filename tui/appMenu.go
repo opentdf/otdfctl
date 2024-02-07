@@ -85,7 +85,7 @@ func (m AppMenu) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					description: "The relto attribute is used to describe the relationship of the resource to the country of origin.",
 					values:      []string{"USA", "GBR"},
 				}
-				al, cmd := InitAttributeList([]list.Item{item})
+				al, cmd := InitAttributeList([]list.Item{item}, 0)
 				// // al = al.(AttributeList)
 				// l := al.(AttributeList).list
 				// l.SetItems([]list.Item{

@@ -33,11 +33,14 @@ func (m AttributeItem) Description() string {
 	return m.description
 }
 
-func InitAttributeList(items []list.Item) (tea.Model, tea.Cmd) {
+func InitAttributeList(items []list.Item, selectIdx int) (tea.Model, tea.Cmd) {
 	// TODO: fetch items from API
 
 	m := AttributeList{}
 	m.list = list.New([]list.Item{}, list.NewDefaultDelegate(), constants.WindowSize.Width, constants.WindowSize.Height)
+	if selectIdx > 0 {
+		m.list.Select(selectIdx)
+	}
 	m.list.Title = "Attributes"
 	m.list.SetItems(items)
 	// if len(items) > 0 {
