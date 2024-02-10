@@ -1,0 +1,67 @@
+name: 'CI'
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  golangci:
+    name: lint
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      - uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491
+        with:
+          go-version-file: 'go.mod'
+          cache: false
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@3a919529898de77ec3da873e3063ca4b10e7f5cc
+        with:
+          version: v1.55
+          # Optional: golangci-lint command line arguments.
+          args: --timeout=10m 
+  unit:
+    name: unit tests
+    runs-on: ubuntu-22.04
+    env:
+      GOPRIVATE: github.com/opentdf/opentdf-v2-poc/*
+    steps:
+      - name: Generate a token
+        id: generate_token
+        uses: actions/create-github-app-token@v1.5.0
+        with:
+          app-id: '416599'
+          private-key: '${{ secrets.GH_APP_PRIVATE_KEY }}'
+          owner: ${{ github.repository_owner }}
+          repositories: 'opentdf-v2-poc'
+      - run: git config --global url.https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/.insteadOf https://github.com/
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      - uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491
+        with:
+          go-version-file: 'go.mod'
+          cache: false
+      - name: Unit Tests with the Go CLI
+        run: go test ./... -short -race -cover
+  end-to-end:
+    name: e2e tests
+    runs-on: ubuntu-22.04
+    env:
+      GOPRIVATE: github.com/opentdf/opentdf-v2-poc/*
+    steps:
+      - name: Generate a token
+        id: generate_token
+        uses: actions/create-github-app-token@v1.5.0
+        with:
+          app-id: '416599'
+          private-key: '${{ secrets.GH_APP_PRIVATE_KEY }}'
+          owner: ${{ github.repository_owner }}
+          repositories: 'opentdf-v2-poc'
+      - run: git config --global url.https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/.insteadOf https://github.com/
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      - uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491
+        with:
+          go-version-file: 'go.mod'
+          cache: false
+      - name: e2e Tests
+        run: echo "No e2e tests yet." && exit 0

@@ -1,0 +1,62 @@
+name: 'CI - Build'
+on: 
+  workflow_dispatch:
+    inputs:
+      versionBumpType:
+        description: 'Version Bump Type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+jobs:
+  build-targets:
+    name: build-targets
+    runs-on: ubuntu-22.04
+    env:
+      GOPRIVATE: github.com/opentdf/opentdf-v2-poc/*
+      BIN_NAME: tructl
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: './go.mod'
+          cache: false
+      - name: Get next version
+        uses: reecetech/version-increment@2023.9.3
+        id: version
+        with:
+          release_branch: main
+          scheme: semver
+          increment: ${{ github.event.inputs.versionBumpType }}
+          pep440: false
+      - name: print-version
+        run: echo Incrementing Version ${{ steps.version.outputs.current-version }} -> ${{ steps.version.outputs.version }}
+      # special app the virtru eng team created, to grab a token for accessing other org repos, in a secure way
+      - name: Generate a token
+        id: generate_token
+        uses: actions/create-github-app-token@v1.5.0
+        with:
+          app-id: '416599'
+          private-key: '${{ secrets.GH_APP_PRIVATE_KEY }}'
+          owner: ${{ github.repository_owner }}
+          repositories: 'opentdf-v2-poc'
+      - run: git config --global url.https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/.insteadOf https://github.com/
+      - name: make-targets
+        env:
+          SEM_VER: ${{ steps.version.outputs.version }}
+        run: make build
+      - name: smoke-test
+        run: go test ./... -short -race -cover
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: './target/**/*'
+          body: "This is a test release, and will be removed"
+          tag_name: ${{ steps.version.outputs.version }}
+          repository: opentdf/tructl
+          generate_release_notes: true
+
+

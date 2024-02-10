@@ -9,19 +9,18 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var cfgFile string
+var (
+	cfgFile    string
+	jsonOutput bool
+)
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "tructl",
-	Short: "control Virtru Data Security Platform",
+	Short: "manage Virtru Data Security Platform",
 	Long: `
-A tool to control Virtru Data Security Platform.
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.
-	`,
+A command line tool to manage Virtru Data Security Platform.
+`,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -33,6 +32,7 @@ func Execute() {
 }
 
 func init() {
+	rootCmd.PersistentFlags().BoolVar(&jsonOutput, "json", false, "output in JSON format")
 	rootCmd.PersistentFlags().String("host", "localhost:9000", "host:port of the Virtru Data Security Platform gRPC server")
 
 	// TODO: Implement Viper and allow configs
