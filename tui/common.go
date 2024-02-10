@@ -26,7 +26,7 @@ func StartTea() error {
 	}
 
 	m, _ := InitAppMenu()
-	constants.P = tea.NewProgram(m, tea.WithAltScreen())
+	constants.P = tea.NewProgram(m, tea.WithAltScreen(), tea.WithMouseCellMotion())
 	if _, err := constants.P.Run(); err != nil {
 		fmt.Println("Error running program:", err)
 		os.Exit(1)
