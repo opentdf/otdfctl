@@ -75,9 +75,16 @@ func (m AppMenu) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "enter":
 			switch m.list.SelectedItem().(AppMenuItem).id {
 			case attributeMenu:
-				attributeList := InitAttributeList()
-				am, cmd := attributeList.Update(WindowMsg())
-				return am, cmd
+				item := AttributeItem{
+					id:          "8a6755f2-efa8-4758-b893-af9a488e0bea",
+					namespace:   "demo.com",
+					name:        "relto",
+					rule:        "hierarchical",
+					description: "The relto attribute is used to describe the relationship of the resource to the country of origin.",
+					values:      []string{"USA", "GBR"},
+				}
+				al, cmd := InitAttributeList([]list.Item{item}, 0)
+				return al, cmd
 			}
 		}
 	}
