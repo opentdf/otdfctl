@@ -1,5 +1,8 @@
 # We're going to be using this Makefile as a sort of task runner, for all sorts of operations in this project
 
+# first we'll grab the current version from our ENV VAR (added by our CI) - see here: https://github.com/marketplace/actions/version-increment
+CURR_VERSION := ${SEM_VER}
+
 # Default target executed when no arguments are given to make.
 # NOTE: .PHONY is used to indicate that the target is not a file (e.g. there is no file called 'build-darwin-amd64', instead the .PHONY directive tells make that the proceeding target is a command to be executed, not a file to be generated)
 .PHONY: all
@@ -7,8 +10,10 @@ all: run
 .DEFAULT_GOAL := run
 
 
+
+
 # Binary name: Change this to your actual binary name
-BINARY_NAME=tructl
+BINARY_NAME=${BIN_NAME}
 
 
 # Output directory for compiled binaries
@@ -20,28 +25,28 @@ build: clean build-darwin-amd64 build-darwin-arm64 build-linux-amd64 build-linux
 
 # Build commands for each platform
 build-darwin-amd64:
-	GOOS=darwin GOARCH=amd64 go build -o $(OUT_DIR)/$(BINARY_NAME)-darwin-amd64 .
+	GOOS=darwin GOARCH=amd64 go build -o $(OUT_DIR)/$(BINARY_NAME)-${CURR_VERSION}-darwin-amd64 .
 
 build-darwin-arm64:
-	GOOS=darwin GOARCH=arm64 go build -o $(OUT_DIR)/$(BINARY_NAME)-darwin-arm64 .
+	GOOS=darwin GOARCH=arm64 go build -o $(OUT_DIR)/$(BINARY_NAME)-${CURR_VERSION}-darwin-arm64 .
 
 build-linux-amd64:
-	GOOS=linux GOARCH=amd64 go build -o $(OUT_DIR)/$(BINARY_NAME)-linux-amd64 .
+	GOOS=linux GOARCH=amd64 go build -o $(OUT_DIR)/$(BINARY_NAME)-${CURR_VERSION}-linux-amd64 .
 
 build-linux-arm:
-	GOOS=linux GOARCH=arm go build -o $(OUT_DIR)/$(BINARY_NAME)-linux-arm .
+	GOOS=linux GOARCH=arm go build -o $(OUT_DIR)/$(BINARY_NAME)-${CURR_VERSION}-linux-arm .
 
 build-linux-arm64:
-	GOOS=linux GOARCH=arm64 go build -o $(OUT_DIR)/$(BINARY_NAME)-linux-arm64 .
+	GOOS=linux GOARCH=arm64 go build -o $(OUT_DIR)/$(BINARY_NAME)-${CURR_VERSION}-linux-arm64 .
 
 build-windows-amd64:
-	GOOS=windows GOARCH=amd64 go build -o $(OUT_DIR)/$(BINARY_NAME)-windows-amd64.exe .
+	GOOS=windows GOARCH=amd64 go build -o $(OUT_DIR)/$(BINARY_NAME)-${CURR_VERSION}-windows-amd64.exe .
 
 build-windows-arm:
-	GOOS=windows GOARCH=arm go build -o $(OUT_DIR)/$(BINARY_NAME)-windows-arm.exe .
+	GOOS=windows GOARCH=arm go build -o $(OUT_DIR)/$(BINARY_NAME)-${CURR_VERSION}-windows-arm.exe .
 
 build-windows-arm64:
-	GOOS=windows GOARCH=arm64 go build -o $(OUT_DIR)/$(BINARY_NAME)-windows-arm64.exe .
+	GOOS=windows GOARCH=arm64 go build -o $(OUT_DIR)/$(BINARY_NAME)-${CURR_VERSION}-windows-arm64.exe .
 
 # Target for running the project (adjust as necessary for your project)
 .PHONY: run
