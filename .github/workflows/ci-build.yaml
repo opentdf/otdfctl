@@ -16,7 +16,7 @@ jobs:
     name: build-targets
     runs-on: ubuntu-22.04
     env:
-      GOPRIVATE: github.com/opentdf/opentdf-v2-poc/*
+      GOPRIVATE: github.com/opentdf/platform/*
       BIN_NAME: tructl
     steps:
       - uses: actions/checkout@v3
@@ -42,7 +42,7 @@ jobs:
           app-id: '416599'
           private-key: '${{ secrets.GH_APP_PRIVATE_KEY }}'
           owner: ${{ github.repository_owner }}
-          repositories: 'opentdf-v2-poc'
+          repositories: 'platform'
       - run: git config --global url.https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/.insteadOf https://github.com/
       - name: make-targets
         env:
