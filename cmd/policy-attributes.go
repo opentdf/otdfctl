@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/opentdf/opentdf-v2-poc/sdk/attributes"
+	"github.com/opentdf/platform/protocol/go/policy/attributes"
 	"github.com/opentdf/tructl/pkg/cli"
 	"github.com/spf13/cobra"
 )
@@ -151,7 +151,7 @@ used to define the access controls based on subject encodings and entity entitle
 	}
 
 	policy_attributesDeleteCmd = &cobra.Command{
-		Use:   "delete",
+		Use:   "deactivate",
 		Short: "Delete an attribute",
 		Run: func(cmd *cobra.Command, args []string) {
 			flagHelper := cli.NewFlagHelper(cmd)
@@ -169,15 +169,15 @@ used to define the access controls based on subject encodings and entity entitle
 
 			cli.ConfirmDelete("attribute", attr.Name)
 
-			attr, err = h.DeleteAttribute(id)
+			attr, err = h.DeactivateAttribute(id)
 			if err != nil {
-				errMsg := fmt.Sprintf("Could not delete attribute (%s)", id)
+				errMsg := fmt.Sprintf("Could not deactivate attribute (%s)", id)
 				cli.ExitWithNotFoundError(errMsg, err)
 				cli.ExitWithError(errMsg, err)
 			}
 
 			a := cli.GetSimpleAttribute(attr)
-			fmt.Println(cli.SuccessMessage("Attribute deleted"))
+			fmt.Println(cli.SuccessMessage("Attribute deactivated"))
 			fmt.Println(
 				cli.NewTabular().
 					Rows([][]string{

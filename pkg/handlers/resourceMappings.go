@@ -3,7 +3,7 @@ package handlers
 import (
 	"context"
 
-	"github.com/opentdf/opentdf-v2-poc/sdk/resourcemapping"
+	"github.com/opentdf/platform/protocol/go/policy/resourcemapping"
 )
 
 type ResourceMapping struct {

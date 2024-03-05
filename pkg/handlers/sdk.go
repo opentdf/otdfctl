@@ -3,8 +3,8 @@ package handlers
 import (
 	"context"
 
-	"github.com/opentdf/opentdf-v2-poc/sdk"
-	"github.com/opentdf/opentdf-v2-poc/sdk/common"
+	"github.com/opentdf/platform/protocol/go/common"
+	"github.com/opentdf/platform/sdk"
 )
 
 var SDK *sdk.SDK
@@ -15,6 +15,10 @@ type Handler struct {
 }
 
 func New(platformEndpoint string) (Handler, error) {
+	// define the scopes in an array
+	// scopes := []string{"email"}
+
+	// sdk, err := sdk.New(platformEndpoint, sdk.WithClientCredentials("client-id", "clientSecret", scopes), sdk.WithTokenEndpoint("http://dummy/token-endpoint"))
 	sdk, err := sdk.New(platformEndpoint, sdk.WithInsecureConn())
 	if err != nil {
 		return Handler{}, err
