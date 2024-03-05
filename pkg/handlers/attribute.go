@@ -3,8 +3,8 @@ package handlers
 import (
 	"fmt"
 
-	"github.com/opentdf/opentdf-v2-poc/sdk/attributes"
-	"github.com/opentdf/opentdf-v2-poc/sdk/common"
+	"github.com/opentdf/platform/protocol/go/common"
+	"github.com/opentdf/platform/protocol/go/policy/attributes"
 )
 
 // TODO: Might be useful to map out the attribute rule definitions for help text in the CLI and TUI
@@ -89,8 +89,8 @@ func (h *Handler) UpdateAttribute(
 	})
 }
 
-func (h Handler) DeleteAttribute(id string) (*attributes.Attribute, error) {
-	resp, err := h.sdk.Attributes.DeleteAttribute(h.ctx, &attributes.DeleteAttributeRequest{
+func (h Handler) DeactivateAttribute(id string) (*attributes.Attribute, error) {
+	resp, err := h.sdk.Attributes.DeactivateAttribute(h.ctx, &attributes.DeactivateAttributeRequest{
 		Id: id,
 	})
 	if err != nil {

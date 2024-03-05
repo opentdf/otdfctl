@@ -125,7 +125,7 @@ or different attributes tied to each.
 
 			cli.ConfirmDelete("namespace", ns.Name)
 
-			if err := h.DeleteNamespace(id); err != nil {
+			if err := h.DeactivateNamespace(id); err != nil {
 				errMsg := fmt.Sprintf("Could not delete namespace (%s)", id)
 				cli.ExitWithNotFoundError(errMsg, err)
 				cli.ExitWithError(errMsg, err)

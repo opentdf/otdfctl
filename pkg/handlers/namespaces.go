@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"github.com/opentdf/opentdf-v2-poc/sdk/namespaces"
+	"github.com/opentdf/platform/protocol/go/policy/namespaces"
 )
 
 func (h Handler) GetNamespace(id string) (*namespaces.Namespace, error) {
@@ -46,8 +46,8 @@ func (h Handler) UpdateNamespace(id string, name string) (*namespaces.Namespace,
 	return resp.Namespace, nil
 }
 
-func (h Handler) DeleteNamespace(id string) error {
-	_, err := h.sdk.Namespaces.DeleteNamespace(h.ctx, &namespaces.DeleteNamespaceRequest{
+func (h Handler) DeactivateNamespace(id string) error {
+	_, err := h.sdk.Namespaces.DeactivateNamespace(h.ctx, &namespaces.DeactivateNamespaceRequest{
 		Id: id,
 	})
 	if err != nil {

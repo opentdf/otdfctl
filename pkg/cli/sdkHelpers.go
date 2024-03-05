@@ -1,7 +1,7 @@
 package cli
 
 import (
-	"github.com/opentdf/opentdf-v2-poc/sdk/attributes"
+	"github.com/opentdf/platform/protocol/go/policy/attributes"
 	"github.com/opentdf/tructl/pkg/handlers"
 )
 

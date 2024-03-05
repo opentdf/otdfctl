@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/opentdf/opentdf-v2-poc/sdk/attributes"
+	"github.com/opentdf/platform/protocol/go/policy/attributes"
 	"github.com/opentdf/tructl/pkg/cli"
 	"github.com/spf13/cobra"
 )
@@ -169,7 +169,7 @@ used to define the access controls based on subject encodings and entity entitle
 
 			cli.ConfirmDelete("attribute", attr.Name)
 
-			attr, err = h.DeleteAttribute(id)
+			attr, err = h.DeactivateAttribute(id)
 			if err != nil {
 				errMsg := fmt.Sprintf("Could not delete attribute (%s)", id)
 				cli.ExitWithNotFoundError(errMsg, err)

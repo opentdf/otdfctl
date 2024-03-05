@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"github.com/opentdf/opentdf-v2-poc/sdk/attributes"
+	"github.com/opentdf/platform/protocol/go/policy/attributes"
 )
 
 func (h *Handler) CreateAttributeValue(attributeId string, value string) (*attributes.Value, error) {
