@@ -10,8 +10,9 @@ import (
 var SDK *sdk.SDK
 
 type Handler struct {
-	sdk *sdk.SDK
-	ctx context.Context
+	sdk        *sdk.SDK
+	ctx        context.Context
+	OIDC_TOKEN string
 }
 
 func New(platformEndpoint string) (Handler, error) {
