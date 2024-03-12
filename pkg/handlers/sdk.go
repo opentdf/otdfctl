@@ -20,14 +20,13 @@ func New(platformEndpoint string) (Handler, error) {
 	// scopes := []string{"email"}
 	// normally, we should try to retrieve an active OICD token here, however, the SDK has no option for passing a token
 	// so instead, we'll check if we have a clientId and clientSecret stored, and if so, we'll use those to init the SDK, otherwise, we'll use the insecure connection (which will stop working once we enforce auth on the backend)
-	clientSecret, clientId, err := GetClientIdAndSecretFromCache()
+	// clientSecret, clientId, err := GetClientIdAndSecretFromCache()
 
-	if err != nil {
-		return Handler{}, err
-	}
+	// if err != nil {
+	// 	return Handler{}, err
+	// }
 
-	scopes := []string{"email"}
-
+	// scopes := []string{"email"}
 	// create the sdk with the client credentials
 	//NOTE FROM AVERY: The below line is commented out because although it should work, the SDK
 	// is having trouble with the "WithClientCredentials" endpoint
