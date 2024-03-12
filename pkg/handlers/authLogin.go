@@ -37,12 +37,41 @@ func CheckTokenExpiration(tokenString string) (bool, error) {
 }
 
 // GetOIDCTokenFromCache retrieves the OIDC token from the keyring.
-func (h *Handler) GetOIDCTokenFromCache() (string, error) {
+func GetOIDCTokenFromCache() (string, error) {
 	token, err := keyring.Get(TOKEN_URL, TRUCTL_OIDC_TOKEN_KEY)
 	if err != nil {
 		return "", err
 	}
 	return token, nil
+}
+
+// GetClientIDFromCache retrieves the client ID from the keyring.
+func GetClientIDFromCache() (string, error) {
+	clientId, err := keyring.Get(TOKEN_URL, TRUCTL_CLIENT_ID_CACHE_KEY)
+	if err != nil {
+		return "", err
+	}
+	return clientId, nil
+}
+
+// GetClientSecretFromCache retrieves the client secret from the keyring.
+func GetClientIdAndSecretFromCache() (string, string, error) {
+	// our clientSecret key, is our clientId, so we gotta grab that first
+	clientId, err := keyring.Get(TOKEN_URL, TRUCTL_CLIENT_ID_CACHE_KEY)
+	if err != nil {
+		// we failed to get the clientId for somereason
+		return "", "", err
+	}
+
+	if clientId == "" {
+		return "", "", fmt.Errorf("no clientId found in keyring")
+	}
+
+	clientSecret, err := keyring.Get(TOKEN_URL, clientId)
+	if err != nil {
+		return "", "", err
+	}
+	return clientSecret, clientId, nil
 }
 
 // DEBUG_PrintKeyRingSecrets prints all the secrets in the keyring.
