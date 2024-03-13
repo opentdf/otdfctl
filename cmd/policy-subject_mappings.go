@@ -1,256 +1,254 @@
 package cmd
 
-import "fmt"
+import (
+	"encoding/json"
+	"fmt"
+	"strings"
 
-// import (
-// 	"encoding/json"
-// 	"fmt"
-// 	"strings"
+	"github.com/opentdf/tructl/pkg/cli"
+	"github.com/opentdf/tructl/pkg/handlers"
+	"github.com/spf13/cobra"
+)
 
-// 	"github.com/opentdf/tructl/pkg/cli"
-// 	"github.com/opentdf/tructl/pkg/handlers"
-// 	"github.com/spf13/cobra"
-// )
+var (
+	policy_subject_mappingsCmds = []string{
+		policy_subject_mappingCreateCmd.Use,
+		policy_subject_mappingGetCmd.Use,
+		policy_subject_mappingsListCmd.Use,
+		policy_subject_mappingUpdateCmd.Use,
+		policy_subject_mappingDeleteCmd.Use,
+	}
 
-// var (
-// 	policy_subject_mappingsCmds = []string{
-// 		policy_subjectMappingCreateCmd.Use,
-// 		policy_subjectMappingGetCmd.Use,
-// 		policy_subject_mappingsListCmd.Use,
-// 		policy_subjectMappingUpdateCmd.Use,
-// 		policy_subjectMappingDeleteCmd.Use,
-// 	}
+	subjectValues []string
 
-// 	subjectValues []string
+	policy_subject_mappingsCmd = &cobra.Command{
+		Use:   "subject-mappings",
+		Short: "Manage subject mappings [" + strings.Join(policy_subject_mappingsCmds, ", ") + "]",
+		Long: `
+Subject Mappings - commands to manage relationships between subjects (PEs, NPEs, etc) and attributes.
 
-// 	policy_subject_mappingsCmd = &cobra.Command{
-// 		Use:   "subject-mappings",
-// 		Short: "Manage subject mappings [" + strings.Join(policy_subject_mappingsCmds, ", ") + "]",
-// 		Long: `
-// Subject Mappings - commands to manage relationships between subjects (PEs, NPEs, etc) and attributes.
+For example: a subject mapping could be created such that the AcmeCorp engineering
+team member named "Alice" is "IN" the value "Engineering" for attribute "Teams" in
+namespace "acmecorp.com", but is not mapped to the attribute value "Sales" within the
+same attribute and namespace.
+`,
+	}
 
-// For example: a subject mapping could be created such that the AcmeCorp engineering
-// team member named "Alice" is "IN" the value "Engineering" for attribute "Teams" in
-// namespace "acmecorp.com", but is not mapped to the attribute value "Sales" within the
-// same attribute and namespace.
-// `,
-// 	}
+	policy_subject_mappingGetCmd = &cobra.Command{
+		Use:   "get",
+		Short: "Get a subject mapping by id",
+		Run: func(cmd *cobra.Command, args []string) {
+			h := cli.NewHandler(cmd)
+			defer h.Close()
 
-// 	policy_subjectMappingGetCmd = &cobra.Command{
-// 		Use:   "get",
-// 		Short: "Get a subject mapping by id",
-// 		Run: func(cmd *cobra.Command, args []string) {
-// 			h := cli.NewHandler(cmd)
-// 			defer h.Close()
+			flagHelper := cli.NewFlagHelper(cmd)
+			id := flagHelper.GetRequiredString("id")
 
-// 			flagHelper := cli.NewFlagHelper(cmd)
-// 			id := flagHelper.GetRequiredString("id")
+			mapping, err := h.GetSubjectMapping(id)
+			if err != nil {
+				errMsg := fmt.Sprintf("Could not find subject mapping (%s)", id)
+				cli.ExitWithNotFoundError(errMsg, err)
+				cli.ExitWithError(errMsg, err)
+			}
 
-// 			mapping, err := h.GetSubjectMapping(id)
-// 			if err != nil {
-// 				errMsg := fmt.Sprintf("Could not find subject mapping (%s)", id)
-// 				cli.ExitWithNotFoundError(errMsg, err)
-// 				cli.ExitWithError(errMsg, err)
-// 			}
+			rows := [][]string{
+				{"Id", mapping.Id},
+				{"Subject Attribute", mapping.SubjectAttribute},
+				{"Operator", handlers.GetSubjectMappingOperatorChoiceFromEnum(mapping.Operator)},
+				{"Subject Values", strings.Join(mapping.SubjectValues, ", ")},
+			}
 
-// 			rows := [][]string{
-// 				{"Id", mapping.Id},
-// 				{"Subject Attribute", mapping.SubjectAttribute},
-// 				{"Operator", handlers.GetSubjectMappingOperatorChoiceFromEnum(mapping.Operator)},
-// 				{"Subject Values", strings.Join(mapping.SubjectValues, ", ")},
-// 			}
+			if mdRows := getMetadataRows(mapping.Metadata); mdRows != nil {
+				rows = append(rows, mdRows...)
+			}
 
-// 			if mdRows := getMetadataRows(mapping.Metadata); mdRows != nil {
-// 				rows = append(rows, mdRows...)
-// 			}
+			if !jsonOutput {
+				cli.PrintSuccessTable(cmd, id, cli.NewTabular().Rows(rows...))
+			} else {
+				if output, err := json.MarshalIndent(mapping, "", "  "); err != nil {
+					cli.ExitWithError("Error marshalling subject mapping", err)
+				} else {
+					fmt.Println(string(output))
+				}
+			}
+		},
+	}
 
-// 			if !jsonOutput {
-// 				cli.PrintSuccessTable(cmd, id, cli.NewTabular().Rows(rows...))
-// 			} else {
-// 				if output, err := json.MarshalIndent(mapping, "", "  "); err != nil {
-// 					cli.ExitWithError("Error marshalling subject mapping", err)
-// 				} else {
-// 					fmt.Println(string(output))
-// 				}
-// 			}
-// 		},
-// 	}
+	policy_subject_mappingsListCmd = &cobra.Command{
+		Use:   "list",
+		Short: "List subject mappings",
+		Run: func(cmd *cobra.Command, args []string) {
+			h := cli.NewHandler(cmd)
+			defer h.Close()
 
-// 	policy_subject_mappingsListCmd = &cobra.Command{
-// 		Use:   "list",
-// 		Short: "List subject mappings",
-// 		Run: func(cmd *cobra.Command, args []string) {
-// 			h := cli.NewHandler(cmd)
-// 			defer h.Close()
+			list, err := h.ListSubjectMappings()
+			if err != nil {
+				cli.ExitWithError("Could not get subject mappings", err)
+			}
 
-// 			list, err := h.ListSubjectMappings()
-// 			if err != nil {
-// 				cli.ExitWithError("Could not get subject mappings", err)
-// 			}
+			if jsonOutput {
+				if output, err := json.MarshalIndent(list, "", "  "); err != nil {
+					cli.ExitWithError("Error marshalling subject mappings", err)
+				} else {
+					fmt.Println(string(output))
+				}
+				return
+			}
 
-// 			if jsonOutput {
-// 				if output, err := json.MarshalIndent(list, "", "  "); err != nil {
-// 					cli.ExitWithError("Error marshalling subject mappings", err)
-// 				} else {
-// 					fmt.Println(string(output))
-// 				}
-// 				return
-// 			}
+			t := cli.NewTable().Width(180)
+			t.Headers("Id", "Subject Attribute", "Operator", "Subject Values", "Attribute Value ID")
+			for _, sm := range list {
+				rowCells := []string{
+					sm.Id,
+					sm.SubjectAttribute,
+					handlers.GetSubjectMappingOperatorChoiceFromEnum(sm.Operator),
+					strings.Join(sm.SubjectValues, ", "),
+					sm.AttributeValue.Id,
+				}
+				t.Row(rowCells...)
+			}
+			cli.PrintSuccessTable(cmd, "", t)
+		},
+	}
 
-// 			t := cli.NewTable().Width(180)
-// 			t.Headers("Id", "Subject Attribute", "Operator", "Subject Values", "Attribute Value ID")
-// 			for _, sm := range list {
-// 				rowCells := []string{
-// 					sm.Id,
-// 					sm.SubjectAttribute,
-// 					handlers.GetSubjectMappingOperatorChoiceFromEnum(sm.Operator),
-// 					strings.Join(sm.SubjectValues, ", "),
-// 					sm.AttributeValue.Id,
-// 				}
-// 				t.Row(rowCells...)
-// 			}
-// 			cli.PrintSuccessTable(cmd, "", t)
-// 		},
-// 	}
+	policy_subject_mappingCreateCmd = &cobra.Command{
+		Use:   "create",
+		Short: "Create a new subject mapping",
+		Run: func(cmd *cobra.Command, args []string) {
+			h := cli.NewHandler(cmd)
+			defer h.Close()
 
-// 	policy_subjectMappingCreateCmd = &cobra.Command{
-// 		Use:   "create",
-// 		Short: "Create a new subject mapping",
-// 		Run: func(cmd *cobra.Command, args []string) {
-// 			h := cli.NewHandler(cmd)
-// 			defer h.Close()
+			flagHelper := cli.NewFlagHelper(cmd)
+			attrValueId := flagHelper.GetRequiredString("attribute-value-id")
+			subjectAttribute := flagHelper.GetRequiredString("subject-attribute")
+			subjectValues := flagHelper.GetStringSlice("subject-values", subjectValues, cli.FlagHelperStringSliceOptions{Min: 1})
+			operator := flagHelper.GetRequiredString("operator")
 
-// 			flagHelper := cli.NewFlagHelper(cmd)
-// 			attrValueId := flagHelper.GetRequiredString("attribute-value-id")
-// 			subjectAttribute := flagHelper.GetRequiredString("subject-attribute")
-// 			subjectValues := flagHelper.GetStringSlice("subject-values", subjectValues, cli.FlagHelperStringSliceOptions{Min: 1})
-// 			operator := flagHelper.GetRequiredString("operator")
+			m := flagHelper.GetOptionalString("metadata")
+			metadata := unMarshalMetadata(m)
 
-// 			m := flagHelper.GetOptionalString("metadata")
-// 			metadata := unMarshalMetadata(m)
+			mapping, err := h.CreateNewSubjectMapping(attrValueId, subjectAttribute, subjectValues, operator, metadata)
+			if err != nil {
+				cli.ExitWithError("Could not create subject mapping", err)
+			}
 
-// 			mapping, err := h.CreateNewSubjectMapping(attrValueId, subjectAttribute, subjectValues, operator, metadata)
-// 			if err != nil {
-// 				cli.ExitWithError("Could not create subject mapping", err)
-// 			}
+			if jsonOutput {
+				if output, err := json.MarshalIndent(mapping, "", "  "); err != nil {
+					cli.ExitWithError("Error marshalling subject mapping", err)
+				} else {
+					fmt.Println(string(output))
+				}
+				return
+			}
 
-// 			if jsonOutput {
-// 				if output, err := json.MarshalIndent(mapping, "", "  "); err != nil {
-// 					cli.ExitWithError("Error marshalling subject mapping", err)
-// 				} else {
-// 					fmt.Println(string(output))
-// 				}
-// 				return
-// 			}
+			rows := [][]string{
+				{"Id", mapping.Id},
+				{"Subject Attribute", mapping.SubjectAttribute},
+				{"Operator", handlers.GetSubjectMappingOperatorChoiceFromEnum(mapping.Operator)},
+				{"Subject Values", strings.Join(mapping.SubjectValues, ", ")},
+				{"Attribute Value Id", mapping.AttributeValue.Id},
+			}
 
-// 			rows := [][]string{
-// 				{"Id", mapping.Id},
-// 				{"Subject Attribute", mapping.SubjectAttribute},
-// 				{"Operator", handlers.GetSubjectMappingOperatorChoiceFromEnum(mapping.Operator)},
-// 				{"Subject Values", strings.Join(mapping.SubjectValues, ", ")},
-// 				{"Attribute Value Id", mapping.AttributeValue.Id},
-// 			}
+			if mdRows := getMetadataRows(mapping.Metadata); mdRows != nil {
+				rows = append(rows, mdRows...)
+			}
 
-// 			if mdRows := getMetadataRows(mapping.Metadata); mdRows != nil {
-// 				rows = append(rows, mdRows...)
-// 			}
+			cli.PrintSuccessTable(cmd, mapping.Id,
+				cli.NewTabular().
+					Rows(rows...))
+		},
+	}
 
-// 			cli.PrintSuccessTable(cmd, mapping.Id,
-// 				cli.NewTabular().
-// 					Rows(rows...))
-// 		},
-// 	}
+	policy_subject_mappingDeleteCmd = &cobra.Command{
+		Use:   "delete",
+		Short: "Delete a subject mapping by id",
+		Run: func(cmd *cobra.Command, args []string) {
+			h := cli.NewHandler(cmd)
+			defer h.Close()
 
-// 	policy_subjectMappingDeleteCmd = &cobra.Command{
-// 		Use:   "delete",
-// 		Short: "Delete a subject mapping by id",
-// 		Run: func(cmd *cobra.Command, args []string) {
-// 			h := cli.NewHandler(cmd)
-// 			defer h.Close()
+			flagHelper := cli.NewFlagHelper(cmd)
+			id := flagHelper.GetRequiredString("id")
 
-// 			flagHelper := cli.NewFlagHelper(cmd)
-// 			id := flagHelper.GetRequiredString("id")
+			sm, err := h.GetSubjectMapping(id)
+			if err != nil {
+				errMsg := fmt.Sprintf("Could not find subject mapping (%s)", id)
+				cli.ExitWithNotFoundError(errMsg, err)
+				cli.ExitWithError(errMsg, err)
+			}
 
-// 			sm, err := h.GetSubjectMapping(id)
-// 			if err != nil {
-// 				errMsg := fmt.Sprintf("Could not find subject mapping (%s)", id)
-// 				cli.ExitWithNotFoundError(errMsg, err)
-// 				cli.ExitWithError(errMsg, err)
-// 			}
+			cli.ConfirmDelete("subject mapping", sm.Id)
 
-// 			cli.ConfirmDelete("subject mapping", sm.Id)
+			if err := h.DeleteSubjectMapping(id); err != nil {
+				errMsg := fmt.Sprintf("Could not delete subject mapping (%s)", id)
+				cli.ExitWithNotFoundError(errMsg, err)
+				cli.ExitWithError(errMsg, err)
+			}
 
-// 			if err := h.DeleteSubjectMapping(id); err != nil {
-// 				errMsg := fmt.Sprintf("Could not delete subject mapping (%s)", id)
-// 				cli.ExitWithNotFoundError(errMsg, err)
-// 				cli.ExitWithError(errMsg, err)
-// 			}
+			// TODO: handle json output once service sends back deleted subject mapping
+			cli.PrintSuccessTable(cmd, id, nil)
+		},
+	}
 
-// 			// TODO: handle json output once service sends back deleted subject mapping
-// 			cli.PrintSuccessTable(cmd, id, nil)
-// 		},
-// 	}
+	policy_subject_mappingUpdateCmd = &cobra.Command{
+		Use:   "update",
+		Short: "Update a subject mapping",
+		Run: func(cmd *cobra.Command, args []string) {
+			h := cli.NewHandler(cmd)
+			defer h.Close()
 
-// 	policy_subjectMappingUpdateCmd = &cobra.Command{
-// 		Use:   "update",
-// 		Short: "Update a subject mapping",
-// 		Run: func(cmd *cobra.Command, args []string) {
-// 			h := cli.NewHandler(cmd)
-// 			defer h.Close()
+			flagHelper := cli.NewFlagHelper(cmd)
+			id := flagHelper.GetRequiredString("id")
+			attrValueId := flagHelper.GetRequiredString("attribute-value-id")
+			subjectAttribute := flagHelper.GetRequiredString("subject-attribute")
+			subjectValues := flagHelper.GetStringSlice("subject-values", subjectValues, cli.FlagHelperStringSliceOptions{Min: 1})
+			operator := flagHelper.GetRequiredString("operator")
 
-// 			flagHelper := cli.NewFlagHelper(cmd)
-// 			id := flagHelper.GetRequiredString("id")
-// 			attrValueId := flagHelper.GetRequiredString("attribute-value-id")
-// 			subjectAttribute := flagHelper.GetRequiredString("subject-attribute")
-// 			subjectValues := flagHelper.GetStringSlice("subject-values", subjectValues, cli.FlagHelperStringSliceOptions{Min: 1})
-// 			operator := flagHelper.GetRequiredString("operator")
+			m := flagHelper.GetOptionalString("metadata")
+			metadata := unMarshalMetadata(m)
 
-// 			m := flagHelper.GetOptionalString("metadata")
-// 			metadata := unMarshalMetadata(m)
+			if _, err := h.UpdateSubjectMapping(
+				id,
+				attrValueId,
+				subjectAttribute,
+				subjectValues,
+				operator,
+				metadata,
+			); err != nil {
+				cli.ExitWithError("Could not update subject mapping", err)
+			}
 
-// 			if _, err := h.UpdateSubjectMapping(
-// 				id,
-// 				attrValueId,
-// 				subjectAttribute,
-// 				subjectValues,
-// 				operator,
-// 				metadata,
-// 			); err != nil {
-// 				cli.ExitWithError("Could not update subject mapping", err)
-// 			}
+			// TODO: handle json output once service sends back updated subject mapping
+			fmt.Println(cli.SuccessMessage(fmt.Sprintf("Subject mapping id: (%s) updated.", id)))
+		},
+	}
+)
 
-// 			// TODO: handle json output once service sends back updated subject mapping
-// 			fmt.Println(cli.SuccessMessage(fmt.Sprintf("Subject mapping id: (%s) updated.", id)))
-// 		},
-// 	}
-// )
+func init() {
+	policyCmd.AddCommand(policy_subject_mappingsCmd)
 
-// func init() {
-// 	policyCmd.AddCommand(policy_subject_mappingsCmd)
+	policy_subject_mappingsCmd.AddCommand(policy_subject_mappingGetCmd)
+	policy_subject_mappingGetCmd.Flags().StringP("id", "i", "", "Id of the subject mapping")
 
-// 	policy_subject_mappingsCmd.AddCommand(policy_subjectMappingGetCmd)
-// 	policy_subjectMappingGetCmd.Flags().StringP("id", "i", "", "Id of the subject mapping")
+	policy_subject_mappingsCmd.AddCommand(policy_subject_mappingsListCmd)
 
-// 	policy_subject_mappingsCmd.AddCommand(policy_subject_mappingsListCmd)
+	policy_subject_mappingsCmd.AddCommand(policy_subject_mappingCreateCmd)
+	policy_subject_mappingCreateCmd.Flags().StringP("attribute-value-id", "a", "", "Id of the attribute value")
+	policy_subject_mappingCreateCmd.Flags().StringP("subject-attribute", "s", "", "Subject attribute")
+	policy_subject_mappingCreateCmd.Flags().StringSliceVarP(&subjectValues, "subject-values", "v", []string{}, "Subject values")
+	policy_subject_mappingCreateCmd.Flags().StringP("operator", "o", "", "Operator")
+	policy_subject_mappingCreateCmd.Flags().StringP("metadata", "m", "", "Metadata (optional): labels and description")
 
-// 	policy_subject_mappingsCmd.AddCommand(policy_subjectMappingCreateCmd)
-// 	policy_subjectMappingCreateCmd.Flags().StringP("attribute-value-id", "a", "", "Id of the attribute value")
-// 	policy_subjectMappingCreateCmd.Flags().StringP("subject-attribute", "s", "", "Subject attribute")
-// 	policy_subjectMappingCreateCmd.Flags().StringSliceVarP(&subjectValues, "subject-values", "v", []string{}, "Subject values")
-// 	policy_subjectMappingCreateCmd.Flags().StringP("operator", "o", "", "Operator")
-// 	policy_subjectMappingCreateCmd.Flags().StringP("metadata", "m", "", "Metadata (optional): labels and description")
+	policy_subject_mappingsCmd.AddCommand(policy_subject_mappingUpdateCmd)
+	policy_subject_mappingUpdateCmd.Flags().StringP("id", "i", "", "Id of the subject mapping")
+	policy_subject_mappingUpdateCmd.Flags().StringP("attribute-value-id", "a", "", "Id of the attribute value")
+	policy_subject_mappingUpdateCmd.Flags().StringP("subject-attribute", "s", "", "Subject attribute")
+	policy_subject_mappingUpdateCmd.Flags().StringSliceVarP(&subjectValues, "subject-values", "v", []string{}, "Subject values")
+	policy_subject_mappingUpdateCmd.Flags().StringP("operator", "o", "", "Operator: [IN, NOT_IN]")
+	policy_subject_mappingUpdateCmd.Flags().StringP("metadata", "m", "", "Metadata (optional): labels and description")
 
-// 	policy_subject_mappingsCmd.AddCommand(policy_subjectMappingUpdateCmd)
-// 	policy_subjectMappingUpdateCmd.Flags().StringP("id", "i", "", "Id of the subject mapping")
-// 	policy_subjectMappingUpdateCmd.Flags().StringP("attribute-value-id", "a", "", "Id of the attribute value")
-// 	policy_subjectMappingUpdateCmd.Flags().StringP("subject-attribute", "s", "", "Subject attribute")
-// 	policy_subjectMappingUpdateCmd.Flags().StringSliceVarP(&subjectValues, "subject-values", "v", []string{}, "Subject values")
-// 	policy_subjectMappingUpdateCmd.Flags().StringP("operator", "o", "", "Operator: [IN, NOT_IN]")
-// 	policy_subjectMappingUpdateCmd.Flags().StringP("metadata", "m", "", "Metadata (optional): labels and description")
-
-// 	policy_subject_mappingsCmd.AddCommand(policy_subjectMappingDeleteCmd)
-// 	policy_subjectMappingDeleteCmd.Flags().StringP("id", "i", "", "Id of the subject mapping")
-// }
+	policy_subject_mappingsCmd.AddCommand(policy_subject_mappingDeleteCmd)
+	policy_subject_mappingDeleteCmd.Flags().StringP("id", "i", "", "Id of the subject mapping")
+}
 
 func placeholder() {
 	fmt.Println("This is a placeholder for the policy-subject_mappings.go file, once the subject mappings have been stablized")
