@@ -64,7 +64,7 @@ func PrintSuccessTable(cmd *cobra.Command, id string, t *table.Table) {
 	fmt.Println(lipgloss.JoinVertical(lipgloss.Top, successMessage, t.Render(), jsonDirections))
 }
 
-// SuccessMessage prints a success message according to the configured format (styled table or JSON)
+// HandleSuccess prints a success message according to the configured format (styled table or JSON)
 func HandleSuccess(command *cobra.Command, id string, t *table.Table, policyObject interface{}) {
 	if !JSONOutput {
 		PrintSuccessTable(command, id, t)
