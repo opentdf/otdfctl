@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/opentdf/tructl/pkg/cli"
-	"github.com/opentdf/tructl/pkg/handlers"
 	"github.com/spf13/cobra"
 )
 
@@ -53,9 +52,9 @@ same attribute and namespace.
 
 			rows := [][]string{
 				{"Id", mapping.Id},
-				{"Subject Attribute", mapping.SubjectAttribute},
-				{"Operator", handlers.GetSubjectMappingOperatorChoiceFromEnum(mapping.Operator)},
-				{"Subject Values", strings.Join(mapping.SubjectValues, ", ")},
+				// {"Subject Attribute", mapping.SubjectAttribute},
+				// {"Operator", handlers.GetSubjectMappingOperatorChoiceFromEnum(mapping.Operator)},
+				// {"Subject Values", strings.Join(mapping.SubjectValues, ", ")},
 			}
 
 			if mdRows := getMetadataRows(mapping.Metadata); mdRows != nil {
@@ -100,9 +99,9 @@ same attribute and namespace.
 			for _, sm := range list {
 				rowCells := []string{
 					sm.Id,
-					sm.SubjectAttribute,
-					handlers.GetSubjectMappingOperatorChoiceFromEnum(sm.Operator),
-					strings.Join(sm.SubjectValues, ", "),
+					// sm.SubjectAttribute,
+					// handlers.GetSubjectMappingOperatorChoiceFromEnum(sm.Operator),
+					// strings.Join(sm.SubjectValues, ", "),
 					sm.AttributeValue.Id,
 				}
 				t.Row(rowCells...)
@@ -143,9 +142,9 @@ same attribute and namespace.
 
 			rows := [][]string{
 				{"Id", mapping.Id},
-				{"Subject Attribute", mapping.SubjectAttribute},
-				{"Operator", handlers.GetSubjectMappingOperatorChoiceFromEnum(mapping.Operator)},
-				{"Subject Values", strings.Join(mapping.SubjectValues, ", ")},
+				// {"Subject Attribute", mapping.SubjectAttribute},
+				// {"Operator", handlers.GetSubjectMappingOperatorChoiceFromEnum(mapping.Operator)},
+				// {"Subject Values", strings.Join(mapping.SubjectValues, ", ")},
 				{"Attribute Value Id", mapping.AttributeValue.Id},
 			}
 
@@ -248,12 +247,4 @@ func init() {
 
 	policy_subject_mappingsCmd.AddCommand(policy_subject_mappingDeleteCmd)
 	policy_subject_mappingDeleteCmd.Flags().StringP("id", "i", "", "Id of the subject mapping")
-}
-
-func placeholder() {
-	fmt.Println("This is a placeholder for the policy-subject_mappings.go file, once the subject mappings have been stablized")
-}
-
-func main() {
-	placeholder()
 }
