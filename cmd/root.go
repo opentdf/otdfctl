@@ -4,8 +4,11 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"fmt"
 	"os"
+	"strings"
 
+	"github.com/opentdf/tructl/internal/config"
 	"github.com/spf13/cobra"
 )
 
@@ -32,9 +35,16 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.PersistentFlags().BoolVar(&jsonOutput, "json", false, "output in JSON format")
+	format := rootCmd.PersistentFlags().String("output-format", "", "configure a single command run's output format")
 	rootCmd.PersistentFlags().String("host", "localhost:9000", "host:port of the Virtru Data Security Platform gRPC server")
 
-	// TODO: Implement Viper and allow configs
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.tructl.yaml)")
+	cfg, err := config.LoadConfig("tructl")
+	if err != nil {
+		fmt.Println("Error loading config:", err)
+		os.Exit(1)
+	}
+	if strings.ToLower(cfg.Output.Format) == "json" || *format == "json" {
+		jsonOutput = true
+	}
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.tructl.yaml)")
 }
