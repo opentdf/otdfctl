@@ -8,11 +8,8 @@ import (
 	"os"
 	"strings"
 
-<<<<<<< Updated upstream
 	"github.com/opentdf/tructl/internal/config"
-=======
 	"github.com/opentdf/tructl/pkg/cli"
->>>>>>> Stashed changes
 	"github.com/spf13/cobra"
 )
 
@@ -36,11 +33,7 @@ func Execute() {
 }
 
 func init() {
-<<<<<<< Updated upstream
 	format := rootCmd.PersistentFlags().String("output-format", "", "configure a single command run's output format")
-=======
-	rootCmd.PersistentFlags().BoolVar(&cli.JSONOutput, "json", false, "output in JSON format")
->>>>>>> Stashed changes
 	rootCmd.PersistentFlags().String("host", "localhost:9000", "host:port of the Virtru Data Security Platform gRPC server")
 
 	cfg, err := config.LoadConfig("tructl")
@@ -49,7 +42,7 @@ func init() {
 		os.Exit(1)
 	}
 	if strings.ToLower(cfg.Output.Format) == "json" || *format == "json" {
-		jsonOutput = true
+		cli.JSONOutput = true
 	}
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.tructl.yaml)")
 }
