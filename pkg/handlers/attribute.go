@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/opentdf/platform/protocol/go/common"
+	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/opentdf/platform/protocol/go/policy/attributes"
 )
 
@@ -29,7 +30,7 @@ func (e *CreateAttributeError) Error() string {
 	return "Error creating attribute"
 }
 
-func (h Handler) GetAttribute(id string) (*attributes.Attribute, error) {
+func (h Handler) GetAttribute(id string) (*policy.Attribute, error) {
 	resp, err := h.sdk.Attributes.GetAttribute(h.ctx, &attributes.GetAttributeRequest{
 		Id: id,
 	})
@@ -40,7 +41,7 @@ func (h Handler) GetAttribute(id string) (*attributes.Attribute, error) {
 	return resp.Attribute, nil
 }
 
-func (h Handler) ListAttributes() ([]*attributes.Attribute, error) {
+func (h Handler) ListAttributes() ([]*policy.Attribute, error) {
 	resp, err := h.sdk.Attributes.ListAttributes(h.ctx, &attributes.ListAttributesRequest{})
 	if err != nil {
 		return nil, err
@@ -48,18 +49,17 @@ func (h Handler) ListAttributes() ([]*attributes.Attribute, error) {
 	return resp.Attributes, err
 }
 
-func (h Handler) CreateAttribute(name string, rule string, namespace string) (*attributes.Attribute, error) {
+// TODO: allow creation of a value with the attribute simultaneously?
+func (h Handler) CreateAttribute(name string, rule string, namespace string) (*policy.Attribute, error) {
 	r, err := GetAttributeRuleFromReadableString(rule)
 	if err != nil {
 		return nil, err
 	}
 
 	attrReq := &attributes.CreateAttributeRequest{
-		Attribute: &attributes.AttributeCreateUpdate{
-			NamespaceId: namespace,
-			Name:        name,
-			Rule:        r,
-		},
+		NamespaceId: namespace,
+		Name:        name,
+		Rule:        r,
 	}
 
 	resp, err := h.sdk.Attributes.CreateAttribute(h.ctx, attrReq)
@@ -69,7 +69,7 @@ func (h Handler) CreateAttribute(name string, rule string, namespace string) (*a
 
 	attr := resp.Attribute
 
-	return &attributes.Attribute{
+	return &policy.Attribute{
 		Id:        attr.Id,
 		Name:      attr.Name,
 		Rule:      attr.Rule,
@@ -77,19 +77,18 @@ func (h Handler) CreateAttribute(name string, rule string, namespace string) (*a
 	}, nil
 }
 
+// TODO: verify updation behavior
 func (h *Handler) UpdateAttribute(
 	id string,
 	fns ...func(*common.MetadataMutable) *common.MetadataMutable,
 ) (*attributes.UpdateAttributeResponse, error) {
 	return h.sdk.Attributes.UpdateAttribute(h.ctx, &attributes.UpdateAttributeRequest{
-		Id: id,
-		Attribute: &attributes.AttributeCreateUpdate{
-			Metadata: buildMetadata(&common.MetadataMutable{}, fns...),
-		},
+		Id:       id,
+		Metadata: buildMetadata(&common.MetadataMutable{}, fns...),
 	})
 }
 
-func (h Handler) DeactivateAttribute(id string) (*attributes.Attribute, error) {
+func (h Handler) DeactivateAttribute(id string) (*policy.Attribute, error) {
 	resp, err := h.sdk.Attributes.DeactivateAttribute(h.ctx, &attributes.DeactivateAttributeRequest{
 		Id: id,
 	})
@@ -111,27 +110,27 @@ func GetAttributeRuleOptions() []string {
 	}
 }
 
-func GetAttributeRuleFromAttributeType(rule attributes.AttributeRuleTypeEnum) string {
+func GetAttributeRuleFromAttributeType(rule policy.AttributeRuleTypeEnum) string {
 	switch rule {
-	case attributes.AttributeRuleTypeEnum_ATTRIBUTE_RULE_TYPE_ENUM_ALL_OF:
+	case policy.AttributeRuleTypeEnum_ATTRIBUTE_RULE_TYPE_ENUM_ALL_OF:
 		return AttributeRuleAllOf
-	case attributes.AttributeRuleTypeEnum_ATTRIBUTE_RULE_TYPE_ENUM_ANY_OF:
+	case policy.AttributeRuleTypeEnum_ATTRIBUTE_RULE_TYPE_ENUM_ANY_OF:
 		return AttributeRuleAnyOf
-	case attributes.AttributeRuleTypeEnum_ATTRIBUTE_RULE_TYPE_ENUM_HIERARCHY:
+	case policy.AttributeRuleTypeEnum_ATTRIBUTE_RULE_TYPE_ENUM_HIERARCHY:
 		return AttributeRuleHierarchy
 	default:
 		return ""
 	}
 }
 
-func GetAttributeRuleFromReadableString(rule string) (attributes.AttributeRuleTypeEnum, error) {
+func GetAttributeRuleFromReadableString(rule string) (policy.AttributeRuleTypeEnum, error) {
 	switch rule {
 	case AttributeRuleAllOf:
-		return attributes.AttributeRuleTypeEnum_ATTRIBUTE_RULE_TYPE_ENUM_ALL_OF, nil
+		return policy.AttributeRuleTypeEnum_ATTRIBUTE_RULE_TYPE_ENUM_ALL_OF, nil
 	case AttributeRuleAnyOf:
-		return attributes.AttributeRuleTypeEnum_ATTRIBUTE_RULE_TYPE_ENUM_ANY_OF, nil
+		return policy.AttributeRuleTypeEnum_ATTRIBUTE_RULE_TYPE_ENUM_ANY_OF, nil
 	case AttributeRuleHierarchy:
-		return attributes.AttributeRuleTypeEnum_ATTRIBUTE_RULE_TYPE_ENUM_HIERARCHY, nil
+		return policy.AttributeRuleTypeEnum_ATTRIBUTE_RULE_TYPE_ENUM_HIERARCHY, nil
 	}
 	return 0, fmt.Errorf("invalid attribute rule: %s", rule)
 }

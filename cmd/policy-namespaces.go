@@ -157,7 +157,6 @@ or different attributes tied to each.
 
 			if _, err := h.UpdateNamespace(
 				id,
-				name,
 			); err != nil {
 				cli.ExitWithError("Could not update namespace", err)
 			}

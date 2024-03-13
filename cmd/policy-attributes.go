@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/opentdf/platform/protocol/go/policy/attributes"
+	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/opentdf/tructl/pkg/cli"
 	"github.com/spf13/cobra"
 )
@@ -51,7 +51,7 @@ used to define the access controls based on subject encodings and entity entitle
 			}
 
 			// create attribute values
-			attrValues := make([]*attributes.Value, 0, len(values))
+			attrValues := make([]*policy.Value, 0, len(values))
 			valueErrors := make(map[string]error)
 			for _, value := range values {
 				v, err := h.CreateAttributeValue(attr.Id, value)
@@ -61,7 +61,7 @@ used to define the access controls based on subject encodings and entity entitle
 				attrValues = append(attrValues, v)
 			}
 
-			a := cli.GetSimpleAttribute(&attributes.Attribute{
+			a := cli.GetSimpleAttribute(&policy.Attribute{
 				Id:        attr.Id,
 				Name:      attr.Name,
 				Rule:      attr.Rule,

@@ -47,7 +47,7 @@ var (
 			fmt.Println(cli.SuccessMessage("Resource mapping created"))
 			fmt.Println(cli.NewTabular().Rows([][]string{
 				{"Id", resourceMapping.Id},
-				{"Attribute Id", resourceMapping.AttributeValue.AttributeId},
+				{"Attribute Value Id", resourceMapping.AttributeValue.Id},
 				{"Attribute Value", resourceMapping.AttributeValue.Value},
 				{"Terms", strings.Join(resourceMapping.Terms, ", ")},
 			}...).Render())
@@ -71,7 +71,7 @@ var (
 
 			fmt.Println(cli.NewTabular().Rows([][]string{
 				{"Id", resourceMapping.Id},
-				{"Attribute Id", resourceMapping.AttributeValue.AttributeId},
+				{"Attribute Value Id", resourceMapping.AttributeValue.Id},
 				{"Attribute Value", resourceMapping.AttributeValue.Value},
 				{"Terms", strings.Join(resourceMapping.Terms, ", ")},
 			}...).Render())
@@ -91,9 +91,9 @@ var (
 			}
 
 			t := cli.NewTable()
-			t.Headers("Id", "Attribute Id", "Attribute Value", "Terms")
+			t.Headers("Id", "Attribute Value Id", "Attribute Value", "Terms")
 			for _, resourceMapping := range r {
-				t.Row(resourceMapping.Id, resourceMapping.AttributeValue.AttributeId, resourceMapping.AttributeValue.Value, strings.Join(resourceMapping.Terms, ", "))
+				t.Row(resourceMapping.Id, resourceMapping.AttributeValue.Id, resourceMapping.AttributeValue.Value, strings.Join(resourceMapping.Terms, ", "))
 			}
 			fmt.Println(t.Render())
 		},
@@ -119,7 +119,7 @@ var (
 			fmt.Println(cli.SuccessMessage("Resource mapping updated"))
 			fmt.Println(cli.NewTabular().Rows([][]string{
 				{"Id", resourceMapping.Id},
-				{"Attribute Id", resourceMapping.AttributeValue.AttributeId},
+				{"Attribute Value Id", resourceMapping.AttributeValue.Id},
 				{"Attribute Value", resourceMapping.AttributeValue.Value},
 				{"Terms", strings.Join(resourceMapping.Terms, ", ")},
 			}...).Render())
@@ -146,7 +146,7 @@ var (
 			fmt.Println(cli.SuccessMessage("Resource mapping deleted"))
 			fmt.Println(cli.NewTabular().Rows([][]string{
 				{"Id", resourceMapping.Id},
-				{"Attribute Id", resourceMapping.AttributeValue.AttributeId},
+				{"Attribute Value Id", resourceMapping.AttributeValue.Id},
 				{"Attribute Value", resourceMapping.AttributeValue.Value},
 				{"Terms", strings.Join(resourceMapping.Terms, ", ")},
 			}...).Render())

@@ -1,13 +1,14 @@
-// SubjectMappings are pretty unstable right now
-// and undergoing active arch changes, so for now we're completely
-// commenting them out.
-// We'll uncomment them once we have a stable version of the SubjectMappings in a few days
-
 package handlers
 
-import (
-	"fmt"
-)
+// import (
+// 	"fmt"
+// 	"slices"
+// 	"strings"
+
+// 	"github.com/opentdf/platform/protocol/go/common"
+// 	"github.com/opentdf/platform/protocol/go/policy"
+// 	"github.com/opentdf/platform/protocol/go/policy/subjectmapping"
+// )
 
 // const (
 // 	SubjectMappingOperatorIn          = "IN"
@@ -17,7 +18,7 @@ import (
 
 // var SubjectMappingOperatorEnumChoices = []string{SubjectMappingOperatorIn, SubjectMappingOperatorNotIn, SubjectMappingOperatorUnspecified}
 
-// func (h Handler) GetSubjectMapping(id string) (*subjectmapping.SubjectMapping, error) {
+// func (h Handler) GetSubjectMapping(id string) (*policy.SubjectMapping, error) {
 // 	resp, err := h.sdk.SubjectMapping.GetSubjectMapping(h.ctx, &subjectmapping.GetSubjectMappingRequest{
 // 		Id: id,
 // 	})
@@ -28,7 +29,7 @@ import (
 // 	return resp.SubjectMapping, nil
 // }
 
-// func (h Handler) ListSubjectMappings() ([]*subjectmapping.SubjectMapping, error) {
+// func (h Handler) ListSubjectMappings() ([]*policy.SubjectMapping, error) {
 // 	resp, err := h.sdk.SubjectMapping.ListSubjectMappings(h.ctx, &subjectmapping.ListSubjectMappingsRequest{})
 // 	if err != nil {
 // 		return nil, err
@@ -115,11 +116,3 @@ import (
 // 		return SubjectMappingOperatorUnspecified
 // 	}
 // }
-
-func placeholder() {
-	fmt.Println("This is a placeholder for the subjectmappings.go file, once the subject mappings have been stablized")
-}
-
-func main() {
-	placeholder()
-}
