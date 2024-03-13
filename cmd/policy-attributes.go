@@ -69,15 +69,12 @@ used to define the access controls based on subject encodings and entity entitle
 				Namespace: attr.Namespace,
 			})
 
-			fmt.Println(cli.SuccessMessage("Attribute created"))
-			fmt.Println(
-				cli.NewTabular().Rows([][]string{
-					{"Name", a.Name},
-					{"Rule", a.Rule},
-					{"Values", cli.CommaSeparated(a.Values)},
-					{"Namespace", a.Namespace},
-				}...).Render(),
-			)
+			t := cli.NewTabular().Rows([][]string{
+				{"Name", a.Name},
+				{"Rule", a.Rule},
+				{"Values", cli.CommaSeparated(a.Values)},
+				{"Namespace", a.Namespace},
+			}...)
 
 			if len(valueErrors) > 0 {
 				fmt.Println(cli.ErrorMessage("Error creating attribute values", nil))
@@ -85,6 +82,7 @@ used to define the access controls based on subject encodings and entity entitle
 					cli.ErrorMessage(value, err)
 				}
 			}
+			cli.HandleSuccess(cmd, a.Id, t, a)
 		},
 	}
 
@@ -107,17 +105,15 @@ used to define the access controls based on subject encodings and entity entitle
 			}
 
 			a := cli.GetSimpleAttribute(attr)
-			fmt.Println(cli.SuccessMessage("Attribute found"))
-			fmt.Println(
-				cli.NewTabular().
-					Rows([][]string{
-						{"Id", a.Id},
-						{"Name", a.Name},
-						{"Rule", a.Rule},
-						{"Values", cli.CommaSeparated(a.Values)},
-						{"Namespace", a.Namespace},
-					}...).Render(),
-			)
+			t := cli.NewTabular().
+				Rows([][]string{
+					{"Id", a.Id},
+					{"Name", a.Name},
+					{"Rule", a.Rule},
+					{"Values", cli.CommaSeparated(a.Values)},
+					{"Namespace", a.Namespace},
+				}...)
+			cli.HandleSuccess(cmd, a.Id, t, a)
 		},
 	}
 
@@ -146,7 +142,7 @@ used to define the access controls based on subject encodings and entity entitle
 					cli.CommaSeparated(a.Values),
 				)
 			}
-			fmt.Println(t.Render())
+			cli.HandleSuccess(cmd, "", t, attrs)
 		},
 	}
 
@@ -177,16 +173,14 @@ used to define the access controls based on subject encodings and entity entitle
 			}
 
 			a := cli.GetSimpleAttribute(attr)
-			fmt.Println(cli.SuccessMessage("Attribute deactivated"))
-			fmt.Println(
-				cli.NewTabular().
-					Rows([][]string{
-						{"Name", a.Name},
-						{"Rule", a.Rule},
-						{"Values", cli.CommaSeparated(a.Values)},
-						{"Namespace", a.Namespace},
-					}...).Render(),
-			)
+			t := cli.NewTabular().
+				Rows([][]string{
+					{"Name", a.Name},
+					{"Rule", a.Rule},
+					{"Values", cli.CommaSeparated(a.Values)},
+					{"Namespace", a.Namespace},
+				}...)
+			cli.HandleSuccess(cmd, a.Id, t, a)
 		},
 	}
 
@@ -201,10 +195,10 @@ used to define the access controls based on subject encodings and entity entitle
 			flagHelper := cli.NewFlagHelper(cmd)
 			id := flagHelper.GetRequiredString("id")
 
-			if _, err := h.UpdateAttribute(id); err != nil {
+			if a, err := h.UpdateAttribute(id); err != nil {
 				cli.ExitWithError("Could not update attribute", err)
 			} else {
-				fmt.Println(cli.SuccessMessage(fmt.Sprintf("Attribute id: %s updated.", id)))
+				cli.HandleSuccess(cmd, id, nil, a)
 			}
 		},
 	}
