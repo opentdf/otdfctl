@@ -40,7 +40,7 @@ this time are 'json' and styled CLI output, which is the default when unspecifie
 }
 
 func init() {
-	updateOutputFormatCmd.Flags().String("format", "", "output format to configure")
+	updateOutputFormatCmd.Flags().String("format", "", "'json' or 'styled' as the configured output format")
 	configCmd.AddCommand(updateOutputFormatCmd)
 	rootCmd.AddCommand(configCmd)
 }
