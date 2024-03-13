@@ -1,7 +1,10 @@
 package cmd
 
 import (
+<<<<<<< Updated upstream
 	// 	"encoding/json"
+=======
+>>>>>>> Stashed changes
 	"fmt"
 	// 	"strings"
 	// "github.com/opentdf/tructl/pkg/cli"
@@ -61,6 +64,7 @@ import (
 // 				rows = append(rows, mdRows...)
 // 			}
 
+<<<<<<< Updated upstream
 // 			if !jsonOutput {
 // 				cli.PrintSuccessTable(cmd, id, cli.NewTabular().Rows(rows...))
 // 			} else {
@@ -72,6 +76,11 @@ import (
 // 			}
 // 		},
 // 	}
+=======
+			cli.HandleSuccess(cmd, id, cli.NewTabular().Rows(rows...), mapping)
+		},
+	}
+>>>>>>> Stashed changes
 
 // 	policy_subjectMappingsListCmd = &cobra.Command{
 // 		Use:   "list",
@@ -85,6 +94,7 @@ import (
 // 				cli.ExitWithError("Could not get subject mappings", err)
 // 			}
 
+<<<<<<< Updated upstream
 // 			if jsonOutput {
 // 				if output, err := json.MarshalIndent(list, "", "  "); err != nil {
 // 					cli.ExitWithError("Error marshalling subject mappings", err)
@@ -109,6 +119,23 @@ import (
 // 			cli.PrintSuccessTable(cmd, "", t)
 // 		},
 // 	}
+=======
+			t := cli.NewTable().Width(180)
+			t.Headers("Id", "Subject Attribute", "Operator", "Subject Values", "Attribute Value ID")
+			for _, sm := range list {
+				rowCells := []string{
+					sm.Id,
+					// sm.SubjectAttribute,
+					// handlers.GetSubjectMappingOperatorChoiceFromEnum(sm.Operator),
+					// strings.Join(sm.SubjectValues, ", "),
+					sm.AttributeValue.Id,
+				}
+				t.Row(rowCells...)
+			}
+			cli.HandleSuccess(cmd, "", t, list)
+		},
+	}
+>>>>>>> Stashed changes
 
 // 	policy_subjectMappingCreateCmd = &cobra.Command{
 // 		Use:   "create",
@@ -131,6 +158,7 @@ import (
 // 				cli.ExitWithError("Could not create subject mapping", err)
 // 			}
 
+<<<<<<< Updated upstream
 // 			if jsonOutput {
 // 				if output, err := json.MarshalIndent(mapping, "", "  "); err != nil {
 // 					cli.ExitWithError("Error marshalling subject mapping", err)
@@ -147,16 +175,33 @@ import (
 // 				{"Subject Values", strings.Join(mapping.SubjectValues, ", ")},
 // 				{"Attribute Value Id", mapping.AttributeValue.Id},
 // 			}
+=======
+			rows := [][]string{
+				{"Id", mapping.Id},
+				// {"Subject Attribute", mapping.SubjectAttribute},
+				// {"Operator", handlers.GetSubjectMappingOperatorChoiceFromEnum(mapping.Operator)},
+				// {"Subject Values", strings.Join(mapping.SubjectValues, ", ")},
+				{"Attribute Value Id", mapping.AttributeValue.Id},
+			}
+>>>>>>> Stashed changes
 
 // 			if mdRows := getMetadataRows(mapping.Metadata); mdRows != nil {
 // 				rows = append(rows, mdRows...)
 // 			}
 
+<<<<<<< Updated upstream
 // 			cli.PrintSuccessTable(cmd, mapping.Id,
 // 				cli.NewTabular().
 // 					Rows(rows...))
 // 		},
 // 	}
+=======
+			cli.HandleSuccess(cmd, mapping.Id,
+				cli.NewTabular().
+					Rows(rows...), mapping)
+		},
+	}
+>>>>>>> Stashed changes
 
 // 	policy_subjectMappingDeleteCmd = &cobra.Command{
 // 		Use:   "delete",

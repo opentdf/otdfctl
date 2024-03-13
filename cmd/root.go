@@ -8,14 +8,15 @@ import (
 	"os"
 	"strings"
 
+<<<<<<< Updated upstream
 	"github.com/opentdf/tructl/internal/config"
+=======
+	"github.com/opentdf/tructl/pkg/cli"
+>>>>>>> Stashed changes
 	"github.com/spf13/cobra"
 )
 
-var (
-	cfgFile    string
-	jsonOutput bool
-)
+var cfgFile string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -35,7 +36,11 @@ func Execute() {
 }
 
 func init() {
+<<<<<<< Updated upstream
 	format := rootCmd.PersistentFlags().String("output-format", "", "configure a single command run's output format")
+=======
+	rootCmd.PersistentFlags().BoolVar(&cli.JSONOutput, "json", false, "output in JSON format")
+>>>>>>> Stashed changes
 	rootCmd.PersistentFlags().String("host", "localhost:9000", "host:port of the Virtru Data Security Platform gRPC server")
 
 	cfg, err := config.LoadConfig("tructl")

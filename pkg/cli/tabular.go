@@ -1,12 +1,16 @@
 package cli
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/lipgloss/table"
 	"github.com/spf13/cobra"
 )
+
+// JSONOutput is a flag to determine if the output should be in JSON format
+var JSONOutput bool
 
 func NewTabular() *table.Table {
 	t := NewTable()
@@ -38,6 +42,9 @@ func PrintSuccessTable(cmd *cobra.Command, id string, t *table.Table) {
 	case "delete":
 		msg.verb = fmt.Sprintf("Deleted %s: %s", resource, id)
 		msg.helper = getJsonHelper(resource + " list")
+	case "deactivate":
+		msg.verb = fmt.Sprintf("Deactivated %s: %s", resource, id)
+		msg.helper = getJsonHelper(resource + " list") // TODO: make sure the filters are provided here to get ACTIVE/INACTIVE/ANY
 	case "list":
 		msg.verb = fmt.Sprintf("Found %s list", resource)
 		msg.helper = getJsonHelper(resource + " get --id=<id>")
@@ -55,4 +62,17 @@ func PrintSuccessTable(cmd *cobra.Command, id string, t *table.Table) {
 	}
 
 	fmt.Println(lipgloss.JoinVertical(lipgloss.Top, successMessage, t.Render(), jsonDirections))
+}
+
+// SuccessMessage prints a success message according to the configured format (styled table or JSON)
+func HandleSuccess(command *cobra.Command, id string, t *table.Table, policyObject interface{}) {
+	if !JSONOutput {
+		PrintSuccessTable(command, id, t)
+	} else {
+		if output, err := json.MarshalIndent(policyObject, "", "  "); err != nil {
+			ExitWithError("Error marshalling policy object", err)
+		} else {
+			fmt.Println(string(output))
+		}
+	}
 }
