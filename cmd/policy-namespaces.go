@@ -46,7 +46,6 @@ or different attributes tied to each.
 				cli.ExitWithError(errMsg, err)
 			}
 
-			fmt.Println(cli.SuccessMessage("Namespace found"))
 			t := cli.NewTabular().
 				Rows([][]string{
 					{"Id", ns.Id},
@@ -150,13 +149,18 @@ or different attributes tied to each.
 			id := flagHelper.GetRequiredString("id")
 			name := flagHelper.GetRequiredString("name")
 
-			if _, err := h.UpdateNamespace(
+			ns, err := h.UpdateNamespace(
 				id,
 				name,
-			); err != nil {
+			)
+			if err != nil {
 				cli.ExitWithError("Could not update namespace", err)
 			}
-			fmt.Println(cli.SuccessMessage(fmt.Sprintf("Namespace id: (%s) updated. Name set to (%s).", id, name)))
+			t := cli.NewTabular().Rows([][]string{
+				{"Id", ns.Id},
+				{"Name", ns.Name},
+			}...)
+			cli.HandleSuccess(cmd, id, t, ns)
 		},
 	}
 )

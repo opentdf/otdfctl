@@ -2,7 +2,6 @@ package cmd
 
 import (
 	_ "embed"
-	"fmt"
 	"strings"
 
 	"github.com/opentdf/tructl/docs/man"
@@ -44,13 +43,13 @@ var (
 				cli.ExitWithError("Failed to create resource mapping", err)
 			}
 
-			fmt.Println(cli.SuccessMessage("Resource mapping created"))
-			fmt.Println(cli.NewTabular().Rows([][]string{
+			t := cli.NewTabular().Rows([][]string{
 				{"Id", resourceMapping.Id},
 				{"Attribute Id", resourceMapping.AttributeValue.AttributeId},
 				{"Attribute Value", resourceMapping.AttributeValue.Value},
 				{"Terms", strings.Join(resourceMapping.Terms, ", ")},
-			}...).Render())
+			}...)
+			cli.HandleSuccess(cmd, resourceMapping.Id, t, resourceMapping)
 		},
 	}
 
@@ -69,12 +68,14 @@ var (
 				cli.ExitWithError("Failed to get resource mapping", err)
 			}
 
-			fmt.Println(cli.NewTabular().Rows([][]string{
+			t := cli.NewTabular().Rows([][]string{
 				{"Id", resourceMapping.Id},
 				{"Attribute Id", resourceMapping.AttributeValue.AttributeId},
 				{"Attribute Value", resourceMapping.AttributeValue.Value},
 				{"Terms", strings.Join(resourceMapping.Terms, ", ")},
-			}...).Render())
+			}...)
+
+			cli.HandleSuccess(cmd, resourceMapping.Id, t, resourceMapping)
 		},
 	}
 
@@ -85,17 +86,18 @@ var (
 			h := cli.NewHandler(cmd)
 			defer h.Close()
 
-			r, err := h.ListResourceMappings()
+			rmList, err := h.ListResourceMappings()
 			if err != nil {
 				cli.ExitWithError("Failed to list resource mappings", err)
 			}
 
 			t := cli.NewTable()
 			t.Headers("Id", "Attribute Id", "Attribute Value", "Terms")
-			for _, resourceMapping := range r {
+			for _, resourceMapping := range rmList {
 				t.Row(resourceMapping.Id, resourceMapping.AttributeValue.AttributeId, resourceMapping.AttributeValue.Value, strings.Join(resourceMapping.Terms, ", "))
 			}
-			fmt.Println(t.Render())
+
+			cli.HandleSuccess(cmd, "", t, rmList)
 		},
 	}
 
@@ -116,13 +118,14 @@ var (
 				cli.ExitWithError("Failed to update resource mapping", err)
 			}
 
-			fmt.Println(cli.SuccessMessage("Resource mapping updated"))
-			fmt.Println(cli.NewTabular().Rows([][]string{
+			t := cli.NewTabular().Rows([][]string{
 				{"Id", resourceMapping.Id},
 				{"Attribute Id", resourceMapping.AttributeValue.AttributeId},
 				{"Attribute Value", resourceMapping.AttributeValue.Value},
 				{"Terms", strings.Join(resourceMapping.Terms, ", ")},
-			}...).Render())
+			}...)
+
+			cli.HandleSuccess(cmd, resourceMapping.Id, t, resourceMapping)
 		},
 	}
 
@@ -143,13 +146,14 @@ var (
 				cli.ExitWithError("Failed to delete resource mapping", err)
 			}
 
-			fmt.Println(cli.SuccessMessage("Resource mapping deleted"))
-			fmt.Println(cli.NewTabular().Rows([][]string{
+			t := cli.NewTabular().Rows([][]string{
 				{"Id", resourceMapping.Id},
 				{"Attribute Id", resourceMapping.AttributeValue.AttributeId},
 				{"Attribute Value", resourceMapping.AttributeValue.Value},
 				{"Terms", strings.Join(resourceMapping.Terms, ", ")},
-			}...).Render())
+			}...)
+
+			cli.HandleSuccess(cmd, resourceMapping.Id, t, resourceMapping)
 		},
 	}
 )
