@@ -10,22 +10,22 @@ import (
 )
 
 var (
-	policy_resourceMappingsTerms []string
+	policy_resource_mappingsTerms []string
 
-	policy_resourceMappingsCmd = &cobra.Command{
+	policy_resource_mappingsCmd = &cobra.Command{
 		Use:     man.PolicyResourceMappings["en"].Command,
 		Aliases: man.PolicyResourceMappings["en"].Aliases,
 		Short: man.PolicyResourceMappings["en"].ShortWithSubCommands([]string{
-			policy_resourceMappingsCreateCmd.Use,
-			policy_resourceMappingsGetCmd.Use,
-			policy_resourceMappingsListCmd.Use,
-			policy_resourceMappingsUpdateCmd.Use,
-			policy_resourceMappingsDeleteCmd.Use,
+			policy_resource_mappingsCreateCmd.Use,
+			policy_resource_mappingsGetCmd.Use,
+			policy_resource_mappingsListCmd.Use,
+			policy_resource_mappingsUpdateCmd.Use,
+			policy_resource_mappingsDeleteCmd.Use,
 		}),
 		Long: man.PolicyResourceMappings["en"].Long,
 	}
 
-	policy_resourceMappingsCreateCmd = &cobra.Command{
+	policy_resource_mappingsCreateCmd = &cobra.Command{
 		Use:   "create",
 		Short: "Create resource mappings",
 		Run: func(cmd *cobra.Command, args []string) {
@@ -34,7 +34,7 @@ var (
 
 			flagHelper := cli.NewFlagHelper(cmd)
 			attrId := flagHelper.GetRequiredString("attribute-value-id")
-			terms := flagHelper.GetStringSlice("terms", policy_resourceMappingsTerms, cli.FlagHelperStringSliceOptions{
+			terms := flagHelper.GetStringSlice("terms", policy_resource_mappingsTerms, cli.FlagHelperStringSliceOptions{
 				Min: 1,
 			})
 
@@ -53,7 +53,7 @@ var (
 		},
 	}
 
-	policy_resourceMappingsGetCmd = &cobra.Command{
+	policy_resource_mappingsGetCmd = &cobra.Command{
 		Use:   "get",
 		Short: "Get resource mappings",
 		Run: func(cmd *cobra.Command, args []string) {
@@ -79,7 +79,7 @@ var (
 		},
 	}
 
-	policy_resourceMappingsListCmd = &cobra.Command{
+	policy_resource_mappingsListCmd = &cobra.Command{
 		Use:   "list",
 		Short: "List resource mappings",
 		Run: func(cmd *cobra.Command, args []string) {
@@ -101,7 +101,7 @@ var (
 		},
 	}
 
-	policy_resourceMappingsUpdateCmd = &cobra.Command{
+	policy_resource_mappingsUpdateCmd = &cobra.Command{
 		Use:   "update",
 		Short: "Update resource mappings",
 		Run: func(cmd *cobra.Command, args []string) {
@@ -111,7 +111,7 @@ var (
 			flagHelper := cli.NewFlagHelper(cmd)
 			id := flagHelper.GetRequiredString("id")
 			attrValueId := flagHelper.GetOptionalString("attribute-value-id")
-			terms := flagHelper.GetStringSlice("terms", policy_resourceMappingsTerms, cli.FlagHelperStringSliceOptions{})
+			terms := flagHelper.GetStringSlice("terms", policy_resource_mappingsTerms, cli.FlagHelperStringSliceOptions{})
 
 			resourceMapping, err := h.UpdateResourceMapping(id, attrValueId, terms)
 			if err != nil {
@@ -129,7 +129,7 @@ var (
 		},
 	}
 
-	policy_resourceMappingsDeleteCmd = &cobra.Command{
+	policy_resource_mappingsDeleteCmd = &cobra.Command{
 		Use:   "delete",
 		Short: "Delete resource mappings",
 		Run: func(cmd *cobra.Command, args []string) {
@@ -159,22 +159,22 @@ var (
 )
 
 func init() {
-	policyCmd.AddCommand(policy_resourceMappingsCmd)
+	policyCmd.AddCommand(policy_resource_mappingsCmd)
 
-	policy_resourceMappingsCmd.AddCommand(policy_resourceMappingsCreateCmd)
-	policy_resourceMappingsCreateCmd.Flags().String("attribute-value-id", "", "Attribute Value ID")
-	policy_resourceMappingsCreateCmd.Flags().StringSliceVar(&policy_resourceMappingsTerms, "terms", []string{}, "Synonym terms")
+	policy_resource_mappingsCmd.AddCommand(policy_resource_mappingsCreateCmd)
+	policy_resource_mappingsCreateCmd.Flags().String("attribute-value-id", "", "Attribute Value ID")
+	policy_resource_mappingsCreateCmd.Flags().StringSliceVar(&policy_resource_mappingsTerms, "terms", []string{}, "Synonym terms")
 
-	policy_resourceMappingsCmd.AddCommand(policy_resourceMappingsGetCmd)
-	policy_resourceMappingsGetCmd.Flags().String("id", "", "Resource Mapping ID")
+	policy_resource_mappingsCmd.AddCommand(policy_resource_mappingsGetCmd)
+	policy_resource_mappingsGetCmd.Flags().String("id", "", "Resource Mapping ID")
 
-	policy_resourceMappingsCmd.AddCommand(policy_resourceMappingsListCmd)
+	policy_resource_mappingsCmd.AddCommand(policy_resource_mappingsListCmd)
 
-	policy_resourceMappingsCmd.AddCommand(policy_resourceMappingsUpdateCmd)
-	policy_resourceMappingsUpdateCmd.Flags().String("id", "", "Resource Mapping ID")
-	policy_resourceMappingsUpdateCmd.Flags().String("attribute-value-id", "", "Attribute Value ID")
-	policy_resourceMappingsUpdateCmd.Flags().StringSliceVar(&policy_resourceMappingsTerms, "terms", []string{}, "Synonym terms")
+	policy_resource_mappingsCmd.AddCommand(policy_resource_mappingsUpdateCmd)
+	policy_resource_mappingsUpdateCmd.Flags().String("id", "", "Resource Mapping ID")
+	policy_resource_mappingsUpdateCmd.Flags().String("attribute-value-id", "", "Attribute Value ID")
+	policy_resource_mappingsUpdateCmd.Flags().StringSliceVar(&policy_resource_mappingsTerms, "terms", []string{}, "Synonym terms")
 
-	policy_resourceMappingsCmd.AddCommand(policy_resourceMappingsDeleteCmd)
-	policy_resourceMappingsDeleteCmd.Flags().String("id", "", "Resource Mapping ID")
+	policy_resource_mappingsCmd.AddCommand(policy_resource_mappingsDeleteCmd)
+	policy_resource_mappingsDeleteCmd.Flags().String("id", "", "Resource Mapping ID")
 }
