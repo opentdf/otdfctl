@@ -205,7 +205,6 @@ Note: SubjectConditionSets are reusable among SubjectMappings and are available 
 			rows := [][]string{
 				{"Id", mapping.Id},
 				{"Subject AttrVal: Id", mapping.AttributeValue.Id},
-				{"Subject AttrVal: Value", mapping.AttributeValue.Value},
 				{"Actions", string(actionsJSON)},
 				{"Subject Condition Set: Id", mapping.SubjectConditionSet.Id},
 				{"Subject Condition Set", string(subjectSetsJSON)},
