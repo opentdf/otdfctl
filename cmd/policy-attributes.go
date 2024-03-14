@@ -4,10 +4,13 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/opentdf/platform/protocol/go/common"
 	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/opentdf/tructl/pkg/cli"
 	"github.com/spf13/cobra"
 )
+
+// TODO: add metadata to outputs once [https://github.com/opentdf/tructl/issues/30] is addressed
 
 var (
 	attrValues            []string
@@ -46,8 +49,9 @@ used to define the access controls based on subject encodings and entity entitle
 			rule := flagHelper.GetRequiredString("rule")
 			values := flagHelper.GetStringSlice("values", attrValues, cli.FlagHelperStringSliceOptions{})
 			namespace := flagHelper.GetRequiredString("namespace")
+			metadataLabels := flagHelper.GetStringSlice("label", newMetadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
 
-			attr, err := h.CreateAttribute(name, rule, namespace)
+			attr, err := h.CreateAttribute(name, rule, namespace, getMetadata(metadataLabels))
 			if err != nil {
 				cli.ExitWithError("Could not create attribute", err)
 			}
@@ -202,8 +206,20 @@ used to define the access controls based on subject encodings and entity entitle
 
 			flagHelper := cli.NewFlagHelper(cmd)
 			id := flagHelper.GetRequiredString("id")
+			newLabels := flagHelper.GetStringSlice("label-new", newMetadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
+			replacedLabels := flagHelper.GetStringSlice("label-replace", updatedMetadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
 
-			if _, err := h.UpdateAttribute(id); err != nil {
+			metadata, behavior := processUpdateMetadata(newLabels, replacedLabels, func() (*common.Metadata, error) {
+				attr, err := h.GetAttribute(id)
+				if err != nil {
+					errMsg := fmt.Sprintf("Could not find attribute (%s)", id)
+					cli.ExitWithNotFoundError(errMsg, err)
+					cli.ExitWithError(errMsg, err)
+				}
+				return attr.Metadata, nil
+			},
+			)
+			if _, err := h.UpdateAttribute(id, metadata, behavior); err != nil {
 				cli.ExitWithError("Could not update attribute", err)
 			} else {
 				fmt.Println(cli.SuccessMessage(fmt.Sprintf("Attribute id: %s updated.", id)))
@@ -222,6 +238,7 @@ func init() {
 	policy_attributesCreateCmd.Flags().StringSliceVarP(&attrValues, "values", "v", []string{}, "Values of the attribute")
 	policy_attributesCreateCmd.Flags().StringP("namespace", "s", "", "Namespace of the attribute")
 	policy_attributesCreateCmd.Flags().StringP("description", "d", "", "Description of the attribute")
+	policy_attributesCreateCmd.Flags().StringSliceVarP(&newMetadataLabels, "label", "l", []string{}, "Labels for the attribute")
 
 	// Get an attribute
 	policy_attributesCmd.AddCommand(policy_attributeGetCmd)
@@ -233,6 +250,8 @@ func init() {
 	// Update an attribute
 	policy_attributesCmd.AddCommand(policy_attributeUpdateCmd)
 	policy_attributeUpdateCmd.Flags().StringP("id", "i", "", "Id of the attribute")
+	policy_attributeUpdateCmd.Flags().StringSliceVarP(&newMetadataLabels, "label-new", "n", []string{}, "Optional new metadata 'labels' in the format: key=value")
+	policy_attributeUpdateCmd.Flags().StringSliceVarP(&updatedMetadataLabels, "label-replace", "r", []string{}, "Optional replace of existing metadata 'labels' in the format: key=value. Note: providing one destructively replaces entire set of labels.")
 
 	// Delete an attribute
 	policy_attributesCmd.AddCommand(policy_attributesDeleteCmd)

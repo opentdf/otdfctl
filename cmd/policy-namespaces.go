@@ -4,9 +4,12 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/opentdf/platform/protocol/go/common"
 	"github.com/opentdf/tructl/pkg/cli"
 	"github.com/spf13/cobra"
 )
+
+// TODO: add metadata to outputs once [https://github.com/opentdf/tructl/issues/30] is addressed
 
 var (
 	policy_namespacesCommands = []string{
@@ -90,8 +93,9 @@ or different attributes tied to each.
 
 			flagHelper := cli.NewFlagHelper(cmd)
 			name := flagHelper.GetRequiredString("name")
+			metadataLabels := flagHelper.GetStringSlice("label", newMetadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
 
-			created, err := h.CreateNamespace(name)
+			created, err := h.CreateNamespace(name, getMetadata(metadataLabels))
 			if err != nil {
 				cli.ExitWithError("Could not create namespace", err)
 			}
@@ -151,16 +155,29 @@ or different attributes tied to each.
 			defer h.Close()
 
 			flagHelper := cli.NewFlagHelper(cmd)
-
 			id := flagHelper.GetRequiredString("id")
-			name := flagHelper.GetRequiredString("name")
+			newLabels := flagHelper.GetStringSlice("label-new", newMetadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
+			replacedLabels := flagHelper.GetStringSlice("label-replace", updatedMetadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
+
+			metadata, behavior := processUpdateMetadata(newLabels, replacedLabels, func() (*common.Metadata, error) {
+				ns, err := h.GetNamespace(id)
+				if err != nil {
+					errMsg := fmt.Sprintf("Could not find namespace (%s)", id)
+					cli.ExitWithNotFoundError(errMsg, err)
+					cli.ExitWithError(errMsg, err)
+				}
+				return ns.Metadata, nil
+			},
+			)
 
 			if _, err := h.UpdateNamespace(
 				id,
+				metadata,
+				behavior,
 			); err != nil {
 				cli.ExitWithError("Could not update namespace", err)
 			}
-			fmt.Println(cli.SuccessMessage(fmt.Sprintf("Namespace id: (%s) updated. Name set to (%s).", id, name)))
+			fmt.Println(cli.SuccessMessage(fmt.Sprintf("Namespace id: (%s) updated.", id)))
 		},
 	}
 )
@@ -175,10 +192,12 @@ func init() {
 
 	policy_namespacesCmd.AddCommand(policy_namespacesCreateCmd)
 	policy_namespacesCreateCmd.Flags().StringP("name", "n", "", "Name value of the namespace")
+	policy_namespacesCreateCmd.Flags().StringSliceVarP(&newMetadataLabels, "label", "l", []string{}, "Optional metadata 'labels' in the format: key=value")
 
 	policy_namespacesCmd.AddCommand(policy_namespaceUpdateCmd)
 	policy_namespaceUpdateCmd.Flags().StringP("id", "i", "", "Id of the namespace")
-	policy_namespaceUpdateCmd.Flags().StringP("name", "n", "", "Name value of the namespace")
+	policy_namespaceUpdateCmd.Flags().StringSliceVarP(&newMetadataLabels, "label-new", "n", []string{}, "Optional new metadata 'labels' in the format: key=value")
+	policy_namespaceUpdateCmd.Flags().StringSliceVarP(&updatedMetadataLabels, "label-replace", "r", []string{}, "Optional replace of existing metadata 'labels' in the format: key=value. Note: providing one destructively replaces entire set of labels.")
 
 	policy_namespacesCmd.AddCommand(policy_namespaceDeleteCmd)
 	policy_namespaceDeleteCmd.Flags().StringP("id", "i", "", "Id of the namespace")

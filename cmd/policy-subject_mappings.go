@@ -11,6 +11,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// TODO: add metadata to outputs once [https://github.com/opentdf/tructl/issues/30] is addressed
+
 var (
 	policy_subject_mappingsCmds = []string{
 		policy_subject_mappingCreateCmd.Use,
@@ -359,7 +361,7 @@ func init() {
 	policy_subject_mappingUpdateCmd.Flags().StringSliceVarP(&customActions, "action-custom", "c", []string{}, "Custom Action. Note: destructively replaces existing Actions.")
 	policy_subject_mappingUpdateCmd.Flags().String("subject-condition-set-id", "", "Updated Subject Condition Set Id")
 	policy_subject_mappingUpdateCmd.Flags().StringSliceVarP(&newMetadataLabels, "label-new", "n", []string{}, "Optional new metadata 'labels' in the format: key=value")
-	policy_subject_mappingUpdateCmd.Flags().StringSliceVarP(&updatedMetadataLabels, "label-replace", "r", []string{}, "Optional replace of existing metadata 'labels' in the format: key=value")
+	policy_subject_mappingUpdateCmd.Flags().StringSliceVarP(&updatedMetadataLabels, "label-replace", "r", []string{}, "Optional replace of existing metadata 'labels' in the format: key=value. Note: providing one destructively replaces entire set of labels.")
 
 	policy_subject_mappingsCmd.AddCommand(policy_subject_mappingDeleteCmd)
 	policy_subject_mappingDeleteCmd.Flags().StringP("id", "i", "", "Id of the subject mapping")
