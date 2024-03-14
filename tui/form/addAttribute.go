@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/charmbracelet/huh"
-	"github.com/opentdf/platform/protocol/go/policy/attributes"
+	"github.com/opentdf/platform/protocol/go/policy"
 )
 
 type AttributeDefinition struct {
@@ -13,7 +13,7 @@ type AttributeDefinition struct {
 	Description string
 	Labels      map[string]string
 	Type        string
-	Rule        attributes.AttributeRuleTypeEnum
+	Rule        policy.AttributeRuleTypeEnum
 	Values      []string
 }
 
@@ -40,12 +40,12 @@ func AddAttribute() (AttributeDefinition, error) {
 				Value(&attr.Description),
 
 			// Select Rule
-			huh.NewSelect[attributes.AttributeRuleTypeEnum]().
+			huh.NewSelect[policy.AttributeRuleTypeEnum]().
 				Title("Rule").
 				Options(
-					huh.NewOption("All Of", attributes.AttributeRuleTypeEnum_ATTRIBUTE_RULE_TYPE_ENUM_ALL_OF),
-					huh.NewOption("Any Of", attributes.AttributeRuleTypeEnum_ATTRIBUTE_RULE_TYPE_ENUM_ANY_OF),
-					huh.NewOption("Hierarchical", attributes.AttributeRuleTypeEnum_ATTRIBUTE_RULE_TYPE_ENUM_HIERARCHY),
+					huh.NewOption("All Of", policy.AttributeRuleTypeEnum_ATTRIBUTE_RULE_TYPE_ENUM_ALL_OF),
+					huh.NewOption("Any Of", policy.AttributeRuleTypeEnum_ATTRIBUTE_RULE_TYPE_ENUM_ANY_OF),
+					huh.NewOption("Hierarchical", policy.AttributeRuleTypeEnum_ATTRIBUTE_RULE_TYPE_ENUM_HIERARCHY),
 				).
 				Value(&attr.Rule),
 		),
