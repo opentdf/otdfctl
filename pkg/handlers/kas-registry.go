@@ -36,11 +36,9 @@ func (h Handler) ListKasRegistryEntries() ([]*kasregistry.KeyAccessServer, error
 func (h Handler) CreateKasRegistryEntry(uri string, publicKey *kasregistry.PublicKey, metadata *common.MetadataMutable) (*kasregistry.KeyAccessServer, error) {
 	// Create a request to create a KeyAccessServer entry.
 	req := &kasregistry.CreateKeyAccessServerRequest{
-		KeyAccessServer: &kasregistry.KeyAccessServerCreateUpdate{
-			Uri:       uri,
-			PublicKey: publicKey,
-			Metadata:  metadata,
-		},
+		Uri:       uri,
+		PublicKey: publicKey,
+		Metadata:  metadata,
 	}
 
 	// Create the KeyAccessServer entry using the SDK.
@@ -56,7 +54,6 @@ func (h Handler) CreateKasRegistryEntry(uri string, publicKey *kasregistry.Publi
 // UpdateKasRegistryEntry updates a KeyAccessServer  entry  in the project.
 // note: we are specifically building the request on the otherside, due to so manu of the options being optional
 func (h Handler) UpdateKasRegistryEntry(id string, kasUpdateReq *kasregistry.UpdateKeyAccessServerRequest) (*kasregistry.KeyAccessServer, error) {
-
 	// Update the KeyAccessServer entry using the SDK.
 	resp, err := h.sdk.KeyAccessServerRegistry.UpdateKeyAccessServer(h.ctx, kasUpdateReq)
 	if err != nil {
