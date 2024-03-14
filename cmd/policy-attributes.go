@@ -10,7 +10,9 @@ import (
 )
 
 var (
-	attrValues []string
+	attrValues            []string
+	newMetadataLabels     []string
+	updatedMetadataLabels []string
 
 	policy_attributeCommands = []string{
 		policy_attributesCreateCmd.Use,

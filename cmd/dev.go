@@ -3,6 +3,7 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/opentdf/platform/protocol/go/common"
 	"github.com/opentdf/tructl/pkg/cli"
@@ -73,6 +74,61 @@ func unMarshalMetadata(m string) *common.MetadataMutable {
 		return metadata
 	}
 	return nil
+}
+
+func getMetadata(labels []string) *common.MetadataMutable {
+	var metadata *common.MetadataMutable
+	if len(labels) > 0 {
+		metadata.Labels = map[string]string{}
+		for _, label := range labels {
+			kv := strings.Split(label, "=")
+			if len(kv) != 2 {
+				cli.ExitWithError("Invalid label format", nil)
+			}
+			metadata.Labels[kv[0]] = kv[1]
+		}
+		return metadata
+	}
+	return nil
+}
+
+func processUpdateMetadata(newLabels, updatedLabels []string, getExtendableMetadata func() (*common.Metadata, error)) (*common.MetadataMutable, common.MetadataUpdateEnum) {
+	var metadata *common.MetadataMutable
+	behavior := common.MetadataUpdateEnum_METADATA_UPDATE_ENUM_EXTEND
+	if len(updatedLabels) == 0 {
+		metadata = getMetadata(newLabels)
+	}
+	if len(updatedLabels) > 0 {
+		behavior = common.MetadataUpdateEnum_METADATA_UPDATE_ENUM_REPLACE
+		md, _ := getExtendableMetadata()
+		metadata = mergeMetadata(md.Labels, newLabels, updatedLabels)
+	}
+	return metadata, behavior
+}
+
+func mergeMetadata(existing map[string]string, newLabels, replacedLabels []string) *common.MetadataMutable {
+	merged := map[string]string{}
+	if existing != nil {
+		merged = existing
+	}
+	for _, label := range newLabels {
+		kv := strings.Split(label, "=")
+		if len(kv) != 2 {
+			cli.ExitWithError("Invalid label format", nil)
+		}
+		merged[kv[0]] = kv[1]
+	}
+	for _, label := range replacedLabels {
+		kv := strings.Split(label, "=")
+		if len(kv) != 2 {
+			cli.ExitWithError("Invalid label format", nil)
+		}
+		merged[kv[0]] = kv[1]
+	}
+
+	return &common.MetadataMutable{
+		Labels: merged,
+	}
 }
 
 func init() {

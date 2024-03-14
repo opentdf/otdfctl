@@ -1,10 +1,6 @@
 package handlers
 
 import (
-	"fmt"
-	"slices"
-	"strings"
-
 	"github.com/opentdf/platform/protocol/go/common"
 	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/opentdf/platform/protocol/go/policy/subjectmapping"
@@ -22,70 +18,43 @@ func (h Handler) GetSubjectMapping(id string) (*policy.SubjectMapping, error) {
 	resp, err := h.sdk.SubjectMapping.GetSubjectMapping(h.ctx, &subjectmapping.GetSubjectMappingRequest{
 		Id: id,
 	})
-	if err != nil {
-		return nil, err
-	}
-
-	return resp.SubjectMapping, nil
+	return resp.SubjectMapping, err
 }
 
 func (h Handler) ListSubjectMappings() ([]*policy.SubjectMapping, error) {
 	resp, err := h.sdk.SubjectMapping.ListSubjectMappings(h.ctx, &subjectmapping.ListSubjectMappingsRequest{})
-	if err != nil {
-		return nil, err
-	}
 
-	return resp.SubjectMappings, nil
+	return resp.SubjectMappings, err
 }
 
-func (h Handler) CreateNewSubjectMapping(attributeValueId string, subjectAttribute string, subjectValues []string, operator string, metadata *common.MetadataMutable) (*policy.SubjectMapping, error) {
-	if !slices.Contains(SubjectMappingOperatorEnumChoices, operator) {
-		return nil, fmt.Errorf("Invalid operator. Must be one of [%s]" + strings.Join(SubjectMappingOperatorEnumChoices, ", "))
-	}
-
+func (h Handler) CreateNewSubjectMapping(attrValId string, actions []*policy.Action, existingSCSId string, newScs *subjectmapping.SubjectConditionSetCreate, m *common.MetadataMutable) (*policy.SubjectMapping, error) {
 	resp, err := h.sdk.SubjectMapping.CreateSubjectMapping(h.ctx, &subjectmapping.CreateSubjectMappingRequest{
-		AttributeValueId: attributeValueId,
-		// SubjectAttribute: subjectAttribute,
-		// SubjectValues:    subjectValues,
-		// Operator:         GetSubjectMappingOperatorFromChoice(operator),
-		Metadata: metadata,
+		AttributeValueId:              attrValId,
+		Actions:                       actions,
+		ExistingSubjectConditionSetId: existingSCSId,
+		NewSubjectConditionSet:        newScs,
+		Metadata:                      m,
 	})
-	if err != nil {
-		return nil, err
-	}
-
-	return resp.SubjectMapping, nil
+	return resp.SubjectMapping, err
 }
 
-// TODO: verify update behavior
-func (h Handler) UpdateSubjectMapping(id string, attributeValueId string, subjectAttribute string, subjectValues []string, operator string, metadata *common.MetadataMutable) (*policy.SubjectMapping, error) {
-	if !slices.Contains(SubjectMappingOperatorEnumChoices, operator) {
-		return nil, fmt.Errorf("Invalid operator. Must be one of [%s]" + strings.Join(SubjectMappingOperatorEnumChoices, ", "))
-	}
-
+func (h Handler) UpdateSubjectMapping(id string, updatedSCSId string, updatedActions []*policy.Action, metadata *common.MetadataMutable, metadataBehavior common.MetadataUpdateEnum) (*policy.SubjectMapping, error) {
 	resp, err := h.sdk.SubjectMapping.UpdateSubjectMapping(h.ctx, &subjectmapping.UpdateSubjectMappingRequest{
-		Id: id,
-		// AttributeValueId: attributeValueId,
-		// SubjectAttribute: subjectAttribute,
-		// SubjectValues:    subjectValues,
-		// Operator:         GetSubjectMappingOperatorFromChoice(operator),
-		Metadata: metadata,
+		Id:                    id,
+		SubjectConditionSetId: updatedSCSId,
+		Actions:               updatedActions,
+		// TODO: add reusable metadata label flags and drive this?
+		MetadataUpdateBehavior: metadataBehavior,
+		Metadata:               metadata,
 	})
-	if err != nil {
-		return nil, err
-	}
-	return resp.SubjectMapping, nil
+	return resp.SubjectMapping, err
 }
 
-func (h Handler) DeleteSubjectMapping(id string) error {
-	_, err := h.sdk.SubjectMapping.DeleteSubjectMapping(h.ctx, &subjectmapping.DeleteSubjectMappingRequest{
+func (h Handler) DeleteSubjectMapping(id string) (*policy.SubjectMapping, error) {
+	resp, err := h.sdk.SubjectMapping.DeleteSubjectMapping(h.ctx, &subjectmapping.DeleteSubjectMappingRequest{
 		Id: id,
 	})
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return resp.SubjectMapping, err
 }
 
 func GetSubjectMappingOperatorFromChoice(readable string) policy.SubjectMappingOperatorEnum {
