@@ -2,7 +2,7 @@ module github.com/opentdf/tructl
 
 go 1.21.7
 
-toolchain go1.22.0
+toolchain go1.22.1
 
 require (
 	github.com/adrg/frontmatter v0.2.0
