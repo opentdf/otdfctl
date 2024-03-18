@@ -14,6 +14,7 @@ const TRUCTL_CLIENT_ID_CACHE_KEY = "TRUCTL_DEFAULT_CLIENT_ID"
 const TRUCTL_OIDC_TOKEN_KEY = "TRUCTL_OIDC_TOKEN"
 
 // we're hardcoding this for now, but eventually it will be retrieved from the backend config
+// TODO udpate to use the wellknown endpoint for the platform (https://github.com/opentdf/platform/pull/296)
 const TOKEN_URL = "http://localhost:8888/auth/realms/opentdf/protocol/openid-connect/token"
 
 // CheckTokenExpiration checks if an OIDC token has expired.
