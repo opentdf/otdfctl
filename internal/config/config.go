@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/creasty/defaults"
+	"github.com/opentdf/tructl/pkg/cli"
 	"github.com/spf13/viper"
 )
 
@@ -72,10 +73,10 @@ func LoadConfig(key string) (*Config, error) {
 func UpdateOutputFormat(format string) {
 	v := viper.GetViper()
 	format = strings.ToLower(format)
-	if format == "json" {
-		v.Set("output.format", "json")
+	if format == cli.OutputJSON {
+		v.Set("output.format", cli.OutputJSON)
 	} else {
-		v.Set("output.format", "styled")
+		v.Set("output.format", cli.OutputStyled)
 	}
 	viper.WriteConfig()
 }

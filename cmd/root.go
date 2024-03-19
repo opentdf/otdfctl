@@ -41,8 +41,8 @@ func init() {
 		fmt.Println("Error loading config:", err)
 		os.Exit(1)
 	}
-	if strings.ToLower(cfg.Output.Format) == "json" || *format == "json" {
-		cli.JSONOutput = true
+	if strings.ToLower(cfg.Output.Format) == cli.OutputJSON || *format == cli.OutputJSON {
+		cli.OutputFormat = cli.OutputJSON
 	}
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.tructl.yaml)")
 }
