@@ -33,7 +33,7 @@ func Execute() {
 }
 
 func init() {
-	format := rootCmd.PersistentFlags().String("output-format", "", "configure a single command run's output format")
+	singleOutputJSON := rootCmd.PersistentFlags().Bool("json", false, "Output a single command result in JSON format")
 	rootCmd.PersistentFlags().String("host", "localhost:9000", "host:port of the Virtru Data Security Platform gRPC server")
 
 	cfg, err := config.LoadConfig("tructl")
@@ -41,7 +41,7 @@ func init() {
 		fmt.Println("Error loading config:", err)
 		os.Exit(1)
 	}
-	if strings.ToLower(cfg.Output.Format) == cli.OutputJSON || *format == cli.OutputJSON {
+	if strings.ToLower(cfg.Output.Format) == cli.OutputJSON || singleOutputJSON {
 		cli.OutputFormat = cli.OutputJSON
 	}
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.tructl.yaml)")
