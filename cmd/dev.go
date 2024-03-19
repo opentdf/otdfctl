@@ -92,43 +92,11 @@ func getMetadata(labels []string) *common.MetadataMutable {
 	return nil
 }
 
-func processUpdateMetadata(newLabels, updatedLabels []string, getExtendableMetadata func() (*common.Metadata, error)) (*common.MetadataMutable, common.MetadataUpdateEnum) {
-	var metadata *common.MetadataMutable
-	behavior := common.MetadataUpdateEnum_METADATA_UPDATE_ENUM_EXTEND
-	if len(updatedLabels) == 0 {
-		metadata = getMetadata(newLabels)
+func getMetadataUpdateBehavior() common.MetadataUpdateEnum {
+	if forceReplaceMetadataLabels {
+		return common.MetadataUpdateEnum_METADATA_UPDATE_ENUM_REPLACE
 	}
-	if len(updatedLabels) > 0 {
-		behavior = common.MetadataUpdateEnum_METADATA_UPDATE_ENUM_REPLACE
-		md, _ := getExtendableMetadata()
-		metadata = mergeMetadata(md.Labels, newLabels, updatedLabels)
-	}
-	return metadata, behavior
-}
-
-func mergeMetadata(existing map[string]string, newLabels, replacedLabels []string) *common.MetadataMutable {
-	merged := map[string]string{}
-	if existing != nil {
-		merged = existing
-	}
-	for _, label := range newLabels {
-		kv := strings.Split(label, "=")
-		if len(kv) != 2 {
-			cli.ExitWithError("Invalid label format", nil)
-		}
-		merged[kv[0]] = kv[1]
-	}
-	for _, label := range replacedLabels {
-		kv := strings.Split(label, "=")
-		if len(kv) != 2 {
-			cli.ExitWithError("Invalid label format", nil)
-		}
-		merged[kv[0]] = kv[1]
-	}
-
-	return &common.MetadataMutable{
-		Labels: merged,
-	}
+	return common.MetadataUpdateEnum_METADATA_UPDATE_ENUM_EXTEND
 }
 
 func init() {

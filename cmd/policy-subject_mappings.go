@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/opentdf/platform/protocol/go/common"
 	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/opentdf/tructl/pkg/cli"
 	"github.com/spf13/cobra"
@@ -162,7 +161,7 @@ Note: SubjectConditionSets are reusable among SubjectMappings and are available 
 			existingSCSId := flagHelper.GetOptionalString("subject-condition-set-id")
 			// TODO: do we need to support creating a SM & SCS simultaneously? If so, it gets more complex.
 			// newScs := flagHelper.GetOptionalString("new-subject-condition-set")
-			metadataLabels := flagHelper.GetStringSlice("label", newMetadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
+			metadataLabels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
 
 			// validations
 			if len(standardActions) == 0 && len(customActions) == 0 {
@@ -267,8 +266,7 @@ full set of actions on update. `,
 			standardActions := flagHelper.GetStringSlice("action-standard", standardActions, cli.FlagHelperStringSliceOptions{Min: 0})
 			customActions := flagHelper.GetStringSlice("action-custom", customActions, cli.FlagHelperStringSliceOptions{Min: 0})
 			scsId := flagHelper.GetOptionalString("subject-condition-set-id")
-			newLabels := flagHelper.GetStringSlice("label-new", newMetadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
-			replacedLabels := flagHelper.GetStringSlice("label-replace", updatedMetadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
+			labels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
 
 			if len(standardActions) > 0 {
 				for _, a := range standardActions {
@@ -280,23 +278,12 @@ full set of actions on update. `,
 			}
 			actions := getFullActionsList(standardActions, customActions)
 
-			metadata, behavior := processUpdateMetadata(newLabels, replacedLabels, func() (*common.Metadata, error) {
-				sm, err := h.GetSubjectMapping(id)
-				if err != nil {
-					errMsg := fmt.Sprintf("Could not find subject mapping (%s)", id)
-					cli.ExitWithNotFoundError(errMsg, err)
-					cli.ExitWithError(errMsg, err)
-				}
-				return sm.Metadata, nil
-			},
-			)
-
 			if _, err := h.UpdateSubjectMapping(
 				id,
 				scsId,
 				actions,
-				metadata,
-				behavior,
+				getMetadata(labels),
+				getMetadataUpdateBehavior(),
 			); err != nil {
 				cli.ExitWithError("Could not update subject mapping", err)
 			}
@@ -352,15 +339,15 @@ func init() {
 	policy_subject_mappingCreateCmd.Flags().String("subject-condition-set-id", "", "Pre-existing Subject Condition Set Id")
 	// TODO: do we need to support creating a SM & SCS simultaneously? If so, it gets more complex.
 	// policy_subject_mappingCreateCmd.Flags().StringP("new-subject-condition-set", "scs", "", "New Subject Condition Set (optional)")
-	policy_subject_mappingCreateCmd.Flags().StringSliceVarP(&newMetadataLabels, "label", "l", []string{}, "Optional metadata 'labels' in the format: key=value")
+	policy_subject_mappingCreateCmd.Flags().StringSliceVarP(&metadataLabels, "label", "l", []string{}, "Optional metadata 'labels' in the format: key=value")
 
 	policy_subject_mappingsCmd.AddCommand(policy_subject_mappingUpdateCmd)
 	policy_subject_mappingUpdateCmd.Flags().StringP("id", "i", "", "Id of the subject mapping")
 	policy_subject_mappingUpdateCmd.Flags().StringSliceVarP(&standardActions, "action-standard", "s", []string{}, "Standard Action: [DECRYPT, TRANSMIT]. Note: destructively replaces existing Actions.")
 	policy_subject_mappingUpdateCmd.Flags().StringSliceVarP(&customActions, "action-custom", "c", []string{}, "Custom Action. Note: destructively replaces existing Actions.")
 	policy_subject_mappingUpdateCmd.Flags().String("subject-condition-set-id", "", "Updated Subject Condition Set Id")
-	policy_subject_mappingUpdateCmd.Flags().StringSliceVarP(&newMetadataLabels, "label-new", "n", []string{}, "Optional new metadata 'labels' in the format: key=value")
-	policy_subject_mappingUpdateCmd.Flags().StringSliceVarP(&updatedMetadataLabels, "label-replace", "r", []string{}, "Optional replace of existing metadata 'labels' in the format: key=value. Note: providing one destructively replaces entire set of labels.")
+	policy_subject_mappingUpdateCmd.Flags().StringSliceVarP(&metadataLabels, "label", "l", []string{}, "Optional new metadata 'labels' in the format: key=value")
+	policy_subject_mappingUpdateCmd.Flags().BoolVar(&forceReplaceMetadataLabels, "force-replace-labels", false, "Destructively replace entire set of existing metadata 'labels' with any provided to this command.")
 
 	policy_subject_mappingsCmd.AddCommand(policy_subject_mappingDeleteCmd)
 	policy_subject_mappingDeleteCmd.Flags().StringP("id", "i", "", "Id of the subject mapping")

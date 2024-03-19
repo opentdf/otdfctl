@@ -13,9 +13,9 @@ import (
 // TODO: add metadata to outputs once [https://github.com/opentdf/tructl/issues/30] is addressed
 
 var (
-	attrValues            []string
-	newMetadataLabels     []string
-	updatedMetadataLabels []string
+	attrValues                 []string
+	metadataLabels             []string
+	forceReplaceMetadataLabels bool
 
 	policy_attributeCommands = []string{
 		policy_attributesCreateCmd.Use,
@@ -49,7 +49,7 @@ used to define the access controls based on subject encodings and entity entitle
 			rule := flagHelper.GetRequiredString("rule")
 			values := flagHelper.GetStringSlice("values", attrValues, cli.FlagHelperStringSliceOptions{})
 			namespace := flagHelper.GetRequiredString("namespace")
-			metadataLabels := flagHelper.GetStringSlice("label", newMetadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
+			metadataLabels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
 
 			attr, err := h.CreateAttribute(name, rule, namespace, getMetadata(metadataLabels))
 			if err != nil {
@@ -206,20 +206,13 @@ used to define the access controls based on subject encodings and entity entitle
 
 			flagHelper := cli.NewFlagHelper(cmd)
 			id := flagHelper.GetRequiredString("id")
-			newLabels := flagHelper.GetStringSlice("label-new", newMetadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
-			replacedLabels := flagHelper.GetStringSlice("label-replace", updatedMetadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
+			labels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
 
-			metadata, behavior := processUpdateMetadata(newLabels, replacedLabels, func() (*common.Metadata, error) {
-				attr, err := h.GetAttribute(id)
-				if err != nil {
-					errMsg := fmt.Sprintf("Could not find attribute (%s)", id)
-					cli.ExitWithNotFoundError(errMsg, err)
-					cli.ExitWithError(errMsg, err)
-				}
-				return attr.Metadata, nil
-			},
-			)
-			if _, err := h.UpdateAttribute(id, metadata, behavior); err != nil {
+			behavior := common.MetadataUpdateEnum_METADATA_UPDATE_ENUM_EXTEND
+			if forceReplaceMetadataLabels {
+				behavior = common.MetadataUpdateEnum_METADATA_UPDATE_ENUM_REPLACE
+			}
+			if _, err := h.UpdateAttribute(id, getMetadata(labels), behavior); err != nil {
 				cli.ExitWithError("Could not update attribute", err)
 			} else {
 				fmt.Println(cli.SuccessMessage(fmt.Sprintf("Attribute id: %s updated.", id)))
@@ -238,7 +231,7 @@ func init() {
 	policy_attributesCreateCmd.Flags().StringSliceVarP(&attrValues, "values", "v", []string{}, "Values of the attribute")
 	policy_attributesCreateCmd.Flags().StringP("namespace", "s", "", "Namespace of the attribute")
 	policy_attributesCreateCmd.Flags().StringP("description", "d", "", "Description of the attribute")
-	policy_attributesCreateCmd.Flags().StringSliceVarP(&newMetadataLabels, "label", "l", []string{}, "Labels for the attribute")
+	policy_attributesCreateCmd.Flags().StringSliceVarP(&metadataLabels, "label", "l", []string{}, "Labels for the attribute")
 
 	// Get an attribute
 	policy_attributesCmd.AddCommand(policy_attributeGetCmd)
@@ -250,8 +243,8 @@ func init() {
 	// Update an attribute
 	policy_attributesCmd.AddCommand(policy_attributeUpdateCmd)
 	policy_attributeUpdateCmd.Flags().StringP("id", "i", "", "Id of the attribute")
-	policy_attributeUpdateCmd.Flags().StringSliceVarP(&newMetadataLabels, "label-new", "n", []string{}, "Optional new metadata 'labels' in the format: key=value")
-	policy_attributeUpdateCmd.Flags().StringSliceVarP(&updatedMetadataLabels, "label-replace", "r", []string{}, "Optional replace of existing metadata 'labels' in the format: key=value. Note: providing one destructively replaces entire set of labels.")
+	policy_attributeUpdateCmd.Flags().StringSliceVarP(&metadataLabels, "label", "l", []string{}, "Optional new metadata 'labels' in the format: key=value")
+	policy_attributeUpdateCmd.Flags().BoolVar(&forceReplaceMetadataLabels, "force-replace-labels", false, "Destructively replace entire set of existing metadata 'labels' with any provided to this command.")
 
 	// Delete an attribute
 	policy_attributesCmd.AddCommand(policy_attributesDeleteCmd)
