@@ -25,6 +25,7 @@ require (
 	github.com/catppuccin/go v0.2.0 // indirect
 	github.com/containerd/console v1.0.4 // indirect
 	github.com/coreos/go-oidc/v3 v3.9.0 // indirect
+	github.com/creasty/defaults v1.7.0 // indirect
 	github.com/danieljoos/wincred v1.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.2.0 // indirect

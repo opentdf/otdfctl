@@ -51,7 +51,7 @@ or different attributes tied to each.
 					{"Id", ns.Id},
 					{"Name", ns.Name},
 				}...)
-			cli.HandleSuccess(cmd, ns.Id, t, ns)
+			HandleSuccess(cmd, ns.Id, t, ns)
 		},
 	}
 
@@ -75,7 +75,7 @@ or different attributes tied to each.
 					ns.Name,
 				)
 			}
-			cli.HandleSuccess(cmd, "", t, list)
+			HandleSuccess(cmd, "", t, list)
 		},
 	}
 
@@ -98,7 +98,7 @@ or different attributes tied to each.
 				{"Name", name},
 				{"Id", created.Id},
 			}...)
-			cli.HandleSuccess(cmd, created.Id, t, created)
+			HandleSuccess(cmd, created.Id, t, created)
 		},
 	}
 
@@ -132,7 +132,7 @@ or different attributes tied to each.
 					{"Id", ns.Id},
 					{"Name", ns.Name},
 				}...)
-			cli.HandleSuccess(cmd, ns.Id, t, ns)
+			HandleSuccess(cmd, ns.Id, t, ns)
 		},
 	}
 
@@ -160,7 +160,7 @@ or different attributes tied to each.
 				{"Id", ns.Id},
 				{"Name", ns.Name},
 			}...)
-			cli.HandleSuccess(cmd, id, t, ns)
+			HandleSuccess(cmd, id, t, ns)
 		},
 	}
 )

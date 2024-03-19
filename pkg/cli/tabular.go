@@ -1,20 +1,12 @@
 package cli
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/lipgloss/table"
 	"github.com/spf13/cobra"
 )
-
-const (
-	OutputJSON   = "json"
-	OutputStyled = "styled"
-)
-
-var OutputFormat string
 
 func NewTabular() *table.Table {
 	t := NewTable()
@@ -66,17 +58,4 @@ func PrintSuccessTable(cmd *cobra.Command, id string, t *table.Table) {
 	}
 
 	fmt.Println(lipgloss.JoinVertical(lipgloss.Top, successMessage, t.Render(), jsonDirections))
-}
-
-// HandleSuccess prints a success message according to the configured format (styled table or JSON)
-func HandleSuccess(command *cobra.Command, id string, t *table.Table, policyObject interface{}) {
-	if OutputFormat == OutputJSON {
-		if output, err := json.MarshalIndent(policyObject, "", "  "); err != nil {
-			ExitWithError("Error marshalling policy object", err)
-		} else {
-			fmt.Println(string(output))
-		}
-		return
-	}
-	PrintSuccessTable(command, id, t)
 }

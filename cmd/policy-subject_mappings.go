@@ -52,7 +52,7 @@ var (
 // 				rows = append(rows, mdRows...)
 // 			}
 
-// 			cli.HandleSuccess(cmd, id, cli.NewTabular().Rows(rows...), mapping)
+// 			HandleSuccess(cmd, id, cli.NewTabular().Rows(rows...), mapping)
 // 		},
 // 	}
 
@@ -80,7 +80,7 @@ var (
 // 				}
 // 				t.Row(rowCells...)
 // 			}
-// 			cli.HandleSuccess(cmd, "", t, list)
+// 			HandleSuccess(cmd, "", t, list)
 // 		},
 // 	}
 
@@ -117,7 +117,7 @@ var (
 // 				rows = append(rows, mdRows...)
 // 			}
 
-// 			cli.HandleSuccess(cmd, mapping.Id,
+// 			HandleSuccess(cmd, mapping.Id,
 // 				cli.NewTabular().
 // 					Rows(rows...), mapping)
 // 		},

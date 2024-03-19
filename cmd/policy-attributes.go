@@ -82,7 +82,7 @@ used to define the access controls based on subject encodings and entity entitle
 					cli.ErrorMessage(value, err)
 				}
 			}
-			cli.HandleSuccess(cmd, a.Id, t, a)
+			HandleSuccess(cmd, a.Id, t, a)
 		},
 	}
 
@@ -113,7 +113,7 @@ used to define the access controls based on subject encodings and entity entitle
 					{"Values", cli.CommaSeparated(a.Values)},
 					{"Namespace", a.Namespace},
 				}...)
-			cli.HandleSuccess(cmd, a.Id, t, a)
+			HandleSuccess(cmd, a.Id, t, a)
 		},
 	}
 
@@ -142,7 +142,7 @@ used to define the access controls based on subject encodings and entity entitle
 					cli.CommaSeparated(a.Values),
 				)
 			}
-			cli.HandleSuccess(cmd, "", t, attrs)
+			HandleSuccess(cmd, "", t, attrs)
 		},
 	}
 
@@ -180,7 +180,7 @@ used to define the access controls based on subject encodings and entity entitle
 					{"Values", cli.CommaSeparated(a.Values)},
 					{"Namespace", a.Namespace},
 				}...)
-			cli.HandleSuccess(cmd, a.Id, t, a)
+			HandleSuccess(cmd, a.Id, t, a)
 		},
 	}
 
@@ -198,7 +198,7 @@ used to define the access controls based on subject encodings and entity entitle
 			if a, err := h.UpdateAttribute(id); err != nil {
 				cli.ExitWithError("Could not update attribute", err)
 			} else {
-				cli.HandleSuccess(cmd, id, nil, a)
+				HandleSuccess(cmd, id, nil, a)
 			}
 		},
 	}

@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/creasty/defaults"
-	"github.com/opentdf/tructl/pkg/cli"
 	"github.com/spf13/viper"
 )
 
@@ -20,6 +19,11 @@ type Config struct {
 	Output Output `yaml:"output"`
 }
 
+// captures all CLI flags that will override pre-specified config values
+type ConfigFlagOverrides struct {
+	OutputFormatJSON bool
+}
+
 type Error string
 
 func (e Error) Error() string {
@@ -27,6 +31,9 @@ func (e Error) Error() string {
 }
 
 const (
+	OutputJSON   = "json"
+	OutputStyled = "styled"
+
 	ErrLoadingConfig Error = "error loading config"
 )
 
@@ -34,9 +41,9 @@ const (
 func LoadConfig(key string) (*Config, error) {
 	if key == "" {
 		key = "tructl"
-		slog.Info("LoadConfig: key not provided, using default", "config", key)
+		slog.Debug("LoadConfig: key not provided, using default", "config file", key)
 	} else {
-		slog.Info("LoadConfig", "config", key)
+		slog.Debug("LoadConfig", "config file", key)
 	}
 
 	config := &Config{}
@@ -73,10 +80,10 @@ func LoadConfig(key string) (*Config, error) {
 func UpdateOutputFormat(format string) {
 	v := viper.GetViper()
 	format = strings.ToLower(format)
-	if format == cli.OutputJSON {
-		v.Set("output.format", cli.OutputJSON)
+	if format == OutputJSON {
+		v.Set("output.format", OutputJSON)
 	} else {
-		v.Set("output.format", cli.OutputStyled)
+		v.Set("output.format", OutputStyled)
 	}
 	viper.WriteConfig()
 }
