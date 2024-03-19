@@ -1,7 +1,7 @@
 package cli
 
 import (
-	"github.com/opentdf/platform/protocol/go/policy/attributes"
+	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/opentdf/tructl/pkg/handlers"
 )
 
@@ -13,7 +13,7 @@ type SimpleAttribute struct {
 	Namespace string
 }
 
-func GetSimpleAttribute(a *attributes.Attribute) SimpleAttribute {
+func GetSimpleAttribute(a *policy.Attribute) SimpleAttribute {
 	values := []string{}
 	for _, v := range a.Values {
 		values = append(values, v.Value)

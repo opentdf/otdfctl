@@ -59,9 +59,6 @@ func getMetadataRows(m *common.Metadata) [][]string {
 			}
 			metadataRows = append(metadataRows, []string{"Labels", cli.CommaSeparated(labelRows)})
 		}
-		if m.Description != "" {
-			metadataRows = append(metadataRows, []string{"Description", m.Description})
-		}
 		return metadataRows
 	}
 	return nil
