@@ -45,7 +45,6 @@ or different attributes tied to each.
 			if err != nil {
 				errMsg := fmt.Sprintf("Could not find namespace (%s)", id)
 				cli.ExitWithNotFoundError(errMsg, err)
-				cli.ExitWithError(errMsg, err)
 			}
 
 			t := cli.NewTabular().
@@ -119,7 +118,6 @@ or different attributes tied to each.
 			if err != nil {
 				errMsg := fmt.Sprintf("Could not find namespace (%s)", id)
 				cli.ExitWithNotFoundError(errMsg, err)
-				cli.ExitWithError(errMsg, err)
 			}
 
 			cli.ConfirmDelete("namespace", ns.Name)
@@ -127,7 +125,6 @@ or different attributes tied to each.
 			if err := h.DeactivateNamespace(id); err != nil {
 				errMsg := fmt.Sprintf("Could not deactivate namespace (%s)", id)
 				cli.ExitWithNotFoundError(errMsg, err)
-				cli.ExitWithError(errMsg, err)
 			}
 
 			t := cli.NewTabular().

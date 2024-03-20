@@ -106,7 +106,6 @@ used to define the access controls based on subject encodings and entity entitle
 			if err != nil {
 				errMsg := fmt.Sprintf("Could not find attribute (%s)", id)
 				cli.ExitWithNotFoundError(errMsg, err)
-				cli.ExitWithError(errMsg, err)
 			}
 
 			a := cli.GetSimpleAttribute(attr)
@@ -165,7 +164,6 @@ used to define the access controls based on subject encodings and entity entitle
 			if err != nil {
 				errMsg := fmt.Sprintf("Could not find attribute (%s)", id)
 				cli.ExitWithNotFoundError(errMsg, err)
-				cli.ExitWithError(errMsg, err)
 			}
 
 			cli.ConfirmDelete("attribute", attr.Name)
@@ -174,7 +172,6 @@ used to define the access controls based on subject encodings and entity entitle
 			if err != nil {
 				errMsg := fmt.Sprintf("Could not deactivate attribute (%s)", id)
 				cli.ExitWithNotFoundError(errMsg, err)
-				cli.ExitWithError(errMsg, err)
 			}
 
 			a := cli.GetSimpleAttribute(attr)

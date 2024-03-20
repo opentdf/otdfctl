@@ -61,7 +61,6 @@ Note: SubjectConditionSets are reusable among SubjectMappings and are available 
 			if err != nil {
 				errMsg := fmt.Sprintf("Could not find subject mapping (%s)", id)
 				cli.ExitWithNotFoundError(errMsg, err)
-				cli.ExitWithError(errMsg, err)
 			}
 
 			var actionsJSON []byte
@@ -208,7 +207,6 @@ Note: SubjectConditionSets are reusable among SubjectMappings and are available 
 			if err != nil {
 				errMsg := fmt.Sprintf("Could not find subject mapping (%s)", id)
 				cli.ExitWithNotFoundError(errMsg, err)
-				cli.ExitWithError(errMsg, err)
 			}
 
 			cli.ConfirmDelete("subject mapping", sm.Id)
@@ -217,7 +215,6 @@ Note: SubjectConditionSets are reusable among SubjectMappings and are available 
 			if err != nil {
 				errMsg := fmt.Sprintf("Could not delete subject mapping (%s)", id)
 				cli.ExitWithNotFoundError(errMsg, err)
-				cli.ExitWithError(errMsg, err)
 			}
 			HandleSuccess(cmd, id, nil, deleted)
 		},
