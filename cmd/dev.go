@@ -3,8 +3,11 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
-	"github.com/opentdf/opentdf-v2-poc/sdk/common"
+	"github.com/charmbracelet/lipgloss/table"
+	"github.com/opentdf/platform/protocol/go/common"
+	"github.com/opentdf/tructl/internal/config"
 	"github.com/opentdf/tructl/pkg/cli"
 	"github.com/spf13/cobra"
 )
@@ -59,9 +62,6 @@ func getMetadataRows(m *common.Metadata) [][]string {
 			}
 			metadataRows = append(metadataRows, []string{"Labels", cli.CommaSeparated(labelRows)})
 		}
-		if m.Description != "" {
-			metadataRows = append(metadataRows, []string{"Description", m.Description})
-		}
 		return metadataRows
 	}
 	return nil
@@ -76,6 +76,42 @@ func unMarshalMetadata(m string) *common.MetadataMutable {
 		return metadata
 	}
 	return nil
+}
+
+func getMetadata(labels []string) *common.MetadataMutable {
+	var metadata *common.MetadataMutable
+	if len(labels) > 0 {
+		metadata.Labels = map[string]string{}
+		for _, label := range labels {
+			kv := strings.Split(label, "=")
+			if len(kv) != 2 {
+				cli.ExitWithError("Invalid label format", nil)
+			}
+			metadata.Labels[kv[0]] = kv[1]
+		}
+		return metadata
+	}
+	return nil
+}
+
+func getMetadataUpdateBehavior() common.MetadataUpdateEnum {
+	if forceReplaceMetadataLabels {
+		return common.MetadataUpdateEnum_METADATA_UPDATE_ENUM_REPLACE
+	}
+	return common.MetadataUpdateEnum_METADATA_UPDATE_ENUM_EXTEND
+}
+
+// HandleSuccess prints a success message according to the configured format (styled table or JSON)
+func HandleSuccess(command *cobra.Command, id string, t *table.Table, policyObject interface{}) {
+	if TructlCfg.Output.Format == config.OutputJSON || configFlagOverrides.OutputFormatJSON {
+		if output, err := json.MarshalIndent(policyObject, "", "  "); err != nil {
+			cli.ExitWithError("Error marshalling policy object", err)
+		} else {
+			fmt.Println(string(output))
+		}
+		return
+	}
+	cli.PrintSuccessTable(command, id, t)
 }
 
 func init() {

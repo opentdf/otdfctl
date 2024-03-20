@@ -38,6 +38,9 @@ func PrintSuccessTable(cmd *cobra.Command, id string, t *table.Table) {
 	case "delete":
 		msg.verb = fmt.Sprintf("Deleted %s: %s", resource, id)
 		msg.helper = getJsonHelper(resource + " list")
+	case "deactivate":
+		msg.verb = fmt.Sprintf("Deactivated %s: %s", resource, id)
+		msg.helper = getJsonHelper(resource + " list") // TODO: make sure the filters are provided here to get ACTIVE/INACTIVE/ANY
 	case "list":
 		msg.verb = fmt.Sprintf("Found %s list", resource)
 		msg.helper = getJsonHelper(resource + " get --id=<id>")

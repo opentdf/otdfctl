@@ -8,6 +8,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// TODO: add metadata to outputs once [https://github.com/opentdf/tructl/issues/73] is addressed
+
 var (
 	policy_namespacesCommands = []string{
 		policy_namespacesCreateCmd.Use,
@@ -46,14 +48,12 @@ or different attributes tied to each.
 				cli.ExitWithError(errMsg, err)
 			}
 
-			fmt.Println(cli.SuccessMessage("Namespace found"))
-			fmt.Println(
-				cli.NewTabular().
-					Rows([][]string{
-						{"Id", ns.Id},
-						{"Name", ns.Name},
-					}...).Render(),
-			)
+			t := cli.NewTabular().
+				Rows([][]string{
+					{"Id", ns.Id},
+					{"Name", ns.Name},
+				}...)
+			HandleSuccess(cmd, ns.Id, t, ns)
 		},
 	}
 
@@ -77,7 +77,7 @@ or different attributes tied to each.
 					ns.Name,
 				)
 			}
-			fmt.Println(t.Render())
+			HandleSuccess(cmd, "", t, list)
 		},
 	}
 
@@ -90,24 +90,23 @@ or different attributes tied to each.
 
 			flagHelper := cli.NewFlagHelper(cmd)
 			name := flagHelper.GetRequiredString("name")
+			metadataLabels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
 
-			created, err := h.CreateNamespace(name)
+			created, err := h.CreateNamespace(name, getMetadata(metadataLabels))
 			if err != nil {
 				cli.ExitWithError("Could not create namespace", err)
 			}
 
-			fmt.Println(cli.SuccessMessage("Namespace created"))
-			fmt.Println(
-				cli.NewTabular().Rows([][]string{
-					{"Name", name},
-					{"Id", created.Id},
-				}...).Render(),
-			)
+			t := cli.NewTabular().Rows([][]string{
+				{"Name", name},
+				{"Id", created.Id},
+			}...)
+			HandleSuccess(cmd, created.Id, t, created)
 		},
 	}
 
 	policy_namespaceDeleteCmd = &cobra.Command{
-		Use:   "delete",
+		Use:   "deactivate",
 		Short: "Delete a namespace by id",
 		Run: func(cmd *cobra.Command, args []string) {
 			h := cli.NewHandler(cmd)
@@ -125,20 +124,18 @@ or different attributes tied to each.
 
 			cli.ConfirmDelete("namespace", ns.Name)
 
-			if err := h.DeleteNamespace(id); err != nil {
-				errMsg := fmt.Sprintf("Could not delete namespace (%s)", id)
+			if err := h.DeactivateNamespace(id); err != nil {
+				errMsg := fmt.Sprintf("Could not deactivate namespace (%s)", id)
 				cli.ExitWithNotFoundError(errMsg, err)
 				cli.ExitWithError(errMsg, err)
 			}
 
-			fmt.Println(cli.SuccessMessage("Namespace deleted"))
-			fmt.Println(
-				cli.NewTabular().
-					Rows([][]string{
-						{"Id", ns.Id},
-						{"Name", ns.Name},
-					}...).Render(),
-			)
+			t := cli.NewTabular().
+				Rows([][]string{
+					{"Id", ns.Id},
+					{"Name", ns.Name},
+				}...)
+			HandleSuccess(cmd, ns.Id, t, ns)
 		},
 	}
 
@@ -151,17 +148,23 @@ or different attributes tied to each.
 			defer h.Close()
 
 			flagHelper := cli.NewFlagHelper(cmd)
-
 			id := flagHelper.GetRequiredString("id")
-			name := flagHelper.GetRequiredString("name")
+			labels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
 
-			if _, err := h.UpdateNamespace(
+			ns, err := h.UpdateNamespace(
 				id,
-				name,
-			); err != nil {
+				getMetadata(labels),
+				getMetadataUpdateBehavior(),
+			)
+			if err != nil {
 				cli.ExitWithError("Could not update namespace", err)
 			}
-			fmt.Println(cli.SuccessMessage(fmt.Sprintf("Namespace id: (%s) updated. Name set to (%s).", id, name)))
+
+			t := cli.NewTabular().Rows([][]string{
+				{"Id", ns.Id},
+				{"Name", ns.Name},
+			}...)
+			HandleSuccess(cmd, id, t, ns)
 		},
 	}
 )
@@ -176,10 +179,12 @@ func init() {
 
 	policy_namespacesCmd.AddCommand(policy_namespacesCreateCmd)
 	policy_namespacesCreateCmd.Flags().StringP("name", "n", "", "Name value of the namespace")
+	policy_namespacesCreateCmd.Flags().StringSliceVarP(&metadataLabels, "label", "l", []string{}, "Optional metadata 'labels' in the format: key=value")
 
 	policy_namespacesCmd.AddCommand(policy_namespaceUpdateCmd)
 	policy_namespaceUpdateCmd.Flags().StringP("id", "i", "", "Id of the namespace")
-	policy_namespaceUpdateCmd.Flags().StringP("name", "n", "", "Name value of the namespace")
+	policy_namespaceUpdateCmd.Flags().StringSliceVarP(&metadataLabels, "label", "l", []string{}, "Optional new metadata 'labels' in the format: key=value")
+	policy_namespaceUpdateCmd.Flags().BoolVar(&forceReplaceMetadataLabels, "force-replace-labels", false, "Destructively replace entire set of existing metadata 'labels' with any provided to this command.")
 
 	policy_namespacesCmd.AddCommand(policy_namespaceDeleteCmd)
 	policy_namespaceDeleteCmd.Flags().StringP("id", "i", "", "Id of the namespace")
