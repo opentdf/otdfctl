@@ -40,10 +40,9 @@ func (h Handler) CreateNewSubjectMapping(attrValId string, actions []*policy.Act
 
 func (h Handler) UpdateSubjectMapping(id string, updatedSCSId string, updatedActions []*policy.Action, metadata *common.MetadataMutable, metadataBehavior common.MetadataUpdateEnum) (*policy.SubjectMapping, error) {
 	resp, err := h.sdk.SubjectMapping.UpdateSubjectMapping(h.ctx, &subjectmapping.UpdateSubjectMappingRequest{
-		Id:                    id,
-		SubjectConditionSetId: updatedSCSId,
-		Actions:               updatedActions,
-		// TODO: add reusable metadata label flags and drive this?
+		Id:                     id,
+		SubjectConditionSetId:  updatedSCSId,
+		Actions:                updatedActions,
 		MetadataUpdateBehavior: metadataBehavior,
 		Metadata:               metadata,
 	})

@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// TODO: add metadata to outputs once [https://github.com/opentdf/tructl/issues/30] is addressed
+// TODO: add metadata to outputs once [https://github.com/opentdf/tructl/issues/73] is addressed
 
 var (
 	attrValues                 []string
