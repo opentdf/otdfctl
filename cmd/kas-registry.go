@@ -4,8 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/opentdf/opentdf-v2-poc/sdk/common"
-	"github.com/opentdf/opentdf-v2-poc/sdk/kasregistry"
+	"github.com/opentdf/platform/protocol/go/kasregistry"
 	"github.com/opentdf/tructl/pkg/cli"
 	"github.com/spf13/cobra"
 )
@@ -22,18 +21,20 @@ var (
 	// KasRegistryCmd is the command for managing KAS registrations
 	kasRegistryCmd = &cobra.Command{
 		Use:   "kas-registry",
-		Short: "Manage KAS Registry entries [ [" + strings.Join(kasRegistry_crudCommands, ", ") + "]",
+		Short: "Manage Key Access Server registrations [" + strings.Join(kasRegistry_crudCommands, ", ") + "]",
 		Long: `
-	Manage KAS Registry entries within the platform.
+	Manage Key Access Server registrations within the platform.
 	
-	The Key Access Server (KAS) registry is a record of servers granting and maintaining public keys. The registry contains critical information like each server's uri, its public key (which can be either local or at a remote uri), and any metadata about the server.
-	Key Access Servers grant keys for specified attributes and attribute values via Attribute Key Access Grants and Attribute Value Key Access Grants, which are managed separately from the registry.
+	The Key Access Server (KAS) registry is a record of servers granting and maintaining public keys. The registry contains critical
+	information like each server's uri, its public key (which can be either local or at a remote uri), and any metadata about the server.
+	Key Access Servers grant keys for specified Attributes and their Values via Attribute Key Access Grants and Attribute Value
+	Key Access Grants.
 	`,
 	}
 
 	kasRegistryGetCmd = &cobra.Command{
 		Use:   "get",
-		Short: "Get a KAS registry entry by id",
+		Short: "Get a registered Key Access Server by id",
 		Run: func(cmd *cobra.Command, args []string) {
 			h := cli.NewHandler(cmd)
 			defer h.Close()
@@ -41,23 +42,28 @@ var (
 			flagHelper := cli.NewFlagHelper(cmd)
 			id := flagHelper.GetRequiredString("id")
 
-			kasRegEntry, err := h.GetKasRegistryEntry(id)
+			kas, err := h.GetKasRegistryEntry(id)
 			if err != nil {
 				errMsg := fmt.Sprintf("Could not find KAS registry entry (%s)", id)
 				cli.ExitWithNotFoundError(errMsg, err)
-				cli.ExitWithError(errMsg, err)
 			}
 
-			fmt.Println(cli.SuccessMessage("KAS registry entry found"))
-			fmt.Println(
-				cli.NewTabular().
-					Rows([][]string{
-						{"Id", kasRegEntry.Id},
-						{"Metadata.Labels.Name", kasRegEntry.Metadata.Labels["name"]},
-						{"Metadata.Description", kasRegEntry.Metadata.Description},
-						{"URI", kasRegEntry.Uri},
-					}...).Render(),
-			)
+			keyType := "Local"
+			key := kas.PublicKey.GetLocal()
+			if kas.PublicKey.GetRemote() != "" {
+				keyType = "Remote"
+				key = kas.PublicKey.GetRemote()
+			}
+
+			t := cli.NewTabular().
+				Rows([][]string{
+					{"Id", kas.Id},
+					// TODO: render labels [https://github.com/opentdf/tructl/issues/73]
+					{"URI", kas.Uri},
+					{"PublicKey Type", keyType},
+					{"PublicKey", key},
+				}...)
+			HandleSuccess(cmd, kas.Id, t, kas)
 		},
 	}
 
@@ -74,16 +80,24 @@ var (
 			}
 
 			t := cli.NewTable()
-			t.Headers("Id", "URI", "PublicKey", "MetaData")
-			for _, kre := range list {
+			t.Headers("Id", "URI", "PublicKey Location", "PublicKey")
+			for _, kas := range list {
+				keyType := "Local"
+				key := kas.PublicKey.GetLocal()
+				if kas.PublicKey.GetRemote() != "" {
+					keyType = "Remote"
+					key = kas.PublicKey.GetRemote()
+				}
+
 				t.Row(
-					kre.Id,
-					kre.Metadata.Labels["name"],
-					kre.Metadata.Description,
-					kre.Uri,
+					kas.Id,
+					kas.Uri,
+					keyType,
+					key,
+					// TODO: render labels [https://github.com/opentdf/tructl/issues/73]
 				)
 			}
-			fmt.Println(t.Render())
+			HandleSuccess(cmd, "", t, list)
 		},
 	}
 
@@ -96,44 +110,47 @@ var (
 
 			flagHelper := cli.NewFlagHelper(cmd)
 			uri := flagHelper.GetRequiredString("uri")
-			public_key := flagHelper.GetRequiredString("public_key")
-			name := flagHelper.GetRequiredString("name")
-			description := flagHelper.GetRequiredString("description")
+			local := flagHelper.GetOptionalString("public-key-local")
+			remote := flagHelper.GetOptionalString("public-key-remote")
+			metadataLabels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
 
-			labelsMap := make(map[string]string)
-
-			// check if a name has been passed
-			if name != "" {
-				labelsMap["name"] = name
+			if local == "" && remote == "" {
+				e := fmt.Errorf("A public key is required. Please pass either a local or remote public key")
+				cli.ExitWithError("Issue with create flags 'public-key-local' and 'public-key-remote': ", e)
 			}
 
-			// check if a description has been passed
-			if description == "" {
-				description = "No description provided"
+			key := &kasregistry.PublicKey{}
+			keyType := "Local"
+			if local != "" {
+				if remote != "" {
+					e := fmt.Errorf("Only one public key is allowed. Please pass either a local or remote public key but not both")
+					cli.ExitWithError("Issue with create flags 'public-key-local' and 'public-key-remote': ", e)
+				}
+				key.PublicKey = &kasregistry.PublicKey_Local{Local: local}
+			} else {
+				keyType = "Remote"
+				key.PublicKey = &kasregistry.PublicKey_Remote{Remote: remote}
 			}
 
-			createdKasRegEntry, err := h.CreateKasRegistryEntry(uri, &kasregistry.PublicKey{
-				PublicKey: &kasregistry.PublicKey_Local{
-					Local: public_key,
-				},
-			}, &common.MetadataMutable{
-				Labels:      labelsMap,
-				Description: description,
-			})
+			created, err := h.CreateKasRegistryEntry(
+				uri,
+				key,
+				getMetadataMutable(metadataLabels),
+			)
 			if err != nil {
 				cli.ExitWithError("Could not create KAS registry entry", err)
 			}
 
-			fmt.Println(cli.SuccessMessage("KAS registry entry found"))
-			fmt.Println(
-				cli.NewTabular().
-					Rows([][]string{
-						{"Id", createdKasRegEntry.Id},
-						{"Metadata.Labels.Name", createdKasRegEntry.Metadata.Labels["name"]},
-						{"Metadata.Description", createdKasRegEntry.Metadata.Description},
-						{"URI", createdKasRegEntry.Uri},
-					}...).Render(),
-			)
+			t := cli.NewTabular().
+				Rows([][]string{
+					{"Id", created.Id},
+					{"URI", created.Uri},
+					{"PublicKey Type", keyType},
+					{"PublicKey", local},
+					// TODO: render labels [https://github.com/opentdf/tructl/issues/73]
+				}...)
+
+			HandleSuccess(cmd, created.Id, t, created)
 		},
 	}
 
@@ -149,60 +166,42 @@ var (
 
 			id := flagHelper.GetRequiredString("id")
 			uri := flagHelper.GetOptionalString("uri")
-			public_key := flagHelper.GetOptionalString("public_key")
-			name := flagHelper.GetOptionalString("name")
-			description := flagHelper.GetOptionalString("description")
+			local := flagHelper.GetOptionalString("public-key-local")
+			remote := flagHelper.GetOptionalString("public-key-remote")
+			labels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
 
-			// Initialize KeyAccessServer only if needed
-			kas := &kasregistry.KeyAccessServerCreateUpdate{}
-
-			// Check each optional parameter and set it if provided
-			if uri != "" {
-				kas.Uri = uri // Assuming Uri is now a *string
-			}
-			if public_key != "" {
-				var publicKeyObj = kasregistry.PublicKey{
-					PublicKey: &kasregistry.PublicKey_Local{
-						Local: public_key,
-					},
-				}
-
-				kas.PublicKey = &publicKeyObj
+			if local == "" && remote == "" && len(labels) == 0 && uri == "" {
+				cli.ExitWithError("No values were passed to update. Please pass at least one value to update (E.G. 'uri', 'public-key-local', 'public-key-remote', 'label')", nil)
 			}
 
-			// create our metadata object
-			var metaDataObj = common.MetadataMutable{}
-			// we need to individually check if these parameters were passed, and add them to the update object
-			if name != "" {
-				metaDataObj.Labels = map[string]string{"name": name}
+			// TODO: should update of a type of key be a dangerous mutation or cause a need for confirmation in the CLI?
+			var pubKey *kasregistry.PublicKey
+			if local != "" && remote != "" {
+				e := fmt.Errorf("Only one public key is allowed. Please pass either a local or remote public key but not both")
+				cli.ExitWithError("Issue with update flags 'public-key-local' and 'public-key-remote': ", e)
+			} else if local != "" {
+				pubKey = &kasregistry.PublicKey{PublicKey: &kasregistry.PublicKey_Local{Local: local}}
+			} else if remote != "" {
+				pubKey = &kasregistry.PublicKey{PublicKey: &kasregistry.PublicKey_Remote{Remote: remote}}
 			}
 
-			if description != "" {
-				metaDataObj.Description = description
-			}
-
-			if description != "" || name != "" {
-				kas.Metadata = &metaDataObj
-			}
-
-			req := &kasregistry.UpdateKeyAccessServerRequest{
-				Id: id,
-			}
-			// set the kas update object on the request
-			req.KeyAccessServer = kas
-
-			// now lets make sure it is valid, did anything get passed as updated values?
-			if kas.Uri != "" && kas.PublicKey != nil && kas.Metadata != nil {
-				cli.ExitWithError("No values were passed to update. Please pass at least one value to update (E.G. 'uri', 'name', 'description', 'publicKey')", nil)
-			}
-
-			if _, err := h.UpdateKasRegistryEntry(
+			updated, err := h.UpdateKasRegistryEntry(
 				id,
-				req,
-			); err != nil {
+				uri,
+				pubKey,
+				getMetadataMutable(labels),
+				getMetadataUpdateBehavior(),
+			)
+			if err != nil {
 				cli.ExitWithError("Could not update KAS registry entry", err)
 			}
-			fmt.Println(cli.SuccessMessage(fmt.Sprintf("Namespace id: (%s) updated. Name set to (%s).", id, name)))
+			t := cli.NewTabular().
+				Rows([][]string{
+					{"Id", id},
+					{"URI", uri},
+					// TODO: render labels [https://github.com/opentdf/tructl/issues/73]
+				}...)
+			HandleSuccess(cmd, id, t, updated)
 		},
 	}
 
@@ -216,29 +215,26 @@ var (
 			flagHelper := cli.NewFlagHelper(cmd)
 			id := flagHelper.GetRequiredString("id")
 
-			kasRegEntry, err := h.GetKasRegistryEntry(id)
+			kas, err := h.GetKasRegistryEntry(id)
 			if err != nil {
 				errMsg := fmt.Sprintf("Could not find KAS registry entry (%s)", id)
 				cli.ExitWithNotFoundError(errMsg, err)
-				cli.ExitWithError(errMsg, err)
 			}
 
-			cli.ConfirmDelete("KAS Registry Entry", kasRegEntry.Metadata.Labels["name"])
+			cli.ConfirmDelete("KAS Registry Entry: ", id)
 
 			if err := h.DeleteKasRegistryEntry(id); err != nil {
 				errMsg := fmt.Sprintf("Could not delete KAS registry entry (%s)", id)
-				cli.ExitWithNotFoundError(errMsg, err)
 				cli.ExitWithError(errMsg, err)
 			}
 
-			fmt.Println(cli.SuccessMessage("KAS Registry Entry deleted"))
-			fmt.Println(
-				cli.NewTabular().
-					Rows([][]string{
-						{"Id", kasRegEntry.Id},
-						{"Name", kasRegEntry.Metadata.Labels["name"]},
-					}...).Render(),
-			)
+			t := cli.NewTabular().
+				Rows([][]string{
+					{"Id", kas.Id},
+					{"URI", kas.Uri},
+				}...)
+
+			HandleSuccess(cmd, kas.Id, t, kas)
 		},
 	}
 )
@@ -250,19 +246,21 @@ func init() {
 	kasRegistryGetCmd.Flags().StringP("id", "i", "", "Id of the KAS registry entry")
 
 	kasRegistryCmd.AddCommand(kasRegistrysListCmd)
+	// TODO: active, inactive, any state querying [https://github.com/opentdf/tructl/issues/68]
 
 	kasRegistryCmd.AddCommand(kasRegistrysCreateCmd)
-	kasRegistrysCreateCmd.Flags().StringP("description", "d", "", "The common description of the KAS registry entry")
 	kasRegistrysCreateCmd.Flags().StringP("uri", "u", "", "The URI of the KAS registry entry")
-	kasRegistrysCreateCmd.Flags().StringP("name", "n", "", "Name value of the KAS registry entry")
-	kasRegistrysCreateCmd.Flags().StringP("public_key", "p", "", "The KAS Public Key")
+	kasRegistrysCreateCmd.Flags().StringP("public-key-local", "p", "", "A local public key for the registered Key Access Server (KAS)")
+	kasRegistrysCreateCmd.Flags().StringP("public-key-remote", "r", "", "A remote endpoint that provides a public key for the registered Key Access Server (KAS)")
+	kasRegistrysCreateCmd.Flags().StringSliceVarP(&metadataLabels, "label", "l", []string{}, "Optional metadata 'labels' in the format: key=value")
 
 	kasRegistryCmd.AddCommand(kasRegistryUpdateCmd)
 	kasRegistryUpdateCmd.Flags().StringP("id", "i", "", "Id of the KAS registry entry")
-	kasRegistryUpdateCmd.Flags().StringP("description", "d", "", "The common description of the KAS registry entry")
 	kasRegistryUpdateCmd.Flags().StringP("uri", "u", "", "The URI of the KAS registry entry")
-	kasRegistryUpdateCmd.Flags().StringP("name", "n", "", "Name value of the KAS registry entry")
-	kasRegistryUpdateCmd.Flags().StringP("public_key", "p", "", "The KAS Public Key")
+	kasRegistryUpdateCmd.Flags().StringP("public-key-local", "p", "", "A local public key for the registered Key Access Server (KAS)")
+	kasRegistryUpdateCmd.Flags().StringP("public-key-remote", "r", "", "A remote endpoint that serves a public key for the registered Key Access Server (KAS)")
+	kasRegistryUpdateCmd.Flags().StringSliceVarP(&metadataLabels, "label", "l", []string{}, "Optional metadata 'labels' in the format: key=value")
+	kasRegistryUpdateCmd.Flags().BoolVar(&forceReplaceMetadataLabels, "force-replace-labels", false, "Destructively replace entire set of existing metadata 'labels' with any provided to this command.")
 
 	kasRegistryCmd.AddCommand(kasRegistryDeleteCmd)
 	kasRegistryDeleteCmd.Flags().StringP("id", "i", "", "Id of the KAS registry entry")

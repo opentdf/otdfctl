@@ -41,7 +41,7 @@ var (
 			})
 			metadataLabels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
 
-			resourceMapping, err := h.CreateResourceMapping(attrId, terms, getMetadata(metadataLabels))
+			resourceMapping, err := h.CreateResourceMapping(attrId, terms, getMetadataMutable(metadataLabels))
 			if err != nil {
 				cli.ExitWithError("Failed to create resource mapping", err)
 			}
@@ -115,7 +115,7 @@ var (
 			terms := flagHelper.GetStringSlice("terms", policy_resource_mappingsTerms, cli.FlagHelperStringSliceOptions{})
 			labels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
 
-			resourceMapping, err := h.UpdateResourceMapping(id, attrValueId, terms, getMetadata(labels), getMetadataUpdateBehavior())
+			resourceMapping, err := h.UpdateResourceMapping(id, attrValueId, terms, getMetadataMutable(labels), getMetadataUpdateBehavior())
 			if err != nil {
 				cli.ExitWithError("Failed to update resource mapping", err)
 			}

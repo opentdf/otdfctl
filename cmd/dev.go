@@ -78,8 +78,8 @@ func unMarshalMetadata(m string) *common.MetadataMutable {
 	return nil
 }
 
-func getMetadata(labels []string) *common.MetadataMutable {
-	var metadata *common.MetadataMutable
+func getMetadataMutable(labels []string) *common.MetadataMutable {
+	metadata := common.MetadataMutable{}
 	if len(labels) > 0 {
 		metadata.Labels = map[string]string{}
 		for _, label := range labels {
@@ -89,7 +89,7 @@ func getMetadata(labels []string) *common.MetadataMutable {
 			}
 			metadata.Labels[kv[0]] = kv[1]
 		}
-		return metadata
+		return &metadata
 	}
 	return nil
 }

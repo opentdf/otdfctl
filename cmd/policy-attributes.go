@@ -50,7 +50,7 @@ used to define the access controls based on subject encodings and entity entitle
 			namespace := flagHelper.GetRequiredString("namespace")
 			metadataLabels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
 
-			attr, err := h.CreateAttribute(name, rule, namespace, getMetadata(metadataLabels))
+			attr, err := h.CreateAttribute(name, rule, namespace, getMetadataMutable(metadataLabels))
 			if err != nil {
 				cli.ExitWithError("Could not create attribute", err)
 			}
@@ -198,7 +198,7 @@ used to define the access controls based on subject encodings and entity entitle
 			id := flagHelper.GetRequiredString("id")
 			labels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
 
-			if a, err := h.UpdateAttribute(id, getMetadata(labels), getMetadataUpdateBehavior()); err != nil {
+			if a, err := h.UpdateAttribute(id, getMetadataMutable(labels), getMetadataUpdateBehavior()); err != nil {
 				cli.ExitWithError("Could not update attribute", err)
 			} else {
 				HandleSuccess(cmd, id, nil, a)

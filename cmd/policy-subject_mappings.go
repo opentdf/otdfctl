@@ -160,7 +160,7 @@ Note: SubjectConditionSets are reusable among SubjectMappings and are available 
 			}
 			actions := getFullActionsList(standardActions, customActions)
 
-			mapping, err := h.CreateNewSubjectMapping(attrValueId, actions, existingSCSId, nil, getMetadata(metadataLabels))
+			mapping, err := h.CreateNewSubjectMapping(attrValueId, actions, existingSCSId, nil, getMetadataMutable(metadataLabels))
 			if err != nil {
 				cli.ExitWithError("Could not create subject mapping", err)
 			}
@@ -252,7 +252,7 @@ full set of actions on update. `,
 				id,
 				scsId,
 				actions,
-				getMetadata(labels),
+				getMetadataMutable(labels),
 				getMetadataUpdateBehavior(),
 			)
 			if err != nil {

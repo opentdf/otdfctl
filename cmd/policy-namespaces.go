@@ -91,7 +91,7 @@ or different attributes tied to each.
 			name := flagHelper.GetRequiredString("name")
 			metadataLabels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
 
-			created, err := h.CreateNamespace(name, getMetadata(metadataLabels))
+			created, err := h.CreateNamespace(name, getMetadataMutable(metadataLabels))
 			if err != nil {
 				cli.ExitWithError("Could not create namespace", err)
 			}
@@ -150,7 +150,7 @@ or different attributes tied to each.
 
 			ns, err := h.UpdateNamespace(
 				id,
-				getMetadata(labels),
+				getMetadataMutable(labels),
 				getMetadataUpdateBehavior(),
 			)
 			if err != nil {
