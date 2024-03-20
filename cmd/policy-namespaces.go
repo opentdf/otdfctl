@@ -8,6 +8,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// TODO: add metadata to outputs once [https://github.com/opentdf/tructl/issues/73] is addressed
+
 var (
 	policy_namespacesCommands = []string{
 		policy_namespacesCreateCmd.Use,
@@ -88,8 +90,9 @@ or different attributes tied to each.
 
 			flagHelper := cli.NewFlagHelper(cmd)
 			name := flagHelper.GetRequiredString("name")
+			metadataLabels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
 
-			created, err := h.CreateNamespace(name)
+			created, err := h.CreateNamespace(name, getMetadata(metadataLabels))
 			if err != nil {
 				cli.ExitWithError("Could not create namespace", err)
 			}
@@ -145,17 +148,18 @@ or different attributes tied to each.
 			defer h.Close()
 
 			flagHelper := cli.NewFlagHelper(cmd)
-
 			id := flagHelper.GetRequiredString("id")
-			name := flagHelper.GetRequiredString("name")
+			labels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
 
 			ns, err := h.UpdateNamespace(
 				id,
-				name,
+				getMetadata(labels),
+				getMetadataUpdateBehavior(),
 			)
 			if err != nil {
 				cli.ExitWithError("Could not update namespace", err)
 			}
+
 			t := cli.NewTabular().Rows([][]string{
 				{"Id", ns.Id},
 				{"Name", ns.Name},
@@ -175,10 +179,12 @@ func init() {
 
 	policy_namespacesCmd.AddCommand(policy_namespacesCreateCmd)
 	policy_namespacesCreateCmd.Flags().StringP("name", "n", "", "Name value of the namespace")
+	policy_namespacesCreateCmd.Flags().StringSliceVarP(&metadataLabels, "label", "l", []string{}, "Optional metadata 'labels' in the format: key=value")
 
 	policy_namespacesCmd.AddCommand(policy_namespaceUpdateCmd)
 	policy_namespaceUpdateCmd.Flags().StringP("id", "i", "", "Id of the namespace")
-	policy_namespaceUpdateCmd.Flags().StringP("name", "n", "", "Name value of the namespace")
+	policy_namespaceUpdateCmd.Flags().StringSliceVarP(&metadataLabels, "label", "l", []string{}, "Optional new metadata 'labels' in the format: key=value")
+	policy_namespaceUpdateCmd.Flags().BoolVar(&forceReplaceMetadataLabels, "force-replace-labels", false, "Destructively replace entire set of existing metadata 'labels' with any provided to this command.")
 
 	policy_namespacesCmd.AddCommand(policy_namespaceDeleteCmd)
 	policy_namespaceDeleteCmd.Flags().StringP("id", "i", "", "Id of the namespace")

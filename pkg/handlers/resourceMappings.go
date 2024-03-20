@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 
+	"github.com/opentdf/platform/protocol/go/common"
 	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/opentdf/platform/protocol/go/policy/resourcemapping"
 )
@@ -13,10 +14,11 @@ type ResourceMapping struct {
 	Terms       []string
 }
 
-func (h *Handler) CreateResourceMapping(attributeId string, terms []string) (*policy.ResourceMapping, error) {
+func (h *Handler) CreateResourceMapping(attributeId string, terms []string, metadata *common.MetadataMutable) (*policy.ResourceMapping, error) {
 	res, err := h.sdk.ResourceMapping.CreateResourceMapping(context.Background(), &resourcemapping.CreateResourceMappingRequest{
 		AttributeValueId: attributeId,
 		Terms:            terms,
+		Metadata:         metadata,
 	})
 	if err != nil {
 		return nil, err
@@ -45,11 +47,14 @@ func (h *Handler) ListResourceMappings() ([]*policy.ResourceMapping, error) {
 	return res.ResourceMappings, nil
 }
 
-func (h *Handler) UpdateResourceMapping(id string, attrValueId string, terms []string) (*policy.ResourceMapping, error) {
+// TODO: verify updation behavior
+func (h *Handler) UpdateResourceMapping(id string, attrValueId string, terms []string, metadata *common.MetadataMutable, behavior common.MetadataUpdateEnum) (*policy.ResourceMapping, error) {
 	res, err := h.sdk.ResourceMapping.UpdateResourceMapping(context.Background(), &resourcemapping.UpdateResourceMappingRequest{
-		Id:               id,
-		AttributeValueId: attrValueId,
-		Terms:            terms,
+		Id:                     id,
+		AttributeValueId:       attrValueId,
+		Terms:                  terms,
+		Metadata:               metadata,
+		MetadataUpdateBehavior: behavior,
 	})
 	if err != nil {
 		return nil, err

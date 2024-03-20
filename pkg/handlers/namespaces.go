@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"github.com/opentdf/platform/protocol/go/common"
 	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/opentdf/platform/protocol/go/policy/namespaces"
 )
@@ -25,9 +26,10 @@ func (h Handler) ListNamespaces() ([]*policy.Namespace, error) {
 	return resp.Namespaces, nil
 }
 
-func (h Handler) CreateNamespace(name string) (*policy.Namespace, error) {
+func (h Handler) CreateNamespace(name string, metadata *common.MetadataMutable) (*policy.Namespace, error) {
 	resp, err := h.sdk.Namespaces.CreateNamespace(h.ctx, &namespaces.CreateNamespaceRequest{
-		Name: name,
+		Name:     name,
+		Metadata: metadata,
 	})
 	if err != nil {
 		return nil, err
@@ -36,9 +38,11 @@ func (h Handler) CreateNamespace(name string) (*policy.Namespace, error) {
 	return resp.Namespace, nil
 }
 
-func (h Handler) UpdateNamespace(id string, name string) (*policy.Namespace, error) {
+func (h Handler) UpdateNamespace(id string, metadata *common.MetadataMutable, behavior common.MetadataUpdateEnum) (*policy.Namespace, error) {
 	resp, err := h.sdk.Namespaces.UpdateNamespace(h.ctx, &namespaces.UpdateNamespaceRequest{
-		Id: id,
+		Id:                     id,
+		Metadata:               metadata,
+		MetadataUpdateBehavior: behavior,
 	})
 	if err != nil {
 		return nil, err

@@ -49,7 +49,7 @@ func (h Handler) ListAttributes() ([]*policy.Attribute, error) {
 	return resp.Attributes, err
 }
 
-func (h Handler) CreateAttribute(name string, rule string, namespace string) (*policy.Attribute, error) {
+func (h Handler) CreateAttribute(name string, rule string, namespace string, metadata *common.MetadataMutable) (*policy.Attribute, error) {
 	r, err := GetAttributeRuleFromReadableString(rule)
 	if err != nil {
 		return nil, err
@@ -59,6 +59,7 @@ func (h Handler) CreateAttribute(name string, rule string, namespace string) (*p
 		NamespaceId: namespace,
 		Name:        name,
 		Rule:        r,
+		Metadata:    metadata,
 	}
 
 	resp, err := h.sdk.Attributes.CreateAttribute(h.ctx, attrReq)
@@ -76,13 +77,16 @@ func (h Handler) CreateAttribute(name string, rule string, namespace string) (*p
 	}, nil
 }
 
+// TODO: verify updation behavior
 func (h *Handler) UpdateAttribute(
 	id string,
-	fns ...func(*common.MetadataMutable) *common.MetadataMutable,
+	metadata *common.MetadataMutable,
+	behavior common.MetadataUpdateEnum,
 ) (*attributes.UpdateAttributeResponse, error) {
 	return h.sdk.Attributes.UpdateAttribute(h.ctx, &attributes.UpdateAttributeRequest{
-		Id:       id,
-		Metadata: buildMetadata(&common.MetadataMutable{}, fns...),
+		Id:                     id,
+		Metadata:               metadata,
+		MetadataUpdateBehavior: behavior,
 	})
 }
 

@@ -3,6 +3,7 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/charmbracelet/lipgloss/table"
 	"github.com/opentdf/platform/protocol/go/common"
@@ -75,6 +76,29 @@ func unMarshalMetadata(m string) *common.MetadataMutable {
 		return metadata
 	}
 	return nil
+}
+
+func getMetadata(labels []string) *common.MetadataMutable {
+	var metadata *common.MetadataMutable
+	if len(labels) > 0 {
+		metadata.Labels = map[string]string{}
+		for _, label := range labels {
+			kv := strings.Split(label, "=")
+			if len(kv) != 2 {
+				cli.ExitWithError("Invalid label format", nil)
+			}
+			metadata.Labels[kv[0]] = kv[1]
+		}
+		return metadata
+	}
+	return nil
+}
+
+func getMetadataUpdateBehavior() common.MetadataUpdateEnum {
+	if forceReplaceMetadataLabels {
+		return common.MetadataUpdateEnum_METADATA_UPDATE_ENUM_REPLACE
+	}
+	return common.MetadataUpdateEnum_METADATA_UPDATE_ENUM_EXTEND
 }
 
 // HandleSuccess prints a success message according to the configured format (styled table or JSON)
