@@ -38,7 +38,6 @@ func (h Handler) CreateNamespace(name string, metadata *common.MetadataMutable) 
 	return resp.Namespace, nil
 }
 
-// TODO: verify updation of metadata
 func (h Handler) UpdateNamespace(id string, metadata *common.MetadataMutable, behavior common.MetadataUpdateEnum) (*policy.Namespace, error) {
 	resp, err := h.sdk.Namespaces.UpdateNamespace(h.ctx, &namespaces.UpdateNamespaceRequest{
 		Id:                     id,

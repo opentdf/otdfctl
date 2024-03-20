@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/charmbracelet/lipgloss/table"
 	"github.com/opentdf/platform/protocol/go/common"
+	"github.com/opentdf/tructl/internal/config"
 	"github.com/opentdf/tructl/pkg/cli"
 	"github.com/spf13/cobra"
 )
@@ -97,6 +99,19 @@ func getMetadataUpdateBehavior() common.MetadataUpdateEnum {
 		return common.MetadataUpdateEnum_METADATA_UPDATE_ENUM_REPLACE
 	}
 	return common.MetadataUpdateEnum_METADATA_UPDATE_ENUM_EXTEND
+}
+
+// HandleSuccess prints a success message according to the configured format (styled table or JSON)
+func HandleSuccess(command *cobra.Command, id string, t *table.Table, policyObject interface{}) {
+	if TructlCfg.Output.Format == config.OutputJSON || configFlagOverrides.OutputFormatJSON {
+		if output, err := json.MarshalIndent(policyObject, "", "  "); err != nil {
+			cli.ExitWithError("Error marshalling policy object", err)
+		} else {
+			fmt.Println(string(output))
+		}
+		return
+	}
+	cli.PrintSuccessTable(command, id, t)
 }
 
 func init() {

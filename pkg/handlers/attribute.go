@@ -49,7 +49,6 @@ func (h Handler) ListAttributes() ([]*policy.Attribute, error) {
 	return resp.Attributes, err
 }
 
-// TODO: allow creation of a value with the attribute simultaneously?
 func (h Handler) CreateAttribute(name string, rule string, namespace string, metadata *common.MetadataMutable) (*policy.Attribute, error) {
 	r, err := GetAttributeRuleFromReadableString(rule)
 	if err != nil {

@@ -48,14 +48,12 @@ or different attributes tied to each.
 				cli.ExitWithError(errMsg, err)
 			}
 
-			fmt.Println(cli.SuccessMessage("Namespace found"))
-			fmt.Println(
-				cli.NewTabular().
-					Rows([][]string{
-						{"Id", ns.Id},
-						{"Name", ns.Name},
-					}...).Render(),
-			)
+			t := cli.NewTabular().
+				Rows([][]string{
+					{"Id", ns.Id},
+					{"Name", ns.Name},
+				}...)
+			HandleSuccess(cmd, ns.Id, t, ns)
 		},
 	}
 
@@ -79,7 +77,7 @@ or different attributes tied to each.
 					ns.Name,
 				)
 			}
-			fmt.Println(t.Render())
+			HandleSuccess(cmd, "", t, list)
 		},
 	}
 
@@ -99,13 +97,11 @@ or different attributes tied to each.
 				cli.ExitWithError("Could not create namespace", err)
 			}
 
-			fmt.Println(cli.SuccessMessage("Namespace created"))
-			fmt.Println(
-				cli.NewTabular().Rows([][]string{
-					{"Name", name},
-					{"Id", created.Id},
-				}...).Render(),
-			)
+			t := cli.NewTabular().Rows([][]string{
+				{"Name", name},
+				{"Id", created.Id},
+			}...)
+			HandleSuccess(cmd, created.Id, t, created)
 		},
 	}
 
@@ -134,14 +130,12 @@ or different attributes tied to each.
 				cli.ExitWithError(errMsg, err)
 			}
 
-			fmt.Println(cli.SuccessMessage("Namespace deactivated"))
-			fmt.Println(
-				cli.NewTabular().
-					Rows([][]string{
-						{"Id", ns.Id},
-						{"Name", ns.Name},
-					}...).Render(),
-			)
+			t := cli.NewTabular().
+				Rows([][]string{
+					{"Id", ns.Id},
+					{"Name", ns.Name},
+				}...)
+			HandleSuccess(cmd, ns.Id, t, ns)
 		},
 	}
 
@@ -157,14 +151,20 @@ or different attributes tied to each.
 			id := flagHelper.GetRequiredString("id")
 			labels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
 
-			if _, err := h.UpdateNamespace(
+			ns, err := h.UpdateNamespace(
 				id,
 				getMetadata(labels),
 				getMetadataUpdateBehavior(),
-			); err != nil {
+			)
+			if err != nil {
 				cli.ExitWithError("Could not update namespace", err)
 			}
-			fmt.Println(cli.SuccessMessage(fmt.Sprintf("Namespace id: (%s) updated.", id)))
+
+			t := cli.NewTabular().Rows([][]string{
+				{"Id", ns.Id},
+				{"Name", ns.Name},
+			}...)
+			HandleSuccess(cmd, id, t, ns)
 		},
 	}
 )

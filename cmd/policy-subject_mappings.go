@@ -87,15 +87,8 @@ Note: SubjectConditionSets are reusable among SubjectMappings and are available 
 				rows = append(rows, mdRows...)
 			}
 
-			if !jsonOutput {
-				cli.PrintSuccessTable(cmd, id, cli.NewTabular().Rows(rows...))
-			} else {
-				if output, err := json.MarshalIndent(mapping, "", "  "); err != nil {
-					cli.ExitWithError("Error marshalling subject mapping", err)
-				} else {
-					fmt.Println(string(output))
-				}
-			}
+			t := cli.NewTabular().Rows(rows...)
+			HandleSuccess(cmd, mapping.Id, t, mapping)
 		},
 	}
 
@@ -109,15 +102,6 @@ Note: SubjectConditionSets are reusable among SubjectMappings and are available 
 			list, err := h.ListSubjectMappings()
 			if err != nil {
 				cli.ExitWithError("Could not get subject mappings", err)
-			}
-
-			if jsonOutput {
-				if output, err := json.MarshalIndent(list, "", "  "); err != nil {
-					cli.ExitWithError("Error marshalling subject mappings", err)
-				} else {
-					fmt.Println(string(output))
-				}
-				return
 			}
 
 			t := cli.NewTable().Width(180)
@@ -143,7 +127,7 @@ Note: SubjectConditionSets are reusable among SubjectMappings and are available 
 				}
 				t.Row(rowCells...)
 			}
-			cli.PrintSuccessTable(cmd, "", t)
+			HandleSuccess(cmd, "", t, list)
 		},
 	}
 
@@ -182,15 +166,6 @@ Note: SubjectConditionSets are reusable among SubjectMappings and are available 
 				cli.ExitWithError("Could not create subject mapping", err)
 			}
 
-			if jsonOutput {
-				if output, err := json.MarshalIndent(mapping, "", "  "); err != nil {
-					cli.ExitWithError("Error marshalling subject mapping", err)
-				} else {
-					fmt.Println(string(output))
-				}
-				return
-			}
-
 			var actionsJSON []byte
 			if actionsJSON, err = json.Marshal(mapping.Actions); err != nil {
 				cli.ExitWithError("Error marshalling subject mapping actions", err)
@@ -214,9 +189,8 @@ Note: SubjectConditionSets are reusable among SubjectMappings and are available 
 				rows = append(rows, mdRows...)
 			}
 
-			cli.PrintSuccessTable(cmd, mapping.Id,
-				cli.NewTabular().
-					Rows(rows...))
+			t := cli.NewTabular().Rows(rows...)
+			HandleSuccess(cmd, mapping.Id, t, mapping)
 		},
 	}
 
@@ -239,14 +213,13 @@ Note: SubjectConditionSets are reusable among SubjectMappings and are available 
 
 			cli.ConfirmDelete("subject mapping", sm.Id)
 
-			if _, err := h.DeleteSubjectMapping(id); err != nil {
+			deleted, err := h.DeleteSubjectMapping(id)
+			if err != nil {
 				errMsg := fmt.Sprintf("Could not delete subject mapping (%s)", id)
 				cli.ExitWithNotFoundError(errMsg, err)
 				cli.ExitWithError(errMsg, err)
 			}
-
-			// TODO: handle json output once service sends back deleted subject mapping
-			cli.PrintSuccessTable(cmd, id, nil)
+			HandleSuccess(cmd, id, nil, deleted)
 		},
 	}
 
@@ -278,18 +251,18 @@ full set of actions on update. `,
 			}
 			actions := getFullActionsList(standardActions, customActions)
 
-			if _, err := h.UpdateSubjectMapping(
+			updated, err := h.UpdateSubjectMapping(
 				id,
 				scsId,
 				actions,
 				getMetadata(labels),
 				getMetadataUpdateBehavior(),
-			); err != nil {
+			)
+			if err != nil {
 				cli.ExitWithError("Could not update subject mapping", err)
 			}
 
-			// TODO: handle json output once service sends back updated subject mapping
-			fmt.Println(cli.SuccessMessage(fmt.Sprintf("Subject mapping id: (%s) updated.", id)))
+			HandleSuccess(cmd, id, nil, updated)
 		},
 	}
 )

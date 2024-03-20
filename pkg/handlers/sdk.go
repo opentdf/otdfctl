@@ -28,7 +28,7 @@ func New(platformEndpoint string) (Handler, error) {
 
 	// scopes := []string{"email"}
 	// create the sdk with the client credentials
-	//NOTE FROM AVERY: The below line is commented out because although it should work, the SDK
+	// NOTE FROM AVERY: The below line is commented out because although it should work, the SDK
 	// is having trouble with the "WithClientCredentials" endpoint
 	// so although the commented out line should work, and will work in the future, today it doesn't, so
 	// to facilitate development, we're leaving it commented, until the SDK is fixed, and using the insecure connection instead
