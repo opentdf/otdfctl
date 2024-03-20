@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/opentdf/platform/protocol/go/common"
 	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/opentdf/tructl/pkg/cli"
 	"github.com/spf13/cobra"
@@ -208,11 +207,7 @@ used to define the access controls based on subject encodings and entity entitle
 			id := flagHelper.GetRequiredString("id")
 			labels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
 
-			behavior := common.MetadataUpdateEnum_METADATA_UPDATE_ENUM_EXTEND
-			if forceReplaceMetadataLabels {
-				behavior = common.MetadataUpdateEnum_METADATA_UPDATE_ENUM_REPLACE
-			}
-			if _, err := h.UpdateAttribute(id, getMetadata(labels), behavior); err != nil {
+			if _, err := h.UpdateAttribute(id, getMetadata(labels), getMetadataUpdateBehavior()); err != nil {
 				cli.ExitWithError("Could not update attribute", err)
 			} else {
 				fmt.Println(cli.SuccessMessage(fmt.Sprintf("Attribute id: %s updated.", id)))
