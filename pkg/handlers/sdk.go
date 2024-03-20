@@ -53,8 +53,7 @@ func (h Handler) Close() error {
 func (h Handler) WithDescriptionMetadata(metadata *common.Metadata, description string) func() *common.Metadata {
 	return func() *common.Metadata {
 		nextMetadata := &common.Metadata{
-			Labels:      metadata.Labels,
-			Description: description,
+			Labels: metadata.Labels,
 		}
 		return nextMetadata
 	}
@@ -64,8 +63,7 @@ func (h Handler) WithDescriptionMetadata(metadata *common.Metadata, description 
 func (h Handler) WithReplaceLabelsMetadata(metadata *common.MetadataMutable, labels map[string]string) func(*common.MetadataMutable) *common.MetadataMutable {
 	return func(*common.MetadataMutable) *common.MetadataMutable {
 		nextMetadata := &common.MetadataMutable{
-			Labels:      labels,
-			Description: metadata.Description,
+			Labels: labels,
 		}
 		return nextMetadata
 	}
@@ -77,8 +75,7 @@ func (h Handler) WithLabelMetadata(metadata *common.MetadataMutable, key, value 
 		labels := metadata.Labels
 		labels[key] = value
 		nextMetadata := &common.MetadataMutable{
-			Labels:      labels,
-			Description: metadata.Description,
+			Labels: labels,
 		}
 		return nextMetadata
 	}
