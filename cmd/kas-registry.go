@@ -252,15 +252,14 @@ func init() {
 	kasRegistrysCreateCmd.Flags().StringP("uri", "u", "", "The URI of the KAS registry entry")
 	kasRegistrysCreateCmd.Flags().StringP("public-key-local", "p", "", "A local public key for the registered Key Access Server (KAS)")
 	kasRegistrysCreateCmd.Flags().StringP("public-key-remote", "r", "", "A remote endpoint that provides a public key for the registered Key Access Server (KAS)")
-	kasRegistrysCreateCmd.Flags().StringSliceVarP(&metadataLabels, "label", "l", []string{}, "Optional metadata 'labels' in the format: key=value")
+	injectLabelFlags(kasRegistrysCreateCmd, false)
 
 	kasRegistryCmd.AddCommand(kasRegistryUpdateCmd)
 	kasRegistryUpdateCmd.Flags().StringP("id", "i", "", "Id of the KAS registry entry")
 	kasRegistryUpdateCmd.Flags().StringP("uri", "u", "", "The URI of the KAS registry entry")
 	kasRegistryUpdateCmd.Flags().StringP("public-key-local", "p", "", "A local public key for the registered Key Access Server (KAS)")
 	kasRegistryUpdateCmd.Flags().StringP("public-key-remote", "r", "", "A remote endpoint that serves a public key for the registered Key Access Server (KAS)")
-	kasRegistryUpdateCmd.Flags().StringSliceVarP(&metadataLabels, "label", "l", []string{}, "Optional metadata 'labels' in the format: key=value")
-	kasRegistryUpdateCmd.Flags().BoolVar(&forceReplaceMetadataLabels, "force-replace-labels", false, "Destructively replace entire set of existing metadata 'labels' with any provided to this command.")
+	injectLabelFlags(kasRegistryUpdateCmd, true)
 
 	kasRegistryCmd.AddCommand(kasRegistryDeleteCmd)
 	kasRegistryDeleteCmd.Flags().StringP("id", "i", "", "Id of the KAS registry entry")

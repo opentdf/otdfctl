@@ -114,6 +114,14 @@ func HandleSuccess(command *cobra.Command, id string, t *table.Table, policyObje
 	cli.PrintSuccessTable(command, id, t)
 }
 
+// Adds reusable create/update label flags to a Policy command and the optional force-replace-labels flag for updates only
+func injectLabelFlags(cmd *cobra.Command, isUpdate bool) {
+	cmd.Flags().StringSliceVarP(&metadataLabels, "label", "l", []string{}, "Optional metadata 'labels' in the format: key=value")
+	if isUpdate {
+		cmd.Flags().BoolVar(&forceReplaceMetadataLabels, "force-replace-labels", false, "Destructively replace entire set of existing metadata 'labels' with any provided to this command.")
+	}
+}
+
 func init() {
 	rootCmd.AddCommand(devCmd)
 	devCmd.AddCommand(designCmd)

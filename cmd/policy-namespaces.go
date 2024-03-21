@@ -176,12 +176,11 @@ func init() {
 
 	policy_namespacesCmd.AddCommand(policy_namespacesCreateCmd)
 	policy_namespacesCreateCmd.Flags().StringP("name", "n", "", "Name value of the namespace")
-	policy_namespacesCreateCmd.Flags().StringSliceVarP(&metadataLabels, "label", "l", []string{}, "Optional metadata 'labels' in the format: key=value")
+	injectLabelFlags(policy_namespacesCreateCmd, false)
 
 	policy_namespacesCmd.AddCommand(policy_namespaceUpdateCmd)
 	policy_namespaceUpdateCmd.Flags().StringP("id", "i", "", "Id of the namespace")
-	policy_namespaceUpdateCmd.Flags().StringSliceVarP(&metadataLabels, "label", "l", []string{}, "Optional new metadata 'labels' in the format: key=value")
-	policy_namespaceUpdateCmd.Flags().BoolVar(&forceReplaceMetadataLabels, "force-replace-labels", false, "Destructively replace entire set of existing metadata 'labels' with any provided to this command.")
+	injectLabelFlags(policy_namespaceUpdateCmd, true)
 
 	policy_namespacesCmd.AddCommand(policy_namespaceDeleteCmd)
 	policy_namespaceDeleteCmd.Flags().StringP("id", "i", "", "Id of the namespace")

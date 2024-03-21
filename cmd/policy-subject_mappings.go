@@ -309,15 +309,14 @@ func init() {
 	policy_subject_mappingCreateCmd.Flags().String("subject-condition-set-id", "", "Pre-existing Subject Condition Set Id")
 	// TODO: do we need to support creating a SM & SCS simultaneously? If so, it gets more complex.
 	// policy_subject_mappingCreateCmd.Flags().StringP("new-subject-condition-set", "scs", "", "New Subject Condition Set (optional)")
-	policy_subject_mappingCreateCmd.Flags().StringSliceVarP(&metadataLabels, "label", "l", []string{}, "Optional metadata 'labels' in the format: key=value")
+	injectLabelFlags(policy_subject_mappingCreateCmd, false)
 
 	policy_subject_mappingsCmd.AddCommand(policy_subject_mappingUpdateCmd)
 	policy_subject_mappingUpdateCmd.Flags().StringP("id", "i", "", "Id of the subject mapping")
 	policy_subject_mappingUpdateCmd.Flags().StringSliceVarP(&standardActions, "action-standard", "s", []string{}, "Standard Action: [DECRYPT, TRANSMIT]. Note: destructively replaces existing Actions.")
 	policy_subject_mappingUpdateCmd.Flags().StringSliceVarP(&customActions, "action-custom", "c", []string{}, "Custom Action. Note: destructively replaces existing Actions.")
 	policy_subject_mappingUpdateCmd.Flags().String("subject-condition-set-id", "", "Updated Subject Condition Set Id")
-	policy_subject_mappingUpdateCmd.Flags().StringSliceVarP(&metadataLabels, "label", "l", []string{}, "Optional new metadata 'labels' in the format: key=value")
-	policy_subject_mappingUpdateCmd.Flags().BoolVar(&forceReplaceMetadataLabels, "force-replace-labels", false, "Destructively replace entire set of existing metadata 'labels' with any provided to this command.")
+	injectLabelFlags(policy_subject_mappingUpdateCmd, true)
 
 	policy_subject_mappingsCmd.AddCommand(policy_subject_mappingDeleteCmd)
 	policy_subject_mappingDeleteCmd.Flags().StringP("id", "i", "", "Id of the subject mapping")
