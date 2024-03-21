@@ -41,7 +41,7 @@ var (
 			})
 			metadataLabels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
 
-			resourceMapping, err := h.CreateResourceMapping(attrId, terms, getMetadata(metadataLabels))
+			resourceMapping, err := h.CreateResourceMapping(attrId, terms, getMetadataMutable(metadataLabels))
 			if err != nil {
 				cli.ExitWithError("Failed to create resource mapping", err)
 			}
@@ -115,7 +115,7 @@ var (
 			terms := flagHelper.GetStringSlice("terms", policy_resource_mappingsTerms, cli.FlagHelperStringSliceOptions{})
 			labels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
 
-			resourceMapping, err := h.UpdateResourceMapping(id, attrValueId, terms, getMetadata(labels), getMetadataUpdateBehavior())
+			resourceMapping, err := h.UpdateResourceMapping(id, attrValueId, terms, getMetadataMutable(labels), getMetadataUpdateBehavior())
 			if err != nil {
 				cli.ExitWithError("Failed to update resource mapping", err)
 			}
@@ -164,7 +164,7 @@ func init() {
 	policy_resource_mappingsCmd.AddCommand(policy_resource_mappingsCreateCmd)
 	policy_resource_mappingsCreateCmd.Flags().String("attribute-value-id", "", "Attribute Value ID")
 	policy_resource_mappingsCreateCmd.Flags().StringSliceVar(&policy_resource_mappingsTerms, "terms", []string{}, "Synonym terms")
-	policy_resource_mappingsCreateCmd.Flags().StringSliceVarP(&metadataLabels, "label", "l", []string{}, "Optional metadata 'labels' in the format: key=value")
+	injectLabelFlags(policy_resource_mappingsCreateCmd, false)
 
 	policy_resource_mappingsCmd.AddCommand(policy_resource_mappingsGetCmd)
 	policy_resource_mappingsGetCmd.Flags().String("id", "", "Resource Mapping ID")
@@ -175,8 +175,7 @@ func init() {
 	policy_resource_mappingsUpdateCmd.Flags().String("id", "", "Resource Mapping ID")
 	policy_resource_mappingsUpdateCmd.Flags().String("attribute-value-id", "", "Attribute Value ID")
 	policy_resource_mappingsUpdateCmd.Flags().StringSliceVar(&policy_resource_mappingsTerms, "terms", []string{}, "Synonym terms")
-	policy_resource_mappingsUpdateCmd.Flags().StringSliceVarP(&metadataLabels, "label", "l", []string{}, "Optional metadata 'labels' in the format: key=value")
-	policy_resource_mappingsUpdateCmd.Flags().BoolVar(&forceReplaceMetadataLabels, "force-replace-labels", false, "Destructively replace entire set of existing metadata 'labels' with any provided to this command.")
+	injectLabelFlags(policy_resource_mappingsUpdateCmd, true)
 
 	policy_resource_mappingsCmd.AddCommand(policy_resource_mappingsDeleteCmd)
 	policy_resource_mappingsDeleteCmd.Flags().String("id", "", "Resource Mapping ID")

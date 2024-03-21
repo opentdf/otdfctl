@@ -19,6 +19,10 @@ The main goals are to:
 
 ## Usage
 
+The CLI is configured via the `tructl.yaml`. There is an example provided in `example-tructl.yaml`.
+
+Run `cp example-tructl.yaml tructl.yaml` to copy the example config when running the CLI.
+
 ## Development
 
 ### CLI

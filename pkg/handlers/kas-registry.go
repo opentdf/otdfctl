@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	common "github.com/opentdf/platform/protocol/go/common"
+	"github.com/opentdf/platform/protocol/go/common"
 	"github.com/opentdf/platform/protocol/go/kasregistry"
 )
 
@@ -17,9 +17,7 @@ func (h Handler) GetKasRegistryEntry(id string) (*kasregistry.KeyAccessServer, e
 }
 
 func (h Handler) ListKasRegistryEntries() ([]*kasregistry.KeyAccessServer, error) {
-	req := &kasregistry.ListKeyAccessServersRequest{}
-
-	resp, err := h.sdk.KeyAccessServerRegistry.ListKeyAccessServers(h.ctx, req)
+	resp, err := h.sdk.KeyAccessServerRegistry.ListKeyAccessServers(h.ctx, &kasregistry.ListKeyAccessServersRequest{})
 	if err != nil {
 		return nil, err
 	}
@@ -42,9 +40,14 @@ func (h Handler) CreateKasRegistryEntry(uri string, publicKey *kasregistry.Publi
 	return resp.KeyAccessServer, nil
 }
 
-// TODO: verify updation behavior
-func (h Handler) UpdateKasRegistryEntry(id string, kasUpdateReq *kasregistry.UpdateKeyAccessServerRequest) (*kasregistry.KeyAccessServer, error) {
-	resp, err := h.sdk.KeyAccessServerRegistry.UpdateKeyAccessServer(h.ctx, kasUpdateReq)
+func (h Handler) UpdateKasRegistryEntry(id string, uri string, publickey *kasregistry.PublicKey, metadata *common.MetadataMutable, behavior common.MetadataUpdateEnum) (*kasregistry.KeyAccessServer, error) {
+	resp, err := h.sdk.KeyAccessServerRegistry.UpdateKeyAccessServer(h.ctx, &kasregistry.UpdateKeyAccessServerRequest{
+		Id:                     id,
+		Uri:                    uri,
+		PublicKey:              publickey,
+		Metadata:               metadata,
+		MetadataUpdateBehavior: behavior,
+	})
 	if err != nil {
 		return nil, err
 	}

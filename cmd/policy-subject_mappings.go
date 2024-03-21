@@ -61,7 +61,6 @@ Note: SubjectConditionSets are reusable among SubjectMappings and are available 
 			if err != nil {
 				errMsg := fmt.Sprintf("Could not find subject mapping (%s)", id)
 				cli.ExitWithNotFoundError(errMsg, err)
-				cli.ExitWithError(errMsg, err)
 			}
 
 			var actionsJSON []byte
@@ -161,7 +160,7 @@ Note: SubjectConditionSets are reusable among SubjectMappings and are available 
 			}
 			actions := getFullActionsList(standardActions, customActions)
 
-			mapping, err := h.CreateNewSubjectMapping(attrValueId, actions, existingSCSId, nil, getMetadata(metadataLabels))
+			mapping, err := h.CreateNewSubjectMapping(attrValueId, actions, existingSCSId, nil, getMetadataMutable(metadataLabels))
 			if err != nil {
 				cli.ExitWithError("Could not create subject mapping", err)
 			}
@@ -208,7 +207,6 @@ Note: SubjectConditionSets are reusable among SubjectMappings and are available 
 			if err != nil {
 				errMsg := fmt.Sprintf("Could not find subject mapping (%s)", id)
 				cli.ExitWithNotFoundError(errMsg, err)
-				cli.ExitWithError(errMsg, err)
 			}
 
 			cli.ConfirmDelete("subject mapping", sm.Id)
@@ -217,7 +215,6 @@ Note: SubjectConditionSets are reusable among SubjectMappings and are available 
 			if err != nil {
 				errMsg := fmt.Sprintf("Could not delete subject mapping (%s)", id)
 				cli.ExitWithNotFoundError(errMsg, err)
-				cli.ExitWithError(errMsg, err)
 			}
 			HandleSuccess(cmd, id, nil, deleted)
 		},
@@ -255,7 +252,7 @@ full set of actions on update. `,
 				id,
 				scsId,
 				actions,
-				getMetadata(labels),
+				getMetadataMutable(labels),
 				getMetadataUpdateBehavior(),
 			)
 			if err != nil {
@@ -312,15 +309,14 @@ func init() {
 	policy_subject_mappingCreateCmd.Flags().String("subject-condition-set-id", "", "Pre-existing Subject Condition Set Id")
 	// TODO: do we need to support creating a SM & SCS simultaneously? If so, it gets more complex.
 	// policy_subject_mappingCreateCmd.Flags().StringP("new-subject-condition-set", "scs", "", "New Subject Condition Set (optional)")
-	policy_subject_mappingCreateCmd.Flags().StringSliceVarP(&metadataLabels, "label", "l", []string{}, "Optional metadata 'labels' in the format: key=value")
+	injectLabelFlags(policy_subject_mappingCreateCmd, false)
 
 	policy_subject_mappingsCmd.AddCommand(policy_subject_mappingUpdateCmd)
 	policy_subject_mappingUpdateCmd.Flags().StringP("id", "i", "", "Id of the subject mapping")
 	policy_subject_mappingUpdateCmd.Flags().StringSliceVarP(&standardActions, "action-standard", "s", []string{}, "Standard Action: [DECRYPT, TRANSMIT]. Note: destructively replaces existing Actions.")
 	policy_subject_mappingUpdateCmd.Flags().StringSliceVarP(&customActions, "action-custom", "c", []string{}, "Custom Action. Note: destructively replaces existing Actions.")
 	policy_subject_mappingUpdateCmd.Flags().String("subject-condition-set-id", "", "Updated Subject Condition Set Id")
-	policy_subject_mappingUpdateCmd.Flags().StringSliceVarP(&metadataLabels, "label", "l", []string{}, "Optional new metadata 'labels' in the format: key=value")
-	policy_subject_mappingUpdateCmd.Flags().BoolVar(&forceReplaceMetadataLabels, "force-replace-labels", false, "Destructively replace entire set of existing metadata 'labels' with any provided to this command.")
+	injectLabelFlags(policy_subject_mappingUpdateCmd, true)
 
 	policy_subject_mappingsCmd.AddCommand(policy_subject_mappingDeleteCmd)
 	policy_subject_mappingDeleteCmd.Flags().StringP("id", "i", "", "Id of the subject mapping")

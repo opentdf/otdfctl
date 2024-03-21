@@ -78,8 +78,8 @@ func unMarshalMetadata(m string) *common.MetadataMutable {
 	return nil
 }
 
-func getMetadata(labels []string) *common.MetadataMutable {
-	var metadata *common.MetadataMutable
+func getMetadataMutable(labels []string) *common.MetadataMutable {
+	metadata := common.MetadataMutable{}
 	if len(labels) > 0 {
 		metadata.Labels = map[string]string{}
 		for _, label := range labels {
@@ -89,7 +89,7 @@ func getMetadata(labels []string) *common.MetadataMutable {
 			}
 			metadata.Labels[kv[0]] = kv[1]
 		}
-		return metadata
+		return &metadata
 	}
 	return nil
 }
@@ -112,6 +112,14 @@ func HandleSuccess(command *cobra.Command, id string, t *table.Table, policyObje
 		return
 	}
 	cli.PrintSuccessTable(command, id, t)
+}
+
+// Adds reusable create/update label flags to a Policy command and the optional force-replace-labels flag for updates only
+func injectLabelFlags(cmd *cobra.Command, isUpdate bool) {
+	cmd.Flags().StringSliceVarP(&metadataLabels, "label", "l", []string{}, "Optional metadata 'labels' in the format: key=value")
+	if isUpdate {
+		cmd.Flags().BoolVar(&forceReplaceMetadataLabels, "force-replace-labels", false, "Destructively replace entire set of existing metadata 'labels' with any provided to this command.")
+	}
 }
 
 func init() {

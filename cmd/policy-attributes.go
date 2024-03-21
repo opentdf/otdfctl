@@ -50,7 +50,7 @@ used to define the access controls based on subject encodings and entity entitle
 			namespace := flagHelper.GetRequiredString("namespace")
 			metadataLabels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
 
-			attr, err := h.CreateAttribute(name, rule, namespace, getMetadata(metadataLabels))
+			attr, err := h.CreateAttribute(name, rule, namespace, getMetadataMutable(metadataLabels))
 			if err != nil {
 				cli.ExitWithError("Could not create attribute", err)
 			}
@@ -106,7 +106,6 @@ used to define the access controls based on subject encodings and entity entitle
 			if err != nil {
 				errMsg := fmt.Sprintf("Could not find attribute (%s)", id)
 				cli.ExitWithNotFoundError(errMsg, err)
-				cli.ExitWithError(errMsg, err)
 			}
 
 			a := cli.GetSimpleAttribute(attr)
@@ -118,7 +117,7 @@ used to define the access controls based on subject encodings and entity entitle
 					{"Values", cli.CommaSeparated(a.Values)},
 					{"Namespace", a.Namespace},
 				}...)
-			HandleSuccess(cmd, a.Id, t, a)
+			HandleSuccess(cmd, a.Id, t, attr)
 		},
 	}
 
@@ -165,7 +164,6 @@ used to define the access controls based on subject encodings and entity entitle
 			if err != nil {
 				errMsg := fmt.Sprintf("Could not find attribute (%s)", id)
 				cli.ExitWithNotFoundError(errMsg, err)
-				cli.ExitWithError(errMsg, err)
 			}
 
 			cli.ConfirmDelete("attribute", attr.Name)
@@ -174,7 +172,6 @@ used to define the access controls based on subject encodings and entity entitle
 			if err != nil {
 				errMsg := fmt.Sprintf("Could not deactivate attribute (%s)", id)
 				cli.ExitWithNotFoundError(errMsg, err)
-				cli.ExitWithError(errMsg, err)
 			}
 
 			a := cli.GetSimpleAttribute(attr)
@@ -201,7 +198,7 @@ used to define the access controls based on subject encodings and entity entitle
 			id := flagHelper.GetRequiredString("id")
 			labels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
 
-			if a, err := h.UpdateAttribute(id, getMetadata(labels), getMetadataUpdateBehavior()); err != nil {
+			if a, err := h.UpdateAttribute(id, getMetadataMutable(labels), getMetadataUpdateBehavior()); err != nil {
 				cli.ExitWithError("Could not update attribute", err)
 			} else {
 				HandleSuccess(cmd, id, nil, a)
@@ -220,7 +217,7 @@ func init() {
 	policy_attributesCreateCmd.Flags().StringSliceVarP(&attrValues, "values", "v", []string{}, "Values of the attribute")
 	policy_attributesCreateCmd.Flags().StringP("namespace", "s", "", "Namespace of the attribute")
 	policy_attributesCreateCmd.Flags().StringP("description", "d", "", "Description of the attribute")
-	policy_attributesCreateCmd.Flags().StringSliceVarP(&metadataLabels, "label", "l", []string{}, "Labels for the attribute")
+	injectLabelFlags(policy_attributesCreateCmd, false)
 
 	// Get an attribute
 	policy_attributesCmd.AddCommand(policy_attributeGetCmd)
@@ -232,8 +229,7 @@ func init() {
 	// Update an attribute
 	policy_attributesCmd.AddCommand(policy_attributeUpdateCmd)
 	policy_attributeUpdateCmd.Flags().StringP("id", "i", "", "Id of the attribute")
-	policy_attributeUpdateCmd.Flags().StringSliceVarP(&metadataLabels, "label", "l", []string{}, "Optional new metadata 'labels' in the format: key=value")
-	policy_attributeUpdateCmd.Flags().BoolVar(&forceReplaceMetadataLabels, "force-replace-labels", false, "Destructively replace entire set of existing metadata 'labels' with any provided to this command.")
+	injectLabelFlags(policy_attributeUpdateCmd, true)
 
 	// Delete an attribute
 	policy_attributesCmd.AddCommand(policy_attributesDeleteCmd)
