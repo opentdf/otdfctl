@@ -220,13 +220,13 @@ var (
 )
 
 func init() {
-	attributesCmd.AddGroup(
+	policy_attributesCmd.AddGroup(
 		&cobra.Group{
 			ID:    "subcommand",
 			Title: "Subcommands",
 		},
 	)
-	attributesCmd.AddCommand(policy_attributeValuesCmd)
+	policy_attributesCmd.AddCommand(policy_attributeValuesCmd)
 	policy_attributeValuesCmd.GroupID = "subcommand"
 	policy_attributeValuesCmd.AddGroup(
 		&cobra.Group{
