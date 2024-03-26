@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/opentdf/tructl/pkg/cli"
@@ -43,7 +42,6 @@ var (
 				updated map[string]interface{}
 			)
 
-			// updated := make(map[string]interface{})
 			updated["kas_id"] = kas
 
 			if attr != "" {
@@ -81,28 +79,47 @@ var (
 			defer h.Close()
 
 			flagHelper := cli.NewFlagHelper(cmd)
-			id := flagHelper.GetRequiredString("id")
+			attr := flagHelper.GetOptionalString("attribute")
+			val := flagHelper.GetOptionalString("value")
+			kas := flagHelper.GetRequiredString("kas")
 
-			kas, err := h.GetKasRegistryEntry(id)
-			if err != nil {
-				errMsg := fmt.Sprintf("Could not find KAS registry entry (%s)", id)
-				cli.ExitWithNotFoundError(errMsg, err)
+			if kas == "" || (attr == "" && val == "") {
+				cli.ExitWithError("Specify a key access server and an attribute id or attribute value if to update.", nil)
 			}
+			var (
+				id      string
+				header  string
+				deleted map[string]interface{}
+			)
 
-			cli.ConfirmDelete("KAS Registry Entry: ", id)
+			cli.ConfirmDelete("KAS ID: ", kas)
 
-			if err := h.DeleteKasRegistryEntry(id); err != nil {
-				errMsg := fmt.Sprintf("Could not delete KAS registry entry (%s)", id)
-				cli.ExitWithError(errMsg, err)
+			deleted["kas_id"] = kas
+
+			if attr != "" {
+				_, err := h.DeleteKasGrantFromAttribute(attr, kas)
+				if err != nil {
+					cli.ExitWithError("Could not update KAS grant for attribute", err)
+				}
+				id = attr
+				header = "Attribute ID"
+				deleted["attribute_id"] = attr
+			} else {
+				_, err := h.DeleteKasGrantFromValue(val, kas)
+				if err != nil {
+					cli.ExitWithError("Could not update KAS grant for attribute value", err)
+				}
+				id = val
+				header = "Value ID"
+				deleted["value_id"] = val
 			}
 
 			t := cli.NewTabular().
 				Rows([][]string{
-					{"Id", kas.Id},
-					{"URI", kas.Uri},
+					{header, id},
+					{"KAS ID", kas},
 				}...)
-
-			HandleSuccess(cmd, kas.Id, t, kas)
+			HandleSuccess(cmd, id, t, deleted)
 		},
 	}
 )
@@ -111,15 +128,15 @@ func init() {
 	policyCmd.AddCommand(kasGrantsCmd)
 
 	kasGrantsCmd.AddCommand(kasGrantsUpdateCmd)
-	kasGrantsUpdateCmd.Flags().StringP("attribute", "a", "", "attribute id")
-	kasGrantsUpdateCmd.Flags().StringP("value", "v", "", "attribute value id")
-	kasGrantsUpdateCmd.Flags().StringP("kas", "k", "", "kas id")
+	kasGrantsUpdateCmd.Flags().StringP("attribute", "a", "", "Attribute ID")
+	kasGrantsUpdateCmd.Flags().StringP("value", "v", "", "Attribute Value ID")
+	kasGrantsUpdateCmd.Flags().StringP("kas", "k", "", "KAS ID")
 	injectLabelFlags(kasGrantsUpdateCmd, true)
 
 	kasGrantsCmd.AddCommand(kasGrantsDeleteCmd)
-	kasGrantsDeleteCmd.Flags().StringP("attribute", "a", "", "attribute id")
-	kasGrantsDeleteCmd.Flags().StringP("value", "v", "", "attribute value id")
-	kasGrantsDeleteCmd.Flags().StringP("kas", "k", "", "kas id")
+	kasGrantsDeleteCmd.Flags().StringP("attribute", "a", "", "Attribute ID")
+	kasGrantsDeleteCmd.Flags().StringP("value", "v", "", "Attribute Value ID")
+	kasGrantsDeleteCmd.Flags().StringP("kas", "k", "", "KAS ID")
 }
 
 func init() {
