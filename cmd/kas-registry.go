@@ -2,9 +2,9 @@ package cmd
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/opentdf/platform/protocol/go/kasregistry"
+	"github.com/opentdf/tructl/docs/man"
 	"github.com/opentdf/tructl/pkg/cli"
 	"github.com/spf13/cobra"
 )
@@ -20,21 +20,14 @@ var (
 
 	// KasRegistryCmd is the command for managing KAS registrations
 	kasRegistryCmd = &cobra.Command{
-		Use:   "kas-registry",
-		Short: "Manage Key Access Server registrations [" + strings.Join(kasRegistry_crudCommands, ", ") + "]",
-		Long: `
-	Manage Key Access Server registrations within the platform.
-	
-	The Key Access Server (KAS) registry is a record of servers granting and maintaining public keys. The registry contains critical
-	information like each server's uri, its public key (which can be either local or at a remote uri), and any metadata about the server.
-	Key Access Servers grant keys for specified Attributes and their Values via Attribute Key Access Grants and Attribute Value
-	Key Access Grants.
-	`,
+		Use:   man.Docs.GetDoc("policy-kasRegistry").Use,
+		Short: man.Docs.GetDoc("policy-kasRegistry").GetShort(kasRegistry_crudCommands),
+		Long:  man.Docs.GetDoc("policy-kasRegistry").Long,
 	}
 
 	kasRegistryGetCmd = &cobra.Command{
-		Use:   "get",
-		Short: "Get a registered Key Access Server by id",
+		Use:   man.Docs.GetDoc("policy-kasRegistry-get").Use,
+		Short: man.Docs.GetDoc("policy-kasRegistry-get").Short,
 		Run: func(cmd *cobra.Command, args []string) {
 			h := cli.NewHandler(cmd)
 			defer h.Close()
@@ -68,8 +61,8 @@ var (
 	}
 
 	kasRegistrysListCmd = &cobra.Command{
-		Use:   "list",
-		Short: "List KAS registry entries",
+		Use:   man.Docs.GetDoc("policy-kasRegistry-list").Use,
+		Short: man.Docs.GetDoc("policy-kasRegistry-list").Short,
 		Run: func(cmd *cobra.Command, args []string) {
 			h := cli.NewHandler(cmd)
 			defer h.Close()
@@ -102,8 +95,8 @@ var (
 	}
 
 	kasRegistrysCreateCmd = &cobra.Command{
-		Use:   "create",
-		Short: "Create a new KAS registry entry, i.e. 'https://example.com'",
+		Use:   man.Docs.GetDoc("policy-kasRegistry-create").Use,
+		Short: man.Docs.GetDoc("policy-kasRegistry-create").Short,
 		Run: func(cmd *cobra.Command, args []string) {
 			h := cli.NewHandler(cmd)
 			defer h.Close()
@@ -156,8 +149,8 @@ var (
 
 	// Update one KAS registry entry
 	kasRegistryUpdateCmd = &cobra.Command{
-		Use:   "update",
-		Short: "Update a KAS registry entry",
+		Use:   man.Docs.GetDoc("policy-kasRegistry-update").Use,
+		Short: man.Docs.GetDoc("policy-kasRegistry-update").Short,
 		Run: func(cmd *cobra.Command, args []string) {
 			h := cli.NewHandler(cmd)
 			defer h.Close()
@@ -206,8 +199,8 @@ var (
 	}
 
 	kasRegistryDeleteCmd = &cobra.Command{
-		Use:   "delete",
-		Short: "Delete a KAS registry entry by id",
+		Use:   man.Docs.GetDoc("policy-kasRegistry-delete").Use,
+		Short: man.Docs.GetDoc("policy-kasRegistry-delete").Short,
 		Run: func(cmd *cobra.Command, args []string) {
 			h := cli.NewHandler(cmd)
 			defer h.Close()

@@ -1,7 +1,10 @@
 ---
-command: "resource-mappings"
-aliases: ["resource-mapping", "resource-encodings", "resource-encoding"]
-short: "Manage resource mappings"
+command: resource-mappings
+aliases: 
+  - resource-mapping
+  - resource-encodings
+  - resource-encoding
+short: Manage resource mappings
 ---
 
 # Manage Resource Mappings

@@ -9,59 +9,52 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var manLang string
+
 //go:embed *.md
-var e embed.FS
-var Docs Man
-
-type Man struct {
-	Lang string
-	Docs struct {
-		En map[string]*cobra.Command
-		Fr map[string]*cobra.Command
-	}
-}
-
-func (m Man) GetDoc(key string) *cobra.Command {
-	l := "en"
-	if m.Lang != "" {
-		l = m.Lang
-	}
-
-	if l != "en" {
-		switch l {
-		case "fr":
-			if _, ok := m.Docs.Fr[key]; ok {
-				return m.Docs.Fr[key]
-			}
-		}
-	}
-
-	if _, ok := m.Docs.En[key]; !ok {
-		panic(fmt.Sprintf("No doc found for key %s", key))
-	}
-
-	return m.Docs.En[key]
-}
-
-var PolicyResourceMappings = map[string]Doc{}
-
-var PolicyAttributes = map[string]Doc{}
-var PolicyAttributeValuesCreate = Doc{}
+var manFiles embed.FS
+var Docs Manual
 
 type Doc struct {
 	cobra.Command
 }
 
-func (m Doc) ShortWithSubCommands(subcommands []string) string {
-	return m.Short + " [" + strings.Join(subcommands, ", ") + "]"
+func (d Doc) GetShort(subCmds []string) string {
+	return fmt.Sprintf("%s [%s]", d.Short, strings.Join(subCmds, ", "))
+}
+
+type Manual struct {
+	lang string
+	Docs map[string]*Doc
+	En   map[string]*Doc
+	Fr   map[string]*Doc
+}
+
+func (m Manual) GetDoc(cmd string) *Doc {
+	if m.lang != "en" {
+		switch m.lang {
+		case "fr":
+			if _, ok := m.Fr[cmd]; ok {
+				return m.Fr[cmd]
+			}
+		}
+	}
+
+	if _, ok := m.En[cmd]; !ok {
+		panic(fmt.Sprintf("No doc found for cmd, %s", cmd))
+	}
+
+	return m.En[cmd]
 }
 
 func init() {
-	Docs = Man{}
-	Docs.Docs.En = make(map[string]*cobra.Command)
-	Docs.Docs.Fr = make(map[string]*cobra.Command)
+	Docs = Manual{
+		Docs: make(map[string]*Doc),
+		En:   make(map[string]*Doc),
+		Fr:   make(map[string]*Doc),
+	}
 
-	dir, err := e.ReadDir(".")
+	dir, err := manFiles.ReadDir(".")
 	if err != nil {
 		panic("Could not read embedded files")
 	}
@@ -77,32 +70,36 @@ func init() {
 		lang := "en"
 
 		// ignore files that are not markdown or that have more than one extension
-		if len(p) < 1 || len(p) > 3 || p[len(p)-1] != "md" {
+		if len(p) < 2 || len(p) > 3 || p[len(p)-1] != "md" {
 			continue
 		} else if len(p) == 3 {
 			lang = p[1]
 		}
 
-		c, err := e.ReadFile(f.Name())
+		c, err := manFiles.ReadFile(f.Name())
 		if err != nil {
 			panic("Could not read file: " + f.Name())
 		}
 
-		d := ProcessDoc(string(c))
+		d, err := ProcessDoc(string(c))
+		if err != nil {
+			panic(fmt.Sprintf("Could not process doc, %s: %s", f.Name(), err.Error()))
+		}
 
 		switch lang {
 		case "fr":
-			Docs.Docs.Fr[cmd] = d
+			Docs.Fr[cmd] = d
 		case "en":
+			Docs.En[cmd] = d
 		default:
 			panic("Unknown language: " + lang)
 		}
 	}
 }
 
-func ProcessDoc(doc string) *cobra.Command {
+func ProcessDoc(doc string) (*Doc, error) {
 	if len(doc) <= 0 {
-		return &cobra.Command{}
+		return nil, fmt.Errorf("Empty document")
 	}
 	var matter struct {
 		Use     string   `yaml:"command"`
@@ -111,14 +108,24 @@ func ProcessDoc(doc string) *cobra.Command {
 	}
 	rest, err := frontmatter.Parse(strings.NewReader(doc), &matter)
 	if err != nil {
-		fmt.Print(err)
-		return &cobra.Command{}
+		return nil, err
 	}
 
-	return &cobra.Command{
-		Use:     matter.Use,
-		Aliases: matter.Aliases,
-		Short:   matter.Short,
-		Long:    string(rest),
+	if matter.Use == "" {
+		return nil, fmt.Errorf("required 'command' property")
 	}
+
+	long := strings.TrimSpace(string(rest))
+
+	d := Doc{
+		cobra.Command{
+			Use:     matter.Use,
+			Aliases: matter.Aliases,
+			Short:   matter.Short,
+		},
+	}
+
+	d.Long = long
+
+	return &d, nil
 }

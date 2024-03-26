@@ -2,9 +2,9 @@ package cmd
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/opentdf/platform/protocol/go/policy"
+	"github.com/opentdf/tructl/docs/man"
 	"github.com/opentdf/tructl/pkg/cli"
 	"github.com/spf13/cobra"
 )
@@ -21,24 +21,19 @@ var (
 		policy_attributeGetCmd.Use,
 		policy_attributesListCmd.Use,
 		policy_attributeUpdateCmd.Use,
-		policy_attributesDeleteCmd.Use,
+		policy_attributesDeactivateCmd.Use,
 	}
 
 	policy_attributesCmd = &cobra.Command{
-		Use:   "attributes",
-		Short: "Manage attributes [" + strings.Join(policy_attributeCommands, ", ") + "]",
-		Long: `
-Attributes - commands to manage attributes within the platform.
-
-Attributes are used to to define the properties of a piece of data. These attributes will then be
-used to define the access controls based on subject encodings and entity entitlements.
-`,
+		Use:   man.Docs.GetDoc("policy-attributes").Use,
+		Short: man.Docs.GetDoc("policy-attributes").GetShort(policy_attributeCommands),
+		Long:  man.Docs.GetDoc("policy-attributes").Long,
 	}
 
 	// Create an attribute
 	policy_attributesCreateCmd = &cobra.Command{
-		Use:   "create",
-		Short: "Create an attribute",
+		Use:   man.Docs.GetDoc("policy-attributes-create").Use,
+		Short: man.Docs.GetDoc("policy-attributes-create").Short,
 		Run: func(cmd *cobra.Command, args []string) {
 			h := cli.NewHandler(cmd)
 			defer h.Close()
@@ -93,8 +88,8 @@ used to define the access controls based on subject encodings and entity entitle
 
 	// Get an attribute
 	policy_attributeGetCmd = &cobra.Command{
-		Use:   "get",
-		Short: "Get an attribute",
+		Use:   man.Docs.GetDoc("policy-attributes-get").Use,
+		Short: man.Docs.GetDoc("policy-attributes-get").Short,
 		Run: func(cmd *cobra.Command, args []string) {
 			flagHelper := cli.NewFlagHelper(cmd)
 			id := flagHelper.GetRequiredString("id")
@@ -150,9 +145,9 @@ used to define the access controls based on subject encodings and entity entitle
 		},
 	}
 
-	policy_attributesDeleteCmd = &cobra.Command{
-		Use:   "deactivate",
-		Short: "Delete an attribute",
+	policy_attributesDeactivateCmd = &cobra.Command{
+		Use:   man.Docs.GetDoc("policy-attributes-deactivate").Use,
+		Short: man.Docs.GetDoc("policy-attributes-deactivate").Short,
 		Run: func(cmd *cobra.Command, args []string) {
 			flagHelper := cli.NewFlagHelper(cmd)
 			id := flagHelper.GetRequiredString("id")
@@ -188,8 +183,8 @@ used to define the access controls based on subject encodings and entity entitle
 
 	// Update one attribute
 	policy_attributeUpdateCmd = &cobra.Command{
-		Use:   "update",
-		Short: "Update an attribute",
+		Use:   man.Docs.GetDoc("policy-attributes-update").Use,
+		Short: man.Docs.GetDoc("policy-attributes-update").Short,
 		Run: func(cmd *cobra.Command, args []string) {
 			h := cli.NewHandler(cmd)
 			defer h.Close()
@@ -232,6 +227,6 @@ func init() {
 	injectLabelFlags(policy_attributeUpdateCmd, true)
 
 	// Delete an attribute
-	policy_attributesCmd.AddCommand(policy_attributesDeleteCmd)
-	policy_attributesDeleteCmd.Flags().StringP("id", "i", "", "Id of the attribute")
+	policy_attributesCmd.AddCommand(policy_attributesDeactivateCmd)
+	policy_attributesDeactivateCmd.Flags().StringP("id", "i", "", "Id of the attribute")
 }

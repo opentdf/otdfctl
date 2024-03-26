@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/opentdf/tructl/docs/man"
 	"github.com/opentdf/tructl/internal/config"
 	"github.com/spf13/cobra"
 )
@@ -19,21 +20,13 @@ var (
 )
 
 // rootCmd represents the base command when called without any subcommands
-var rootCmd = &cobra.Command{
-	Use:   "tructl",
-	Short: "manage Virtru Data Security Platform",
-	Long: `
-A command line tool to manage Virtru Data Security Platform.
-`,
-}
-
-// Execute adds all child commands to the root command and sets flags appropriately.
-func Execute() {
-	err := rootCmd.Execute()
-	if err != nil {
-		os.Exit(1)
+var (
+	rootCmd = &cobra.Command{
+		Use:   man.Docs.En["tructl"].Use,
+		Short: man.Docs.En["tructl"].Short,
+		Long:  man.Docs.En["tructl"].Long,
 	}
-}
+)
 
 func init() {
 	rootCmd.PersistentFlags().BoolVar(&configFlagOverrides.OutputFormatJSON, "json", false, "output single command in JSON (overrides configured output format)")
@@ -46,4 +39,12 @@ func init() {
 		os.Exit(1)
 	}
 	TructlCfg = *cfg
+}
+
+// Execute adds all child commands to the root command and sets flags appropriately.
+func Execute() {
+	err := rootCmd.Execute()
+	if err != nil {
+		os.Exit(1)
+	}
 }

@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"fmt"
-	"strings"
 
+	"github.com/opentdf/tructl/docs/man"
 	"github.com/opentdf/tructl/pkg/cli"
 	"github.com/spf13/cobra"
 )
@@ -16,24 +16,18 @@ var (
 		policy_namespaceGetCmd.Use,
 		policy_namespacesListCmd.Use,
 		policy_namespaceUpdateCmd.Use,
-		policy_namespaceDeleteCmd.Use,
+		policy_namespaceDeactivateCmd.Use,
 	}
 
 	policy_namespacesCmd = &cobra.Command{
-		Use:   "namespaces",
-		Short: "Manage namespaces [" + strings.Join(policy_namespacesCommands, ", ") + "]",
-		Long: `
-Namespaces - commands to manage attribute namespaces within the platform.
-		
-Namespaces drive associations of attributes and their values and differentiate between them.
-For example: "bob.com" and "alice.net" are different namespaces that may have the same
-or different attributes tied to each.
-`,
+		Use:   man.Docs.GetDoc("policy-attributeNamespaces").Use,
+		Short: man.Docs.GetDoc("policy-attributeNamespaces").GetShort(policy_namespacesCommands),
+		Long:  man.Docs.GetDoc("policy-attributeNamespaces").Long,
 	}
 
 	policy_namespaceGetCmd = &cobra.Command{
-		Use:   "get",
-		Short: "Get a namespace by id",
+		Use:   man.Docs.GetDoc("policy-attributeNamespaces-get").Use,
+		Short: man.Docs.GetDoc("policy-attributeNamespaces-get").Short,
 		Run: func(cmd *cobra.Command, args []string) {
 			h := cli.NewHandler(cmd)
 			defer h.Close()
@@ -57,8 +51,8 @@ or different attributes tied to each.
 	}
 
 	policy_namespacesListCmd = &cobra.Command{
-		Use:   "list",
-		Short: "List namespaces",
+		Use:   man.Docs.GetDoc("policy-attributeNamespaces-list").Use,
+		Short: man.Docs.GetDoc("policy-attributeNamespaces").Short,
 		Run: func(cmd *cobra.Command, args []string) {
 			h := cli.NewHandler(cmd)
 			defer h.Close()
@@ -81,8 +75,8 @@ or different attributes tied to each.
 	}
 
 	policy_namespacesCreateCmd = &cobra.Command{
-		Use:   "create",
-		Short: "Create a new namespace, i.e. 'https://example.com'",
+		Use:   man.Docs.GetDoc("policy-attributeNamespaces-create").Use,
+		Short: man.Docs.GetDoc("policy-attributeNamespaces-create").Short,
 		Run: func(cmd *cobra.Command, args []string) {
 			h := cli.NewHandler(cmd)
 			defer h.Close()
@@ -104,9 +98,9 @@ or different attributes tied to each.
 		},
 	}
 
-	policy_namespaceDeleteCmd = &cobra.Command{
-		Use:   "deactivate",
-		Short: "Delete a namespace by id",
+	policy_namespaceDeactivateCmd = &cobra.Command{
+		Use:   man.Docs.GetDoc("policy-attributeNamespaces-deactivate").Use,
+		Short: man.Docs.GetDoc("policy-attributeNamespaces").Short,
 		Run: func(cmd *cobra.Command, args []string) {
 			h := cli.NewHandler(cmd)
 			defer h.Close()
@@ -138,8 +132,8 @@ or different attributes tied to each.
 
 	// Update one namespace
 	policy_namespaceUpdateCmd = &cobra.Command{
-		Use:   "update",
-		Short: "Update a namespace",
+		Use:   man.Docs.GetDoc("policy-attributeNamespaces-update").Use,
+		Short: man.Docs.GetDoc("policy-attributeNamespaces-update").Short,
 		Run: func(cmd *cobra.Command, args []string) {
 			h := cli.NewHandler(cmd)
 			defer h.Close()
@@ -182,6 +176,6 @@ func init() {
 	policy_namespaceUpdateCmd.Flags().StringP("id", "i", "", "Id of the namespace")
 	injectLabelFlags(policy_namespaceUpdateCmd, true)
 
-	policy_namespacesCmd.AddCommand(policy_namespaceDeleteCmd)
-	policy_namespaceDeleteCmd.Flags().StringP("id", "i", "", "Id of the namespace")
+	policy_namespacesCmd.AddCommand(policy_namespaceDeactivateCmd)
+	policy_namespaceDeactivateCmd.Flags().StringP("id", "i", "", "Id of the namespace")
 }

@@ -3,3 +3,6 @@ bin/.DS_Store
 target/
 .vscode/launch.json
 tructl.yaml
+
+# Ignore the tructl binary
+tructl

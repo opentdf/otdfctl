@@ -15,21 +15,21 @@ var (
 	policy_resource_mappingsTerms []string
 
 	policy_resource_mappingsCmd = &cobra.Command{
-		Use:     man.PolicyResourceMappings["en"].Command,
-		Aliases: man.PolicyResourceMappings["en"].Aliases,
-		Short: man.PolicyResourceMappings["en"].ShortWithSubCommands([]string{
+		Use:     man.Docs.GetDoc("policy-resourceMappings").Use,
+		Aliases: man.Docs.GetDoc("policy-resourceMappings").Aliases,
+		Short: man.Docs.GetDoc("policy-resourceMappings").GetShort([]string{
 			policy_resource_mappingsCreateCmd.Use,
 			policy_resource_mappingsGetCmd.Use,
 			policy_resource_mappingsListCmd.Use,
 			policy_resource_mappingsUpdateCmd.Use,
 			policy_resource_mappingsDeleteCmd.Use,
 		}),
-		Long: man.PolicyResourceMappings["en"].Long,
+		Long: man.Docs.GetDoc("policy-resourceMappings").Long,
 	}
 
 	policy_resource_mappingsCreateCmd = &cobra.Command{
-		Use:   "create",
-		Short: "Create resource mappings",
+		Use:   man.Docs.GetDoc("policy-resourceMappings-create").Use,
+		Short: man.Docs.GetDoc("policy-resourceMappings-create").Short,
 		Run: func(cmd *cobra.Command, args []string) {
 			h := cli.NewHandler(cmd)
 			defer h.Close()
@@ -57,8 +57,8 @@ var (
 	}
 
 	policy_resource_mappingsGetCmd = &cobra.Command{
-		Use:   "get",
-		Short: "Get resource mappings",
+		Use:   man.Docs.GetDoc("policy-resourceMappings-get").Use,
+		Short: man.Docs.GetDoc("policy-resourceMappings-get").Short,
 		Run: func(cmd *cobra.Command, args []string) {
 			h := cli.NewHandler(cmd)
 			defer h.Close()
@@ -82,8 +82,8 @@ var (
 	}
 
 	policy_resource_mappingsListCmd = &cobra.Command{
-		Use:   "list",
-		Short: "List resource mappings",
+		Use:   man.Docs.GetDoc("policy-resourceMappings-list").Use,
+		Short: man.Docs.GetDoc("policy-resourceMappings-list").Short,
 		Run: func(cmd *cobra.Command, args []string) {
 			h := cli.NewHandler(cmd)
 			defer h.Close()
@@ -103,8 +103,8 @@ var (
 	}
 
 	policy_resource_mappingsUpdateCmd = &cobra.Command{
-		Use:   "update",
-		Short: "Update resource mappings",
+		Use:   man.Docs.GetDoc("policy-resourceMappings-update").Use,
+		Short: man.Docs.GetDoc("policy-resourceMappings-update").Short,
 		Run: func(cmd *cobra.Command, args []string) {
 			h := cli.NewHandler(cmd)
 			defer h.Close()
@@ -131,8 +131,8 @@ var (
 	}
 
 	policy_resource_mappingsDeleteCmd = &cobra.Command{
-		Use:   "delete",
-		Short: "Delete resource mappings",
+		Use:   man.Docs.GetDoc("policy-resourceMappings-delete").Use,
+		Short: man.Docs.GetDoc("policy-resourceMappings-delete").Short,
 		Run: func(cmd *cobra.Command, args []string) {
 			h := cli.NewHandler(cmd)
 			defer h.Close()
