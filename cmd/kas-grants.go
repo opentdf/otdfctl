@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/opentdf/platform/protocol/go/kasregistry"
 	"github.com/opentdf/tructl/pkg/cli"
 	"github.com/spf13/cobra"
 )
@@ -24,48 +23,72 @@ var (
 	// Update one KAS registry entry
 	kasGrantsUpdateCmd = &cobra.Command{
 		Use:   "update",
-		Short: "Update a KAS registry entry",
+		Short: "Update a KAS grant",
 		Run: func(cmd *cobra.Command, args []string) {
 			h := cli.NewHandler(cmd)
 			defer h.Close()
 
 			flagHelper := cli.NewFlagHelper(cmd)
 
-			id := flagHelper.GetRequiredString("id")
-			uri := flagHelper.GetOptionalString("uri")
-			local := flagHelper.GetOptionalString("public-key-local")
-			remote := flagHelper.GetOptionalString("public-key-remote")
-			labels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
+			attr := flagHelper.GetOptionalString("attribute")
+			val := flagHelper.GetOptionalString("value")
+			kas := flagHelper.GetRequiredString("kas")
+			// uri := flagHelper.GetOptionalString("uri")
+			// local := flagHelper.GetOptionalString("public-key-local")
+			// remote := flagHelper.GetOptionalString("public-key-remote")
+			// labels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
 
-			if local == "" && remote == "" && len(labels) == 0 && uri == "" {
-				cli.ExitWithError("No values were passed to update. Please pass at least one value to update (E.G. 'uri', 'public-key-local', 'public-key-remote', 'label')", nil)
+			if kas == "" || (attr == "" && val == "") {
+				cli.ExitWithError("Specify a key access server and an attribute id or attribute value if to update.", nil)
 			}
-
-			// TODO: should update of a type of key be a dangerous mutation or cause a need for confirmation in the CLI?
-			var pubKey *kasregistry.PublicKey
-			if local != "" && remote != "" {
-				e := fmt.Errorf("Only one public key is allowed. Please pass either a local or remote public key but not both")
-				cli.ExitWithError("Issue with update flags 'public-key-local' and 'public-key-remote': ", e)
-			} else if local != "" {
-				pubKey = &kasregistry.PublicKey{PublicKey: &kasregistry.PublicKey_Local{Local: local}}
-			} else if remote != "" {
-				pubKey = &kasregistry.PublicKey{PublicKey: &kasregistry.PublicKey_Remote{Remote: remote}}
-			}
-
-			updated, err := h.UpdateKasRegistryEntry(
-				id,
-				uri,
-				pubKey,
-				getMetadataMutable(labels),
-				getMetadataUpdateBehavior(),
+			var (
+				id     string
+				header string
+				// updated interface{}
+				updated map[string]interface{}
 			)
-			if err != nil {
-				cli.ExitWithError("Could not update KAS registry entry", err)
+
+			// updated.kas_id = kas
+			// updated := make(map[string]interface{})
+			updated["kas_id"] = kas
+
+			if attr != "" {
+				_, err := h.UpdateKasGrantForAttribute(attr, kas)
+				// akas, err := h.UpdateKasGrantForAttribute(attr, kas)
+				// id = akas.AttributeId
+				if err != nil {
+					cli.ExitWithError("Could not update KAS grant for attribute", err)
+				}
+				id = attr
+				header = "Attribute ID"
+				updated["attribute_id"] = attr
+			} else {
+				_, err := h.UpdateKasGrantForValue(val, kas)
+				// vkas, err := h.UpdateKasGrantForValue(val, kas)
+				// id = vkas.ValueId
+				if err != nil {
+					cli.ExitWithError("Could not update KAS grant for attribute value", err)
+				}
+				id = val
+				header = "Value ID"
+				updated["value_id"] = val
+				// updated.value_id = val
 			}
+
+			// updated, err := h.UpdateKasRegistryEntry(
+			// 	id,
+			// 	uri,
+			// 	pubKey,
+			// 	getMetadataMutable(labels),
+			// 	getMetadataUpdateBehavior(),
+			// )
+			// if err != nil {
+			// 	cli.ExitWithError("Could not update KAS registry entry", err)
+			// }
 			t := cli.NewTabular().
 				Rows([][]string{
-					{"Id", id},
-					{"URI", uri},
+					{header, id},
+					{"KAS ID", kas},
 					// TODO: render labels [https://github.com/opentdf/tructl/issues/73]
 				}...)
 			HandleSuccess(cmd, id, t, updated)
@@ -74,7 +97,7 @@ var (
 
 	kasGrantsDeleteCmd = &cobra.Command{
 		Use:   "delete",
-		Short: "Delete a KAS registry entry by id",
+		Short: "Delete a KAS grant",
 		Run: func(cmd *cobra.Command, args []string) {
 			h := cli.NewHandler(cmd)
 			defer h.Close()
