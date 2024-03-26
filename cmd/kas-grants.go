@@ -244,14 +244,15 @@ func init() {
 	// injectLabelFlags(kasGrantsCreateCmd, false)
 
 	kasGrantsCmd.AddCommand(kasGrantsUpdateCmd)
-	kasGrantsUpdateCmd.Flags().StringP("id", "i", "", "Id of the KAS registry entry")
-	kasGrantsUpdateCmd.Flags().StringP("uri", "u", "", "The URI of the KAS registry entry")
-	kasGrantsUpdateCmd.Flags().StringP("public-key-local", "p", "", "A local public key for the registered Key Access Server (KAS)")
-	kasGrantsUpdateCmd.Flags().StringP("public-key-remote", "r", "", "A remote endpoint that serves a public key for the registered Key Access Server (KAS)")
+	kasGrantsUpdateCmd.Flags().StringP("attribute", "a", "", "attribute id")
+	kasGrantsUpdateCmd.Flags().StringP("value", "v", "", "attribute value id")
+	kasGrantsUpdateCmd.Flags().StringP("kas", "k", "", "kas id")
 	injectLabelFlags(kasGrantsUpdateCmd, true)
 
 	kasGrantsCmd.AddCommand(kasGrantsDeleteCmd)
-	kasGrantsDeleteCmd.Flags().StringP("id", "i", "", "Id of the KAS registry entry")
+	kasGrantsDeleteCmd.Flags().StringP("attribute", "a", "", "attribute id")
+	kasGrantsDeleteCmd.Flags().StringP("value", "v", "", "attribute value id")
+	kasGrantsDeleteCmd.Flags().StringP("kas", "k", "", "kas id")
 }
 
 func init() {
