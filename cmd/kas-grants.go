@@ -15,133 +15,11 @@ var (
 		kasGrantsDeleteCmd.Use,
 	}
 
-	// KasRegistryCmd is the command for managing KAS registrations
+	// KasGrantsCmd is the command for managing KAS grants
 	kasGrantsCmd = &cobra.Command{
 		Use:   "kas-grants",
 		Short: "Manage Key Access Server grants [" + strings.Join(kasGrants_crudCommands, ", ") + "]",
 	}
-
-	// kasRegistryGetCmd = &cobra.Command{
-	// 	Use:   "get",
-	// 	Short: "Get a registered Key Access Server by id",
-	// 	Run: func(cmd *cobra.Command, args []string) {
-	// 		h := cli.NewHandler(cmd)
-	// 		defer h.Close()
-
-	// 		flagHelper := cli.NewFlagHelper(cmd)
-	// 		id := flagHelper.GetRequiredString("id")
-
-	// 		kas, err := h.GetKasRegistryEntry(id)
-	// 		if err != nil {
-	// 			errMsg := fmt.Sprintf("Could not find KAS registry entry (%s)", id)
-	// 			cli.ExitWithNotFoundError(errMsg, err)
-	// 		}
-
-	// 		keyType := "Local"
-	// 		key := kas.PublicKey.GetLocal()
-	// 		if kas.PublicKey.GetRemote() != "" {
-	// 			keyType = "Remote"
-	// 			key = kas.PublicKey.GetRemote()
-	// 		}
-
-	// 		t := cli.NewTabular().
-	// 			Rows([][]string{
-	// 				{"Id", kas.Id},
-	// 				// TODO: render labels [https://github.com/opentdf/tructl/issues/73]
-	// 				{"URI", kas.Uri},
-	// 				{"PublicKey Type", keyType},
-	// 				{"PublicKey", key},
-	// 			}...)
-	// 		HandleSuccess(cmd, kas.Id, t, kas)
-	// 	},
-	// }
-
-	// kasRegistrysListCmd = &cobra.Command{
-	// 	Use:   "list",
-	// 	Short: "List KAS registry entries",
-	// 	Run: func(cmd *cobra.Command, args []string) {
-	// 		h := cli.NewHandler(cmd)
-	// 		defer h.Close()
-
-	// 		list, err := h.ListKasRegistryEntries()
-	// 		if err != nil {
-	// 			cli.ExitWithError("Could not get KAS registry entries", err)
-	// 		}
-
-	// 		t := cli.NewTable()
-	// 		t.Headers("Id", "URI", "PublicKey Location", "PublicKey")
-	// 		for _, kas := range list {
-	// 			keyType := "Local"
-	// 			key := kas.PublicKey.GetLocal()
-	// 			if kas.PublicKey.GetRemote() != "" {
-	// 				keyType = "Remote"
-	// 				key = kas.PublicKey.GetRemote()
-	// 			}
-
-	// 			t.Row(
-	// 				kas.Id,
-	// 				kas.Uri,
-	// 				keyType,
-	// 				key,
-	// 				// TODO: render labels [https://github.com/opentdf/tructl/issues/73]
-	// 			)
-	// 		}
-	// 		HandleSuccess(cmd, "", t, list)
-	// 	},
-	// }
-
-	// kasRegistrysCreateCmd = &cobra.Command{
-	// 	Use:   "create",
-	// 	Short: "Create a new KAS registry entry, i.e. 'https://example.com'",
-	// 	Run: func(cmd *cobra.Command, args []string) {
-	// 		h := cli.NewHandler(cmd)
-	// 		defer h.Close()
-
-	// 		flagHelper := cli.NewFlagHelper(cmd)
-	// 		uri := flagHelper.GetRequiredString("uri")
-	// 		local := flagHelper.GetOptionalString("public-key-local")
-	// 		remote := flagHelper.GetOptionalString("public-key-remote")
-	// 		metadataLabels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
-
-	// 		if local == "" && remote == "" {
-	// 			e := fmt.Errorf("A public key is required. Please pass either a local or remote public key")
-	// 			cli.ExitWithError("Issue with create flags 'public-key-local' and 'public-key-remote': ", e)
-	// 		}
-
-	// 		key := &kasregistry.PublicKey{}
-	// 		keyType := "Local"
-	// 		if local != "" {
-	// 			if remote != "" {
-	// 				e := fmt.Errorf("Only one public key is allowed. Please pass either a local or remote public key but not both")
-	// 				cli.ExitWithError("Issue with create flags 'public-key-local' and 'public-key-remote': ", e)
-	// 			}
-	// 			key.PublicKey = &kasregistry.PublicKey_Local{Local: local}
-	// 		} else {
-	// 			keyType = "Remote"
-	// 			key.PublicKey = &kasregistry.PublicKey_Remote{Remote: remote}
-	// 		}
-
-	// 		created, err := h.CreateKasRegistryEntry(
-	// 			uri,
-	// 			key,
-	// 			getMetadataMutable(metadataLabels),
-	// 		)
-	// 		if err != nil {
-	// 			cli.ExitWithError("Could not create KAS registry entry", err)
-	// 		}
-
-	// 		t := cli.NewTabular().
-	// 			Rows([][]string{
-	// 				{"Id", created.Id},
-	// 				{"URI", created.Uri},
-	// 				{"PublicKey Type", keyType},
-	// 				{"PublicKey", local},
-	// 				// TODO: render labels [https://github.com/opentdf/tructl/issues/73]
-	// 			}...)
-
-	// 		HandleSuccess(cmd, created.Id, t, created)
-	// 	},
-	// }
 
 	// Update one KAS registry entry
 	kasGrantsUpdateCmd = &cobra.Command{
@@ -230,18 +108,6 @@ var (
 
 func init() {
 	policyCmd.AddCommand(kasGrantsCmd)
-
-	// kasGrantsCmd.AddCommand(kasGrantsGetCmd)
-	// kasGrantsGetCmd.Flags().StringP("id", "i", "", "Id of the KAS registry entry")
-
-	// kasGrantsCmd.AddCommand(kasGrantsListCmd)
-	// TODO: active, inactive, any state querying [https://github.com/opentdf/tructl/issues/68]
-
-	// kasGrantsCmd.AddCommand(kasGrantsCreateCmd)
-	// kasGrantsCreateCmd.Flags().StringP("uri", "u", "", "The URI of the KAS registry entry")
-	// kasGrantsCreateCmd.Flags().StringP("public-key-local", "p", "", "A local public key for the registered Key Access Server (KAS)")
-	// kasGrantsCreateCmd.Flags().StringP("public-key-remote", "r", "", "A remote endpoint that provides a public key for the registered Key Access Server (KAS)")
-	// injectLabelFlags(kasGrantsCreateCmd, false)
 
 	kasGrantsCmd.AddCommand(kasGrantsUpdateCmd)
 	kasGrantsUpdateCmd.Flags().StringP("attribute", "a", "", "attribute id")
