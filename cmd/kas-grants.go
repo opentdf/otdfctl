@@ -33,29 +33,21 @@ var (
 			attr := flagHelper.GetOptionalString("attribute")
 			val := flagHelper.GetOptionalString("value")
 			kas := flagHelper.GetRequiredString("kas")
-			// uri := flagHelper.GetOptionalString("uri")
-			// local := flagHelper.GetOptionalString("public-key-local")
-			// remote := flagHelper.GetOptionalString("public-key-remote")
-			// labels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
 
 			if kas == "" || (attr == "" && val == "") {
 				cli.ExitWithError("Specify a key access server and an attribute id or attribute value if to update.", nil)
 			}
 			var (
-				id     string
-				header string
-				// updated interface{}
+				id      string
+				header  string
 				updated map[string]interface{}
 			)
 
-			// updated.kas_id = kas
 			// updated := make(map[string]interface{})
 			updated["kas_id"] = kas
 
 			if attr != "" {
 				_, err := h.UpdateKasGrantForAttribute(attr, kas)
-				// akas, err := h.UpdateKasGrantForAttribute(attr, kas)
-				// id = akas.AttributeId
 				if err != nil {
 					cli.ExitWithError("Could not update KAS grant for attribute", err)
 				}
@@ -64,32 +56,18 @@ var (
 				updated["attribute_id"] = attr
 			} else {
 				_, err := h.UpdateKasGrantForValue(val, kas)
-				// vkas, err := h.UpdateKasGrantForValue(val, kas)
-				// id = vkas.ValueId
 				if err != nil {
 					cli.ExitWithError("Could not update KAS grant for attribute value", err)
 				}
 				id = val
 				header = "Value ID"
 				updated["value_id"] = val
-				// updated.value_id = val
 			}
 
-			// updated, err := h.UpdateKasRegistryEntry(
-			// 	id,
-			// 	uri,
-			// 	pubKey,
-			// 	getMetadataMutable(labels),
-			// 	getMetadataUpdateBehavior(),
-			// )
-			// if err != nil {
-			// 	cli.ExitWithError("Could not update KAS registry entry", err)
-			// }
 			t := cli.NewTabular().
 				Rows([][]string{
 					{header, id},
 					{"KAS ID", kas},
-					// TODO: render labels [https://github.com/opentdf/tructl/issues/73]
 				}...)
 			HandleSuccess(cmd, id, t, updated)
 		},
