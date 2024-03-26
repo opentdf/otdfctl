@@ -62,7 +62,7 @@ a Subject Mapping and, by said mapping, an Attribute Value.`,
 
 				bytes, err := ioutil.ReadAll(jsonFile)
 				if err != nil {
-					cli.ExitWithError(fmt.Sprintf("Failed to read bytes from file %s", jsonFile), err)
+					cli.ExitWithError(fmt.Sprintf("Failed to read bytes from file at path: %s", ssFileJSON), err)
 				}
 				ssBytes = bytes
 			} else {
