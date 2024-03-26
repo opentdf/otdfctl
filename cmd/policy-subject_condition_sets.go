@@ -162,6 +162,45 @@ a Subject Mapping and, by said mapping, an Attribute Value.`,
 		Use:   "update",
 		Short: "Update a subject condition set",
 		Run: func(cmd *cobra.Command, args []string) {
+			h := cli.NewHandler(cmd)
+			defer h.Close()
+
+			flagHelper := cli.NewFlagHelper(cmd)
+			id := flagHelper.GetRequiredString("id")
+			metadataLabels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
+			ssFlagJSON := flagHelper.GetOptionalString("subject-sets")
+
+			var ss []*policy.SubjectSet
+			if err := json.Unmarshal([]byte(ssFlagJSON), &ss); err != nil {
+				cli.ExitWithError("Error unmarshalling subject sets", err)
+			}
+
+			_, err := h.UpdateSubjectConditionSet(id, ss, getMetadataMutable(metadataLabels), getMetadataUpdateBehavior())
+			if err != nil {
+				cli.ExitWithError("Error updating subject condition set", err)
+			}
+
+			scs, err := h.GetSubjectConditionSet(id)
+			if err != nil {
+				cli.ExitWithError("Error getting subject condition set", err)
+			}
+
+			var subjectSetsJSON []byte
+			if subjectSetsJSON, err = json.Marshal(scs.SubjectSets); err != nil {
+				cli.ExitWithError("Error marshalling subject condition set", err)
+			}
+
+			rows := [][]string{
+				{"Id", scs.Id},
+				{"SubjectSets", string(subjectSetsJSON)},
+			}
+
+			if mdRows := getMetadataRows(scs.Metadata); mdRows != nil {
+				rows = append(rows, mdRows...)
+			}
+
+			t := cli.NewTabular().Rows(rows...)
+			HandleSuccess(cmd, scs.Id, t, scs)
 		},
 	}
 
@@ -212,7 +251,7 @@ func init() {
 	policy_subject_condition_setCmd.AddCommand(policy_subject_condition_setCreateCmd)
 	injectLabelFlags(policy_subject_condition_setCreateCmd, false)
 	policy_subject_condition_setCreateCmd.Flags().StringP("subject-sets", "s", "", "A JSON array of subject sets, containing a list of condition groups, each with one or more conditions.")
-	policy_subject_condition_setCreateCmd.Flags().StringP("subject-sets-file-json", "f", "", "A JSON file with path from $HOME containing an array of subject sets")
+	policy_subject_condition_setCreateCmd.Flags().StringP("subject-sets-file-json", "j", "", "A JSON file with path from $HOME containing an array of subject sets")
 
 	policy_subject_condition_setCmd.AddCommand(policy_subject_condition_setGetCmd)
 	policy_subject_condition_setGetCmd.Flags().StringP("id", "i", "", "Id of the subject condition set")
@@ -222,6 +261,7 @@ func init() {
 	policy_subject_condition_setCmd.AddCommand(policy_subject_condition_setUpdateCmd)
 	policy_subject_condition_setUpdateCmd.Flags().StringP("id", "i", "", "Id of the subject condition set")
 	injectLabelFlags(policy_subject_condition_setUpdateCmd, true)
+	policy_subject_condition_setUpdateCmd.Flags().StringP("subject-sets", "s", "", "A JSON array of subject sets, containing a list of condition groups, each with one or more conditions.")
 
 	policy_subject_condition_setCmd.AddCommand(policy_subject_condition_setDeleteCmd)
 	policy_subject_condition_setDeleteCmd.Flags().StringP("id", "i", "", "Id of the subject condition set")
