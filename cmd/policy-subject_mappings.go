@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/opentdf/platform/protocol/go/policy"
+	"github.com/opentdf/platform/protocol/go/policy/subjectmapping"
 	"github.com/opentdf/tructl/pkg/cli"
 	"github.com/spf13/cobra"
 )
@@ -141,10 +142,10 @@ Note: SubjectConditionSets are reusable among SubjectMappings and are available 
 			attrValueId := flagHelper.GetRequiredString("attribute-value-id")
 			standardActions := flagHelper.GetStringSlice("action-standard", standardActions, cli.FlagHelperStringSliceOptions{Min: 0})
 			customActions := flagHelper.GetStringSlice("action-custom", customActions, cli.FlagHelperStringSliceOptions{Min: 0})
-			existingSCSId := flagHelper.GetOptionalString("subject-condition-set-id")
-			// TODO: do we need to support creating a SM & SCS simultaneously? If so, it gets more complex.
-			// newScs := flagHelper.GetOptionalString("new-subject-condition-set")
 			metadataLabels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
+			existingSCSId := flagHelper.GetOptionalString("subject-condition-set-id")
+			// NOTE: labels within a new Subject Condition Set created on a SM creation are not supported
+			newScsJSON := flagHelper.GetOptionalString("subject-condition-set-new")
 
 			// validations
 			if len(standardActions) == 0 && len(customActions) == 0 {
@@ -160,7 +161,15 @@ Note: SubjectConditionSets are reusable among SubjectMappings and are available 
 			}
 			actions := getFullActionsList(standardActions, customActions)
 
-			mapping, err := h.CreateNewSubjectMapping(attrValueId, actions, existingSCSId, nil, getMetadataMutable(metadataLabels))
+			var ss []*policy.SubjectSet
+			if err := json.Unmarshal([]byte(newScsJSON), &ss); err != nil {
+				cli.ExitWithError("Error unmarshalling subject sets", err)
+			}
+			scs := &subjectmapping.SubjectConditionSetCreate{
+				SubjectSets: ss,
+			}
+
+			mapping, err := h.CreateNewSubjectMapping(attrValueId, actions, existingSCSId, scs, getMetadataMutable(metadataLabels))
 			if err != nil {
 				cli.ExitWithError("Could not create subject mapping", err)
 			}
@@ -171,8 +180,10 @@ Note: SubjectConditionSets are reusable among SubjectMappings and are available 
 			}
 
 			var subjectSetsJSON []byte
-			if subjectSetsJSON, err = json.Marshal(mapping.SubjectConditionSet.SubjectSets); err != nil {
-				cli.ExitWithError("Error marshalling subject condition set", err)
+			if mapping.SubjectConditionSet != nil {
+				if subjectSetsJSON, err = json.Marshal(mapping.SubjectConditionSet.SubjectSets); err != nil {
+					cli.ExitWithError("Error marshalling subject condition set", err)
+				}
 			}
 
 			rows := [][]string{
@@ -306,9 +317,8 @@ func init() {
 	policy_subject_mappingCreateCmd.Flags().StringP("attribute-value-id", "a", "", "Id of the mapped Attribute Value")
 	policy_subject_mappingCreateCmd.Flags().StringSliceVarP(&standardActions, "action-standard", "s", []string{}, "Standard Action: [DECRYPT, TRANSMIT]")
 	policy_subject_mappingCreateCmd.Flags().StringSliceVarP(&customActions, "action-custom", "c", []string{}, "Custom Action")
-	policy_subject_mappingCreateCmd.Flags().String("subject-condition-set-id", "", "Pre-existing Subject Condition Set Id")
-	// TODO: do we need to support creating a SM & SCS simultaneously? If so, it gets more complex.
-	// policy_subject_mappingCreateCmd.Flags().StringP("new-subject-condition-set", "scs", "", "New Subject Condition Set (optional)")
+	policy_subject_mappingCreateCmd.Flags().String("subject-condition-set-id", "", "Known pre-existing Subject Condition Set Id")
+	policy_subject_mappingCreateCmd.Flags().String("subject-condition-set-new", "", "JSON array of Subject Sets to create a new Subject Condition Set associated with the created Subject Mapping")
 	injectLabelFlags(policy_subject_mappingCreateCmd, false)
 
 	policy_subject_mappingsCmd.AddCommand(policy_subject_mappingUpdateCmd)
