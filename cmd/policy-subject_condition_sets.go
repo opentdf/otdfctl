@@ -21,8 +21,6 @@ var (
 		policy_subject_condition_setDeleteCmd.Use,
 	}
 
-	subjectSets []*policy.SubjectSet
-
 	policy_subject_condition_setCmd = &cobra.Command{
 		Use:   "subject-condition-sets",
 		Short: "Manage subject condition sets" + strings.Join(policy_subject_condition_setsCmds, ", ") + "]",
@@ -37,25 +35,42 @@ a Subject Mapping and, by said mapping, an Attribute Value.`,
 		Run: func(cmd *cobra.Command, args []string) {
 			h := cli.NewHandler(cmd)
 			defer h.Close()
-			var ss []*policy.SubjectSet
+			var (
+				ss      []*policy.SubjectSet
+				ssBytes []byte
+			)
 
 			flagHelper := cli.NewFlagHelper(cmd)
-			// ss := flagHelper.GetStringSlice("subject-set", subjectSets, cli.FlagHelperStringSliceOptions{Min: 1})
-			subjectSetFile := flagHelper.GetOptionalString("subject-set-from-file")
+			ssFlagJSON := flagHelper.GetOptionalString("subject-sets")
+			ssFileJSON := flagHelper.GetOptionalString("subject-sets-file-json")
 			metadataLabels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
 
-			jsonFile, err := os.Open(subjectSetFile)
-			if err != nil {
-				cli.ExitWithError(fmt.Sprintf("Failed to open file %s", subjectSetFile), err)
+			// validate no flag conflicts
+			if ssFileJSON == "" && ssFlagJSON == "" {
+				cli.ExitWithError("At least one subject set must be provided ('--subject-sets', '--subject-sets-file-json')", nil)
+			} else if ssFileJSON != "" && ssFlagJSON != "" {
+				cli.ExitWithError("Only one of '--subject-sets' or '--subject-sets-file-json' can be provided", nil)
 			}
-			defer jsonFile.Close()
 
-			bytes, err := ioutil.ReadAll(jsonFile)
-			if err != nil {
-				cli.ExitWithError(fmt.Sprintf("Failed to read file %s", subjectSetFile), err)
+			// read subject sets into bytes from either the flagged json file or json string
+			if ssFileJSON != "" {
+				jsonFile, err := os.Open(ssFileJSON)
+				if err != nil {
+					cli.ExitWithError(fmt.Sprintf("Failed to open file at path: %s", ssFileJSON), err)
+				}
+				defer jsonFile.Close()
+
+				bytes, err := ioutil.ReadAll(jsonFile)
+				if err != nil {
+					cli.ExitWithError(fmt.Sprintf("Failed to read bytes from file %s", jsonFile), err)
+				}
+				ssBytes = bytes
+			} else {
+				ssBytes = []byte(ssFlagJSON)
 			}
-			if err := json.Unmarshal(bytes, &ss); err != nil {
-				cli.ExitWithError(fmt.Sprintf("Failed to unmarshal file contents %s", string(bytes)), err)
+
+			if err := json.Unmarshal(ssBytes, &ss); err != nil {
+				cli.ExitWithError("Error unmarshalling subject sets", err)
 			}
 
 			scs, err := h.CreateSubjectConditionSet(ss, getMetadataMutable(metadataLabels))
@@ -196,8 +211,8 @@ func init() {
 
 	policy_subject_condition_setCmd.AddCommand(policy_subject_condition_setCreateCmd)
 	injectLabelFlags(policy_subject_condition_setCreateCmd, false)
-	// policy_subject_condition_setCreateCmd.Flags().StringSliceVarP(&subjectSets, "subject-set", "s", []string{}, "A subject set, containing a list of condition groups, each with one or more conditions.")
-	policy_subject_condition_setCreateCmd.Flags().String("subject-set-from-file", "", "A JSON file with path from $HOME containing a subject set")
+	policy_subject_condition_setCreateCmd.Flags().StringP("subject-sets", "s", "", "A JSON array of subject sets, containing a list of condition groups, each with one or more conditions.")
+	policy_subject_condition_setCreateCmd.Flags().StringP("subject-sets-file-json", "f", "", "A JSON file with path from $HOME containing an array of subject sets")
 
 	policy_subject_condition_setCmd.AddCommand(policy_subject_condition_setGetCmd)
 	policy_subject_condition_setGetCmd.Flags().StringP("id", "i", "", "Id of the subject condition set")
@@ -234,24 +249,12 @@ func getSubjectConditionSetBooleanTypeFromChoice(choice string) (policy.Conditio
 	}
 }
 
-func getMarshaledSubjectSets(subjectSets []string) ([]*policy.SubjectSet, error) {
+func getMarshaledSubjectSets(subjectSets string) ([]*policy.SubjectSet, error) {
 	var ss []*policy.SubjectSet
-	for _, subjectSet := range subjectSets {
 
-		var s policy.SubjectSet
-		if err := json.Unmarshal([]byte(subjectSet), &s); err != nil {
-			return nil, err
-		}
-		// for _, cg := range s.ConditionGroups {
-		// 	for _, c := range cg.Conditions {
-		// 		op, err := getSubjectConditionSetOperatorFromChoice(c.Operator)
-		// 		if err != nil {
-		// 			return nil, err
-		// 		}
-		// 		c.Operator = op.String()
-		// 	}
-		// }
-		ss = append(ss, &s)
+	if err := json.Unmarshal([]byte(subjectSets), &ss); err != nil {
+		return nil, err
 	}
+
 	return ss, nil
 }
