@@ -128,7 +128,7 @@ func init() {
 	policyCmd.AddCommand(kasGrantsCmd)
 
 	kasGrantsCmd.AddCommand(kasGrantsUpdateCmd)
-	kasGrantsUpdateCmd.Flags().StringP("attribute", "a", "", "Attribute ID")
+	kasGrantsUpdateCmd.Flags().StringP("attribute", "a", "", "Attribute Definition ID")
 	kasGrantsUpdateCmd.Flags().StringP("value", "v", "", "Attribute Value ID")
 	kasGrantsUpdateCmd.Flags().StringP("kas", "k", "", "KAS ID")
 	injectLabelFlags(kasGrantsUpdateCmd, true)
