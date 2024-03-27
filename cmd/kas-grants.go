@@ -33,7 +33,7 @@ var (
 			val := flagHelper.GetOptionalString("value")
 			kas := flagHelper.GetRequiredString("kas")
 
-			if kas == "" || (attr == "" && val == "") {
+			if attr == "" && val == "" {
 				cli.ExitWithError("Must specify and Attribute Definition id or Value id to update.", nil)
 			}
 			var (
@@ -83,8 +83,8 @@ var (
 			val := flagHelper.GetOptionalString("value")
 			kas := flagHelper.GetRequiredString("kas")
 
-			if kas == "" || (attr == "" && val == "") {
-				cli.ExitWithError("Specify a key access server and an attribute id or attribute value if to update.", nil)
+			if attr == "" && val == "" {
+				cli.ExitWithError("Must specify and Attribute Definition id or Value id to delete.", nil)
 			}
 			var (
 				id      string
