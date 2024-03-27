@@ -37,29 +37,26 @@ var (
 				cli.ExitWithError("Must specify and Attribute Definition id or Value id to update.", nil)
 			}
 			var (
-				id      string
-				header  string
-				updated map[string]string
+				id     string
+				header string
+				res    interface{}
+				err    error
 			)
 
-			updated["kas_id"] = kas
-
 			if attr != "" {
-				_, err := h.UpdateKasGrantForAttribute(attr, kas)
+				res, err = h.UpdateKasGrantForAttribute(attr, kas)
 				if err != nil {
 					cli.ExitWithError("Could not update KAS grant for attribute", err)
 				}
 				id = attr
 				header = "Attribute ID"
-				updated["attribute_id"] = attr
 			} else {
-				_, err := h.UpdateKasGrantForValue(val, kas)
+				res, err = h.UpdateKasGrantForValue(val, kas)
 				if err != nil {
 					cli.ExitWithError("Could not update KAS grant for attribute value", err)
 				}
 				id = val
 				header = "Value ID"
-				updated["value_id"] = val
 			}
 
 			t := cli.NewTabular().
@@ -67,7 +64,7 @@ var (
 					{header, id},
 					{"KAS ID", kas},
 				}...)
-			HandleSuccess(cmd, id, t, updated)
+			HandleSuccess(cmd, id, t, res)
 		},
 	}
 
@@ -87,23 +84,21 @@ var (
 				cli.ExitWithError("Must specify and Attribute Definition id or Value id to delete.", nil)
 			}
 			var (
-				id      string
-				header  string
-				deleted map[string]interface{}
+				id     string
+				header string
+				res    interface{}
+				err    error
 			)
 
 			cli.ConfirmDelete("KAS ID: ", kas)
 
-			deleted["kas_id"] = kas
-
 			if attr != "" {
-				_, err := h.DeleteKasGrantFromAttribute(attr, kas)
+				res, err = h.DeleteKasGrantFromAttribute(attr, kas)
 				if err != nil {
 					cli.ExitWithError("Could not update KAS grant for attribute", err)
 				}
 				id = attr
 				header = "Attribute ID"
-				deleted["attribute_id"] = attr
 			} else {
 				_, err := h.DeleteKasGrantFromValue(val, kas)
 				if err != nil {
@@ -111,7 +106,6 @@ var (
 				}
 				id = val
 				header = "Value ID"
-				deleted["value_id"] = val
 			}
 
 			t := cli.NewTabular().
@@ -119,7 +113,7 @@ var (
 					{header, id},
 					{"KAS ID", kas},
 				}...)
-			HandleSuccess(cmd, id, t, deleted)
+			HandleSuccess(cmd, id, t, res)
 		},
 	}
 )
@@ -137,8 +131,4 @@ func init() {
 	kasGrantsDeleteCmd.Flags().StringP("attribute", "a", "", "Attribute Definition ID")
 	kasGrantsDeleteCmd.Flags().StringP("value", "v", "", "Attribute Value ID")
 	kasGrantsDeleteCmd.Flags().StringP("kas", "k", "", "Key Access Server (KAS) ID")
-}
-
-func init() {
-	rootCmd.AddCommand(kasGrantsCmd)
 }
