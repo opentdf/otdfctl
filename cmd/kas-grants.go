@@ -130,7 +130,7 @@ func init() {
 	kasGrantsCmd.AddCommand(kasGrantsUpdateCmd)
 	kasGrantsUpdateCmd.Flags().StringP("attribute", "a", "", "Attribute Definition ID")
 	kasGrantsUpdateCmd.Flags().StringP("value", "v", "", "Attribute Value ID")
-	kasGrantsUpdateCmd.Flags().StringP("kas", "k", "", "KAS ID")
+	kasGrantsUpdateCmd.Flags().StringP("kas", "k", "", "Key Access Server (KAS) ID")
 	injectLabelFlags(kasGrantsUpdateCmd, true)
 
 	kasGrantsCmd.AddCommand(kasGrantsDeleteCmd)
