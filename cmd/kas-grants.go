@@ -34,7 +34,7 @@ var (
 			kas := flagHelper.GetRequiredString("kas")
 
 			if kas == "" || (attr == "" && val == "") {
-				cli.ExitWithError("Specify a key access server and an attribute id or attribute value if to update.", nil)
+				cli.ExitWithError("Must specify and Attribute Definition id or Value id to update.", nil)
 			}
 			var (
 				id      string
