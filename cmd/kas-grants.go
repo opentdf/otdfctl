@@ -39,7 +39,7 @@ var (
 			var (
 				id      string
 				header  string
-				updated map[string]interface{}
+				updated map[string]string
 			)
 
 			updated["kas_id"] = kas
