@@ -134,9 +134,9 @@ func init() {
 	injectLabelFlags(kasGrantsUpdateCmd, true)
 
 	kasGrantsCmd.AddCommand(kasGrantsDeleteCmd)
-	kasGrantsDeleteCmd.Flags().StringP("attribute", "a", "", "Attribute ID")
+	kasGrantsDeleteCmd.Flags().StringP("attribute", "a", "", "Attribute Definition ID")
 	kasGrantsDeleteCmd.Flags().StringP("value", "v", "", "Attribute Value ID")
-	kasGrantsDeleteCmd.Flags().StringP("kas", "k", "", "KAS ID")
+	kasGrantsDeleteCmd.Flags().StringP("kas", "k", "", "Key Access Server (KAS) ID")
 }
 
 func init() {
