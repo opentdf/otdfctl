@@ -171,8 +171,10 @@ a Subject Mapping and, by said mapping, an Attribute Value.`,
 			ssFlagJSON := flagHelper.GetOptionalString("subject-sets")
 
 			var ss []*policy.SubjectSet
-			if err := json.Unmarshal([]byte(ssFlagJSON), &ss); err != nil {
-				cli.ExitWithError("Error unmarshalling subject sets", err)
+			if ssFlagJSON != "" {
+				if err := json.Unmarshal([]byte(ssFlagJSON), &ss); err != nil {
+					cli.ExitWithError("Error unmarshalling subject sets", err)
+				}
 			}
 
 			_, err := h.UpdateSubjectConditionSet(id, ss, getMetadataMutable(metadataLabels), getMetadataUpdateBehavior())
@@ -250,7 +252,7 @@ func init() {
 
 	policy_subject_condition_setCmd.AddCommand(policy_subject_condition_setCreateCmd)
 	injectLabelFlags(policy_subject_condition_setCreateCmd, false)
-	policy_subject_condition_setCreateCmd.Flags().StringP("subject-sets", "s", "", "A JSON array of subject sets, containing a list of condition groups, each with one or more conditions.")
+	policy_subject_condition_setCreateCmd.Flags().StringP("subject-sets", "s", "", "A JSON array of subject sets, containing a list of condition groups, each with one or more conditions")
 	policy_subject_condition_setCreateCmd.Flags().StringP("subject-sets-file-json", "j", "", "A JSON file with path from $HOME containing an array of subject sets")
 
 	policy_subject_condition_setCmd.AddCommand(policy_subject_condition_setGetCmd)
@@ -261,7 +263,7 @@ func init() {
 	policy_subject_condition_setCmd.AddCommand(policy_subject_condition_setUpdateCmd)
 	policy_subject_condition_setUpdateCmd.Flags().StringP("id", "i", "", "Id of the subject condition set")
 	injectLabelFlags(policy_subject_condition_setUpdateCmd, true)
-	policy_subject_condition_setUpdateCmd.Flags().StringP("subject-sets", "s", "", "A JSON array of subject sets, containing a list of condition groups, each with one or more conditions.")
+	policy_subject_condition_setUpdateCmd.Flags().StringP("subject-sets", "s", "", "A JSON array of subject sets, containing a list of condition groups, each with one or more conditions")
 
 	policy_subject_condition_setCmd.AddCommand(policy_subject_condition_setDeleteCmd)
 	policy_subject_condition_setDeleteCmd.Flags().StringP("id", "i", "", "Id of the subject condition set")
