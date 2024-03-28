@@ -1,6 +1,0 @@
----
-command: condition-sets
-short:
----
-
-#

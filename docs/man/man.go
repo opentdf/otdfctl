@@ -104,7 +104,7 @@ func ProcessDoc(doc string) (*Doc, error) {
 	var matter struct {
 		Use     string   `yaml:"command"`
 		Aliases []string `yaml:"aliases"`
-		Short   string   `yaml:"short"`
+		Short   string   `yaml:"title"`
 	}
 	rest, err := frontmatter.Parse(strings.NewReader(doc), &matter)
 	if err != nil {
@@ -115,7 +115,8 @@ func ProcessDoc(doc string) (*Doc, error) {
 		return nil, fmt.Errorf("required 'command' property")
 	}
 
-	long := strings.TrimSpace(string(rest))
+	long := "# " + matter.Short + "\n\n"
+	long += strings.TrimSpace(string(rest))
 
 	d := Doc{
 		cobra.Command{

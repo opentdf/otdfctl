@@ -46,3 +46,11 @@ The output format (currently `styled` or `json`) is configurable in the `tructl.
 > This is a work in progress please avoid touching until framework is defined
 
 The TUI will be used to create an interactive experience for the user.
+
+## Documentation
+
+Documentation drives the CLI in this project. This can be found in `/docs/man` and is used in the
+CLI via the `man.Docs.GetDoc()` function.
+
+To run the documentation locally, run `hugo server --buildDrafts --disableFastRender`. This will
+start a local server at `http://localhost:1313/`.

@@ -6,3 +6,7 @@ tructl.yaml
 
 # Ignore the tructl binary
 tructl
+
+# Hugo
+public/
+.hugo_build.lock
