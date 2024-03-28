@@ -154,7 +154,7 @@ Note: SubjectConditionSets are reusable among SubjectMappings and are available 
 				for _, a := range standardActions {
 					a = strings.ToUpper(a)
 					if a != "DECRYPT" && a != "TRANSMIT" {
-						cli.ExitWithError(fmt.Sprintf("Invalid Standard Action: '%s'. Must be one of [ENCRYPT, TRANSMIT].", a), nil)
+						cli.ExitWithError(fmt.Sprintf("Invalid Standard Action: '%s'. Must be one of [DECRYPT, TRANSMIT].", a), nil)
 					}
 				}
 			}

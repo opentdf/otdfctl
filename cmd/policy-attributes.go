@@ -216,7 +216,6 @@ func init() {
 	policy_attributesCreateCmd.Flags().StringP("rule", "r", "", "Rule of the attribute")
 	policy_attributesCreateCmd.Flags().StringSliceVarP(&attrValues, "values", "v", []string{}, "Values of the attribute")
 	policy_attributesCreateCmd.Flags().StringP("namespace", "s", "", "Namespace of the attribute")
-	policy_attributesCreateCmd.Flags().StringP("description", "d", "", "Description of the attribute")
 	injectLabelFlags(policy_attributesCreateCmd, false)
 
 	// Get an attribute
