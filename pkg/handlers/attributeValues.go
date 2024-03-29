@@ -1,15 +1,15 @@
 package handlers
 
 import (
-	"github.com/opentdf/opentdf-v2-poc/sdk/attributes"
+	"github.com/opentdf/platform/protocol/go/common"
+	"github.com/opentdf/platform/protocol/go/policy"
+	"github.com/opentdf/platform/protocol/go/policy/attributes"
 )
 
-func (h *Handler) CreateAttributeValue(attributeId string, value string) (*attributes.Value, error) {
+func (h *Handler) CreateAttributeValue(attributeId string, value string) (*policy.Value, error) {
 	resp, err := h.sdk.Attributes.CreateAttributeValue(h.ctx, &attributes.CreateAttributeValueRequest{
 		AttributeId: attributeId,
-		Value: &attributes.ValueCreateUpdate{
-			Value: value,
-		},
+		Value:       value,
 	})
 	if err != nil {
 		return nil, err
@@ -18,7 +18,7 @@ func (h *Handler) CreateAttributeValue(attributeId string, value string) (*attri
 	return resp.Value, nil
 }
 
-func (h *Handler) GetAttributeValue(id string) (*attributes.Value, error) {
+func (h *Handler) GetAttributeValue(id string) (*policy.Value, error) {
 	resp, err := h.sdk.Attributes.GetAttributeValue(h.ctx, &attributes.GetAttributeValueRequest{
 		Id: id,
 	})
@@ -29,12 +29,12 @@ func (h *Handler) GetAttributeValue(id string) (*attributes.Value, error) {
 	return resp.Value, nil
 }
 
-func (h *Handler) UpdateAttributeValue(id string, value string) (*attributes.Value, error) {
+func (h *Handler) UpdateAttributeValue(id string, memberIds []string, metadata *common.MetadataMutable, behavior common.MetadataUpdateEnum) (*policy.Value, error) {
 	resp, err := h.sdk.Attributes.UpdateAttributeValue(h.ctx, &attributes.UpdateAttributeValueRequest{
-		Id: id,
-		Value: &attributes.ValueCreateUpdate{
-			Value: value,
-		},
+		Id:                     id,
+		Members:                memberIds,
+		Metadata:               metadata,
+		MetadataUpdateBehavior: behavior,
 	})
 	if err != nil {
 		return nil, err
@@ -44,7 +44,7 @@ func (h *Handler) UpdateAttributeValue(id string, value string) (*attributes.Val
 }
 
 func (h *Handler) DeleteAttributeValue(id string) error {
-	_, err := h.sdk.Attributes.DeleteAttributeValue(h.ctx, &attributes.DeleteAttributeValueRequest{
+	_, err := h.sdk.Attributes.DeactivateAttributeValue(h.ctx, &attributes.DeactivateAttributeValueRequest{
 		Id: id,
 	})
 	return err
