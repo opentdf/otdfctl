@@ -28,7 +28,7 @@ func (h *Handler) GetAttributeValue(id string) (*policy.Value, error) {
 		return nil, err
 	}
 
-	return resp.Value, nil
+	return resp.GetValue(), nil
 }
 
 // Updates and returns updated value

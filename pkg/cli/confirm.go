@@ -19,7 +19,7 @@ const (
 	// member actions
 	ActionMemberAdd     = "add members"
 	ActionMemberRemove  = "remove members"
-	ActionMemberReplace = "replace all members"
+	ActionMemberReplace = "replace all existing members"
 )
 
 func ConfirmAction(action, resource, id string) {

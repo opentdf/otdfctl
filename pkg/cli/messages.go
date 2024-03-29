@@ -11,6 +11,9 @@ func SuccessMessage(msg string) string {
 }
 
 func FooterMessage(msg string) string {
+	if msg == "" {
+		return ""
+	}
 	w := lipgloss.Width
 	note := footerLabelStyle.Render("NOTE ")
 	footer := footerTextStyle.Copy().Width(defaultTableWidth - w(note)).Render(msg)

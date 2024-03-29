@@ -142,7 +142,7 @@ var (
 				cli.ExitWithError(fmt.Sprintf("Failed to get attribute value (%s)", id), err)
 			}
 
-			action := fmt.Sprintf("%s members [%s] to", cli.ActionMemberAdd, strings.Join(members, ", "))
+			action := fmt.Sprintf("%s [%s] to", cli.ActionMemberAdd, strings.Join(members, ", "))
 			cli.ConfirmAction(action, "attribute value", id)
 
 			prevMemberIds := make([]string, len(prev.Members))
@@ -153,7 +153,7 @@ var (
 
 			v, err := h.UpdateAttributeValue(id, updated, nil, common.MetadataUpdateEnum_METADATA_UPDATE_ENUM_UNSPECIFIED)
 			if err != nil {
-				cli.ExitWithError(fmt.Sprintf("Failed to %s members [%s] to attribute value (%s)", cli.ActionMemberAdd, strings.Join(members, ", "), id), err)
+				cli.ExitWithError(fmt.Sprintf("Failed to %s [%s] to attribute value (%s)", cli.ActionMemberAdd, strings.Join(members, ", "), id), err)
 			}
 
 			handleValueSuccess(cmd, v)
@@ -177,7 +177,7 @@ var (
 				cli.ExitWithError(fmt.Sprintf("Failed to get attribute value (%s)", id), err)
 			}
 
-			action := fmt.Sprintf("%s members [%s] from", cli.ActionMemberRemove, strings.Join(members, ", "))
+			action := fmt.Sprintf("%s [%s] from", cli.ActionMemberRemove, strings.Join(members, ", "))
 			cli.ConfirmAction(action, "attribute value", id)
 
 			// collect the member ids off the members, then make the removals
@@ -196,7 +196,7 @@ var (
 
 			v, err := h.UpdateAttributeValue(id, updatedMemberIds, nil, common.MetadataUpdateEnum_METADATA_UPDATE_ENUM_UNSPECIFIED)
 			if err != nil {
-				cli.ExitWithError(fmt.Sprintf("Failed to %s members [%s] from attribute value (%s)", cli.ActionMemberRemove, strings.Join(members, ", "), id), err)
+				cli.ExitWithError(fmt.Sprintf("Failed to %s [%s] from attribute value (%s)", cli.ActionMemberRemove, strings.Join(members, ", "), id), err)
 			}
 
 			handleValueSuccess(cmd, v)
@@ -226,12 +226,12 @@ var (
 				existingMemberIds[i] = m.GetId()
 			}
 
-			action := fmt.Sprintf("%s all existing members [%s] with [%s] under", cli.ActionMemberReplace, strings.Join(existingMemberIds, ", "), strings.Join(members, ", "))
+			action := fmt.Sprintf("%s [%s] with [%s] under", cli.ActionMemberReplace, strings.Join(existingMemberIds, ", "), strings.Join(members, ", "))
 			cli.ConfirmAction(action, "attribute value", id)
 
 			v, err := h.UpdateAttributeValue(id, members, nil, common.MetadataUpdateEnum_METADATA_UPDATE_ENUM_UNSPECIFIED)
 			if err != nil {
-				cli.ExitWithError(fmt.Sprintf("Failed to %s members from attribute value (%s)", cli.ActionMemberReplace, id), err)
+				cli.ExitWithError(fmt.Sprintf("Failed to %s of attribute value (%s)", cli.ActionMemberReplace, id), err)
 			}
 
 			handleValueSuccess(cmd, v)
@@ -276,15 +276,15 @@ func init() {
 
 	policy_attributeValueMembersCmd.AddCommand(policy_attributeValueMembersAddCmd)
 	policy_attributeValueMembersAddCmd.Flags().StringP("id", "i", "", "Attribute value id")
-	policy_attributeValueMembersAddCmd.Flags().StringSliceVar(&attrValueMembers, "members", []string{}, "Members to add")
+	policy_attributeValueMembersAddCmd.Flags().StringSliceVar(&attrValueMembers, "member", []string{}, "Each member id to add")
 
 	policy_attributeValueMembersCmd.AddCommand(policy_attributeValueMembersRemoveCmd)
 	policy_attributeValueMembersRemoveCmd.Flags().StringP("id", "i", "", "Attribute value id")
-	policy_attributeValueMembersRemoveCmd.Flags().StringSliceVar(&attrValueMembers, "members", []string{}, "Members to add")
+	policy_attributeValueMembersRemoveCmd.Flags().StringSliceVar(&attrValueMembers, "member", []string{}, "Each member id to remove")
 
 	policy_attributeValueMembersCmd.AddCommand(policy_attributeValueMembersReplaceCmd)
 	policy_attributeValueMembersReplaceCmd.Flags().StringP("id", "i", "", "Attribute value id")
-	policy_attributeValueMembersReplaceCmd.Flags().StringSliceVar(&attrValueMembers, "members", []string{}, "Members to add")
+	policy_attributeValueMembersReplaceCmd.Flags().StringSliceVar(&attrValueMembers, "member", []string{}, "Each member id that should exist after replacement")
 }
 
 func handleValueSuccess(cmd *cobra.Command, v *policy.Value) {
@@ -293,9 +293,10 @@ func handleValueSuccess(cmd *cobra.Command, v *policy.Value) {
 		{"FQN", v.Fqn},
 		{"Value", v.Value},
 	}
-	if len(v.Members) > 0 {
-		memberIds := make([]string, len(v.Members))
-		for i, m := range v.Members {
+	members := v.GetMembers()
+	if len(members) > 0 {
+		memberIds := make([]string, len(members))
+		for i, m := range members {
 			memberIds[i] = m.Id
 		}
 		rows = append(rows, []string{"Members", cli.CommaSeparated(memberIds)})
