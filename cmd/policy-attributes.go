@@ -21,7 +21,7 @@ var (
 		policy_attributeGetCmd.Use,
 		policy_attributesListCmd.Use,
 		policy_attributeUpdateCmd.Use,
-		policy_attributesDeleteCmd.Use,
+		policy_attributesDeactivateCmd.Use,
 	}
 
 	policy_attributesCmd = &cobra.Command{
@@ -133,7 +133,7 @@ used to define the access controls based on subject encodings and entity entitle
 		},
 	}
 
-	policy_attributesDeleteCmd = &cobra.Command{
+	policy_attributesDeactivateCmd = &cobra.Command{
 		Use:   "deactivate",
 		Short: "Deactivate an attribute",
 		Run: func(cmd *cobra.Command, args []string) {
@@ -213,7 +213,7 @@ func init() {
 	policy_attributeUpdateCmd.Flags().StringP("id", "i", "", "Id of the attribute")
 	injectLabelFlags(policy_attributeUpdateCmd, true)
 
-	// Delete an attribute
-	policy_attributesCmd.AddCommand(policy_attributesDeleteCmd)
-	policy_attributesDeleteCmd.Flags().StringP("id", "i", "", "Id of the attribute")
+	// Deactivate an attribute
+	policy_attributesCmd.AddCommand(policy_attributesDeactivateCmd)
+	policy_attributesDeactivateCmd.Flags().StringP("id", "i", "", "Id of the attribute")
 }

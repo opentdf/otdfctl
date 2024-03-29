@@ -16,7 +16,7 @@ var (
 		policy_namespaceGetCmd.Use,
 		policy_namespacesListCmd.Use,
 		policy_namespaceUpdateCmd.Use,
-		policy_namespaceDeleteCmd.Use,
+		policy_namespaceDeactivateCmd.Use,
 	}
 
 	policy_namespacesCmd = &cobra.Command{
@@ -104,7 +104,7 @@ or different attributes tied to each.
 		},
 	}
 
-	policy_namespaceDeleteCmd = &cobra.Command{
+	policy_namespaceDeactivateCmd = &cobra.Command{
 		Use:   "deactivate",
 		Short: "Deactivate a namespace by id",
 		Run: func(cmd *cobra.Command, args []string) {
@@ -182,6 +182,6 @@ func init() {
 	policy_namespaceUpdateCmd.Flags().StringP("id", "i", "", "Id of the namespace")
 	injectLabelFlags(policy_namespaceUpdateCmd, true)
 
-	policy_namespacesCmd.AddCommand(policy_namespaceDeleteCmd)
-	policy_namespaceDeleteCmd.Flags().StringP("id", "i", "", "Id of the namespace")
+	policy_namespacesCmd.AddCommand(policy_namespaceDeactivateCmd)
+	policy_namespaceDeactivateCmd.Flags().StringP("id", "i", "", "Id of the namespace")
 }

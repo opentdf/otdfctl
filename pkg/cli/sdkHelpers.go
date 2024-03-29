@@ -1,8 +1,6 @@
 package cli
 
 import (
-	"strings"
-
 	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/opentdf/tructl/pkg/handlers"
 )
@@ -37,13 +35,13 @@ func GetSimpleAttribute(a *policy.Attribute) SimpleAttribute {
 }
 
 func GetSimpleAttributeValue(v *policy.Value) SimpleAttributeValue {
-	members := []string{}
-
-	fqn := strings.Join([]string{"v.Attribute.Namespace.Name", "attr", "v.Attribute.Name", "value", v.Value}, "/")
-
+	memberIds := []string{}
+	for _, m := range v.Members {
+		memberIds = append(memberIds, m.Id)
+	}
 	return SimpleAttributeValue{
 		Id:      v.Id,
-		FQN:     fqn,
-		Members: members,
+		FQN:     v.Fqn,
+		Members: memberIds,
 	}
 }
