@@ -49,7 +49,7 @@ func (h Handler) ListAttributes() ([]*policy.Attribute, error) {
 	return resp.Attributes, err
 }
 
-func (h Handler) CreateAttribute(name string, rule string, namespace string, metadata *common.MetadataMutable) (*policy.Attribute, error) {
+func (h Handler) CreateAttribute(name string, rule string, namespace string, values []string, metadata *common.MetadataMutable) (*policy.Attribute, error) {
 	r, err := GetAttributeRuleFromReadableString(rule)
 	if err != nil {
 		return nil, err
@@ -60,6 +60,7 @@ func (h Handler) CreateAttribute(name string, rule string, namespace string, met
 		Name:        name,
 		Rule:        r,
 		Metadata:    metadata,
+		Values:      values,
 	}
 
 	resp, err := h.sdk.Attributes.CreateAttribute(h.ctx, attrReq)
@@ -67,14 +68,7 @@ func (h Handler) CreateAttribute(name string, rule string, namespace string, met
 		return nil, err
 	}
 
-	attr := resp.Attribute
-
-	return &policy.Attribute{
-		Id:        attr.Id,
-		Name:      attr.Name,
-		Rule:      attr.Rule,
-		Namespace: attr.Namespace,
-	}, nil
+	return resp.Attribute, nil
 }
 
 // TODO: verify updation behavior

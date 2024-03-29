@@ -46,31 +46,20 @@ used to define the access controls based on subject encodings and entity entitle
 			flagHelper := cli.NewFlagHelper(cmd)
 			name := flagHelper.GetRequiredString("name")
 			rule := flagHelper.GetRequiredString("rule")
-			values := flagHelper.GetStringSlice("values", attrValues, cli.FlagHelperStringSliceOptions{})
+			values := flagHelper.GetStringSlice("value", attrValues, cli.FlagHelperStringSliceOptions{})
 			namespace := flagHelper.GetRequiredString("namespace")
 			metadataLabels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
 
-			attr, err := h.CreateAttribute(name, rule, namespace, getMetadataMutable(metadataLabels))
+			attr, err := h.CreateAttribute(name, rule, namespace, values, getMetadataMutable(metadataLabels))
 			if err != nil {
 				cli.ExitWithError("Could not create attribute", err)
-			}
-
-			// create attribute values
-			attrValues := make([]*policy.Value, 0, len(values))
-			valueErrors := make(map[string]error)
-			for _, value := range values {
-				v, err := h.CreateAttributeValue(attr.Id, value)
-				if err != nil {
-					valueErrors[value] = err
-				}
-				attrValues = append(attrValues, v)
 			}
 
 			a := cli.GetSimpleAttribute(&policy.Attribute{
 				Id:        attr.Id,
 				Name:      attr.Name,
 				Rule:      attr.Rule,
-				Values:    attrValues,
+				Values:    attr.Values,
 				Namespace: attr.Namespace,
 			})
 
@@ -81,13 +70,7 @@ used to define the access controls based on subject encodings and entity entitle
 				{"Namespace", a.Namespace},
 			}...)
 
-			if len(valueErrors) > 0 {
-				fmt.Println(cli.ErrorMessage("Error creating attribute values", nil))
-				for value, err := range valueErrors {
-					cli.ErrorMessage(value, err)
-				}
-			}
-			HandleSuccess(cmd, a.Id, t, a)
+			HandleSuccess(cmd, a.Id, t, attr)
 		},
 	}
 
@@ -214,7 +197,7 @@ func init() {
 	policy_attributesCmd.AddCommand(policy_attributesCreateCmd)
 	policy_attributesCreateCmd.Flags().StringP("name", "n", "", "Name of the attribute")
 	policy_attributesCreateCmd.Flags().StringP("rule", "r", "", "Rule of the attribute")
-	policy_attributesCreateCmd.Flags().StringSliceVarP(&attrValues, "values", "v", []string{}, "Values of the attribute")
+	policy_attributesCreateCmd.Flags().StringSliceVarP(&attrValues, "value", "v", []string{}, "Values of the attribute")
 	policy_attributesCreateCmd.Flags().StringP("namespace", "s", "", "Namespace of the attribute")
 	injectLabelFlags(policy_attributesCreateCmd, false)
 
