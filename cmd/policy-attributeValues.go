@@ -24,6 +24,7 @@ var (
 			attrId := flagHelper.GetRequiredString("attribute-id")
 			value := flagHelper.GetRequiredString("value")
 			metadataLabels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
+			// TODO: support create with members when update is unblocked to remove/alter them after creation [https://github.com/opentdf/platform/issues/476]
 
 			h := cli.NewHandler(cmd)
 			defer h.Close()
