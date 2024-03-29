@@ -220,7 +220,7 @@ Note: SubjectConditionSets are reusable among SubjectMappings and are available 
 				cli.ExitWithNotFoundError(errMsg, err)
 			}
 
-			cli.ConfirmDelete("subject mapping", sm.Id)
+			cli.ConfirmAction(cli.ActionDelete, "subject mapping", sm.Id)
 
 			deleted, err := h.DeleteSubjectMapping(id)
 			if err != nil {

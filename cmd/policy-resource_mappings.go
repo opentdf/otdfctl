@@ -140,7 +140,7 @@ var (
 			flagHelper := cli.NewFlagHelper(cmd)
 			id := flagHelper.GetRequiredString("id")
 
-			cli.ConfirmDelete("resource-mapping", id)
+			cli.ConfirmAction(cli.ActionDelete, "resource-mapping", id)
 
 			resourceMapping, err := h.DeleteResourceMapping(id)
 			if err != nil {

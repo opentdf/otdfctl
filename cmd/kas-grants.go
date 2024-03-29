@@ -90,7 +90,7 @@ var (
 				err    error
 			)
 
-			cli.ConfirmDelete("KAS ID: ", kas)
+			cli.ConfirmAction(cli.ActionDelete, "KAS ID: ", kas)
 
 			if attr != "" {
 				res, err = h.DeleteKasGrantFromAttribute(attr, kas)

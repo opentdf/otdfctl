@@ -221,7 +221,7 @@ a Subject Mapping and, by said mapping, an Attribute Value.`,
 				cli.ExitWithNotFoundError(fmt.Sprintf("Subject Condition Set with id %s not found", id), err)
 			}
 
-			cli.ConfirmDelete("Subject Condition Set", id)
+			cli.ConfirmAction(cli.ActionDelete, "Subject Condition Set", id)
 
 			if err := h.DeleteSubjectConditionSet(id); err != nil {
 				cli.ExitWithNotFoundError(fmt.Sprintf("Subject Condition Set with id %s not found", id), err)

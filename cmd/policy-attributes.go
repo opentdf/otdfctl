@@ -152,7 +152,7 @@ used to define the access controls based on subject encodings and entity entitle
 
 	policy_attributesDeleteCmd = &cobra.Command{
 		Use:   "deactivate",
-		Short: "Delete an attribute",
+		Short: "Deactivate an attribute",
 		Run: func(cmd *cobra.Command, args []string) {
 			flagHelper := cli.NewFlagHelper(cmd)
 			id := flagHelper.GetRequiredString("id")
@@ -166,7 +166,7 @@ used to define the access controls based on subject encodings and entity entitle
 				cli.ExitWithNotFoundError(errMsg, err)
 			}
 
-			cli.ConfirmDelete("attribute", attr.Name)
+			cli.ConfirmAction(cli.ActionDeactivate, "attribute", attr.Name)
 
 			attr, err = h.DeactivateAttribute(id)
 			if err != nil {

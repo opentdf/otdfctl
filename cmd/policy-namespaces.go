@@ -106,7 +106,7 @@ or different attributes tied to each.
 
 	policy_namespaceDeleteCmd = &cobra.Command{
 		Use:   "deactivate",
-		Short: "Delete a namespace by id",
+		Short: "Deactivate a namespace by id",
 		Run: func(cmd *cobra.Command, args []string) {
 			h := cli.NewHandler(cmd)
 			defer h.Close()
@@ -120,7 +120,7 @@ or different attributes tied to each.
 				cli.ExitWithNotFoundError(errMsg, err)
 			}
 
-			cli.ConfirmDelete("namespace", ns.Name)
+			cli.ConfirmAction(cli.ActionDeactivate, "namespace", ns.Name)
 
 			if err := h.DeactivateNamespace(id); err != nil {
 				errMsg := fmt.Sprintf("Could not deactivate namespace (%s)", id)

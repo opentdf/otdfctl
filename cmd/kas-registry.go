@@ -221,7 +221,7 @@ var (
 				cli.ExitWithNotFoundError(errMsg, err)
 			}
 
-			cli.ConfirmDelete("KAS Registry Entry: ", id)
+			cli.ConfirmAction(cli.ActionDelete, "KAS Registry Entry: ", id)
 
 			if err := h.DeleteKasRegistryEntry(id); err != nil {
 				errMsg := fmt.Sprintf("Could not delete KAS registry entry (%s)", id)
