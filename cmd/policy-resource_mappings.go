@@ -2,6 +2,7 @@ package cmd
 
 import (
 	_ "embed"
+	"fmt"
 	"strings"
 
 	"github.com/opentdf/tructl/docs/man"
@@ -68,7 +69,7 @@ var (
 
 			resourceMapping, err := h.GetResourceMapping(id)
 			if err != nil {
-				cli.ExitWithError("Failed to get resource mapping", err)
+				cli.ExitWithError(fmt.Sprintf("Failed to get resource mapping (%s)", id), err)
 			}
 
 			t := cli.NewTabular().Rows([][]string{
@@ -117,7 +118,7 @@ var (
 
 			resourceMapping, err := h.UpdateResourceMapping(id, attrValueId, terms, getMetadataMutable(labels), getMetadataUpdateBehavior())
 			if err != nil {
-				cli.ExitWithError("Failed to update resource mapping", err)
+				cli.ExitWithError(fmt.Sprintf("Failed to update resource mapping (%s)", id), err)
 			}
 
 			t := cli.NewTabular().Rows([][]string{
@@ -144,7 +145,7 @@ var (
 
 			resourceMapping, err := h.DeleteResourceMapping(id)
 			if err != nil {
-				cli.ExitWithError("Failed to delete resource mapping", err)
+				cli.ExitWithError(fmt.Sprintf("Failed to delete resource mapping (%s)", id), err)
 			}
 
 			t := cli.NewTabular().Rows([][]string{

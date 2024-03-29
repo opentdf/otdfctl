@@ -71,7 +71,7 @@ func unMarshalMetadata(m string) *common.MetadataMutable {
 	if m != "" {
 		metadata := &common.MetadataMutable{}
 		if err := json.Unmarshal([]byte(m), metadata); err != nil {
-			cli.ExitWithError("Could not unmarshal metadata", err)
+			cli.ExitWithError("Failed to unmarshal metadata", err)
 		}
 		return metadata
 	}

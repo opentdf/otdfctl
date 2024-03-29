@@ -14,6 +14,7 @@ type ResourceMapping struct {
 	Terms       []string
 }
 
+// Creates and returns the created resource mapping
 func (h *Handler) CreateResourceMapping(attributeId string, terms []string, metadata *common.MetadataMutable) (*policy.ResourceMapping, error) {
 	res, err := h.sdk.ResourceMapping.CreateResourceMapping(context.Background(), &resourcemapping.CreateResourceMappingRequest{
 		AttributeValueId: attributeId,
@@ -24,7 +25,7 @@ func (h *Handler) CreateResourceMapping(attributeId string, terms []string, meta
 		return nil, err
 	}
 
-	return res.ResourceMapping, nil
+	return h.GetResourceMapping(res.ResourceMapping.GetId())
 }
 
 func (h *Handler) GetResourceMapping(id string) (*policy.ResourceMapping, error) {
@@ -35,7 +36,7 @@ func (h *Handler) GetResourceMapping(id string) (*policy.ResourceMapping, error)
 		return nil, err
 	}
 
-	return res.ResourceMapping, nil
+	return res.GetResourceMapping(), nil
 }
 
 func (h *Handler) ListResourceMappings() ([]*policy.ResourceMapping, error) {
@@ -44,12 +45,13 @@ func (h *Handler) ListResourceMappings() ([]*policy.ResourceMapping, error) {
 		return nil, err
 	}
 
-	return res.ResourceMappings, nil
+	return res.GetResourceMappings(), nil
 }
 
 // TODO: verify updation behavior
+// Updates and returns the updated resource mapping
 func (h *Handler) UpdateResourceMapping(id string, attrValueId string, terms []string, metadata *common.MetadataMutable, behavior common.MetadataUpdateEnum) (*policy.ResourceMapping, error) {
-	res, err := h.sdk.ResourceMapping.UpdateResourceMapping(context.Background(), &resourcemapping.UpdateResourceMappingRequest{
+	_, err := h.sdk.ResourceMapping.UpdateResourceMapping(context.Background(), &resourcemapping.UpdateResourceMappingRequest{
 		Id:                     id,
 		AttributeValueId:       attrValueId,
 		Terms:                  terms,
@@ -60,7 +62,7 @@ func (h *Handler) UpdateResourceMapping(id string, attrValueId string, terms []s
 		return nil, err
 	}
 
-	return res.ResourceMapping, nil
+	return h.GetResourceMapping(id)
 }
 
 func (h *Handler) DeleteResourceMapping(id string) (*policy.ResourceMapping, error) {

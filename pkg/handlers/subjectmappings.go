@@ -18,15 +18,16 @@ func (h Handler) GetSubjectMapping(id string) (*policy.SubjectMapping, error) {
 	resp, err := h.sdk.SubjectMapping.GetSubjectMapping(h.ctx, &subjectmapping.GetSubjectMappingRequest{
 		Id: id,
 	})
-	return resp.SubjectMapping, err
+	return resp.GetSubjectMapping(), err
 }
 
 func (h Handler) ListSubjectMappings() ([]*policy.SubjectMapping, error) {
 	resp, err := h.sdk.SubjectMapping.ListSubjectMappings(h.ctx, &subjectmapping.ListSubjectMappingsRequest{})
 
-	return resp.SubjectMappings, err
+	return resp.GetSubjectMappings(), err
 }
 
+// Creates and returns the created subject mapping
 func (h Handler) CreateNewSubjectMapping(attrValId string, actions []*policy.Action, existingSCSId string, newScs *subjectmapping.SubjectConditionSetCreate, m *common.MetadataMutable) (*policy.SubjectMapping, error) {
 	resp, err := h.sdk.SubjectMapping.CreateSubjectMapping(h.ctx, &subjectmapping.CreateSubjectMappingRequest{
 		AttributeValueId:              attrValId,
@@ -35,18 +36,25 @@ func (h Handler) CreateNewSubjectMapping(attrValId string, actions []*policy.Act
 		NewSubjectConditionSet:        newScs,
 		Metadata:                      m,
 	})
-	return resp.SubjectMapping, err
+	if err != nil {
+		return nil, err
+	}
+	return h.GetSubjectMapping(resp.GetSubjectMapping().GetId())
 }
 
+// Updates and returns the updated subject mapping
 func (h Handler) UpdateSubjectMapping(id string, updatedSCSId string, updatedActions []*policy.Action, metadata *common.MetadataMutable, metadataBehavior common.MetadataUpdateEnum) (*policy.SubjectMapping, error) {
-	resp, err := h.sdk.SubjectMapping.UpdateSubjectMapping(h.ctx, &subjectmapping.UpdateSubjectMappingRequest{
+	_, err := h.sdk.SubjectMapping.UpdateSubjectMapping(h.ctx, &subjectmapping.UpdateSubjectMappingRequest{
 		Id:                     id,
 		SubjectConditionSetId:  updatedSCSId,
 		Actions:                updatedActions,
 		MetadataUpdateBehavior: metadataBehavior,
 		Metadata:               metadata,
 	})
-	return resp.SubjectMapping, err
+	if err != nil {
+		return nil, err
+	}
+	return h.GetSubjectMapping(id)
 }
 
 func (h Handler) DeleteSubjectMapping(id string) (*policy.SubjectMapping, error) {

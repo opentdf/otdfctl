@@ -52,7 +52,7 @@ used to define the access controls based on subject encodings and entity entitle
 
 			attr, err := h.CreateAttribute(name, rule, namespace, values, getMetadataMutable(metadataLabels))
 			if err != nil {
-				cli.ExitWithError("Could not create attribute", err)
+				cli.ExitWithError("Failed to create attribute", err)
 			}
 
 			a := cli.GetSimpleAttribute(&policy.Attribute{
@@ -87,8 +87,8 @@ used to define the access controls based on subject encodings and entity entitle
 
 			attr, err := h.GetAttribute(id)
 			if err != nil {
-				errMsg := fmt.Sprintf("Could not find attribute (%s)", id)
-				cli.ExitWithNotFoundError(errMsg, err)
+				errMsg := fmt.Sprintf("Failed to get attribute (%s)", id)
+				cli.ExitWithError(errMsg, err)
 			}
 
 			a := cli.GetSimpleAttribute(attr)
@@ -114,7 +114,7 @@ used to define the access controls based on subject encodings and entity entitle
 
 			attrs, err := h.ListAttributes()
 			if err != nil {
-				cli.ExitWithError("Could not get attributes", err)
+				cli.ExitWithError("Failed to list attributes", err)
 			}
 
 			t := cli.NewTable()
@@ -145,16 +145,16 @@ used to define the access controls based on subject encodings and entity entitle
 
 			attr, err := h.GetAttribute(id)
 			if err != nil {
-				errMsg := fmt.Sprintf("Could not find attribute (%s)", id)
-				cli.ExitWithNotFoundError(errMsg, err)
+				errMsg := fmt.Sprintf("Failed to get attribute (%s)", id)
+				cli.ExitWithError(errMsg, err)
 			}
 
 			cli.ConfirmAction(cli.ActionDeactivate, "attribute", attr.Name)
 
 			attr, err = h.DeactivateAttribute(id)
 			if err != nil {
-				errMsg := fmt.Sprintf("Could not deactivate attribute (%s)", id)
-				cli.ExitWithNotFoundError(errMsg, err)
+				errMsg := fmt.Sprintf("Failed to deactivate attribute (%s)", id)
+				cli.ExitWithError(errMsg, err)
 			}
 
 			a := cli.GetSimpleAttribute(attr)
@@ -182,7 +182,7 @@ used to define the access controls based on subject encodings and entity entitle
 			labels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
 
 			if a, err := h.UpdateAttribute(id, getMetadataMutable(labels), getMetadataUpdateBehavior()); err != nil {
-				cli.ExitWithError("Could not update attribute", err)
+				cli.ExitWithError(fmt.Sprintf("Failed to update attribute (%s)", id), err)
 			} else {
 				HandleSuccess(cmd, id, nil, a)
 			}

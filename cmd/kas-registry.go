@@ -44,8 +44,8 @@ var (
 
 			kas, err := h.GetKasRegistryEntry(id)
 			if err != nil {
-				errMsg := fmt.Sprintf("Could not find KAS registry entry (%s)", id)
-				cli.ExitWithNotFoundError(errMsg, err)
+				errMsg := fmt.Sprintf("Failed to get KAS registry entry (%s)", id)
+				cli.ExitWithError(errMsg, err)
 			}
 
 			keyType := "Local"
@@ -76,7 +76,7 @@ var (
 
 			list, err := h.ListKasRegistryEntries()
 			if err != nil {
-				cli.ExitWithError("Could not get KAS registry entries", err)
+				cli.ExitWithError("Failed to list KAS registry entries", err)
 			}
 
 			t := cli.NewTable()
@@ -138,7 +138,7 @@ var (
 				getMetadataMutable(metadataLabels),
 			)
 			if err != nil {
-				cli.ExitWithError("Could not create KAS registry entry", err)
+				cli.ExitWithError("Failed to create KAS registry entry", err)
 			}
 
 			t := cli.NewTabular().
@@ -193,7 +193,7 @@ var (
 				getMetadataUpdateBehavior(),
 			)
 			if err != nil {
-				cli.ExitWithError("Could not update KAS registry entry", err)
+				cli.ExitWithError(fmt.Sprintf("Failed to update KAS registry entry (%s)", id), err)
 			}
 			t := cli.NewTabular().
 				Rows([][]string{
@@ -217,14 +217,14 @@ var (
 
 			kas, err := h.GetKasRegistryEntry(id)
 			if err != nil {
-				errMsg := fmt.Sprintf("Could not find KAS registry entry (%s)", id)
-				cli.ExitWithNotFoundError(errMsg, err)
+				errMsg := fmt.Sprintf("Failed to get KAS registry entry (%s)", id)
+				cli.ExitWithError(errMsg, err)
 			}
 
 			cli.ConfirmAction(cli.ActionDelete, "KAS Registry Entry: ", id)
 
-			if err := h.DeleteKasRegistryEntry(id); err != nil {
-				errMsg := fmt.Sprintf("Could not delete KAS registry entry (%s)", id)
+			if _, err := h.DeleteKasRegistryEntry(id); err != nil {
+				errMsg := fmt.Sprintf("Failed to delete KAS registry entry (%s)", id)
 				cli.ExitWithError(errMsg, err)
 			}
 

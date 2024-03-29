@@ -8,12 +8,18 @@ import (
 )
 
 const (
+	// top level actions
 	ActionGet        = "get"
 	ActionList       = "list"
 	ActionCreate     = "create"
 	ActionUpdate     = "update"
 	ActionDeactivate = "deactivate"
 	ActionDelete     = "delete"
+
+	// member actions
+	ActionMemberAdd     = "add members"
+	ActionMemberRemove  = "remove members"
+	ActionMemberReplace = "replace all members"
 )
 
 func ConfirmAction(action, resource, id string) {

@@ -60,8 +60,8 @@ Note: SubjectConditionSets are reusable among SubjectMappings and are available 
 
 			mapping, err := h.GetSubjectMapping(id)
 			if err != nil {
-				errMsg := fmt.Sprintf("Could not find subject mapping (%s)", id)
-				cli.ExitWithNotFoundError(errMsg, err)
+				errMsg := fmt.Sprintf("Failed to find subject mapping (%s)", id)
+				cli.ExitWithError(errMsg, err)
 			}
 
 			var actionsJSON []byte
@@ -101,7 +101,7 @@ Note: SubjectConditionSets are reusable among SubjectMappings and are available 
 
 			list, err := h.ListSubjectMappings()
 			if err != nil {
-				cli.ExitWithError("Could not get subject mappings", err)
+				cli.ExitWithError("Failed to get subject mappings", err)
 			}
 
 			t := cli.NewTable().Width(180)
@@ -171,7 +171,7 @@ Note: SubjectConditionSets are reusable among SubjectMappings and are available 
 
 			mapping, err := h.CreateNewSubjectMapping(attrValueId, actions, existingSCSId, scs, getMetadataMutable(metadataLabels))
 			if err != nil {
-				cli.ExitWithError("Could not create subject mapping", err)
+				cli.ExitWithError("Failed to create subject mapping", err)
 			}
 
 			var actionsJSON []byte
@@ -216,16 +216,16 @@ Note: SubjectConditionSets are reusable among SubjectMappings and are available 
 
 			sm, err := h.GetSubjectMapping(id)
 			if err != nil {
-				errMsg := fmt.Sprintf("Could not find subject mapping (%s)", id)
-				cli.ExitWithNotFoundError(errMsg, err)
+				errMsg := fmt.Sprintf("Failed to find subject mapping (%s)", id)
+				cli.ExitWithError(errMsg, err)
 			}
 
 			cli.ConfirmAction(cli.ActionDelete, "subject mapping", sm.Id)
 
 			deleted, err := h.DeleteSubjectMapping(id)
 			if err != nil {
-				errMsg := fmt.Sprintf("Could not delete subject mapping (%s)", id)
-				cli.ExitWithNotFoundError(errMsg, err)
+				errMsg := fmt.Sprintf("Failed to delete subject mapping (%s)", id)
+				cli.ExitWithError(errMsg, err)
 			}
 			HandleSuccess(cmd, id, nil, deleted)
 		},
@@ -267,7 +267,7 @@ full set of actions on update. `,
 				getMetadataUpdateBehavior(),
 			)
 			if err != nil {
-				cli.ExitWithError("Could not update subject mapping", err)
+				cli.ExitWithError("Failed to update subject mapping", err)
 			}
 
 			HandleSuccess(cmd, id, nil, updated)

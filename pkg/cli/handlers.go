@@ -8,7 +8,7 @@ import (
 func NewHandler(cmd *cobra.Command) handlers.Handler {
 	h, err := handlers.New(cmd.Flag("host").Value.String())
 	if err != nil {
-		ExitWithError("Could not connect to server", err)
+		ExitWithError("Failed to connect to server", err)
 	}
 	return h
 }

@@ -46,14 +46,14 @@ var (
 			if attr != "" {
 				res, err = h.UpdateKasGrantForAttribute(attr, kas)
 				if err != nil {
-					cli.ExitWithError("Could not update KAS grant for attribute", err)
+					cli.ExitWithError("Failed to update KAS grant for attribute", err)
 				}
 				id = attr
 				header = "Attribute ID"
 			} else {
 				res, err = h.UpdateKasGrantForValue(val, kas)
 				if err != nil {
-					cli.ExitWithError("Could not update KAS grant for attribute value", err)
+					cli.ExitWithError("Failed to update KAS grant for attribute value", err)
 				}
 				id = val
 				header = "Value ID"
@@ -95,14 +95,14 @@ var (
 			if attr != "" {
 				res, err = h.DeleteKasGrantFromAttribute(attr, kas)
 				if err != nil {
-					cli.ExitWithError("Could not update KAS grant for attribute", err)
+					cli.ExitWithError("Failed to update KAS grant for attribute", err)
 				}
 				id = attr
 				header = "Attribute ID"
 			} else {
 				_, err := h.DeleteKasGrantFromValue(val, kas)
 				if err != nil {
-					cli.ExitWithError("Could not update KAS grant for attribute value", err)
+					cli.ExitWithError("Failed to update KAS grant for attribute value", err)
 				}
 				id = val
 				header = "Value ID"

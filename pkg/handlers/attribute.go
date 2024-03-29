@@ -49,6 +49,7 @@ func (h Handler) ListAttributes() ([]*policy.Attribute, error) {
 	return resp.Attributes, err
 }
 
+// Creates and returns the created attribute
 func (h Handler) CreateAttribute(name string, rule string, namespace string, values []string, metadata *common.MetadataMutable) (*policy.Attribute, error) {
 	r, err := GetAttributeRuleFromReadableString(rule)
 	if err != nil {
@@ -68,30 +69,35 @@ func (h Handler) CreateAttribute(name string, rule string, namespace string, val
 		return nil, err
 	}
 
-	return resp.Attribute, nil
+	return h.GetAttribute(resp.GetAttribute().GetId())
 }
 
-// TODO: verify updation behavior
+// Updates and returns updated attribute
 func (h *Handler) UpdateAttribute(
 	id string,
 	metadata *common.MetadataMutable,
 	behavior common.MetadataUpdateEnum,
-) (*attributes.UpdateAttributeResponse, error) {
-	return h.sdk.Attributes.UpdateAttribute(h.ctx, &attributes.UpdateAttributeRequest{
+) (*policy.Attribute, error) {
+	_, err := h.sdk.Attributes.UpdateAttribute(h.ctx, &attributes.UpdateAttributeRequest{
 		Id:                     id,
 		Metadata:               metadata,
 		MetadataUpdateBehavior: behavior,
 	})
+	if err != nil {
+		return nil, err
+	}
+	return h.GetAttribute(id)
 }
 
+// Deactivates and returns deactivated attribute
 func (h Handler) DeactivateAttribute(id string) (*policy.Attribute, error) {
-	resp, err := h.sdk.Attributes.DeactivateAttribute(h.ctx, &attributes.DeactivateAttributeRequest{
+	_, err := h.sdk.Attributes.DeactivateAttribute(h.ctx, &attributes.DeactivateAttributeRequest{
 		Id: id,
 	})
 	if err != nil {
 		return nil, err
 	}
-	return resp.Attribute, err
+	return h.GetAttribute(id)
 }
 
 func GetAttributeFqn(namespace string, name string) string {

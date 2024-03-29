@@ -109,7 +109,7 @@ a Subject Mapping and, by said mapping, an Attribute Value.`,
 
 			scs, err := h.GetSubjectConditionSet(id)
 			if err != nil {
-				cli.ExitWithNotFoundError(fmt.Sprintf("Subject Condition Set with id %s not found", id), err)
+				cli.ExitWithError(fmt.Sprintf("Subject Condition Set with id %s not found", id), err)
 			}
 
 			var subjectSetsJSON []byte
@@ -218,13 +218,13 @@ a Subject Mapping and, by said mapping, an Attribute Value.`,
 
 			scs, err := h.GetSubjectConditionSet(id)
 			if err != nil {
-				cli.ExitWithNotFoundError(fmt.Sprintf("Subject Condition Set with id %s not found", id), err)
+				cli.ExitWithError(fmt.Sprintf("Subject Condition Set with id %s not found", id), err)
 			}
 
 			cli.ConfirmAction(cli.ActionDelete, "Subject Condition Set", id)
 
 			if err := h.DeleteSubjectConditionSet(id); err != nil {
-				cli.ExitWithNotFoundError(fmt.Sprintf("Subject Condition Set with id %s not found", id), err)
+				cli.ExitWithError(fmt.Sprintf("Subject Condition Set with id %s not found", id), err)
 			}
 
 			var subjectSetsJSON []byte

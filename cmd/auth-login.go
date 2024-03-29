@@ -10,12 +10,10 @@ import (
 	"github.com/zalando/go-keyring"
 )
 
-var (
-	auth_loginCommands = []string{
-		// auth_loginPassword.Use,
-		auth_loginClientCredentials.Use,
-	}
-)
+var auth_loginCommands = []string{
+	// auth_loginPassword.Use,
+	auth_loginClientCredentials.Use,
+}
 
 var auth_loginCmd = &cobra.Command{
 	Use:   "login",
@@ -53,7 +51,7 @@ var auth_loginClientCredentials = &cobra.Command{
 		if clientId == "" {
 			errMsg = fmt.Sprintf("Please provide required flag: (%s)", "clientId")
 			fmt.Println(cli.ErrorMessage(errMsg, nil))
-			cli.ExitWithError("Could not create attribute", nil)
+			cli.ExitWithError("Failed to create attribute", nil)
 			return
 		}
 
@@ -69,12 +67,12 @@ var auth_loginClientCredentials = &cobra.Command{
 		if clientSecret == "" {
 			errMsg = fmt.Sprintf("Please provide required flag: (%s)", "clientSecret")
 			fmt.Println(cli.ErrorMessage(errMsg, nil))
-			cli.ExitWithError("Could not create attribute", nil)
+			cli.ExitWithError("Failed to create attribute", nil)
 			return
 		}
 
 		// for now we're hardcoding the TOKEN_URL as a constant at the top
-		var _, err = h.GetTokenWithClientCredentials(clientId, clientSecret, handlers.TOKEN_URL, false)
+		_, err := h.GetTokenWithClientCredentials(clientId, clientSecret, handlers.TOKEN_URL, false)
 
 		if err != nil {
 			errMsg = cli.ErrorMessage("An error occurred during login. Please check your credentials and try again.", nil)

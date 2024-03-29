@@ -13,7 +13,7 @@ func (h Handler) GetKasRegistryEntry(id string) (*kasregistry.KeyAccessServer, e
 		return nil, err
 	}
 
-	return resp.KeyAccessServer, nil
+	return resp.GetKeyAccessServer(), nil
 }
 
 func (h Handler) ListKasRegistryEntries() ([]*kasregistry.KeyAccessServer, error) {
@@ -22,9 +22,10 @@ func (h Handler) ListKasRegistryEntries() ([]*kasregistry.KeyAccessServer, error
 		return nil, err
 	}
 
-	return resp.KeyAccessServers, nil
+	return resp.GetKeyAccessServers(), nil
 }
 
+// Creates the KAS registry and then returns the KAS
 func (h Handler) CreateKasRegistryEntry(uri string, publicKey *kasregistry.PublicKey, metadata *common.MetadataMutable) (*kasregistry.KeyAccessServer, error) {
 	req := &kasregistry.CreateKeyAccessServerRequest{
 		Uri:       uri,
@@ -37,11 +38,12 @@ func (h Handler) CreateKasRegistryEntry(uri string, publicKey *kasregistry.Publi
 		return nil, err
 	}
 
-	return resp.KeyAccessServer, nil
+	return h.GetKasRegistryEntry(resp.GetKeyAccessServer().GetId())
 }
 
+// Updates the KAS registry and then returns the KAS
 func (h Handler) UpdateKasRegistryEntry(id string, uri string, publickey *kasregistry.PublicKey, metadata *common.MetadataMutable, behavior common.MetadataUpdateEnum) (*kasregistry.KeyAccessServer, error) {
-	resp, err := h.sdk.KeyAccessServerRegistry.UpdateKeyAccessServer(h.ctx, &kasregistry.UpdateKeyAccessServerRequest{
+	_, err := h.sdk.KeyAccessServerRegistry.UpdateKeyAccessServer(h.ctx, &kasregistry.UpdateKeyAccessServerRequest{
 		Id:                     id,
 		Uri:                    uri,
 		PublicKey:              publickey,
@@ -52,18 +54,19 @@ func (h Handler) UpdateKasRegistryEntry(id string, uri string, publickey *kasreg
 		return nil, err
 	}
 
-	return resp.KeyAccessServer, nil
+	return h.GetKasRegistryEntry(id)
 }
 
-func (h Handler) DeleteKasRegistryEntry(id string) error {
+// Deletes the KAS registry and returns the deleted KAS
+func (h Handler) DeleteKasRegistryEntry(id string) (*kasregistry.KeyAccessServer, error) {
 	req := &kasregistry.DeleteKeyAccessServerRequest{
 		Id: id,
 	}
 
-	_, err := h.sdk.KeyAccessServerRegistry.DeleteKeyAccessServer(h.ctx, req)
+	resp, err := h.sdk.KeyAccessServerRegistry.DeleteKeyAccessServer(h.ctx, req)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return resp.GetKeyAccessServer(), nil
 }

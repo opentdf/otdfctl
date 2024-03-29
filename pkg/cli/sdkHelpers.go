@@ -21,16 +21,16 @@ type SimpleAttributeValue struct {
 
 func GetSimpleAttribute(a *policy.Attribute) SimpleAttribute {
 	values := []string{}
-	for _, v := range a.Values {
-		values = append(values, v.Value)
+	for _, v := range a.GetValues() {
+		values = append(values, v.GetValue())
 	}
 
 	return SimpleAttribute{
-		Id:        a.Id,
-		Name:      a.Name,
-		Rule:      handlers.GetAttributeRuleFromAttributeType(a.Rule),
+		Id:        a.GetId(),
+		Name:      a.GetName(),
+		Rule:      handlers.GetAttributeRuleFromAttributeType(a.GetRule()),
 		Values:    values,
-		Namespace: a.Namespace.Name,
+		Namespace: a.GetNamespace().GetName(),
 	}
 }
 
