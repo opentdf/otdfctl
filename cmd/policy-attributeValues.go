@@ -2,30 +2,15 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
 
+	"github.com/opentdf/platform/protocol/go/common"
 	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/opentdf/tructl/pkg/cli"
 	"github.com/spf13/cobra"
 )
 
 // TODO: add metadata to outputs once [https://github.com/opentdf/tructl/issues/73] is addressed
-
-func handleValueSuccess(cmd *cobra.Command, v *policy.Value) {
-	rows := [][]string{
-		{"Id", v.Id},
-		{"FQN", v.Fqn},
-		{"Value", v.Value},
-	}
-	if len(v.Members) > 0 {
-		memberIds := make([]string, len(v.Members))
-		for i, m := range v.Members {
-			memberIds[i] = m.Id
-		}
-		rows = append(rows, []string{"Members", cli.CommaSeparated(memberIds)})
-	}
-	t := cli.NewTabular().Rows(rows...)
-	HandleSuccess(cmd, v.Id, t, v)
-}
 
 var (
 	policy_attributeValuesCmd = &cobra.Command{
@@ -47,12 +32,12 @@ var (
 
 			attr, err := h.GetAttribute(attrId)
 			if err != nil {
-				cli.ExitWithNotFoundError("Could not find attribute", err)
+				cli.ExitWithError(fmt.Sprintf("Failed to get parent attribute (%s)", attrId), err)
 			}
 
 			v, err := h.CreateAttributeValue(attr.Id, value, getMetadataMutable(metadataLabels))
 			if err != nil {
-				cli.ExitWithError("Could not create attribute value", err)
+				cli.ExitWithError("Failed to create attribute value", err)
 			}
 
 			handleValueSuccess(cmd, v)
@@ -71,7 +56,7 @@ var (
 
 			v, err := h.GetAttributeValue(id)
 			if err != nil {
-				cli.ExitWithNotFoundError("Could not find attribute value", err)
+				cli.ExitWithError("Failed to find attribute value", err)
 			}
 
 			handleValueSuccess(cmd, v)
@@ -91,12 +76,12 @@ var (
 
 			_, err := h.GetAttributeValue(id)
 			if err != nil {
-				cli.ExitWithNotFoundError("Could not find attribute value", err)
+				cli.ExitWithError(fmt.Sprintf("Failed to get attribute value (%s)", id), err)
 			}
 
 			v, err := h.UpdateAttributeValue(id, nil, getMetadataMutable(metadataLabels), getMetadataUpdateBehavior())
 			if err != nil {
-				cli.ExitWithError("Could not update attribute value", err)
+				cli.ExitWithError("Failed to update attribute value", err)
 			}
 
 			handleValueSuccess(cmd, v)
@@ -115,17 +100,17 @@ var (
 
 			value, err := h.GetAttributeValue(id)
 			if err != nil {
-				cli.ExitWithNotFoundError("Could not find attribute value", err)
+				cli.ExitWithError(fmt.Sprintf("Failed to get attribute value (%s)", id), err)
 			}
 
 			cli.ConfirmAction(cli.ActionDeactivate, "attribute value", value.Value)
 
-			err = h.DeactivateAttributeValue(id)
+			deactivated, err := h.DeactivateAttributeValue(id)
 			if err != nil {
-				cli.ExitWithError("Could not deactivate attribute value", err)
+				cli.ExitWithError("Failed to deactivate attribute value", err)
 			}
 
-			handleValueSuccess(cmd, value)
+			handleValueSuccess(cmd, deactivated)
 		},
 	}
 
@@ -149,10 +134,29 @@ var (
 			id := flagHelper.GetRequiredString("id")
 			members := flagHelper.GetStringSlice("member", attrValueMembers, cli.FlagHelperStringSliceOptions{})
 
-			// TODO: Implement
-			fmt.Println("Not implemented")
-			fmt.Printf("id: %s\n", id)
-			fmt.Printf("members: %v\n", members)
+			h := cli.NewHandler(cmd)
+			defer h.Close()
+
+			prev, err := h.GetAttributeValue(id)
+			if err != nil {
+				cli.ExitWithError(fmt.Sprintf("Failed to get attribute value (%s)", id), err)
+			}
+
+			action := fmt.Sprintf("%s members [%s] to", cli.ActionMemberAdd, strings.Join(members, ", "))
+			cli.ConfirmAction(action, "attribute value", id)
+
+			prevMemberIds := make([]string, len(prev.Members))
+			for i, m := range prev.Members {
+				prevMemberIds[i] = m.GetId()
+			}
+			updated := append(prevMemberIds, members...)
+
+			v, err := h.UpdateAttributeValue(id, updated, nil, common.MetadataUpdateEnum_METADATA_UPDATE_ENUM_UNSPECIFIED)
+			if err != nil {
+				cli.ExitWithError(fmt.Sprintf("Failed to %s members [%s] to attribute value (%s)", cli.ActionMemberAdd, strings.Join(members, ", "), id), err)
+			}
+
+			handleValueSuccess(cmd, v)
 		},
 	}
 
@@ -165,10 +169,37 @@ var (
 			id := flagHelper.GetRequiredString("id")
 			members := flagHelper.GetStringSlice("members", attrValueMembers, cli.FlagHelperStringSliceOptions{})
 
-			// TODO: Implement
-			fmt.Println("Not implemented")
-			fmt.Printf("id: %s\n", id)
-			fmt.Printf("members: %v\n", members)
+			h := cli.NewHandler(cmd)
+			defer h.Close()
+
+			prev, err := h.GetAttributeValue(id)
+			if err != nil {
+				cli.ExitWithError(fmt.Sprintf("Failed to get attribute value (%s)", id), err)
+			}
+
+			action := fmt.Sprintf("%s members [%s] from", cli.ActionMemberRemove, strings.Join(members, ", "))
+			cli.ConfirmAction(action, "attribute value", id)
+
+			// collect the member ids off the members, then make the removals
+			updatedMemberIds := make([]string, len(prev.Members))
+			for i, m := range prev.Members {
+				updatedMemberIds[i] = m.GetId()
+			}
+			for _, toBeRemoved := range members {
+				for i, str := range updatedMemberIds {
+					if toBeRemoved == str {
+						updatedMemberIds = append(updatedMemberIds[:i], updatedMemberIds[i+1:]...)
+						break
+					}
+				}
+			}
+
+			v, err := h.UpdateAttributeValue(id, updatedMemberIds, nil, common.MetadataUpdateEnum_METADATA_UPDATE_ENUM_UNSPECIFIED)
+			if err != nil {
+				cli.ExitWithError(fmt.Sprintf("Failed to %s members [%s] from attribute value (%s)", cli.ActionMemberRemove, strings.Join(members, ", "), id), err)
+			}
+
+			handleValueSuccess(cmd, v)
 		},
 	}
 
@@ -182,10 +213,28 @@ var (
 			id := flagHelper.GetRequiredString("id")
 			members := flagHelper.GetStringSlice("members", attrValueMembers, cli.FlagHelperStringSliceOptions{})
 
-			// TODO: Implement
-			fmt.Println("Not implemented")
-			fmt.Printf("id: %s\n", id)
-			fmt.Printf("members: %v\n", members)
+			h := cli.NewHandler(cmd)
+			defer h.Close()
+
+			prev, err := h.GetAttributeValue(id)
+			if err != nil {
+				cli.ExitWithError(fmt.Sprintf("Failed to find attribute value (%s)", id), err)
+			}
+
+			existingMemberIds := make([]string, len(prev.Members))
+			for i, m := range prev.Members {
+				existingMemberIds[i] = m.GetId()
+			}
+
+			action := fmt.Sprintf("%s all existing members [%s] with [%s] under", cli.ActionMemberReplace, strings.Join(existingMemberIds, ", "), strings.Join(members, ", "))
+			cli.ConfirmAction(action, "attribute value", id)
+
+			v, err := h.UpdateAttributeValue(id, members, nil, common.MetadataUpdateEnum_METADATA_UPDATE_ENUM_UNSPECIFIED)
+			if err != nil {
+				cli.ExitWithError(fmt.Sprintf("Failed to %s members from attribute value (%s)", cli.ActionMemberReplace, id), err)
+			}
+
+			handleValueSuccess(cmd, v)
 		},
 	}
 )
@@ -209,13 +258,14 @@ func init() {
 	policy_attributeValuesCmd.AddCommand(policy_attributeValuesCreateCmd)
 	policy_attributeValuesCreateCmd.Flags().StringP("attribute-id", "a", "", "Attribute id")
 	policy_attributeValuesCreateCmd.Flags().StringP("value", "v", "", "Value")
+	injectLabelFlags(policy_attributeValuesCreateCmd, false)
 
 	policy_attributeValuesCmd.AddCommand(policy_attributeValuesGetCmd)
 	policy_attributeValuesGetCmd.Flags().StringP("id", "i", "", "Attribute value id")
 
 	policy_attributeValuesCmd.AddCommand(policy_attributeValuesUpdateCmd)
 	policy_attributeValuesUpdateCmd.Flags().StringP("id", "i", "", "Attribute value id")
-	policy_attributeValuesUpdateCmd.Flags().StringP("value", "v", "", "Value")
+	injectLabelFlags(policy_attributeValuesUpdateCmd, true)
 
 	policy_attributeValuesCmd.AddCommand(policy_attributeValuesDeactivateCmd)
 	policy_attributeValuesDeactivateCmd.Flags().StringP("id", "i", "", "Attribute value id")
@@ -235,4 +285,21 @@ func init() {
 	policy_attributeValueMembersCmd.AddCommand(policy_attributeValueMembersReplaceCmd)
 	policy_attributeValueMembersReplaceCmd.Flags().StringP("id", "i", "", "Attribute value id")
 	policy_attributeValueMembersReplaceCmd.Flags().StringSliceVar(&attrValueMembers, "members", []string{}, "Members to add")
+}
+
+func handleValueSuccess(cmd *cobra.Command, v *policy.Value) {
+	rows := [][]string{
+		{"Id", v.Id},
+		{"FQN", v.Fqn},
+		{"Value", v.Value},
+	}
+	if len(v.Members) > 0 {
+		memberIds := make([]string, len(v.Members))
+		for i, m := range v.Members {
+			memberIds[i] = m.Id
+		}
+		rows = append(rows, []string{"Members", cli.CommaSeparated(memberIds)})
+	}
+	t := cli.NewTabular().Rows(rows...)
+	HandleSuccess(cmd, v.Id, t, v)
 }

@@ -6,6 +6,7 @@ import (
 	"github.com/opentdf/platform/protocol/go/policy/attributes"
 )
 
+// Creates and returns the created value
 func (h *Handler) CreateAttributeValue(attributeId string, value string, metadata *common.MetadataMutable) (*policy.Value, error) {
 	resp, err := h.sdk.Attributes.CreateAttributeValue(h.ctx, &attributes.CreateAttributeValueRequest{
 		AttributeId: attributeId,
@@ -16,7 +17,7 @@ func (h *Handler) CreateAttributeValue(attributeId string, value string, metadat
 		return nil, err
 	}
 
-	return resp.Value, nil
+	return h.GetAttributeValue(resp.GetValue().GetId())
 }
 
 func (h *Handler) GetAttributeValue(id string) (*policy.Value, error) {
@@ -30,6 +31,7 @@ func (h *Handler) GetAttributeValue(id string) (*policy.Value, error) {
 	return resp.Value, nil
 }
 
+// Updates and returns updated value
 func (h *Handler) UpdateAttributeValue(id string, memberIds []string, metadata *common.MetadataMutable, behavior common.MetadataUpdateEnum) (*policy.Value, error) {
 	resp, err := h.sdk.Attributes.UpdateAttributeValue(h.ctx, &attributes.UpdateAttributeValueRequest{
 		Id:                     id,
@@ -41,12 +43,16 @@ func (h *Handler) UpdateAttributeValue(id string, memberIds []string, metadata *
 		return nil, err
 	}
 
-	return resp.Value, nil
+	return h.GetAttributeValue(resp.GetValue().GetId())
 }
 
-func (h *Handler) DeactivateAttributeValue(id string) error {
+// Deactivates and returns deactivated value
+func (h *Handler) DeactivateAttributeValue(id string) (*policy.Value, error) {
 	_, err := h.sdk.Attributes.DeactivateAttributeValue(h.ctx, &attributes.DeactivateAttributeValueRequest{
 		Id: id,
 	})
-	return err
+	if err != nil {
+		return nil, err
+	}
+	return h.GetAttributeValue(id)
 }
