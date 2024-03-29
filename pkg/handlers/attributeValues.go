@@ -6,10 +6,11 @@ import (
 	"github.com/opentdf/platform/protocol/go/policy/attributes"
 )
 
-func (h *Handler) CreateAttributeValue(attributeId string, value string) (*policy.Value, error) {
+func (h *Handler) CreateAttributeValue(attributeId string, value string, metadata *common.MetadataMutable) (*policy.Value, error) {
 	resp, err := h.sdk.Attributes.CreateAttributeValue(h.ctx, &attributes.CreateAttributeValueRequest{
 		AttributeId: attributeId,
 		Value:       value,
+		Metadata:    metadata,
 	})
 	if err != nil {
 		return nil, err
@@ -43,7 +44,7 @@ func (h *Handler) UpdateAttributeValue(id string, memberIds []string, metadata *
 	return resp.Value, nil
 }
 
-func (h *Handler) DeleteAttributeValue(id string) error {
+func (h *Handler) DeactivateAttributeValue(id string) error {
 	_, err := h.sdk.Attributes.DeactivateAttributeValue(h.ctx, &attributes.DeactivateAttributeValueRequest{
 		Id: id,
 	})

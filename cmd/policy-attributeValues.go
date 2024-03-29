@@ -3,9 +3,29 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/opentdf/tructl/pkg/cli"
 	"github.com/spf13/cobra"
 )
+
+// TODO: add metadata to outputs once [https://github.com/opentdf/tructl/issues/73] is addressed
+
+func handleValueSuccess(cmd *cobra.Command, v *policy.Value) {
+	rows := [][]string{
+		{"Id", v.Id},
+		{"FQN", v.Fqn},
+		{"Value", v.Value},
+	}
+	if len(v.Members) > 0 {
+		memberIds := make([]string, len(v.Members))
+		for i, m := range v.Members {
+			memberIds[i] = m.Id
+		}
+		rows = append(rows, []string{"Members", cli.CommaSeparated(memberIds)})
+	}
+	t := cli.NewTabular().Rows(rows...)
+	HandleSuccess(cmd, v.Id, t, v)
+}
 
 var (
 	policy_attributeValuesCmd = &cobra.Command{
@@ -20,34 +40,22 @@ var (
 			flagHelper := cli.NewFlagHelper(cmd)
 			attrId := flagHelper.GetRequiredString("attribute-id")
 			value := flagHelper.GetRequiredString("value")
+			metadataLabels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
 
 			h := cli.NewHandler(cmd)
 			defer h.Close()
 
 			attr, err := h.GetAttribute(attrId)
 			if err != nil {
-				errMsg := "Could not find attribute"
-				cli.ExitWithNotFoundError(errMsg, err)
-				cli.ExitWithError(errMsg, err)
+				cli.ExitWithNotFoundError("Could not find attribute", err)
 			}
 
-			newValue, err := h.CreateAttributeValue(attr.Id, value)
+			v, err := h.CreateAttributeValue(attr.Id, value, getMetadataMutable(metadataLabels))
 			if err != nil {
-				errMsg := "Could not create attribute value"
-				cli.ExitWithNotFoundError(errMsg, err)
-				cli.ExitWithError(errMsg, err)
+				cli.ExitWithError("Could not create attribute value", err)
 			}
 
-			v := cli.GetSimpleAttributeValue(newValue)
-			fmt.Println(cli.SuccessMessage("Attribute value created"))
-			fmt.Println(
-				cli.NewTabular().
-					Rows([][]string{
-						{"Id", v.Id},
-						{"FQN", v.FQN},
-						{"Members", cli.CommaSeparated(v.Members)},
-					}...).Render(),
-			)
+			handleValueSuccess(cmd, v)
 		},
 	}
 
@@ -61,22 +69,12 @@ var (
 			h := cli.NewHandler(cmd)
 			defer h.Close()
 
-			value, err := h.GetAttributeValue(id)
+			v, err := h.GetAttributeValue(id)
 			if err != nil {
-				errMsg := "Could not find attribute value"
-				cli.ExitWithNotFoundError(errMsg, err)
-				cli.ExitWithError(errMsg, err)
+				cli.ExitWithNotFoundError("Could not find attribute value", err)
 			}
 
-			v := cli.GetSimpleAttributeValue(value)
-			fmt.Println(
-				cli.NewTabular().
-					Rows([][]string{
-						{"Id", v.Id},
-						{"FQN", v.FQN},
-						{"Members", cli.CommaSeparated(v.Members)},
-					}...).Render(),
-			)
+			handleValueSuccess(cmd, v)
 		},
 	}
 
@@ -86,42 +84,28 @@ var (
 		Run: func(cmd *cobra.Command, args []string) {
 			flagHelper := cli.NewFlagHelper(cmd)
 			id := flagHelper.GetRequiredString("id")
+			metadataLabels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
 
 			h := cli.NewHandler(cmd)
 			defer h.Close()
 
 			_, err := h.GetAttributeValue(id)
 			if err != nil {
-				errMsg := "Could not find attribute value"
-				cli.ExitWithNotFoundError(errMsg, err)
-				cli.ExitWithError(errMsg, err)
+				cli.ExitWithNotFoundError("Could not find attribute value", err)
 			}
 
-			newValue := flagHelper.GetRequiredString("value")
-
-			attr, err := h.UpdateAttributeValue(id, newValue)
+			v, err := h.UpdateAttributeValue(id, nil, getMetadataMutable(metadataLabels), getMetadataUpdateBehavior())
 			if err != nil {
-				errMsg := "Could not update attribute value"
-				cli.ExitWithNotFoundError(errMsg, err)
-				cli.ExitWithError(errMsg, err)
+				cli.ExitWithError("Could not update attribute value", err)
 			}
 
-			v := cli.GetSimpleAttributeValue(attr)
-			fmt.Println(cli.SuccessMessage("Attribute value updated"))
-			fmt.Println(
-				cli.NewTabular().
-					Rows([][]string{
-						{"Id", v.Id},
-						{"FQN", v.FQN},
-						{"Members", cli.CommaSeparated(v.Members)},
-					}...).Render(),
-			)
+			handleValueSuccess(cmd, v)
 		},
 	}
 
-	policy_attributeValuesDeleteCmd = &cobra.Command{
-		Use:   "delete",
-		Short: "Delete an attribute value",
+	policy_attributeValuesDeactivateCmd = &cobra.Command{
+		Use:   "deactivate",
+		Short: "Deactivate an attribute value",
 		Run: func(cmd *cobra.Command, args []string) {
 			flagHelper := cli.NewFlagHelper(cmd)
 			id := flagHelper.GetRequiredString("id")
@@ -131,30 +115,17 @@ var (
 
 			value, err := h.GetAttributeValue(id)
 			if err != nil {
-				errMsg := "Could not find attribute value"
-				cli.ExitWithNotFoundError(errMsg, err)
-				cli.ExitWithError(errMsg, err)
+				cli.ExitWithNotFoundError("Could not find attribute value", err)
 			}
 
-			cli.ConfirmDelete("attribute value", value.Value)
+			cli.ConfirmAction(cli.ActionDeactivate, "attribute value", value.Value)
 
-			err = h.DeleteAttributeValue(id)
+			err = h.DeactivateAttributeValue(id)
 			if err != nil {
-				errMsg := "Could not delete attribute value"
-				cli.ExitWithNotFoundError(errMsg, err)
-				cli.ExitWithError(errMsg, err)
+				cli.ExitWithError("Could not deactivate attribute value", err)
 			}
 
-			v := cli.GetSimpleAttributeValue(value)
-			fmt.Println(cli.SuccessMessage("Attribute deleted"))
-			fmt.Println(
-				cli.NewTabular().
-					Rows([][]string{
-						{"Id", v.Id},
-						{"FQN", v.FQN},
-						{"Members", cli.CommaSeparated(v.Members)},
-					}...).Render(),
-			)
+			handleValueSuccess(cmd, value)
 		},
 	}
 
@@ -176,7 +147,7 @@ var (
 		Run: func(cmd *cobra.Command, args []string) {
 			flagHelper := cli.NewFlagHelper(cmd)
 			id := flagHelper.GetRequiredString("id")
-			members := flagHelper.GetStringSlice("members", attrValueMembers, cli.FlagHelperStringSliceOptions{})
+			members := flagHelper.GetStringSlice("member", attrValueMembers, cli.FlagHelperStringSliceOptions{})
 
 			// TODO: Implement
 			fmt.Println("Not implemented")
@@ -246,8 +217,8 @@ func init() {
 	policy_attributeValuesUpdateCmd.Flags().StringP("id", "i", "", "Attribute value id")
 	policy_attributeValuesUpdateCmd.Flags().StringP("value", "v", "", "Value")
 
-	policy_attributeValuesCmd.AddCommand(policy_attributeValuesDeleteCmd)
-	policy_attributeValuesDeleteCmd.Flags().StringP("id", "i", "", "Attribute value id")
+	policy_attributeValuesCmd.AddCommand(policy_attributeValuesDeactivateCmd)
+	policy_attributeValuesDeactivateCmd.Flags().StringP("id", "i", "", "Attribute value id")
 
 	// Attribute value members
 	policy_attributeValuesCmd.AddCommand(policy_attributeValueMembersCmd)
@@ -264,5 +235,4 @@ func init() {
 	policy_attributeValueMembersCmd.AddCommand(policy_attributeValueMembersReplaceCmd)
 	policy_attributeValueMembersReplaceCmd.Flags().StringP("id", "i", "", "Attribute value id")
 	policy_attributeValueMembersReplaceCmd.Flags().StringSliceVar(&attrValueMembers, "members", []string{}, "Members to add")
-
 }
