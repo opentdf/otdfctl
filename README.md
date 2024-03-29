@@ -10,7 +10,6 @@ The main goals are to:
 
 ## TODO list
 
-- [ ] Add support for `--json` persistent flag
 - [ ] Add support for json input as piped input
 - [ ] Add help level handler for each command
 - [ ] Add support for `--verbose` persistent flag
@@ -20,6 +19,10 @@ The main goals are to:
 
 ## Usage
 
+The CLI is configured via the `tructl.yaml`. There is an example provided in `example-tructl.yaml`.
+
+Run `cp example-tructl.yaml tructl.yaml` to copy the example config when running the CLI.
+
 ## Development
 
 ### CLI
@@ -28,13 +31,14 @@ The CLI is built using [cobra](https://cobra.dev/).
 
 The primary function is to support CRUD operations using commands as arguments and flags as the values.
 
+The output format (currently `styled` or `json`) is configurable in the `tructl.yaml` or via CLI flag.
+
 #### To add a command
 
 1. Capture the flag value and validate the values
    1. Alt support JSON input as piped input
 2. Run the handler which is located in `pkg/handlers` and pass the values as arguments
 3. Handle any errors and return the result in a lite TUI format
-   1. Alt support JSON output when `--json` flag is passed
 
 ### TUI
 

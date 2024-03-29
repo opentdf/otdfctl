@@ -3,7 +3,7 @@ package cli
 import (
 	"strings"
 
-	"github.com/opentdf/opentdf-v2-poc/sdk/attributes"
+	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/opentdf/tructl/pkg/handlers"
 )
 
@@ -21,7 +21,7 @@ type SimpleAttributeValue struct {
 	Members []string
 }
 
-func GetSimpleAttribute(a *attributes.Attribute) SimpleAttribute {
+func GetSimpleAttribute(a *policy.Attribute) SimpleAttribute {
 	values := []string{}
 	for _, v := range a.Values {
 		values = append(values, v.Value)
@@ -36,7 +36,7 @@ func GetSimpleAttribute(a *attributes.Attribute) SimpleAttribute {
 	}
 }
 
-func GetSimpleAttributeValue(v *attributes.Value) SimpleAttributeValue {
+func GetSimpleAttributeValue(v *policy.Value) SimpleAttributeValue {
 	members := []string{}
 
 	fqn := strings.Join([]string{"v.Attribute.Namespace.Name", "attr", "v.Attribute.Name", "value", v.Value}, "/")

@@ -57,3 +57,28 @@ func (f FlagHelper) GetRequiredInt32(flag string) int32 {
 	// }
 	return v
 }
+
+// func (f FlagHelper) GetStructSlice(flag string, v []StructFlag[T], opts FlagHelperStringSliceOptions) ([]StructFlag[T], err) {
+// 	if len(v) < opts.Min {
+// 		fmt.Println(ErrorMessage(fmt.Sprintf("Flag %s must have at least %d non-empty values", flag, opts.Min), nil))
+// 		os.Exit(1)
+// 	}
+// 	if opts.Max > 0 && len(v) > opts.Max {
+// 		fmt.Println(ErrorMessage(fmt.Sprintf("Flag %s must have at most %d non-empty values", flag, opts.Max), nil))
+// 		os.Exit(1)
+// 	}
+// 	return v
+// }
+
+// type StructFlag[T any] struct {
+// 	Val T
+// }
+
+// func (this StructFlag[T]) String() string {
+// 	b, _ := json.Marshal(this)
+// 	return string(b)
+// }
+
+// func (this StructFlag[T]) Set(s string) error {
+// 	return json.Unmarshal([]byte(s), this)
+// }

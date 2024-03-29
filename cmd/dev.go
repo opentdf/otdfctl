@@ -3,8 +3,11 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
-	"github.com/opentdf/opentdf-v2-poc/sdk/common"
+	"github.com/charmbracelet/lipgloss/table"
+	"github.com/opentdf/platform/protocol/go/common"
+	"github.com/opentdf/tructl/internal/config"
 	"github.com/opentdf/tructl/pkg/cli"
 	"github.com/spf13/cobra"
 )
@@ -59,9 +62,6 @@ func getMetadataRows(m *common.Metadata) [][]string {
 			}
 			metadataRows = append(metadataRows, []string{"Labels", cli.CommaSeparated(labelRows)})
 		}
-		if m.Description != "" {
-			metadataRows = append(metadataRows, []string{"Description", m.Description})
-		}
 		return metadataRows
 	}
 	return nil
@@ -76,6 +76,50 @@ func unMarshalMetadata(m string) *common.MetadataMutable {
 		return metadata
 	}
 	return nil
+}
+
+func getMetadataMutable(labels []string) *common.MetadataMutable {
+	metadata := common.MetadataMutable{}
+	if len(labels) > 0 {
+		metadata.Labels = map[string]string{}
+		for _, label := range labels {
+			kv := strings.Split(label, "=")
+			if len(kv) != 2 {
+				cli.ExitWithError("Invalid label format", nil)
+			}
+			metadata.Labels[kv[0]] = kv[1]
+		}
+		return &metadata
+	}
+	return nil
+}
+
+func getMetadataUpdateBehavior() common.MetadataUpdateEnum {
+	if forceReplaceMetadataLabels {
+		return common.MetadataUpdateEnum_METADATA_UPDATE_ENUM_REPLACE
+	}
+	return common.MetadataUpdateEnum_METADATA_UPDATE_ENUM_EXTEND
+}
+
+// HandleSuccess prints a success message according to the configured format (styled table or JSON)
+func HandleSuccess(command *cobra.Command, id string, t *table.Table, policyObject interface{}) {
+	if TructlCfg.Output.Format == config.OutputJSON || configFlagOverrides.OutputFormatJSON {
+		if output, err := json.MarshalIndent(policyObject, "", "  "); err != nil {
+			cli.ExitWithError("Error marshalling policy object", err)
+		} else {
+			fmt.Println(string(output))
+		}
+		return
+	}
+	cli.PrintSuccessTable(command, id, t)
+}
+
+// Adds reusable create/update label flags to a Policy command and the optional force-replace-labels flag for updates only
+func injectLabelFlags(cmd *cobra.Command, isUpdate bool) {
+	cmd.Flags().StringSliceVarP(&metadataLabels, "label", "l", []string{}, "Optional metadata 'labels' in the format: key=value")
+	if isUpdate {
+		cmd.Flags().BoolVar(&forceReplaceMetadataLabels, "force-replace-labels", false, "Destructively replace entire set of existing metadata 'labels' with any provided to this command.")
+	}
 }
 
 func init() {
