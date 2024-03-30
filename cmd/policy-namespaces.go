@@ -16,7 +16,7 @@ var (
 		policy_namespaceGetCmd.Use,
 		policy_namespacesListCmd.Use,
 		policy_namespaceUpdateCmd.Use,
-		policy_namespaceDeleteCmd.Use,
+		policy_namespaceDeactivateCmd.Use,
 	}
 
 	policy_namespacesCmd = &cobra.Command{
@@ -43,8 +43,8 @@ or different attributes tied to each.
 
 			ns, err := h.GetNamespace(id)
 			if err != nil {
-				errMsg := fmt.Sprintf("Could not find namespace (%s)", id)
-				cli.ExitWithNotFoundError(errMsg, err)
+				errMsg := fmt.Sprintf("Failed to get namespace (%s)", id)
+				cli.ExitWithError(errMsg, err)
 			}
 
 			t := cli.NewTabular().
@@ -65,7 +65,7 @@ or different attributes tied to each.
 
 			list, err := h.ListNamespaces()
 			if err != nil {
-				cli.ExitWithError("Could not get namespaces", err)
+				cli.ExitWithError("Failed to list namespaces", err)
 			}
 
 			t := cli.NewTable()
@@ -93,7 +93,7 @@ or different attributes tied to each.
 
 			created, err := h.CreateNamespace(name, getMetadataMutable(metadataLabels))
 			if err != nil {
-				cli.ExitWithError("Could not create namespace", err)
+				cli.ExitWithError("Failed to create namespace", err)
 			}
 
 			t := cli.NewTabular().Rows([][]string{
@@ -104,9 +104,9 @@ or different attributes tied to each.
 		},
 	}
 
-	policy_namespaceDeleteCmd = &cobra.Command{
+	policy_namespaceDeactivateCmd = &cobra.Command{
 		Use:   "deactivate",
-		Short: "Delete a namespace by id",
+		Short: "Deactivate a namespace by id",
 		Run: func(cmd *cobra.Command, args []string) {
 			h := cli.NewHandler(cmd)
 			defer h.Close()
@@ -116,15 +116,16 @@ or different attributes tied to each.
 
 			ns, err := h.GetNamespace(id)
 			if err != nil {
-				errMsg := fmt.Sprintf("Could not find namespace (%s)", id)
-				cli.ExitWithNotFoundError(errMsg, err)
+				errMsg := fmt.Sprintf("Failed to find namespace (%s)", id)
+				cli.ExitWithError(errMsg, err)
 			}
 
-			cli.ConfirmDelete("namespace", ns.Name)
+			cli.ConfirmAction(cli.ActionDeactivate, "namespace", ns.Name)
 
-			if err := h.DeactivateNamespace(id); err != nil {
-				errMsg := fmt.Sprintf("Could not deactivate namespace (%s)", id)
-				cli.ExitWithNotFoundError(errMsg, err)
+			d, err := h.DeactivateNamespace(id)
+			if err != nil {
+				errMsg := fmt.Sprintf("Failed to deactivate namespace (%s)", id)
+				cli.ExitWithError(errMsg, err)
 			}
 
 			t := cli.NewTabular().
@@ -132,7 +133,7 @@ or different attributes tied to each.
 					{"Id", ns.Id},
 					{"Name", ns.Name},
 				}...)
-			HandleSuccess(cmd, ns.Id, t, ns)
+			HandleSuccess(cmd, ns.Id, t, d)
 		},
 	}
 
@@ -154,7 +155,7 @@ or different attributes tied to each.
 				getMetadataUpdateBehavior(),
 			)
 			if err != nil {
-				cli.ExitWithError("Could not update namespace", err)
+				cli.ExitWithError(fmt.Sprintf("Failed to update namespace (%s)", id), err)
 			}
 
 			t := cli.NewTabular().Rows([][]string{
@@ -182,6 +183,6 @@ func init() {
 	policy_namespaceUpdateCmd.Flags().StringP("id", "i", "", "Id of the namespace")
 	injectLabelFlags(policy_namespaceUpdateCmd, true)
 
-	policy_namespacesCmd.AddCommand(policy_namespaceDeleteCmd)
-	policy_namespaceDeleteCmd.Flags().StringP("id", "i", "", "Id of the namespace")
+	policy_namespacesCmd.AddCommand(policy_namespaceDeactivateCmd)
+	policy_namespaceDeactivateCmd.Flags().StringP("id", "i", "", "Id of the namespace")
 }

@@ -16,7 +16,7 @@ func (h Handler) UpdateKasGrantForAttribute(attr_id string, kas_id string) (*att
 		return nil, err
 	}
 
-	return resp.AttributeKeyAccessServer, nil
+	return resp.GetAttributeKeyAccessServer(), nil
 }
 
 func (h Handler) DeleteKasGrantFromAttribute(attr_id string, kas_id string) (*attributes.AttributeKeyAccessServer, error) {
@@ -31,7 +31,7 @@ func (h Handler) DeleteKasGrantFromAttribute(attr_id string, kas_id string) (*at
 		return nil, err
 	}
 
-	return resp.AttributeKeyAccessServer, nil
+	return resp.GetAttributeKeyAccessServer(), nil
 }
 
 func (h Handler) UpdateKasGrantForValue(val_id string, kas_id string) (*attributes.ValueKeyAccessServer, error) {
@@ -46,7 +46,7 @@ func (h Handler) UpdateKasGrantForValue(val_id string, kas_id string) (*attribut
 		return nil, err
 	}
 
-	return resp.ValueKeyAccessServer, nil
+	return resp.GetValueKeyAccessServer(), nil
 }
 
 func (h Handler) DeleteKasGrantFromValue(val_id string, kas_id string) (*attributes.ValueKeyAccessServer, error) {
@@ -61,5 +61,5 @@ func (h Handler) DeleteKasGrantFromValue(val_id string, kas_id string) (*attribu
 		return nil, err
 	}
 
-	return resp.ValueKeyAccessServer, nil
+	return resp.GetValueKeyAccessServer(), nil
 }

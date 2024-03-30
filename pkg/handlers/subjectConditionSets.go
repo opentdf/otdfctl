@@ -14,7 +14,7 @@ func (h Handler) GetSubjectConditionSet(id string) (*policy.SubjectConditionSet,
 		return nil, err
 	}
 
-	return resp.SubjectConditionSet, nil
+	return resp.GetSubjectConditionSet(), nil
 }
 
 func (h Handler) ListSubjectConditionSets() ([]*policy.SubjectConditionSet, error) {
@@ -22,9 +22,10 @@ func (h Handler) ListSubjectConditionSets() ([]*policy.SubjectConditionSet, erro
 	if err != nil {
 		return nil, err
 	}
-	return resp.SubjectConditionSets, err
+	return resp.GetSubjectConditionSets(), err
 }
 
+// Creates and returns the created subject condition set
 func (h Handler) CreateSubjectConditionSet(ss []*policy.SubjectSet, metadata *common.MetadataMutable) (*policy.SubjectConditionSet, error) {
 	resp, err := h.sdk.SubjectMapping.CreateSubjectConditionSet(h.ctx, &subjectmapping.CreateSubjectConditionSetRequest{
 		SubjectConditionSet: &subjectmapping.SubjectConditionSetCreate{
@@ -35,11 +36,12 @@ func (h Handler) CreateSubjectConditionSet(ss []*policy.SubjectSet, metadata *co
 	if err != nil {
 		return nil, err
 	}
-	return resp.SubjectConditionSet, nil
+	return h.GetSubjectConditionSet(resp.GetSubjectConditionSet().GetId())
 }
 
+// Updates and returns the updated subject condition set
 func (h Handler) UpdateSubjectConditionSet(id string, ss []*policy.SubjectSet, metadata *common.MetadataMutable, behavior common.MetadataUpdateEnum) (*policy.SubjectConditionSet, error) {
-	resp, err := h.sdk.SubjectMapping.UpdateSubjectConditionSet(h.ctx, &subjectmapping.UpdateSubjectConditionSetRequest{
+	_, err := h.sdk.SubjectMapping.UpdateSubjectConditionSet(h.ctx, &subjectmapping.UpdateSubjectConditionSetRequest{
 		Id:                     id,
 		SubjectSets:            ss,
 		Metadata:               metadata,
@@ -48,7 +50,7 @@ func (h Handler) UpdateSubjectConditionSet(id string, ss []*policy.SubjectSet, m
 	if err != nil {
 		return nil, err
 	}
-	return resp.SubjectConditionSet, nil
+	return h.GetSubjectConditionSet(id)
 }
 
 func (h Handler) DeleteSubjectConditionSet(id string) error {

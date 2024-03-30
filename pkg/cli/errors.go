@@ -9,6 +9,7 @@ import (
 )
 
 func ExitWithError(errMsg string, err error) {
+	ExitWithNotFoundError(errMsg, err)
 	if err != nil {
 		fmt.Println(ErrorMessage(errMsg, err))
 		os.Exit(1)
@@ -17,7 +18,7 @@ func ExitWithError(errMsg string, err error) {
 
 func ExitWithNotFoundError(errMsg string, err error) {
 	if e, ok := status.FromError(err); ok && e.Code() == codes.NotFound {
-		fmt.Println(ErrorMessage(errMsg+" not found", nil))
+		fmt.Println(ErrorMessage(errMsg+": not found", nil))
 		os.Exit(1)
 	}
 }

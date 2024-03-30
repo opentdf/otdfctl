@@ -14,7 +14,7 @@ func (h Handler) GetNamespace(id string) (*policy.Namespace, error) {
 		return nil, err
 	}
 
-	return resp.Namespace, nil
+	return resp.GetNamespace(), nil
 }
 
 func (h Handler) ListNamespaces() ([]*policy.Namespace, error) {
@@ -23,9 +23,10 @@ func (h Handler) ListNamespaces() ([]*policy.Namespace, error) {
 		return nil, err
 	}
 
-	return resp.Namespaces, nil
+	return resp.GetNamespaces(), nil
 }
 
+// Creates and returns the created n
 func (h Handler) CreateNamespace(name string, metadata *common.MetadataMutable) (*policy.Namespace, error) {
 	resp, err := h.sdk.Namespaces.CreateNamespace(h.ctx, &namespaces.CreateNamespaceRequest{
 		Name:     name,
@@ -35,11 +36,12 @@ func (h Handler) CreateNamespace(name string, metadata *common.MetadataMutable) 
 		return nil, err
 	}
 
-	return resp.Namespace, nil
+	return h.GetNamespace(resp.GetNamespace().GetId())
 }
 
+// Updates and returns the updated namespace
 func (h Handler) UpdateNamespace(id string, metadata *common.MetadataMutable, behavior common.MetadataUpdateEnum) (*policy.Namespace, error) {
-	resp, err := h.sdk.Namespaces.UpdateNamespace(h.ctx, &namespaces.UpdateNamespaceRequest{
+	_, err := h.sdk.Namespaces.UpdateNamespace(h.ctx, &namespaces.UpdateNamespaceRequest{
 		Id:                     id,
 		Metadata:               metadata,
 		MetadataUpdateBehavior: behavior,
@@ -47,16 +49,17 @@ func (h Handler) UpdateNamespace(id string, metadata *common.MetadataMutable, be
 	if err != nil {
 		return nil, err
 	}
-	return resp.Namespace, nil
+	return h.GetNamespace(id)
 }
 
-func (h Handler) DeactivateNamespace(id string) error {
+// Deactivates and returns the deactivated namespace
+func (h Handler) DeactivateNamespace(id string) (*policy.Namespace, error) {
 	_, err := h.sdk.Namespaces.DeactivateNamespace(h.ctx, &namespaces.DeactivateNamespaceRequest{
 		Id: id,
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return h.GetNamespace(id)
 }

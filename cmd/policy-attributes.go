@@ -21,7 +21,7 @@ var (
 		policy_attributeGetCmd.Use,
 		policy_attributesListCmd.Use,
 		policy_attributeUpdateCmd.Use,
-		policy_attributesDeleteCmd.Use,
+		policy_attributesDeactivateCmd.Use,
 	}
 
 	policy_attributesCmd = &cobra.Command{
@@ -46,31 +46,20 @@ used to define the access controls based on subject encodings and entity entitle
 			flagHelper := cli.NewFlagHelper(cmd)
 			name := flagHelper.GetRequiredString("name")
 			rule := flagHelper.GetRequiredString("rule")
-			values := flagHelper.GetStringSlice("values", attrValues, cli.FlagHelperStringSliceOptions{})
+			values := flagHelper.GetStringSlice("value", attrValues, cli.FlagHelperStringSliceOptions{})
 			namespace := flagHelper.GetRequiredString("namespace")
 			metadataLabels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
 
-			attr, err := h.CreateAttribute(name, rule, namespace, getMetadataMutable(metadataLabels))
+			attr, err := h.CreateAttribute(name, rule, namespace, values, getMetadataMutable(metadataLabels))
 			if err != nil {
-				cli.ExitWithError("Could not create attribute", err)
-			}
-
-			// create attribute values
-			attrValues := make([]*policy.Value, 0, len(values))
-			valueErrors := make(map[string]error)
-			for _, value := range values {
-				v, err := h.CreateAttributeValue(attr.Id, value)
-				if err != nil {
-					valueErrors[value] = err
-				}
-				attrValues = append(attrValues, v)
+				cli.ExitWithError("Failed to create attribute", err)
 			}
 
 			a := cli.GetSimpleAttribute(&policy.Attribute{
 				Id:        attr.Id,
 				Name:      attr.Name,
 				Rule:      attr.Rule,
-				Values:    attrValues,
+				Values:    attr.Values,
 				Namespace: attr.Namespace,
 			})
 
@@ -81,13 +70,7 @@ used to define the access controls based on subject encodings and entity entitle
 				{"Namespace", a.Namespace},
 			}...)
 
-			if len(valueErrors) > 0 {
-				fmt.Println(cli.ErrorMessage("Error creating attribute values", nil))
-				for value, err := range valueErrors {
-					cli.ErrorMessage(value, err)
-				}
-			}
-			HandleSuccess(cmd, a.Id, t, a)
+			HandleSuccess(cmd, a.Id, t, attr)
 		},
 	}
 
@@ -104,8 +87,8 @@ used to define the access controls based on subject encodings and entity entitle
 
 			attr, err := h.GetAttribute(id)
 			if err != nil {
-				errMsg := fmt.Sprintf("Could not find attribute (%s)", id)
-				cli.ExitWithNotFoundError(errMsg, err)
+				errMsg := fmt.Sprintf("Failed to get attribute (%s)", id)
+				cli.ExitWithError(errMsg, err)
 			}
 
 			a := cli.GetSimpleAttribute(attr)
@@ -131,7 +114,7 @@ used to define the access controls based on subject encodings and entity entitle
 
 			attrs, err := h.ListAttributes()
 			if err != nil {
-				cli.ExitWithError("Could not get attributes", err)
+				cli.ExitWithError("Failed to list attributes", err)
 			}
 
 			t := cli.NewTable()
@@ -150,9 +133,9 @@ used to define the access controls based on subject encodings and entity entitle
 		},
 	}
 
-	policy_attributesDeleteCmd = &cobra.Command{
+	policy_attributesDeactivateCmd = &cobra.Command{
 		Use:   "deactivate",
-		Short: "Delete an attribute",
+		Short: "Deactivate an attribute",
 		Run: func(cmd *cobra.Command, args []string) {
 			flagHelper := cli.NewFlagHelper(cmd)
 			id := flagHelper.GetRequiredString("id")
@@ -162,16 +145,16 @@ used to define the access controls based on subject encodings and entity entitle
 
 			attr, err := h.GetAttribute(id)
 			if err != nil {
-				errMsg := fmt.Sprintf("Could not find attribute (%s)", id)
-				cli.ExitWithNotFoundError(errMsg, err)
+				errMsg := fmt.Sprintf("Failed to get attribute (%s)", id)
+				cli.ExitWithError(errMsg, err)
 			}
 
-			cli.ConfirmDelete("attribute", attr.Name)
+			cli.ConfirmAction(cli.ActionDeactivate, "attribute", attr.Name)
 
 			attr, err = h.DeactivateAttribute(id)
 			if err != nil {
-				errMsg := fmt.Sprintf("Could not deactivate attribute (%s)", id)
-				cli.ExitWithNotFoundError(errMsg, err)
+				errMsg := fmt.Sprintf("Failed to deactivate attribute (%s)", id)
+				cli.ExitWithError(errMsg, err)
 			}
 
 			a := cli.GetSimpleAttribute(attr)
@@ -199,7 +182,7 @@ used to define the access controls based on subject encodings and entity entitle
 			labels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
 
 			if a, err := h.UpdateAttribute(id, getMetadataMutable(labels), getMetadataUpdateBehavior()); err != nil {
-				cli.ExitWithError("Could not update attribute", err)
+				cli.ExitWithError(fmt.Sprintf("Failed to update attribute (%s)", id), err)
 			} else {
 				HandleSuccess(cmd, id, nil, a)
 			}
@@ -214,7 +197,7 @@ func init() {
 	policy_attributesCmd.AddCommand(policy_attributesCreateCmd)
 	policy_attributesCreateCmd.Flags().StringP("name", "n", "", "Name of the attribute")
 	policy_attributesCreateCmd.Flags().StringP("rule", "r", "", "Rule of the attribute")
-	policy_attributesCreateCmd.Flags().StringSliceVarP(&attrValues, "values", "v", []string{}, "Values of the attribute")
+	policy_attributesCreateCmd.Flags().StringSliceVarP(&attrValues, "value", "v", []string{}, "Values of the attribute")
 	policy_attributesCreateCmd.Flags().StringP("namespace", "s", "", "Namespace of the attribute")
 	injectLabelFlags(policy_attributesCreateCmd, false)
 
@@ -230,7 +213,7 @@ func init() {
 	policy_attributeUpdateCmd.Flags().StringP("id", "i", "", "Id of the attribute")
 	injectLabelFlags(policy_attributeUpdateCmd, true)
 
-	// Delete an attribute
-	policy_attributesCmd.AddCommand(policy_attributesDeleteCmd)
-	policy_attributesDeleteCmd.Flags().StringP("id", "i", "", "Id of the attribute")
+	// Deactivate an attribute
+	policy_attributesCmd.AddCommand(policy_attributesDeactivateCmd)
+	policy_attributesDeactivateCmd.Flags().StringP("id", "i", "", "Id of the attribute")
 }

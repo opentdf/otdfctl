@@ -26,22 +26,22 @@ func PrintSuccessTable(cmd *cobra.Command, id string, t *table.Table) {
 		helper string
 	}
 	switch cmd.Use {
-	case "get":
+	case ActionGet:
 		msg.verb = fmt.Sprintf("Found %s: %s", resource, id)
 		msg.helper = getJsonHelper(resource + " get --id=" + id)
-	case "create":
+	case ActionCreate:
 		msg.verb = fmt.Sprintf("Created %s: %s", resource, id)
 		msg.helper = getJsonHelper(resource + " get --id=" + id)
-	case "update":
+	case ActionUpdate:
 		msg.verb = fmt.Sprintf("Updated %s: %s", resource, id)
 		msg.helper = getJsonHelper(resource + " get --id=" + id)
-	case "delete":
+	case ActionDelete:
 		msg.verb = fmt.Sprintf("Deleted %s: %s", resource, id)
 		msg.helper = getJsonHelper(resource + " list")
-	case "deactivate":
+	case ActionDeactivate:
 		msg.verb = fmt.Sprintf("Deactivated %s: %s", resource, id)
 		msg.helper = getJsonHelper(resource + " list") // TODO: make sure the filters are provided here to get ACTIVE/INACTIVE/ANY
-	case "list":
+	case ActionList:
 		msg.verb = fmt.Sprintf("Found %s list", resource)
 		msg.helper = getJsonHelper(resource + " get --id=<id>")
 	default:
