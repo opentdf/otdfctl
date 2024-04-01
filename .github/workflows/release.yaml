@@ -1,5 +1,5 @@
-name: 'CI - Build'
-on: 
+name: 'Release'
+on:
   workflow_dispatch:
     inputs:
       versionBumpType:
@@ -34,6 +34,7 @@ jobs:
           pep440: false
       - name: print-version
         run: echo Incrementing Version ${{ steps.version.outputs.current-version }} -> ${{ steps.version.outputs.version }}
+      # TODO: remove this step when `opentdf/platform` is public
       # special app the virtru eng team created, to grab a token for accessing other org repos, in a secure way
       - name: Generate a token
         id: generate_token
@@ -50,13 +51,13 @@ jobs:
         run: make build
       - name: smoke-test
         run: go test ./... -short -race -cover
+      - name: zip builds 
+        run: make zip-binaries
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
-          files: './target/**/*'
-          body: "This is a test release, and will be removed"
+          files: './output/**/*'
+          body: 'This is a test release, and will be removed'
           tag_name: ${{ steps.version.outputs.version }}
           repository: opentdf/tructl
           generate_release_notes: true
-
-

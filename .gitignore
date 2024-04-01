@@ -3,3 +3,4 @@ bin/.DS_Store
 target/
 .vscode/launch.json
 tructl.yaml
+output/
