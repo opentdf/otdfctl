@@ -34,5 +34,5 @@ for binary_file in "$binary_dir"/*; do
     fi
 
     # Append checksums to the file
-    echo "$(cat "$output_dir/$compressed" | gzip -1fc | tail -c8 | od -t x4 -N 4 -A n) $compressed" >> $checksums_file
+    echo "$(cat "$output_dir/$compressed" | shasum -a 256) $compressed" >> $checksums_file
 done

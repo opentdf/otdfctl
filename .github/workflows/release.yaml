@@ -51,7 +51,7 @@ jobs:
         run: make build
       - name: smoke-test
         run: go test ./... -short -race -cover
-      - name: zip builds
+      - name: Compress the builds and generate checksums
         env:
           SEM_VER: ${{ steps.version.outputs.version }}
         run: make zip-builds
