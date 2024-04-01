@@ -51,8 +51,10 @@ jobs:
         run: make build
       - name: smoke-test
         run: go test ./... -short -race -cover
-      - name: zip builds 
-        run: make zip-binaries
+      - name: zip builds
+        env:
+          SEM_VER: ${{ steps.version.outputs.version }}
+        run: make zip-builds
       - name: Release
         uses: softprops/action-gh-release@v1
         with:

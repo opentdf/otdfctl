@@ -68,5 +68,5 @@ clean:
 
 # Script for zipping up the compiled binaries
 .PHONY: zip-binaries
-zip-binaries:
-	./.github/scripts/zip-builds.sh $(TARGET_DIR) $(OUTPUT_DIR)
+zip-builds:
+	./.github/scripts/zip-builds.sh $(BINARY_NAME)-$(CURR_VERSION) $(TARGET_DIR) $(OUTPUT_DIR)
