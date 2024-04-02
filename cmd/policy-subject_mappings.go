@@ -159,14 +159,19 @@ Note: SubjectConditionSets are reusable among SubjectMappings and are available 
 					}
 				}
 			}
+
 			actions := getFullActionsList(standardActions, customActions)
 
 			var ss []*policy.SubjectSet
-			if err := json.Unmarshal([]byte(newScsJSON), &ss); err != nil {
-				cli.ExitWithError("Error unmarshalling subject sets", err)
-			}
-			scs := &subjectmapping.SubjectConditionSetCreate{
-				SubjectSets: ss,
+			var scs *subjectmapping.SubjectConditionSetCreate
+			if newScsJSON != "" {
+				if err := json.Unmarshal([]byte(newScsJSON), &ss); err != nil {
+					fmt.Println("here")
+					cli.ExitWithError("Error unmarshalling subject sets", err)
+				}
+				scs = &subjectmapping.SubjectConditionSetCreate{
+					SubjectSets: ss,
+				}
 			}
 
 			mapping, err := h.CreateNewSubjectMapping(attrValueId, actions, existingSCSId, scs, getMetadataMutable(metadataLabels))
