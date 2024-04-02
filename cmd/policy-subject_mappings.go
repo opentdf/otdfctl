@@ -166,7 +166,6 @@ Note: SubjectConditionSets are reusable among SubjectMappings and are available 
 			var scs *subjectmapping.SubjectConditionSetCreate
 			if newScsJSON != "" {
 				if err := json.Unmarshal([]byte(newScsJSON), &ss); err != nil {
-					fmt.Println("here")
 					cli.ExitWithError("Error unmarshalling subject sets", err)
 				}
 				scs = &subjectmapping.SubjectConditionSetCreate{
