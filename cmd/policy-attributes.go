@@ -119,7 +119,7 @@ used to define the access controls based on subject encodings and entity entitle
 			}
 
 			t := cli.NewTable()
-			t.Headers("Id", "Namespace", "Name", "Rule", "Values")
+			t.Headers("Id", "Namespace", "Name", "Rule", "Values", "Active")
 			for _, attr := range attrs {
 				a := cli.GetSimpleAttribute(attr)
 				t.Row(
@@ -128,6 +128,7 @@ used to define the access controls based on subject encodings and entity entitle
 					a.Name,
 					a.Rule,
 					cli.CommaSeparated(a.Values),
+					a.Active,
 				)
 			}
 			HandleSuccess(cmd, "", t, attrs)

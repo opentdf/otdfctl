@@ -11,6 +11,7 @@ type SimpleAttribute struct {
 	Rule      string
 	Values    []string
 	Namespace string
+	Active    string
 }
 
 type SimpleAttributeValue struct {
@@ -31,6 +32,7 @@ func GetSimpleAttribute(a *policy.Attribute) SimpleAttribute {
 		Rule:      handlers.GetAttributeRuleFromAttributeType(a.GetRule()),
 		Values:    values,
 		Namespace: a.GetNamespace().GetName(),
+		Active:    a.GetActive().String(),
 	}
 }
 

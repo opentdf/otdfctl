@@ -70,11 +70,12 @@ or different attributes tied to each.
 			}
 
 			t := cli.NewTable()
-			t.Headers("Id", "Name")
+			t.Headers("Id", "Name", "Active")
 			for _, ns := range list {
 				t.Row(
 					ns.Id,
 					ns.Name,
+					ns.Active.String(),
 				)
 			}
 			HandleSuccess(cmd, "", t, list)
