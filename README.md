@@ -23,6 +23,8 @@ The CLI is configured via the `tructl.yaml`. There is an example provided in `ex
 
 Run `cp example-tructl.yaml tructl.yaml` to copy the example config when running the CLI.
 
+Load up the platform (see its [README](https://github.com/opentdf/platform?tab=readme-ov-file#run) for instructions).
+
 ## Development
 
 ### CLI

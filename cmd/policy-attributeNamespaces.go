@@ -37,8 +37,8 @@ var (
 
 			ns, err := h.GetNamespace(id)
 			if err != nil {
-				errMsg := fmt.Sprintf("Could not find namespace (%s)", id)
-				cli.ExitWithNotFoundError(errMsg, err)
+				errMsg := fmt.Sprintf("Failed to get namespace (%s)", id)
+				cli.ExitWithError(errMsg, err)
 			}
 
 			t := cli.NewTabular().
@@ -59,7 +59,7 @@ var (
 
 			list, err := h.ListNamespaces()
 			if err != nil {
-				cli.ExitWithError("Could not get namespaces", err)
+				cli.ExitWithError("Failed to list namespaces", err)
 			}
 
 			t := cli.NewTable()
@@ -87,7 +87,7 @@ var (
 
 			created, err := h.CreateNamespace(name, getMetadataMutable(metadataLabels))
 			if err != nil {
-				cli.ExitWithError("Could not create namespace", err)
+				cli.ExitWithError("Failed to create namespace", err)
 			}
 
 			t := cli.NewTabular().Rows([][]string{
@@ -110,15 +110,16 @@ var (
 
 			ns, err := h.GetNamespace(id)
 			if err != nil {
-				errMsg := fmt.Sprintf("Could not find namespace (%s)", id)
-				cli.ExitWithNotFoundError(errMsg, err)
+				errMsg := fmt.Sprintf("Failed to find namespace (%s)", id)
+				cli.ExitWithError(errMsg, err)
 			}
 
-			cli.ConfirmDelete("namespace", ns.Name)
+			cli.ConfirmAction(cli.ActionDeactivate, "namespace", ns.Name)
 
-			if err := h.DeactivateNamespace(id); err != nil {
-				errMsg := fmt.Sprintf("Could not deactivate namespace (%s)", id)
-				cli.ExitWithNotFoundError(errMsg, err)
+			d, err := h.DeactivateNamespace(id)
+			if err != nil {
+				errMsg := fmt.Sprintf("Failed to deactivate namespace (%s)", id)
+				cli.ExitWithError(errMsg, err)
 			}
 
 			t := cli.NewTabular().
@@ -126,7 +127,7 @@ var (
 					{"Id", ns.Id},
 					{"Name", ns.Name},
 				}...)
-			HandleSuccess(cmd, ns.Id, t, ns)
+			HandleSuccess(cmd, ns.Id, t, d)
 		},
 	}
 
@@ -148,7 +149,7 @@ var (
 				getMetadataUpdateBehavior(),
 			)
 			if err != nil {
-				cli.ExitWithError("Could not update namespace", err)
+				cli.ExitWithError(fmt.Sprintf("Failed to update namespace (%s)", id), err)
 			}
 
 			t := cli.NewTabular().Rows([][]string{

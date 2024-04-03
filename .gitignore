@@ -10,3 +10,4 @@ tructl
 # Hugo
 public/
 .hugo_build.lock
+output/

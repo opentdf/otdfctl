@@ -10,8 +10,10 @@ import (
 	"golang.org/x/oauth2/clientcredentials"
 )
 
-const TRUCTL_CLIENT_ID_CACHE_KEY = "TRUCTL_DEFAULT_CLIENT_ID"
-const TRUCTL_OIDC_TOKEN_KEY = "TRUCTL_OIDC_TOKEN"
+const (
+	TRUCTL_CLIENT_ID_CACHE_KEY = "TRUCTL_DEFAULT_CLIENT_ID"
+	TRUCTL_OIDC_TOKEN_KEY      = "TRUCTL_OIDC_TOKEN"
+)
 
 // we're hardcoding this for now, but eventually it will be retrieved from the backend config
 // TODO udpate to use the wellknown endpoint for the platform (https://github.com/opentdf/platform/pull/296)
@@ -77,7 +79,6 @@ func GetClientIdAndSecretFromCache() (string, string, error) {
 
 // DEBUG_PrintKeyRingSecrets prints all the secrets in the keyring.
 func (h *Handler) DEBUG_PrintKeyRingSecrets() {
-
 	clientId, err := keyring.Get(TOKEN_URL, TRUCTL_CLIENT_ID_CACHE_KEY)
 	if err != nil {
 		fmt.Println("Failed to retrieve secret from keyring:", err)
@@ -142,11 +143,4 @@ func (h *Handler) GetTokenWithClientCredentials(clientID, clientSecret, tokenURL
 	}
 	h.OIDC_TOKEN = token.AccessToken
 	return token, nil
-}
-
-// GetTokenWithPasswordFlow creates a custom request to obtain a token using the resource owner password credentials flow.
-func (h *Handler) GetTokenWithPasswordFlow(username, password, clientID, clientSecret, tokenURL string, noCache bool) (string, error) {
-	errMsg := "Method `GetTokenWithPasswordFlow` is not yet implemented. Please reach out to a Virtru Platform team member to inquire about the status of it."
-	fmt.Println(errMsg)
-	return "", nil
 }
