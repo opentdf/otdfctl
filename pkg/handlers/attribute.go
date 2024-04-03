@@ -41,8 +41,8 @@ func (h Handler) GetAttribute(id string) (*policy.Attribute, error) {
 	return resp.Attribute, nil
 }
 
-func (h Handler) ListAttributes() ([]*policy.Attribute, error) {
-	resp, err := h.sdk.Attributes.ListAttributes(h.ctx, &attributes.ListAttributesRequest{})
+func (h Handler) ListAttributes(state common.ActiveStateEnum) ([]*policy.Attribute, error) {
+	resp, err := h.sdk.Attributes.ListAttributes(h.ctx, &attributes.ListAttributesRequest{State: state})
 	if err != nil {
 		return nil, err
 	}

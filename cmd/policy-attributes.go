@@ -112,7 +112,8 @@ used to define the access controls based on subject encodings and entity entitle
 			h := cli.NewHandler(cmd)
 			defer h.Close()
 
-			attrs, err := h.ListAttributes()
+			state := cli.GetState(cmd)
+			attrs, err := h.ListAttributes(state)
 			if err != nil {
 				cli.ExitWithError("Failed to list attributes", err)
 			}
@@ -207,6 +208,7 @@ func init() {
 
 	// List attributes
 	policy_attributesCmd.AddCommand(policy_attributesListCmd)
+	policy_attributesListCmd.Flags().StringP("state", "s", "", "Filter by state [active, inactive, any]")
 
 	// Update an attribute
 	policy_attributesCmd.AddCommand(policy_attributeUpdateCmd)
