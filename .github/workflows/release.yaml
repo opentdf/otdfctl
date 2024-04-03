@@ -11,6 +11,10 @@ on:
           - patch
           - minor
           - major
+
+env:
+  MAINTAINER_TEAM: opentdf-cli
+
 jobs:
   build-targets:
     name: build-targets
@@ -19,6 +23,31 @@ jobs:
       GOPRIVATE: github.com/opentdf/platform/*
       BIN_NAME: tructl
     steps:
+      - name: Is actor in ${{ env.MAINTAINER_TEAM }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const org = context.repo.owner;
+            const team_slug = "${{ env.MAINTAINER_TEAM }}";
+            const username = context.actor;
+
+            // API request to check team membership
+            try {
+              const resp = await github.rest.teams.getMembershipForUserInOrg({
+                org,
+                team_slug,
+                username,
+              })
+              if (response.data.state === 'active') {
+                console.log(`${username} is a member of the team ${team_slug}.`);
+              } else {
+                console.log(`${username} is not an active member of the team ${team_slug}.`);
+                core.setFailed(`${username} is not an active member of the team ${team_slug}.`);
+              }
+            } catch(error) {
+              console.log(`Error checking membership: ${error}`);
+              core.setFailed(`Error checking membership: ${error}`);
+            }
       - uses: actions/checkout@v3
       - uses: actions/setup-go@v5
         with:
