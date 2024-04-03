@@ -12,7 +12,7 @@ on:
           - minor
           - major
       # TODO remove after test
-      pull_request:
+  pull_request:
 
 env:
   MAINTAINER_TEAM: opentdf-cli
