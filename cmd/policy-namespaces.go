@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/opentdf/platform/protocol/go/common"
 	"github.com/opentdf/tructl/pkg/cli"
 	"github.com/spf13/cobra"
 )
@@ -64,17 +63,7 @@ or different attributes tied to each.
 			h := cli.NewHandler(cmd)
 			defer h.Close()
 
-			flagHelper := cli.NewFlagHelper(cmd)
-			state := common.ActiveStateEnum_ACTIVE_STATE_ENUM_ACTIVE
-			stateFlag := strings.ToUpper(flagHelper.GetOptionalString("state"))
-			if stateFlag != "" {
-				if stateFlag == "INACTIVE" {
-					state = common.ActiveStateEnum_ACTIVE_STATE_ENUM_INACTIVE
-				} else if stateFlag == "ANY" {
-					state = common.ActiveStateEnum_ACTIVE_STATE_ENUM_ANY
-				}
-			}
-
+			state := cli.GetState(cmd)
 			list, err := h.ListNamespaces(state)
 			if err != nil {
 				cli.ExitWithError("Failed to list namespaces", err)
