@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/opentdf/tructl/pkg/cli"
@@ -59,6 +60,33 @@ var (
 			}
 
 			handleValueSuccess(cmd, v)
+		},
+	}
+
+	policy_attributeValuesListCmd = &cobra.Command{
+		Use:   "list",
+		Short: "List attribute value",
+		Run: func(cmd *cobra.Command, args []string) {
+			h := cli.NewHandler(cmd)
+			defer h.Close()
+
+			state := cli.GetState(cmd)
+			vals, err := h.ListAttributeValues(state)
+			if err != nil {
+				cli.ExitWithError("Failed to list attribute values", err)
+			}
+			t := cli.NewTable()
+			t.Headers("Id", "Fqn", "Members", "Active")
+			for _, val := range vals {
+				v := cli.GetSimpleAttributeValue(val)
+				t.Row(
+					v.Id,
+					v.FQN,
+					"["+strings.Join(v.Members, ", ")+"]",
+					v.Active,
+				)
+			}
+			HandleSuccess(cmd, "", t, vals)
 		},
 	}
 
@@ -262,6 +290,9 @@ func init() {
 
 	policy_attributeValuesCmd.AddCommand(policy_attributeValuesGetCmd)
 	policy_attributeValuesGetCmd.Flags().StringP("id", "i", "", "Attribute value id")
+
+	policy_attributeValuesCmd.AddCommand(policy_attributeValuesListCmd)
+	policy_attributeValuesListCmd.Flags().StringP("state", "s", "", "Filter by state [active, inactive, any]")
 
 	policy_attributeValuesCmd.AddCommand(policy_attributeValuesUpdateCmd)
 	policy_attributeValuesUpdateCmd.Flags().StringP("id", "i", "", "Attribute value id")

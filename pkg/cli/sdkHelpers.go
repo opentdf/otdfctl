@@ -18,6 +18,7 @@ type SimpleAttributeValue struct {
 	Id      string
 	FQN     string
 	Members []string
+	Active  string
 }
 
 func GetSimpleAttribute(a *policy.Attribute) SimpleAttribute {
@@ -45,5 +46,6 @@ func GetSimpleAttributeValue(v *policy.Value) SimpleAttributeValue {
 		Id:      v.Id,
 		FQN:     v.Fqn,
 		Members: memberIds,
+		Active:  v.Active.String(),
 	}
 }
