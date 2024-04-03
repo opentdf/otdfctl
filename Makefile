@@ -61,12 +61,17 @@ run: build
 test: build
 	go test -v ./...
 
-# Target for cleaning up the output directory
+# Target for cleaning up the target directory
 .PHONY: clean
 clean:
 	rm -rf $(TARGET_DIR)
 
 # Script for zipping up the compiled binaries
-.PHONY: zip-binaries
+.PHONY: zip-builds
 zip-builds:
 	./.github/scripts/zip-builds.sh $(BINARY_NAME)-$(CURR_VERSION) $(TARGET_DIR) $(OUTPUT_DIR)
+
+# Script for verifying the checksums
+.PHONY: verify-checksums
+verify-checksums:
+	.github/scripts/verify-checksums.sh $(OUTPUT_DIR) $(BINARY_NAME)-$(CURR_VERSION)_checksums.txt 
