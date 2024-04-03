@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/opentdf/tructl/pkg/cli"
@@ -82,7 +81,7 @@ var (
 				t.Row(
 					v.Id,
 					v.FQN,
-					"["+strings.Join(v.Members, ", ")+"]",
+					cli.CommaSeparated(v.Members),
 					v.Active,
 				)
 			}
