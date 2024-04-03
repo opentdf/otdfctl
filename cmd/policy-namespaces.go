@@ -68,9 +68,6 @@ or different attributes tied to each.
 			state := common.ActiveStateEnum_ACTIVE_STATE_ENUM_ACTIVE
 			stateFlag := strings.ToUpper(flagHelper.GetOptionalString("state"))
 			if stateFlag != "" {
-				// if stateFlag == "ACTIVE" {
-				// 	state = common.ActiveStateEnum_ACTIVE_STATE_ENUM_ACTIVE
-				// } else
 				if stateFlag == "INACTIVE" {
 					state = common.ActiveStateEnum_ACTIVE_STATE_ENUM_INACTIVE
 				} else if stateFlag == "ANY" {
@@ -189,6 +186,7 @@ func init() {
 	policy_namespaceGetCmd.Flags().StringP("id", "i", "", "Id of the namespace")
 
 	policy_namespacesCmd.AddCommand(policy_namespacesListCmd)
+	policy_namespacesListCmd.Flags().StringP("state", "s", "", "Filter by state [active, inactive, any]")
 
 	policy_namespacesCmd.AddCommand(policy_namespacesCreateCmd)
 	policy_namespacesCreateCmd.Flags().StringP("name", "n", "", "Name value of the namespace")
