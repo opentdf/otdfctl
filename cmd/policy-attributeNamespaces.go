@@ -3,8 +3,8 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/opentdf/tructl/docs/man"
 	"github.com/opentdf/tructl/pkg/cli"
+	"github.com/opentdf/tructl/pkg/man"
 	"github.com/spf13/cobra"
 )
 
@@ -20,14 +20,14 @@ var (
 	}
 
 	policy_namespacesCmd = &cobra.Command{
-		Use:   man.Docs.GetDoc("policy-attributeNamespaces").Use,
-		Short: man.Docs.GetDoc("policy-attributeNamespaces").GetShort(policy_namespacesCommands),
-		Long:  man.Docs.GetDoc("policy-attributeNamespaces").Long,
+		Use:   man.Docs.GetDoc("policy/attributes/namespaces").Use,
+		Short: man.Docs.GetDoc("policy/attributes/namespaces").GetShort(policy_namespacesCommands),
+		Long:  man.Docs.GetDoc("policy/attributes/namespaces").Long,
 	}
 
 	policy_namespaceGetCmd = &cobra.Command{
-		Use:   man.Docs.GetDoc("policy-attributeNamespaces-get").Use,
-		Short: man.Docs.GetDoc("policy-attributeNamespaces-get").Short,
+		Use:   man.Docs.GetDoc("policy/attributes/namespaces/get").Use,
+		Short: man.Docs.GetDoc("policy/attributes/namespaces/get").Short,
 		Run: func(cmd *cobra.Command, args []string) {
 			h := cli.NewHandler(cmd)
 			defer h.Close()
@@ -51,8 +51,8 @@ var (
 	}
 
 	policy_namespacesListCmd = &cobra.Command{
-		Use:   man.Docs.GetDoc("policy-attributeNamespaces-list").Use,
-		Short: man.Docs.GetDoc("policy-attributeNamespaces").Short,
+		Use:   man.Docs.GetDoc("policy/attributes/namespaces/list").Use,
+		Short: man.Docs.GetDoc("policy/attributes/namespaces/list").Short,
 		Run: func(cmd *cobra.Command, args []string) {
 			h := cli.NewHandler(cmd)
 			defer h.Close()
@@ -75,8 +75,8 @@ var (
 	}
 
 	policy_namespacesCreateCmd = &cobra.Command{
-		Use:   man.Docs.GetDoc("policy-attributeNamespaces-create").Use,
-		Short: man.Docs.GetDoc("policy-attributeNamespaces-create").Short,
+		Use:   man.Docs.GetDoc("policy/attributes/namespaces/create").Use,
+		Short: man.Docs.GetDoc("policy/attributes/namespaces/create").Short,
 		Run: func(cmd *cobra.Command, args []string) {
 			h := cli.NewHandler(cmd)
 			defer h.Close()
@@ -99,8 +99,8 @@ var (
 	}
 
 	policy_namespaceDeactivateCmd = &cobra.Command{
-		Use:   man.Docs.GetDoc("policy-attributeNamespaces-deactivate").Use,
-		Short: man.Docs.GetDoc("policy-attributeNamespaces").Short,
+		Use:   man.Docs.GetDoc("policy/attributes/namespaces/deactivate").Use,
+		Short: man.Docs.GetDoc("policy/attributes/namespaces/deactivate").Short,
 		Run: func(cmd *cobra.Command, args []string) {
 			h := cli.NewHandler(cmd)
 			defer h.Close()
@@ -132,8 +132,8 @@ var (
 
 	// Update one namespace
 	policy_namespaceUpdateCmd = &cobra.Command{
-		Use:   man.Docs.GetDoc("policy-attributeNamespaces-update").Use,
-		Short: man.Docs.GetDoc("policy-attributeNamespaces-update").Short,
+		Use:   man.Docs.GetDoc("policy/attributes/namespaces/update").Use,
+		Short: man.Docs.GetDoc("policy/attributes/namespaces/update").Short,
 		Run: func(cmd *cobra.Command, args []string) {
 			h := cli.NewHandler(cmd)
 			defer h.Close()

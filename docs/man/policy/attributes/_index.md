@@ -1,6 +1,7 @@
 ---
 title: Manage attributes
-command: attributes
+command:
+  name: attributes
 ---
 
 Commands to manage attributes within the platform.

@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/opentdf/platform/protocol/go/policy"
-	"github.com/opentdf/tructl/docs/man"
 	"github.com/opentdf/tructl/pkg/cli"
+	"github.com/opentdf/tructl/pkg/man"
 	"github.com/spf13/cobra"
 )
 
@@ -25,15 +25,15 @@ var (
 	}
 
 	policy_attributesCmd = &cobra.Command{
-		Use:   man.Docs.GetDoc("policy-attributes").Use,
-		Short: man.Docs.GetDoc("policy-attributes").GetShort(policy_attributeCommands),
-		Long:  man.Docs.GetDoc("policy-attributes").Long,
+		Use:   man.Docs.GetDoc("policy/attributes").Use,
+		Short: man.Docs.GetDoc("policy/attributes").GetShort(policy_attributeCommands),
+		Long:  man.Docs.GetDoc("policy/attributes").Long,
 	}
 
 	// Create an attribute
 	policy_attributesCreateCmd = &cobra.Command{
-		Use:   man.Docs.GetDoc("policy-attributes-create").Use,
-		Short: man.Docs.GetDoc("policy-attributes-create").Short,
+		Use:   man.Docs.GetDoc("policy/attributes/create").Use,
+		Short: man.Docs.GetDoc("policy/attributes/create").Short,
 		Run: func(cmd *cobra.Command, args []string) {
 			h := cli.NewHandler(cmd)
 			defer h.Close()
@@ -88,8 +88,8 @@ var (
 
 	// Get an attribute
 	policy_attributeGetCmd = &cobra.Command{
-		Use:   man.Docs.GetDoc("policy-attributes-get").Use,
-		Short: man.Docs.GetDoc("policy-attributes-get").Short,
+		Use:   man.Docs.GetDoc("policy/attributes/get").Use,
+		Short: man.Docs.GetDoc("policy/attributes/get").Short,
 		Run: func(cmd *cobra.Command, args []string) {
 			flagHelper := cli.NewFlagHelper(cmd)
 			id := flagHelper.GetRequiredString("id")
@@ -146,8 +146,8 @@ var (
 	}
 
 	policy_attributesDeactivateCmd = &cobra.Command{
-		Use:   man.Docs.GetDoc("policy-attributes-deactivate").Use,
-		Short: man.Docs.GetDoc("policy-attributes-deactivate").Short,
+		Use:   man.Docs.GetDoc("policy/attributes/deactivate").Use,
+		Short: man.Docs.GetDoc("policy/attributes/deactivate").Short,
 		Run: func(cmd *cobra.Command, args []string) {
 			flagHelper := cli.NewFlagHelper(cmd)
 			id := flagHelper.GetRequiredString("id")
@@ -183,8 +183,8 @@ var (
 
 	// Update one attribute
 	policy_attributeUpdateCmd = &cobra.Command{
-		Use:   man.Docs.GetDoc("policy-attributes-update").Use,
-		Short: man.Docs.GetDoc("policy-attributes-update").Short,
+		Use:   man.Docs.GetDoc("policy/attributes/update").Use,
+		Short: man.Docs.GetDoc("policy/attributes/update").Short,
 		Run: func(cmd *cobra.Command, args []string) {
 			h := cli.NewHandler(cmd)
 			defer h.Close()

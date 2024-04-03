@@ -1,6 +1,10 @@
 ---
 title: Manage policy
-command: policy
+
+command:
+  name: policy
+  aliases: []
+  flags: []
 ---
 
 Manage policies within the platform.

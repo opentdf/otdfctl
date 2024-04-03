@@ -1,9 +1,10 @@
 ---
-command: kas-registry
-aliases:
-  - kasRegistry
-  - key-access-registry
 title: Manage KAS registrations
+command:
+  name: kas-registry
+  aliases:
+    - kasRegistry
+    - key-access-registry
 ---
 
 # Manage Key Access Server registrations within the platform

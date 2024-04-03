@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/opentdf/platform/protocol/go/kasregistry"
-	"github.com/opentdf/tructl/docs/man"
 	"github.com/opentdf/tructl/pkg/cli"
+	"github.com/opentdf/tructl/pkg/man"
 	"github.com/spf13/cobra"
 )
 
@@ -20,49 +20,48 @@ var (
 
 	// KasRegistryCmd is the command for managing KAS registrations
 	kasRegistryCmd = &cobra.Command{
-		Use:   man.Docs.GetDoc("policy-kasRegistry").Use,
-		Short: man.Docs.GetDoc("policy-kasRegistry").GetShort(kasRegistry_crudCommands),
-		Long:  man.Docs.GetDoc("policy-kasRegistry").Long,
+		Use:   man.Docs.GetDoc("policy/kas-registry").Use,
+		Short: man.Docs.GetDoc("policy/kas-registry").GetShort(kasRegistry_crudCommands),
+		Long:  man.Docs.GetDoc("policy/kas-registry").Long,
 	}
 
-	kasRegistryGetCmd = &cobra.Command{
-		Use:   man.Docs.GetDoc("policy-kasRegistry-get").Use,
-		Short: man.Docs.GetDoc("policy-kasRegistry-get").Short,
-		Run: func(cmd *cobra.Command, args []string) {
-			h := cli.NewHandler(cmd)
-			defer h.Close()
+	kasRegistryGetCmd = &man.Docs.GetDoc("policy/kas-registry/get").Command
+	// .WithRun(
+	// 	func(cmd *cobra.Command, args []string) {
+	// 		h := cli.NewHandler(cmd)
+	// 		defer h.Close()
 
-			flagHelper := cli.NewFlagHelper(cmd)
-			id := flagHelper.GetRequiredString("id")
+	// 		flagHelper := cli.NewFlagHelper(cmd)
+	// 		id := flagHelper.GetRequiredString("id")
 
-			kas, err := h.GetKasRegistryEntry(id)
-			if err != nil {
-				errMsg := fmt.Sprintf("Could not find KAS registry entry (%s)", id)
-				cli.ExitWithNotFoundError(errMsg, err)
-			}
+	// 		kas, err := h.GetKasRegistryEntry(id)
+	// 		if err != nil {
+	// 			errMsg := fmt.Sprintf("Could not find KAS registry entry (%s)", id)
+	// 			cli.ExitWithNotFoundError(errMsg, err)
+	// 		}
 
-			keyType := "Local"
-			key := kas.PublicKey.GetLocal()
-			if kas.PublicKey.GetRemote() != "" {
-				keyType = "Remote"
-				key = kas.PublicKey.GetRemote()
-			}
+	// 		keyType := "Local"
+	// 		key := kas.PublicKey.GetLocal()
+	// 		if kas.PublicKey.GetRemote() != "" {
+	// 			keyType = "Remote"
+	// 			key = kas.PublicKey.GetRemote()
+	// 		}
 
-			t := cli.NewTabular().
-				Rows([][]string{
-					{"Id", kas.Id},
-					// TODO: render labels [https://github.com/opentdf/tructl/issues/73]
-					{"URI", kas.Uri},
-					{"PublicKey Type", keyType},
-					{"PublicKey", key},
-				}...)
-			HandleSuccess(cmd, kas.Id, t, kas)
-		},
-	}
+	// 		t := cli.NewTabular().
+	// 			Rows([][]string{
+	// 				{"Id", kas.Id},
+	// 				// TODO: render labels [https://github.com/opentdf/tructl/issues/73]
+	// 				{"URI", kas.Uri},
+	// 				{"PublicKey Type", keyType},
+	// 				{"PublicKey", key},
+	// 			}...)
+	// 		HandleSuccess(cmd, kas.Id, t, kas)
+	// 	},
+	// )
 
 	kasRegistrysListCmd = &cobra.Command{
-		Use:   man.Docs.GetDoc("policy-kasRegistry-list").Use,
-		Short: man.Docs.GetDoc("policy-kasRegistry-list").Short,
+		Use:   man.Docs.GetDoc("policy/kas-registry/list").Use,
+		Short: man.Docs.GetDoc("policy/kas-registry/list").Short,
 		Run: func(cmd *cobra.Command, args []string) {
 			h := cli.NewHandler(cmd)
 			defer h.Close()
@@ -95,8 +94,8 @@ var (
 	}
 
 	kasRegistrysCreateCmd = &cobra.Command{
-		Use:   man.Docs.GetDoc("policy-kasRegistry-create").Use,
-		Short: man.Docs.GetDoc("policy-kasRegistry-create").Short,
+		Use:   man.Docs.GetDoc("policy/kas-registry/create").Use,
+		Short: man.Docs.GetDoc("policy/kas-registry/create").Short,
 		Run: func(cmd *cobra.Command, args []string) {
 			h := cli.NewHandler(cmd)
 			defer h.Close()
@@ -149,8 +148,8 @@ var (
 
 	// Update one KAS registry entry
 	kasRegistryUpdateCmd = &cobra.Command{
-		Use:   man.Docs.GetDoc("policy-kasRegistry-update").Use,
-		Short: man.Docs.GetDoc("policy-kasRegistry-update").Short,
+		Use:   man.Docs.GetDoc("policy/kas-registry/update").Use,
+		Short: man.Docs.GetDoc("policy/kas-registry/update").Short,
 		Run: func(cmd *cobra.Command, args []string) {
 			h := cli.NewHandler(cmd)
 			defer h.Close()
@@ -199,8 +198,8 @@ var (
 	}
 
 	kasRegistryDeleteCmd = &cobra.Command{
-		Use:   man.Docs.GetDoc("policy-kasRegistry-delete").Use,
-		Short: man.Docs.GetDoc("policy-kasRegistry-delete").Short,
+		Use:   man.Docs.GetDoc("policy/kas-registry/delete").Use,
+		Short: man.Docs.GetDoc("policy/kas-registry/delete").Short,
 		Run: func(cmd *cobra.Command, args []string) {
 			h := cli.NewHandler(cmd)
 			defer h.Close()

@@ -1,16 +1,16 @@
 package cmd
 
 import (
-	"github.com/opentdf/tructl/docs/man"
+	"github.com/opentdf/tructl/pkg/man"
 	"github.com/spf13/cobra"
 )
 
 var (
 	policy_attributeValuesCmd = &cobra.Command{
-		Use:     man.Docs.GetDoc("policy-attributeValues").Use,
-		Aliases: man.Docs.GetDoc("policy-attributeValues").Aliases,
-		Short:   man.Docs.GetDoc("policy-attributeValues").Short,
-		Long:    man.Docs.GetDoc("policy-attributeValues").Long,
+		Use:     man.Docs.GetDoc("policy/attributes/values").Use,
+		Aliases: man.Docs.GetDoc("policy/attributes/values").Aliases,
+		Short:   man.Docs.GetDoc("policy/attributes/values").Short,
+		Long:    man.Docs.GetDoc("policy/attributes/values").Long,
 	}
 
 	// policy_attributeValuesCreateCmd = &cobra.Command{

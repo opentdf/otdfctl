@@ -1,10 +1,7 @@
 ---
-command: resource-mappings
-aliases: 
-  - resource-mapping
-  - resource-encodings
-  - resource-encoding
 title: Manage resource mappings
+command:
+  name: resource-mappings
 ---
 
 # Manage Resource Mappings

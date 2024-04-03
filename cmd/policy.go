@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/opentdf/tructl/docs/man"
+	"github.com/opentdf/tructl/pkg/man"
 	"github.com/spf13/cobra"
 )
 
