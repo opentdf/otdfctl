@@ -9,7 +9,9 @@ require (
 	github.com/charmbracelet/huh v0.3.0
 	github.com/charmbracelet/lipgloss v0.10.0
 	github.com/creasty/defaults v1.7.0
+	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/golang-jwt/jwt/v4 v4.5.0
+	github.com/itchyny/gojq v0.12.15
 	github.com/muesli/reflow v0.3.0
 	github.com/opentdf/platform/protocol/go v0.0.0-20240328192545-ab689ebe9123
 	github.com/opentdf/platform/sdk v0.0.0-20240328192545-ab689ebe9123
@@ -38,6 +40,7 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.19.1 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
+	github.com/itchyny/timefmt-go v0.1.5 // indirect
 	github.com/lestrrat-go/blackmagic v1.0.2 // indirect
 	github.com/lestrrat-go/httpcc v1.0.1 // indirect
 	github.com/lestrrat-go/httprc v1.0.5 // indirect

@@ -7,7 +7,7 @@ import (
 
 type Table table.Table
 
-var defaultTableWidth = 120
+var defaultTableWidth = 180
 
 func NewTable() *table.Table {
 	t := table.New()
