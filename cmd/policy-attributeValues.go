@@ -68,9 +68,10 @@ var (
 		Run: func(cmd *cobra.Command, args []string) {
 			h := cli.NewHandler(cmd)
 			defer h.Close()
-
+			flagHelper := cli.NewFlagHelper(cmd)
+			attrId := flagHelper.GetRequiredString("attribute-id")
 			state := cli.GetState(cmd)
-			vals, err := h.ListAttributeValues(state)
+			vals, err := h.ListAttributeValues(attrId, state)
 			if err != nil {
 				cli.ExitWithError("Failed to list attribute values", err)
 			}
@@ -291,6 +292,7 @@ func init() {
 	policy_attributeValuesGetCmd.Flags().StringP("id", "i", "", "Attribute value id")
 
 	policy_attributeValuesCmd.AddCommand(policy_attributeValuesListCmd)
+	policy_attributeValuesListCmd.Flags().StringP("attribute-id", "a", "", "Attribute id")
 	policy_attributeValuesListCmd.Flags().StringP("state", "s", "active", "Filter by state [active, inactive, any]")
 
 	policy_attributeValuesCmd.AddCommand(policy_attributeValuesUpdateCmd)

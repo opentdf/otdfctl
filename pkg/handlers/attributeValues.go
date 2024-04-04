@@ -6,8 +6,8 @@ import (
 	"github.com/opentdf/platform/protocol/go/policy/attributes"
 )
 
-func (h *Handler) ListAttributeValues(state common.ActiveStateEnum) ([]*policy.Value, error) {
-	resp, err := h.sdk.Attributes.ListAttributeValues(h.ctx, &attributes.ListAttributeValuesRequest{State: state})
+func (h *Handler) ListAttributeValues(attributeId string, state common.ActiveStateEnum) ([]*policy.Value, error) {
+	resp, err := h.sdk.Attributes.ListAttributeValues(h.ctx, &attributes.ListAttributeValuesRequest{AttributeId: attributeId, State: state})
 	if err != nil {
 		return nil, err
 	}
