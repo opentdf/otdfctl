@@ -176,7 +176,7 @@ func init() {
 	policy_namespaceGetCmd.Flags().StringP("id", "i", "", "Id of the namespace")
 
 	policy_namespacesCmd.AddCommand(policy_namespacesListCmd)
-	policy_namespacesListCmd.Flags().StringP("state", "s", "", "Filter by state [active, inactive, any]")
+	policy_namespacesListCmd.Flags().StringP("state", "s", "active", "Filter by state [active, inactive, any]")
 
 	policy_namespacesCmd.AddCommand(policy_namespacesCreateCmd)
 	policy_namespacesCreateCmd.Flags().StringP("name", "n", "", "Name value of the namespace")

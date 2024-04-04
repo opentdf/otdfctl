@@ -209,7 +209,7 @@ func init() {
 
 	// List attributes
 	policy_attributesCmd.AddCommand(policy_attributesListCmd)
-	policy_attributesListCmd.Flags().StringP("state", "s", "", "Filter by state [active, inactive, any]")
+	policy_attributesListCmd.Flags().StringP("state", "s", "active", "Filter by state [active, inactive, any]")
 
 	// Update an attribute
 	policy_attributesCmd.AddCommand(policy_attributeUpdateCmd)

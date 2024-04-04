@@ -291,7 +291,7 @@ func init() {
 	policy_attributeValuesGetCmd.Flags().StringP("id", "i", "", "Attribute value id")
 
 	policy_attributeValuesCmd.AddCommand(policy_attributeValuesListCmd)
-	policy_attributeValuesListCmd.Flags().StringP("state", "s", "", "Filter by state [active, inactive, any]")
+	policy_attributeValuesListCmd.Flags().StringP("state", "s", "active", "Filter by state [active, inactive, any]")
 
 	policy_attributeValuesCmd.AddCommand(policy_attributeValuesUpdateCmd)
 	policy_attributeValuesUpdateCmd.Flags().StringP("id", "i", "", "Attribute value id")
