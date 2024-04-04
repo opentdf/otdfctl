@@ -62,6 +62,34 @@ var (
 		},
 	}
 
+	policy_attributeValuesListCmd = &cobra.Command{
+		Use:   "list",
+		Short: "List attribute value",
+		Run: func(cmd *cobra.Command, args []string) {
+			h := cli.NewHandler(cmd)
+			defer h.Close()
+			flagHelper := cli.NewFlagHelper(cmd)
+			attrId := flagHelper.GetRequiredString("attribute-id")
+			state := cli.GetState(cmd)
+			vals, err := h.ListAttributeValues(attrId, state)
+			if err != nil {
+				cli.ExitWithError("Failed to list attribute values", err)
+			}
+			t := cli.NewTable()
+			t.Headers("Id", "Fqn", "Members", "Active")
+			for _, val := range vals {
+				v := cli.GetSimpleAttributeValue(val)
+				t.Row(
+					v.Id,
+					v.FQN,
+					cli.CommaSeparated(v.Members),
+					v.Active,
+				)
+			}
+			HandleSuccess(cmd, "", t, vals)
+		},
+	}
+
 	policy_attributeValuesUpdateCmd = &cobra.Command{
 		Use:   "update",
 		Short: "Update an attribute value",
@@ -262,6 +290,10 @@ func init() {
 
 	policy_attributeValuesCmd.AddCommand(policy_attributeValuesGetCmd)
 	policy_attributeValuesGetCmd.Flags().StringP("id", "i", "", "Attribute value id")
+
+	policy_attributeValuesCmd.AddCommand(policy_attributeValuesListCmd)
+	policy_attributeValuesListCmd.Flags().StringP("attribute-id", "a", "", "Attribute id")
+	policy_attributeValuesListCmd.Flags().StringP("state", "s", "active", "Filter by state [active, inactive, any]")
 
 	policy_attributeValuesCmd.AddCommand(policy_attributeValuesUpdateCmd)
 	policy_attributeValuesUpdateCmd.Flags().StringP("id", "i", "", "Attribute value id")

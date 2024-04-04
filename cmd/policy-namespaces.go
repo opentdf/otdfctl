@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/opentdf/tructl/pkg/cli"
@@ -63,17 +64,19 @@ or different attributes tied to each.
 			h := cli.NewHandler(cmd)
 			defer h.Close()
 
-			list, err := h.ListNamespaces()
+			state := cli.GetState(cmd)
+			list, err := h.ListNamespaces(state)
 			if err != nil {
 				cli.ExitWithError("Failed to list namespaces", err)
 			}
 
 			t := cli.NewTable()
-			t.Headers("Id", "Name")
+			t.Headers("Id", "Name", "Active")
 			for _, ns := range list {
 				t.Row(
 					ns.Id,
 					ns.Name,
+					strconv.FormatBool(ns.Active.GetValue()),
 				)
 			}
 			HandleSuccess(cmd, "", t, list)
@@ -174,6 +177,7 @@ func init() {
 	policy_namespaceGetCmd.Flags().StringP("id", "i", "", "Id of the namespace")
 
 	policy_namespacesCmd.AddCommand(policy_namespacesListCmd)
+	policy_namespacesListCmd.Flags().StringP("state", "s", "active", "Filter by state [active, inactive, any]")
 
 	policy_namespacesCmd.AddCommand(policy_namespacesCreateCmd)
 	policy_namespacesCreateCmd.Flags().StringP("name", "n", "", "Name value of the namespace")

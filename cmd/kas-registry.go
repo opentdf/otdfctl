@@ -264,7 +264,3 @@ func init() {
 	kasRegistryCmd.AddCommand(kasRegistryDeleteCmd)
 	kasRegistryDeleteCmd.Flags().StringP("id", "i", "", "Id of the KAS registry entry")
 }
-
-func init() {
-	rootCmd.AddCommand(kasRegistryCmd)
-}

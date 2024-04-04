@@ -3,7 +3,9 @@ package cli
 import (
 	"fmt"
 	"os"
+	"strings"
 
+	"github.com/opentdf/platform/protocol/go/common"
 	"github.com/spf13/cobra"
 )
 
@@ -56,6 +58,19 @@ func (f FlagHelper) GetRequiredInt32(flag string) int32 {
 	// 	os.Exit(1)
 	// }
 	return v
+}
+
+func GetState(cmd *cobra.Command) common.ActiveStateEnum {
+	state := common.ActiveStateEnum_ACTIVE_STATE_ENUM_ACTIVE
+	stateFlag := strings.ToUpper(cmd.Flag("state").Value.String())
+	if stateFlag != "" {
+		if stateFlag == "INACTIVE" {
+			state = common.ActiveStateEnum_ACTIVE_STATE_ENUM_INACTIVE
+		} else if stateFlag == "ANY" {
+			state = common.ActiveStateEnum_ACTIVE_STATE_ENUM_ANY
+		}
+	}
+	return state
 }
 
 // func (f FlagHelper) GetStructSlice(flag string, v []StructFlag[T], opts FlagHelperStringSliceOptions) ([]StructFlag[T], err) {

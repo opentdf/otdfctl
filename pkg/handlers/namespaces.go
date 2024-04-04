@@ -17,8 +17,8 @@ func (h Handler) GetNamespace(id string) (*policy.Namespace, error) {
 	return resp.GetNamespace(), nil
 }
 
-func (h Handler) ListNamespaces() ([]*policy.Namespace, error) {
-	resp, err := h.sdk.Namespaces.ListNamespaces(h.ctx, &namespaces.ListNamespacesRequest{})
+func (h Handler) ListNamespaces(state common.ActiveStateEnum) ([]*policy.Namespace, error) {
+	resp, err := h.sdk.Namespaces.ListNamespaces(h.ctx, &namespaces.ListNamespacesRequest{State: state})
 	if err != nil {
 		return nil, err
 	}
