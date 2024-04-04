@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/opentdf/tructl/pkg/cli"
@@ -75,7 +76,7 @@ or different attributes tied to each.
 				t.Row(
 					ns.Id,
 					ns.Name,
-					ns.Active.String(),
+					strconv.FormatBool(ns.Active.GetValue()),
 				)
 			}
 			HandleSuccess(cmd, "", t, list)

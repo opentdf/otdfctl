@@ -1,6 +1,8 @@
 package cli
 
 import (
+	"strconv"
+
 	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/opentdf/tructl/pkg/handlers"
 )
@@ -33,7 +35,7 @@ func GetSimpleAttribute(a *policy.Attribute) SimpleAttribute {
 		Rule:      handlers.GetAttributeRuleFromAttributeType(a.GetRule()),
 		Values:    values,
 		Namespace: a.GetNamespace().GetName(),
-		Active:    a.GetActive().String(),
+		Active:    strconv.FormatBool(a.GetActive().GetValue()),
 	}
 }
 
@@ -46,6 +48,6 @@ func GetSimpleAttributeValue(v *policy.Value) SimpleAttributeValue {
 		Id:      v.Id,
 		FQN:     v.Fqn,
 		Members: memberIds,
-		Active:  v.Active.String(),
+		Active:  strconv.FormatBool(v.Active.GetValue()),
 	}
 }
