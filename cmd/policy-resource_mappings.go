@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/opentdf/tructl/docs/man"
-	"github.com/opentdf/tructl/pkg/cli"
+	"github.com/opentdf/otdfctl/docs/man"
+	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/spf13/cobra"
 )
 
-// TODO: add metadata to outputs once [https://github.com/opentdf/tructl/issues/73] is addressed
+// TODO: add metadata to outputs once [https://github.com/opentdf/otdfctl/issues/73] is addressed
 
 var (
 	policy_resource_mappingsTerms []string

@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/opentdf/platform/protocol/go/policy/subjectmapping"
-	"github.com/opentdf/tructl/pkg/cli"
 	"github.com/spf13/cobra"
 )
 
-// TODO: add metadata to outputs once [https://github.com/opentdf/tructl/issues/73] is addressed
+// TODO: add metadata to outputs once [https://github.com/opentdf/otdfctl/issues/73] is addressed
 
 var (
 	policy_subject_mappingsCmds = []string{

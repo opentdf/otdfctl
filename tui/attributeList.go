@@ -4,7 +4,7 @@ import (
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/opentdf/tructl/tui/constants"
+	"github.com/opentdf/otdfctl/tui/constants"
 )
 
 type AttributeList struct {
@@ -65,7 +65,6 @@ func CreateViewFormat(num int) string {
 }
 
 func (m AttributeList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		constants.WindowSize = msg

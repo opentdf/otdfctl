@@ -40,7 +40,7 @@ const (
 // Load config with viper.
 func LoadConfig(key string) (*Config, error) {
 	if key == "" {
-		key = "tructl"
+		key = "otdfctl"
 		slog.Debug("LoadConfig: key not provided, using default", "config file", key)
 	} else {
 		slog.Debug("LoadConfig", "config file", key)
