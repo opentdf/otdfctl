@@ -18,9 +18,6 @@ updates:
     commit-message:
       prefix: 'chore(dependabot)'
     ignore:
-      # For all dependencies, we should handle major updates manually and not automatically.
-      - dependency-name: '*'
-        update-types: ['version-update:semver-major']
       # The platform and SDK are not yet following semver, so we do not want a bump for every
       # new commit. We will handle these updates manually while breaking change likelihood is high.
       - dependency-name: github.com/opentdf/platform/protocol/go

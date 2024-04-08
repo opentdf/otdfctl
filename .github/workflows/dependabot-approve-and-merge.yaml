@@ -24,6 +24,7 @@ jobs:
           PR_URL: ${{github.event.pull_request.html_url}}
           GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
       - name: Approve the PR
+        if: ${{ steps.metadata.outputs.update-type == 'version-update:semver-patch' ||  steps.metadata.outputs.update-type == 'version-update:semver-minor' }}
         run: echo "approve-test; would have enabled auto-merge here for '$PR_URL'"
         # run: gh pr review --approve "$PR_URL"
         env:
