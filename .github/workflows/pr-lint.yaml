@@ -28,5 +28,6 @@ jobs:
             tui
             demo
             ci
+            dependabot
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
