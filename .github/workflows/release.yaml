@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-22.04
     env:
       GOPRIVATE: github.com/opentdf/platform/*
-      BIN_NAME: tructl
+      BIN_NAME: otdfctl
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-go@v5
@@ -50,5 +50,5 @@ jobs:
           files: './output/**/*'
           body: 'This is a test release, and will be removed'
           tag_name: ${{ steps.version.outputs.version }}
-          repository: opentdf/tructl
+          repository: opentdf/otdfctl
           generate_release_notes: true

@@ -8,7 +8,7 @@ import (
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/opentdf/tructl/tui/constants"
+	"github.com/opentdf/otdfctl/tui/constants"
 )
 
 // StartTea the entry point for the UI. Initializes the model.
@@ -33,6 +33,7 @@ func StartTea() error {
 	}
 	return nil
 }
+
 func max(a, b int) int {
 	if a > b {
 		return a

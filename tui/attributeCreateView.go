@@ -5,7 +5,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh"
-	"github.com/opentdf/tructl/tui/constants"
+	"github.com/opentdf/otdfctl/tui/constants"
 )
 
 type AttributeCreateModel struct {
@@ -40,7 +40,6 @@ func (m AttributeCreateModel) Init() tea.Cmd {
 }
 
 func (m AttributeCreateModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		constants.WindowSize = msg

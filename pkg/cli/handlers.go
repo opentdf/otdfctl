@@ -1,7 +1,7 @@
 package cli
 
 import (
-	"github.com/opentdf/tructl/pkg/handlers"
+	"github.com/opentdf/otdfctl/pkg/handlers"
 	"github.com/spf13/cobra"
 )
 

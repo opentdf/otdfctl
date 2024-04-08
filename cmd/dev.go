@@ -6,9 +6,9 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/lipgloss/table"
+	"github.com/opentdf/otdfctl/internal/config"
+	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/platform/protocol/go/common"
-	"github.com/opentdf/tructl/internal/config"
-	"github.com/opentdf/tructl/pkg/cli"
 	"github.com/spf13/cobra"
 )
 
@@ -103,7 +103,7 @@ func getMetadataUpdateBehavior() common.MetadataUpdateEnum {
 
 // HandleSuccess prints a success message according to the configured format (styled table or JSON)
 func HandleSuccess(command *cobra.Command, id string, t *table.Table, policyObject interface{}) {
-	if TructlCfg.Output.Format == config.OutputJSON || configFlagOverrides.OutputFormatJSON {
+	if OtdfctlCfg.Output.Format == config.OutputJSON || configFlagOverrides.OutputFormatJSON {
 		if output, err := json.MarshalIndent(policyObject, "", "  "); err != nil {
 			cli.ExitWithError("Error marshalling policy object", err)
 		} else {

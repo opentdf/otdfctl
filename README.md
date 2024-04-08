@@ -19,9 +19,9 @@ The main goals are to:
 
 ## Usage
 
-The CLI is configured via the `otdfctl.yaml`. There is an example provided in `example-otdfctl.yaml`.
+The CLI is configured via the `otdfctl.yaml`. There is an example provided in `otdfctl-example.yaml`.
 
-Run `cp example-otdfctl.yaml otdfctl.yaml` to copy the example config when running the CLI.
+Run `cp otdfctl-example.yaml otdfctl.yaml` to copy the example config when running the CLI.
 
 Load up the platform (see its [README](https://github.com/opentdf/platform?tab=readme-ov-file#run) for instructions).
 
@@ -48,4 +48,3 @@ The output format (currently `styled` or `json`) is configurable in the `otdfctl
 > This is a work in progress please avoid touching until framework is defined
 
 The TUI will be used to create an interactive experience for the user.
-
