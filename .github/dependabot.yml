@@ -1,0 +1,27 @@
+# dependabot.yml
+#
+# Documentation:
+#   https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: 'chore(dependabot)'
+  - package-ecosystem: gomod
+    directory: /
+    schedule:
+      interval: daily
+    commit-message:
+      prefix: 'chore(dependabot)'
+    ignore:
+      # For all dependencies, we should handle major updates manually and not automatically.
+      - dependency-name: '*'
+        update-types: ['version-update:semver-major']
+      # The platform and SDK are not yet following semver, so we do not want a bump for every
+      # new commit. We will handle these updates manually while breaking change likelihood is high.
+      - dependency-name: github.com/opentdf/platform/protocol/go
+      - dependency-name: github.com/opentdf/platform/sdk
