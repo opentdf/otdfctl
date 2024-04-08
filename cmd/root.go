@@ -54,7 +54,7 @@ func init() {
 		fmt.Println("Error loading config:", err)
 		os.Exit(1)
 	}
-	TructlCfg = *cfg
+	OtdfctlCfg = *cfg
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
