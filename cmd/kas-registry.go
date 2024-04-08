@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/platform/protocol/go/kasregistry"
-	"github.com/opentdf/tructl/pkg/cli"
 	"github.com/spf13/cobra"
 )
 
@@ -58,7 +58,7 @@ var (
 			t := cli.NewTabular().
 				Rows([][]string{
 					{"Id", kas.Id},
-					// TODO: render labels [https://github.com/opentdf/tructl/issues/73]
+					// TODO: render labels [https://github.com/opentdf/otdfctl/issues/73]
 					{"URI", kas.Uri},
 					{"PublicKey Type", keyType},
 					{"PublicKey", key},
@@ -94,7 +94,7 @@ var (
 					kas.Uri,
 					keyType,
 					key,
-					// TODO: render labels [https://github.com/opentdf/tructl/issues/73]
+					// TODO: render labels [https://github.com/opentdf/otdfctl/issues/73]
 				)
 			}
 			HandleSuccess(cmd, "", t, list)
@@ -147,7 +147,7 @@ var (
 					{"URI", created.Uri},
 					{"PublicKey Type", keyType},
 					{"PublicKey", local},
-					// TODO: render labels [https://github.com/opentdf/tructl/issues/73]
+					// TODO: render labels [https://github.com/opentdf/otdfctl/issues/73]
 				}...)
 
 			HandleSuccess(cmd, created.Id, t, created)
@@ -199,7 +199,7 @@ var (
 				Rows([][]string{
 					{"Id", id},
 					{"URI", uri},
-					// TODO: render labels [https://github.com/opentdf/tructl/issues/73]
+					// TODO: render labels [https://github.com/opentdf/otdfctl/issues/73]
 				}...)
 			HandleSuccess(cmd, id, t, updated)
 		},
@@ -246,7 +246,7 @@ func init() {
 	kasRegistryGetCmd.Flags().StringP("id", "i", "", "Id of the KAS registry entry")
 
 	kasRegistryCmd.AddCommand(kasRegistrysListCmd)
-	// TODO: active, inactive, any state querying [https://github.com/opentdf/tructl/issues/68]
+	// TODO: active, inactive, any state querying [https://github.com/opentdf/otdfctl/issues/68]
 
 	kasRegistryCmd.AddCommand(kasRegistrysCreateCmd)
 	kasRegistrysCreateCmd.Flags().StringP("uri", "u", "", "The URI of the KAS registry entry")

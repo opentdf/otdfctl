@@ -3,8 +3,8 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/opentdf/tructl/internal/config"
-	"github.com/opentdf/tructl/pkg/cli"
+	"github.com/opentdf/otdfctl/internal/config"
+	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/spf13/cobra"
 )
 

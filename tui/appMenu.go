@@ -3,7 +3,7 @@ package tui
 import (
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/opentdf/tructl/tui/constants"
+	"github.com/opentdf/otdfctl/tui/constants"
 )
 
 const (

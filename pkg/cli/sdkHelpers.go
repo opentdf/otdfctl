@@ -3,8 +3,8 @@ package cli
 import (
 	"strconv"
 
+	"github.com/opentdf/otdfctl/pkg/handlers"
 	"github.com/opentdf/platform/protocol/go/policy"
-	"github.com/opentdf/tructl/pkg/handlers"
 )
 
 type SimpleAttribute struct {

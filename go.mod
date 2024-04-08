@@ -1,4 +1,4 @@
-module github.com/opentdf/tructl
+module github.com/opentdf/otdfctl
 
 go 1.22.2
 

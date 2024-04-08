@@ -11,7 +11,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/muesli/reflow/wordwrap"
-	"github.com/opentdf/tructl/tui/constants"
+	"github.com/opentdf/otdfctl/tui/constants"
 )
 
 const (
@@ -70,9 +70,7 @@ type AttributeView struct {
 }
 
 func SetupViewport(m AttributeView, msg tea.WindowSizeMsg) (AttributeView, []tea.Cmd) {
-	var (
-		cmds []tea.Cmd
-	)
+	var cmds []tea.Cmd
 	headerHeight := lipgloss.Height(m.CreateHeader())
 	footerHeight := lipgloss.Height(m.CreateFooter())
 	verticalMarginHeight := headerHeight + footerHeight

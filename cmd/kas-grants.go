@@ -3,7 +3,7 @@ package cmd
 import (
 	"strings"
 
-	"github.com/opentdf/tructl/pkg/cli"
+	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/spf13/cobra"
 )
 
