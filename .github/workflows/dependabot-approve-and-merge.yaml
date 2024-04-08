@@ -24,7 +24,7 @@ jobs:
           PR_URL: ${{github.event.pull_request.html_url}}
           GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
       - name: Approve the PR
-          run: echo "approve-test; would have enabled auto-merge here for '$PR_URL'"
+        run: echo "approve-test; would have enabled auto-merge here for '$PR_URL'"
         # run: gh pr review --approve "$PR_URL"
         env:
           PR_URL: ${{github.event.pull_request.html_url}}
