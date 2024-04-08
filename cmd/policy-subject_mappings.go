@@ -34,7 +34,7 @@ var (
 
 	policy_subject_mappingGetCmd = &cobra.Command{
 		Use:   man.Docs.GetDoc("policy/subject-mappings/get").Use,
-		Short: man.Docs.GetDoc("policy/subject-mappings/Get a subject mapping by id").Short,
+		Short: man.Docs.GetDoc("policy/subject-mappings/get").Short,
 		Run: func(cmd *cobra.Command, args []string) {
 			h := cli.NewHandler(cmd)
 			defer h.Close()
@@ -78,7 +78,7 @@ var (
 
 	policy_subject_mappingsListCmd = &cobra.Command{
 		Use:   man.Docs.GetDoc("policy/subject-mappings/list").Use,
-		Short: man.Docs.GetDoc("policy/subject-mappings/List subject mappings").Short,
+		Short: man.Docs.GetDoc("policy/subject-mappings/list").Short,
 		Run: func(cmd *cobra.Command, args []string) {
 			h := cli.NewHandler(cmd)
 			defer h.Close()
@@ -117,7 +117,7 @@ var (
 
 	policy_subject_mappingCreateCmd = &cobra.Command{
 		Use:   man.Docs.GetDoc("policy/subject-mappings/create").Use,
-		Short: man.Docs.GetDoc("policy/subject-mappings/Create a new subject mapping").Short,
+		Short: man.Docs.GetDoc("policy/subject-mappings/create").Short,
 		Run: func(cmd *cobra.Command, args []string) {
 			h := cli.NewHandler(cmd)
 			defer h.Close()
@@ -194,7 +194,7 @@ var (
 
 	policy_subject_mappingDeleteCmd = &cobra.Command{
 		Use:   man.Docs.GetDoc("policy/subject-mappings/delete").Use,
-		Short: man.Docs.GetDoc("policy/subject-mappings/Delete a subject mapping by id").Short,
+		Short: man.Docs.GetDoc("policy/subject-mappings/delete").Short,
 		Run: func(cmd *cobra.Command, args []string) {
 			h := cli.NewHandler(cmd)
 			defer h.Close()
@@ -221,11 +221,8 @@ var (
 
 	policy_subject_mappingUpdateCmd = &cobra.Command{
 		Use:   man.Docs.GetDoc("policy/subject-mappings/update").Use,
-		Short: man.Docs.GetDoc("policy/subject-mappings/Update a subject mapping").Short,
-		Long: `
-Update a Subject Mapping by id.
-'Actions' are updated in place, destructively replacing the current set. If you want to add or remove actions, you must provide the
-full set of actions on update. `,
+		Short: man.Docs.GetDoc("policy/subject-mappings/update").Short,
+		Long:  man.Docs.GetDoc("policy/subject-mappings/update").Long,
 		Run: func(cmd *cobra.Command, args []string) {
 			h := cli.NewHandler(cmd)
 			defer h.Close()
@@ -294,6 +291,34 @@ func getFullActionsList(standardActions, customActions []string) []*policy.Actio
 }
 
 func init() {
+
+	// cmd := man.Docs.GetDoc("policy/subject-mappings")
+
+	// createCmd := man.Docs.GetDoc("policy/subject-mappings/create")
+	// createCmd.Run = runCreateSubjectMappings
+
+	// listCmd := man.Docs.GetDoc("policy/subject-mappings/list")
+	// listCmd.Run = runListSubjectMappings
+
+	// updateCmd := man.Docs.GetDoc("policy/subject-mappings/update")
+	// updateCmd.Run = runUpdateSubjectMappings
+
+	// deleteCmd := man.Docs.GetDoc("policy/subject-mappings/delete")
+	// deleteCmd.Run = runDeleteSubjectMappings
+
+	// getCmd := man.Docs.GetDoc("policy/subject-mappings/get")
+	// getCmd.Run = runGetSubjectMappings
+
+	// cmd.Short = cmd.GetShort([]string{
+	// 	createCmd.Use,
+	// 	getCmd.Use,
+	// 	listCmd.Use,
+	// 	updateCmd.Use,
+	// 	deleteCmd.Use,
+	// })
+
+	// policyCmd.AddCommand(&cmd.Command)
+
 	policyCmd.AddCommand(policy_subject_mappingsCmd)
 
 	policy_subject_mappingsCmd.AddCommand(policy_subject_mappingGetCmd)
@@ -301,12 +326,38 @@ func init() {
 
 	policy_subject_mappingsCmd.AddCommand(policy_subject_mappingsListCmd)
 
+	createDoc := man.Docs.GetDoc("policy/subject-mappings/create")
 	policy_subject_mappingsCmd.AddCommand(policy_subject_mappingCreateCmd)
-	policy_subject_mappingCreateCmd.Flags().StringP("attribute-value-id", "a", "", "Id of the mapped Attribute Value")
-	policy_subject_mappingCreateCmd.Flags().StringSliceVarP(&standardActions, "action-standard", "s", []string{}, "Standard Action: [DECRYPT, TRANSMIT]")
-	policy_subject_mappingCreateCmd.Flags().StringSliceVarP(&customActions, "action-custom", "c", []string{}, "Custom Action")
-	policy_subject_mappingCreateCmd.Flags().String("subject-condition-set-id", "", "Known pre-existing Subject Condition Set Id")
-	policy_subject_mappingCreateCmd.Flags().String("subject-condition-set-new", "", "JSON array of Subject Sets to create a new Subject Condition Set associated with the created Subject Mapping")
+	policy_subject_mappingCreateCmd.Flags().StringP(
+		createDoc.GetDocFlag("attribute-value-id").Name,
+		createDoc.GetDocFlag("attribute-value-id").Shorthand,
+		createDoc.GetDocFlag("attribute-value-id").Default,
+		createDoc.GetDocFlag("attribute-value-id").Description,
+	)
+	policy_subject_mappingCreateCmd.Flags().StringSliceVarP(
+		&standardActions,
+		createDoc.GetDocFlag("action-standard").Name,
+		createDoc.GetDocFlag("action-standard").Shorthand,
+		[]string{},
+		createDoc.GetDocFlag("action-standard").Description,
+	)
+	policy_subject_mappingCreateCmd.Flags().StringSliceVarP(
+		&customActions,
+		createDoc.GetDocFlag("action-custom").Name,
+		createDoc.GetDocFlag("action-custom").Shorthand,
+		[]string{},
+		createDoc.GetDocFlag("action-custom").Description,
+	)
+	policy_subject_mappingCreateCmd.Flags().String(
+		createDoc.GetDocFlag("subject-condition-set-id").Name,
+		createDoc.GetDocFlag("subject-condition-set-id").Default,
+		createDoc.GetDocFlag("subject-condition-set-id").Description,
+	)
+	policy_subject_mappingCreateCmd.Flags().String(
+		createDoc.GetDocFlag("subject-condition-set-new").Name,
+		createDoc.GetDocFlag("subject-condition-set-new").Default,
+		createDoc.GetDocFlag("subject-condition-set-new").Description,
+	)
 	injectLabelFlags(policy_subject_mappingCreateCmd, false)
 
 	policy_subject_mappingsCmd.AddCommand(policy_subject_mappingUpdateCmd)

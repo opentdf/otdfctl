@@ -248,23 +248,57 @@ var (
 func init() {
 	policyCmd.AddCommand(policy_subject_condition_setCmd)
 
+	createDoc := man.Docs.GetDoc("policy/subject-condition-sets/create")
 	policy_subject_condition_setCmd.AddCommand(policy_subject_condition_setCreateCmd)
 	injectLabelFlags(policy_subject_condition_setCreateCmd, false)
-	policy_subject_condition_setCreateCmd.Flags().StringP("subject-sets", "s", "", "A JSON array of subject sets, containing a list of condition groups, each with one or more conditions")
-	policy_subject_condition_setCreateCmd.Flags().StringP("subject-sets-file-json", "j", "", "A JSON file with path from $HOME containing an array of subject sets")
+	policy_subject_condition_setCreateCmd.Flags().StringP(
+		createDoc.GetDocFlag("subject-sets").Name,
+		createDoc.GetDocFlag("subject-sets").Shorthand,
+		createDoc.GetDocFlag("subject-sets").Default,
+		createDoc.GetDocFlag("subject-sets").Description,
+	)
+	policy_subject_condition_setCreateCmd.Flags().StringP(
+		createDoc.GetDocFlag("subject-sets-file-json").Name,
+		createDoc.GetDocFlag("subject-sets-file-json").Shorthand,
+		createDoc.GetDocFlag("subject-sets-file-json").Default,
+		createDoc.GetDocFlag("subject-sets-file-json").Description,
+	)
 
+	getDoc := man.Docs.GetDoc("policy/subject-condition-sets/get")
 	policy_subject_condition_setCmd.AddCommand(policy_subject_condition_setGetCmd)
-	policy_subject_condition_setGetCmd.Flags().StringP("id", "i", "", "Id of the subject condition set")
+	policy_subject_condition_setGetCmd.Flags().StringP(
+		getDoc.GetDocFlag("id").Name,
+		getDoc.GetDocFlag("id").Shorthand,
+		getDoc.GetDocFlag("id").Default,
+		getDoc.GetDocFlag("id").Description,
+	)
 
 	policy_subject_condition_setCmd.AddCommand(policy_subject_condition_setListCmd)
 
+	updateDoc := man.Docs.GetDoc("policy/subject-condition-sets/update")
 	policy_subject_condition_setCmd.AddCommand(policy_subject_condition_setUpdateCmd)
-	policy_subject_condition_setUpdateCmd.Flags().StringP("id", "i", "", "Id of the subject condition set")
+	policy_subject_condition_setUpdateCmd.Flags().StringP(
+		updateDoc.GetDocFlag("id").Name,
+		updateDoc.GetDocFlag("id").Shorthand,
+		updateDoc.GetDocFlag("id").Default,
+		updateDoc.GetDocFlag("id").Description,
+	)
 	injectLabelFlags(policy_subject_condition_setUpdateCmd, true)
-	policy_subject_condition_setUpdateCmd.Flags().StringP("subject-sets", "s", "", "A JSON array of subject sets, containing a list of condition groups, each with one or more conditions")
+	policy_subject_condition_setUpdateCmd.Flags().StringP(
+		updateDoc.GetDocFlag("subject-sets").Name,
+		updateDoc.GetDocFlag("subject-sets").Shorthand,
+		updateDoc.GetDocFlag("subject-sets").Default,
+		updateDoc.GetDocFlag("subject-sets").Description,
+	)
 
+	deleteDoc := man.Docs.GetDoc("policy/subject-condition-sets/delete")
 	policy_subject_condition_setCmd.AddCommand(policy_subject_condition_setDeleteCmd)
-	policy_subject_condition_setDeleteCmd.Flags().StringP("id", "i", "", "Id of the subject condition set")
+	policy_subject_condition_setDeleteCmd.Flags().StringP(
+		deleteDoc.GetDocFlag("id").Name,
+		deleteDoc.GetDocFlag("id").Shorthand,
+		deleteDoc.GetDocFlag("id").Default,
+		deleteDoc.GetDocFlag("id").Description,
+	)
 }
 
 func getSubjectConditionSetOperatorFromChoice(choice string) (policy.SubjectMappingOperatorEnum, error) {

@@ -189,26 +189,66 @@ func init() {
 	policyCmd.AddCommand(policy_attributesCmd)
 
 	// Create an attribute
+	createDoc := man.Docs.GetDoc("policy/attributes/create")
 	policy_attributesCmd.AddCommand(policy_attributesCreateCmd)
-	policy_attributesCreateCmd.Flags().StringP("name", "n", "", "Name of the attribute")
-	policy_attributesCreateCmd.Flags().StringP("rule", "r", "", "Rule of the attribute")
-	policy_attributesCreateCmd.Flags().StringSliceVarP(&attrValues, "value", "v", []string{}, "Values of the attribute")
-	policy_attributesCreateCmd.Flags().StringP("namespace", "s", "", "Namespace of the attribute")
+	policy_attributesCreateCmd.Flags().StringP(
+		createDoc.GetDocFlag("name").Name,
+		createDoc.GetDocFlag("name").Shorthand,
+		createDoc.GetDocFlag("name").Default,
+		createDoc.GetDocFlag("name").Description,
+	)
+	policy_attributesCreateCmd.Flags().StringP(
+		createDoc.GetDocFlag("rule").Name,
+		createDoc.GetDocFlag("rule").Shorthand,
+		createDoc.GetDocFlag("rule").Default,
+		createDoc.GetDocFlag("rule").Description,
+	)
+	policy_attributesCreateCmd.Flags().StringSliceVarP(
+		&attrValues,
+		createDoc.GetDocFlag("value").Name,
+		createDoc.GetDocFlag("value").Shorthand,
+		[]string{},
+		createDoc.GetDocFlag("value").Description,
+	)
+	policy_attributesCreateCmd.Flags().StringP(
+		createDoc.GetDocFlag("namespace").Name,
+		createDoc.GetDocFlag("namespace").Shorthand,
+		createDoc.GetDocFlag("namespace").Default,
+		createDoc.GetDocFlag("namespace").Description,
+	)
 	injectLabelFlags(policy_attributesCreateCmd, false)
 
 	// Get an attribute
+	getDoc := man.Docs.GetDoc("policy/attributes/get")
 	policy_attributesCmd.AddCommand(policy_attributeGetCmd)
-	policy_attributeGetCmd.Flags().StringP("id", "i", "", "Id of the attribute")
+	policy_attributeGetCmd.Flags().StringP(
+		getDoc.GetDocFlag("id").Name,
+		getDoc.GetDocFlag("id").Shorthand,
+		getDoc.GetDocFlag("id").Default,
+		getDoc.GetDocFlag("id").Description,
+	)
 
 	// List attributes
 	policy_attributesCmd.AddCommand(policy_attributesListCmd)
 
 	// Update an attribute
+	updateDoc := man.Docs.GetDoc("policy/attributes/update")
 	policy_attributesCmd.AddCommand(policy_attributeUpdateCmd)
-	policy_attributeUpdateCmd.Flags().StringP("id", "i", "", "Id of the attribute")
+	policy_attributeUpdateCmd.Flags().StringP(
+		updateDoc.GetDocFlag("id").Name,
+		updateDoc.GetDocFlag("id").Shorthand,
+		updateDoc.GetDocFlag("id").Default,
+		updateDoc.GetDocFlag("id").Description,
+	)
 	injectLabelFlags(policy_attributeUpdateCmd, true)
 
 	// Deactivate an attribute
+	deactivateDoc := man.Docs.GetDoc("policy/attributes/deactivate")
 	policy_attributesCmd.AddCommand(policy_attributesDeactivateCmd)
-	policy_attributesDeactivateCmd.Flags().StringP("id", "i", "", "Id of the attribute")
+	policy_attributesDeactivateCmd.Flags().StringP(
+		deactivateDoc.GetDocFlag("id").Name,
+		deactivateDoc.GetDocFlag("id").Shorthand,
+		deactivateDoc.GetDocFlag("id").Default,
+		deactivateDoc.GetDocFlag("id").Description,
+	)
 }

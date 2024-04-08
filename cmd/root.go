@@ -24,10 +24,30 @@ var (
 )
 
 func init() {
-	rootCmd.PersistentFlags().BoolVar(&configFlagOverrides.OutputFormatJSON, "json", false, "output single command in JSON (overrides configured output format)")
-	rootCmd.PersistentFlags().String("host", "localhost:9000", "host:port of the Virtru Data Security Platform gRPC server")
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config-file", "", "config file (default is $HOME/.tructl.yaml)")
-	rootCmd.PersistentFlags().String("log-level", "info", "log level (debug, info, warn, error, fatal, panic)")
+	doc := man.Docs.GetDoc("<root>")
+	rootCmd = &doc.Command
+	rootCmd.PersistentFlags().BoolVar(
+		&configFlagOverrides.OutputFormatJSON,
+		doc.GetDocFlag("json").Name,
+		doc.GetDocFlag("json").DefaultAsBool(),
+		doc.GetDocFlag("json").Description,
+	)
+	rootCmd.PersistentFlags().String(
+		doc.GetDocFlag("host").Name,
+		doc.GetDocFlag("host").Default,
+		doc.GetDocFlag("host").Description,
+	)
+	rootCmd.PersistentFlags().StringVar(
+		&cfgFile,
+		doc.GetDocFlag("config-file").Name,
+		doc.GetDocFlag("config-file").Default,
+		doc.GetDocFlag("config-file").Description,
+	)
+	rootCmd.PersistentFlags().String(
+		doc.GetDocFlag("log-level").Name,
+		doc.GetDocFlag("log-level").Default,
+		doc.GetDocFlag("log-level").Description,
+	)
 
 	cfg, err := config.LoadConfig("tructl")
 	if err != nil {
@@ -43,17 +63,4 @@ func Execute() {
 	if err != nil {
 		os.Exit(1)
 	}
-}
-
-func init() {
-	rootCmd.PersistentFlags().BoolVar(&configFlagOverrides.OutputFormatJSON, "json", false, "output single command in JSON (overrides configured output format)")
-	rootCmd.PersistentFlags().String("host", "localhost:8080", "host:port of the Virtru Data Security Platform gRPC server")
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config-file", "", "config file (default is $HOME/.tructl.yaml)")
-
-	cfg, err := config.LoadConfig("tructl")
-	if err != nil {
-		fmt.Println("Error loading config:", err)
-		os.Exit(1)
-	}
-	TructlCfg = *cfg
 }

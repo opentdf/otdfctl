@@ -25,14 +25,15 @@ var (
 		Long:  man.Docs.GetDoc("policy/kas-registry").Long,
 	}
 
-	kasRegistryGetCmd = &man.Docs.GetDoc("policy/kas-registry/get").Command
-	// .WithRun(
-	// 	func(cmd *cobra.Command, args []string) {
-	// 		h := cli.NewHandler(cmd)
-	// 		defer h.Close()
+	kasRegistryGetCmd = &cobra.Command{
+		Use:   man.Docs.GetDoc("policy/kas-registry/get").Use,
+		Short: man.Docs.GetDoc("policy/kas-registry/get").Short,
+		Run: func(cmd *cobra.Command, args []string) {
+			h := cli.NewHandler(cmd)
+			defer h.Close()
 
-	// 		flagHelper := cli.NewFlagHelper(cmd)
-	// 		id := flagHelper.GetRequiredString("id")
+			flagHelper := cli.NewFlagHelper(cmd)
+			id := flagHelper.GetRequiredString("id")
 
 			kas, err := h.GetKasRegistryEntry(id)
 			if err != nil {
@@ -40,24 +41,24 @@ var (
 				cli.ExitWithError(errMsg, err)
 			}
 
-	// 		keyType := "Local"
-	// 		key := kas.PublicKey.GetLocal()
-	// 		if kas.PublicKey.GetRemote() != "" {
-	// 			keyType = "Remote"
-	// 			key = kas.PublicKey.GetRemote()
-	// 		}
+			keyType := "Local"
+			key := kas.PublicKey.GetLocal()
+			if kas.PublicKey.GetRemote() != "" {
+				keyType = "Remote"
+				key = kas.PublicKey.GetRemote()
+			}
 
-	// 		t := cli.NewTabular().
-	// 			Rows([][]string{
-	// 				{"Id", kas.Id},
-	// 				// TODO: render labels [https://github.com/opentdf/tructl/issues/73]
-	// 				{"URI", kas.Uri},
-	// 				{"PublicKey Type", keyType},
-	// 				{"PublicKey", key},
-	// 			}...)
-	// 		HandleSuccess(cmd, kas.Id, t, kas)
-	// 	},
-	// )
+			t := cli.NewTabular().
+				Rows([][]string{
+					{"Id", kas.Id},
+					// TODO: render labels [https://github.com/opentdf/tructl/issues/73]
+					{"URI", kas.Uri},
+					{"PublicKey Type", keyType},
+					{"PublicKey", key},
+				}...)
+			HandleSuccess(cmd, kas.Id, t, kas)
+		},
+	}
 
 	kasRegistrysListCmd = &cobra.Command{
 		Use:   man.Docs.GetDoc("policy/kas-registry/list").Use,
@@ -234,27 +235,76 @@ var (
 func init() {
 	policyCmd.AddCommand(kasRegistryCmd)
 
+	getDoc := man.Docs.GetDoc("policy/kas-registry/get")
 	kasRegistryCmd.AddCommand(kasRegistryGetCmd)
-	kasRegistryGetCmd.Flags().StringP("id", "i", "", "Id of the KAS registry entry")
+	kasRegistryGetCmd.Flags().StringP(
+		getDoc.GetDocFlag("id").Name,
+		getDoc.GetDocFlag("id").Shorthand,
+		getDoc.GetDocFlag("id").Default,
+		getDoc.GetDocFlag("id").Description,
+	)
 
 	kasRegistryCmd.AddCommand(kasRegistrysListCmd)
 	// TODO: active, inactive, any state querying [https://github.com/opentdf/tructl/issues/68]
 
+	createDoc := man.Docs.GetDoc("policy/kas-registry/create")
 	kasRegistryCmd.AddCommand(kasRegistrysCreateCmd)
-	kasRegistrysCreateCmd.Flags().StringP("uri", "u", "", "The URI of the KAS registry entry")
-	kasRegistrysCreateCmd.Flags().StringP("public-key-local", "p", "", "A local public key for the registered Key Access Server (KAS)")
-	kasRegistrysCreateCmd.Flags().StringP("public-key-remote", "r", "", "A remote endpoint that provides a public key for the registered Key Access Server (KAS)")
+	kasRegistrysCreateCmd.Flags().StringP(
+		createDoc.GetDocFlag("uri").Name,
+		createDoc.GetDocFlag("uri").Shorthand,
+		createDoc.GetDocFlag("uri").Default,
+		createDoc.GetDocFlag("uri").Description,
+	)
+	kasRegistrysCreateCmd.Flags().StringP(
+		createDoc.GetDocFlag("public-key-local").Name,
+		createDoc.GetDocFlag("public-key-local").Shorthand,
+		createDoc.GetDocFlag("public-key-local").Default,
+		createDoc.GetDocFlag("public-key-local").Description,
+	)
+	kasRegistrysCreateCmd.Flags().StringP(
+		createDoc.GetDocFlag("public-key-remote").Name,
+		createDoc.GetDocFlag("public-key-remote").Shorthand,
+		createDoc.GetDocFlag("public-key-remote").Default,
+		createDoc.GetDocFlag("public-key-remote").Description,
+	)
 	injectLabelFlags(kasRegistrysCreateCmd, false)
 
+	updateDoc := man.Docs.GetDoc("policy/kas-registry/update")
 	kasRegistryCmd.AddCommand(kasRegistryUpdateCmd)
-	kasRegistryUpdateCmd.Flags().StringP("id", "i", "", "Id of the KAS registry entry")
-	kasRegistryUpdateCmd.Flags().StringP("uri", "u", "", "The URI of the KAS registry entry")
-	kasRegistryUpdateCmd.Flags().StringP("public-key-local", "p", "", "A local public key for the registered Key Access Server (KAS)")
-	kasRegistryUpdateCmd.Flags().StringP("public-key-remote", "r", "", "A remote endpoint that serves a public key for the registered Key Access Server (KAS)")
+	kasRegistryUpdateCmd.Flags().StringP(
+		updateDoc.GetDocFlag("id").Name,
+		updateDoc.GetDocFlag("id").Shorthand,
+		updateDoc.GetDocFlag("id").Default,
+		updateDoc.GetDocFlag("id").Description,
+	)
+	kasRegistryUpdateCmd.Flags().StringP(
+		updateDoc.GetDocFlag("uri").Name,
+		updateDoc.GetDocFlag("uri").Shorthand,
+		updateDoc.GetDocFlag("uri").Default,
+		updateDoc.GetDocFlag("uri").Description,
+	)
+	kasRegistryUpdateCmd.Flags().StringP(
+		updateDoc.GetDocFlag("public-key-local").Name,
+		updateDoc.GetDocFlag("public-key-local").Shorthand,
+		updateDoc.GetDocFlag("public-key-local").Default,
+		updateDoc.GetDocFlag("public-key-local").Description,
+	)
+	kasRegistryUpdateCmd.Flags().StringP(
+		updateDoc.GetDocFlag("public-key-remote").Name,
+		updateDoc.GetDocFlag("public-key-remote").Shorthand,
+		updateDoc.GetDocFlag("public-key-remote").Default,
+		updateDoc.GetDocFlag("public-key-remote").Description,
+	)
 	injectLabelFlags(kasRegistryUpdateCmd, true)
 
+	deleteDoc := man.Docs.GetDoc("policy/kas-registry/delete")
 	kasRegistryCmd.AddCommand(kasRegistryDeleteCmd)
-	kasRegistryDeleteCmd.Flags().StringP("id", "i", "", "Id of the KAS registry entry")
+	kasRegistryDeleteCmd.Flags().StringP(
+		deleteDoc.GetDocFlag("id").Name,
+		deleteDoc.GetDocFlag("id").Shorthand,
+		deleteDoc.GetDocFlag("id").Default,
+		deleteDoc.GetDocFlag("id").Description,
+	)
 }
 
 func init() {

@@ -164,19 +164,43 @@ var (
 func init() {
 	policyCmd.AddCommand(policy_namespacesCmd)
 
+	getDoc := man.Docs.GetDoc("policy/attributes/namespaces/get")
 	policy_namespacesCmd.AddCommand(policy_namespaceGetCmd)
-	policy_namespaceGetCmd.Flags().StringP("id", "i", "", "Id of the namespace")
+	policy_namespaceGetCmd.Flags().StringP(
+		getDoc.GetDocFlag("id").Name,
+		getDoc.GetDocFlag("id").Shorthand,
+		getDoc.GetDocFlag("id").Default,
+		getDoc.GetDocFlag("id").Description,
+	)
 
 	policy_namespacesCmd.AddCommand(policy_namespacesListCmd)
 
+	createDoc := man.Docs.GetDoc("policy/attributes/namespaces/create")
 	policy_namespacesCmd.AddCommand(policy_namespacesCreateCmd)
-	policy_namespacesCreateCmd.Flags().StringP("name", "n", "", "Name value of the namespace")
+	policy_namespacesCreateCmd.Flags().StringP(
+		createDoc.GetDocFlag("name").Name,
+		createDoc.GetDocFlag("name").Shorthand,
+		createDoc.GetDocFlag("name").Default,
+		createDoc.GetDocFlag("name").Description,
+	)
 	injectLabelFlags(policy_namespacesCreateCmd, false)
 
+	updateDoc := man.Docs.GetDoc("policy/attributes/namespaces/update")
 	policy_namespacesCmd.AddCommand(policy_namespaceUpdateCmd)
-	policy_namespaceUpdateCmd.Flags().StringP("id", "i", "", "Id of the namespace")
+	policy_namespaceUpdateCmd.Flags().StringP(
+		updateDoc.GetDocFlag("id").Name,
+		updateDoc.GetDocFlag("id").Shorthand,
+		updateDoc.GetDocFlag("id").Default,
+		updateDoc.GetDocFlag("id").Description,
+	)
 	injectLabelFlags(policy_namespaceUpdateCmd, true)
 
+	deactivateDoc := man.Docs.GetDoc("policy/attributes/namespaces/deactivate")
 	policy_namespacesCmd.AddCommand(policy_namespaceDeactivateCmd)
-	policy_namespaceDeactivateCmd.Flags().StringP("id", "i", "", "Id of the namespace")
+	policy_namespaceDeactivateCmd.Flags().StringP(
+		deactivateDoc.GetDocFlag("id").Name,
+		deactivateDoc.GetDocFlag("id").Shorthand,
+		deactivateDoc.GetDocFlag("id").Default,
+		deactivateDoc.GetDocFlag("id").Description,
+	)
 }

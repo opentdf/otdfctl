@@ -2,4 +2,15 @@
 title: Create a Key Access Server registration
 command:
   name: create
+  flags:
+    - name: uri
+      shorthand: u
+      description: URI of the Key Access Server
+      required: true
+    - name: public-key-local
+      shorthand: p
+      description: Public key of the Key Access Server
+    - name: public-key-remote
+      shorthand: r
+      description: URI of the public key of the Key Access Server
 ---

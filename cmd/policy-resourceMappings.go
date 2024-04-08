@@ -15,6 +15,7 @@ import (
 var (
 	policy_resource_mappingsTerms []string
 
+	//#region Resource Mappings
 	policy_resource_mappingsCmd = &cobra.Command{
 		Use:     man.Docs.GetDoc("policy/resource-mappings").Use,
 		Aliases: man.Docs.GetDoc("policy/resource-mappings").Aliases,
@@ -27,7 +28,9 @@ var (
 		}),
 		Long: man.Docs.GetDoc("policy/resource-mappings").Long,
 	}
+	//#endregion
 
+	//#region Resource Mapping Create
 	policy_resource_mappingsCreateCmd = &cobra.Command{
 		Use:   man.Docs.GetDoc("policy/resource-mappings/create").Use,
 		Short: man.Docs.GetDoc("policy/resource-mappings/create").Short,
@@ -56,6 +59,7 @@ var (
 			HandleSuccess(cmd, resourceMapping.Id, t, resourceMapping)
 		},
 	}
+	//#endregion
 
 	policy_resource_mappingsGetCmd = &cobra.Command{
 		Use:   man.Docs.GetDoc("policy/resource-mappings/get").Use,
@@ -162,22 +166,56 @@ var (
 func init() {
 	policyCmd.AddCommand(policy_resource_mappingsCmd)
 
+	createDoc := man.Docs.GetDoc("policy/resource-mappings/create")
 	policy_resource_mappingsCmd.AddCommand(policy_resource_mappingsCreateCmd)
-	policy_resource_mappingsCreateCmd.Flags().String("attribute-value-id", "", "Attribute Value ID")
-	policy_resource_mappingsCreateCmd.Flags().StringSliceVar(&policy_resource_mappingsTerms, "terms", []string{}, "Synonym terms")
+	policy_resource_mappingsCreateCmd.Flags().String(
+		createDoc.GetDocFlag("attribute-value-id").Name,
+		createDoc.GetDocFlag("attribute-value-id").Default,
+		createDoc.GetDocFlag("attribute-value-id").Description,
+	)
+	policy_resource_mappingsCreateCmd.Flags().StringSliceVar(
+		&policy_resource_mappingsTerms,
+		createDoc.GetDocFlag("terms").Name,
+		[]string{},
+		createDoc.GetDocFlag("terms").Description,
+	)
 	injectLabelFlags(policy_resource_mappingsCreateCmd, false)
 
+	getDoc := man.Docs.GetDoc("policy/resource-mappings/get")
 	policy_resource_mappingsCmd.AddCommand(policy_resource_mappingsGetCmd)
-	policy_resource_mappingsGetCmd.Flags().String("id", "", "Resource Mapping ID")
+	policy_resource_mappingsGetCmd.Flags().String(
+		getDoc.GetDocFlag("id").Name,
+		getDoc.GetDocFlag("id").Default,
+		getDoc.GetDocFlag("id").Description,
+	)
 
 	policy_resource_mappingsCmd.AddCommand(policy_resource_mappingsListCmd)
 
+	updateDoc := man.Docs.GetDoc("policy/resource-mappings/update")
 	policy_resource_mappingsCmd.AddCommand(policy_resource_mappingsUpdateCmd)
-	policy_resource_mappingsUpdateCmd.Flags().String("id", "", "Resource Mapping ID")
-	policy_resource_mappingsUpdateCmd.Flags().String("attribute-value-id", "", "Attribute Value ID")
-	policy_resource_mappingsUpdateCmd.Flags().StringSliceVar(&policy_resource_mappingsTerms, "terms", []string{}, "Synonym terms")
+	policy_resource_mappingsUpdateCmd.Flags().String(
+		updateDoc.GetDocFlag("id").Name,
+		updateDoc.GetDocFlag("id").Default,
+		updateDoc.GetDocFlag("id").Description,
+	)
+	policy_resource_mappingsUpdateCmd.Flags().String(
+		updateDoc.GetDocFlag("attribute-value-id").Name,
+		updateDoc.GetDocFlag("attribute-value-id").Default,
+		updateDoc.GetDocFlag("attribute-value-id").Description,
+	)
+	policy_resource_mappingsUpdateCmd.Flags().StringSliceVar(
+		&policy_resource_mappingsTerms,
+		updateDoc.GetDocFlag("terms").Name,
+		[]string{},
+		updateDoc.GetDocFlag("terms").Description,
+	)
 	injectLabelFlags(policy_resource_mappingsUpdateCmd, true)
 
+	deleteDoc := man.Docs.GetDoc("policy/resource-mappings/delete")
 	policy_resource_mappingsCmd.AddCommand(policy_resource_mappingsDeleteCmd)
-	policy_resource_mappingsDeleteCmd.Flags().String("id", "", "Resource Mapping ID")
+	policy_resource_mappingsDeleteCmd.Flags().String(
+		deleteDoc.GetDocFlag("id").Name,
+		deleteDoc.GetDocFlag("id").Default,
+		deleteDoc.GetDocFlag("id").Description,
+	)
 }

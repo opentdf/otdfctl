@@ -17,6 +17,7 @@ var Docs Manual
 
 type Doc struct {
 	cobra.Command
+	DocFlags []DocFlag
 }
 
 func (d Doc) GetShort(subCmds []string) string {
@@ -126,12 +127,9 @@ func processDoc(doc string) (*Doc, error) {
 	var matter struct {
 		Title   string `yaml:"title"`
 		Command struct {
-			Name    string   `yaml:"name"`
-			Aliases []string `yaml:"aliases"`
-			Flags   []struct {
-				Name  string `yaml:"name"`
-				Short string `yaml:"short"`
-			} `yaml:"flags"`
+			Name    string    `yaml:"name"`
+			Aliases []string  `yaml:"aliases"`
+			Flags   []DocFlag `yaml:"flags"`
 		} `yaml:"command"`
 	}
 	rest, err := frontmatter.Parse(strings.NewReader(doc), &matter)
@@ -145,18 +143,17 @@ func processDoc(doc string) (*Doc, error) {
 		return nil, fmt.Errorf("required 'command' property")
 	}
 
-	long := "# " + matter.Title + "\n\n"
-	long += strings.TrimSpace(string(rest))
+	long := "# " + matter.Title + "\n\n" + strings.TrimSpace(string(rest))
 
 	d := Doc{
 		cobra.Command{
 			Use:     c.Name,
 			Aliases: c.Aliases,
 			Short:   matter.Title,
+			Long:    styleDoc(long),
 		},
+		c.Flags,
 	}
-
-	d.Long = long
 
 	return &d, nil
 }
