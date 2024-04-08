@@ -12,293 +12,274 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	policy_subject_condition_setsCmds = []string{
-		policy_subject_condition_setCreateCmd.Use,
-		policy_subject_condition_setGetCmd.Use,
-		policy_subject_condition_setListCmd.Use,
-		policy_subject_condition_setUpdateCmd.Use,
-		policy_subject_condition_setDeleteCmd.Use,
+func policy_createSubjectConditionSet(cmd *cobra.Command, args []string) {
+	h := cli.NewHandler(cmd)
+	defer h.Close()
+	var (
+		ss      []*policy.SubjectSet
+		ssBytes []byte
+	)
+
+	flagHelper := cli.NewFlagHelper(cmd)
+	ssFlagJSON := flagHelper.GetOptionalString("subject-sets")
+	ssFileJSON := flagHelper.GetOptionalString("subject-sets-file-json")
+	metadataLabels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
+
+	// validate no flag conflicts
+	if ssFileJSON == "" && ssFlagJSON == "" {
+		cli.ExitWithError("At least one subject set must be provided ('--subject-sets', '--subject-sets-file-json')", nil)
+	} else if ssFileJSON != "" && ssFlagJSON != "" {
+		cli.ExitWithError("Only one of '--subject-sets' or '--subject-sets-file-json' can be provided", nil)
 	}
 
-	policy_subject_condition_setCmd = &cobra.Command{
-		Use:   man.Docs.GetDoc("policy/subject-condition-sets").Use,
-		Short: man.Docs.GetDoc("policy/subject-condition-sets").GetShort(policy_subject_condition_setsCmds),
-		Long:  man.Docs.GetDoc("policy/subject-condition-sets").Long,
+	// read subject sets into bytes from either the flagged json file or json string
+	if ssFileJSON != "" {
+		jsonFile, err := os.Open(ssFileJSON)
+		if err != nil {
+			cli.ExitWithError(fmt.Sprintf("Failed to open file at path: %s", ssFileJSON), err)
+		}
+		defer jsonFile.Close()
+
+		bytes, err := ioutil.ReadAll(jsonFile)
+		if err != nil {
+			cli.ExitWithError(fmt.Sprintf("Failed to read bytes from file at path: %s", ssFileJSON), err)
+		}
+		ssBytes = bytes
+	} else {
+		ssBytes = []byte(ssFlagJSON)
 	}
 
-	policy_subject_condition_setCreateCmd = &cobra.Command{
-		Use:   man.Docs.GetDoc("policy/subject-condition-sets/create").Use,
-		Short: man.Docs.GetDoc("policy/subject-condition-sets").Short,
-		Run: func(cmd *cobra.Command, args []string) {
-			h := cli.NewHandler(cmd)
-			defer h.Close()
-			var (
-				ss      []*policy.SubjectSet
-				ssBytes []byte
-			)
-
-			flagHelper := cli.NewFlagHelper(cmd)
-			ssFlagJSON := flagHelper.GetOptionalString("subject-sets")
-			ssFileJSON := flagHelper.GetOptionalString("subject-sets-file-json")
-			metadataLabels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
-
-			// validate no flag conflicts
-			if ssFileJSON == "" && ssFlagJSON == "" {
-				cli.ExitWithError("At least one subject set must be provided ('--subject-sets', '--subject-sets-file-json')", nil)
-			} else if ssFileJSON != "" && ssFlagJSON != "" {
-				cli.ExitWithError("Only one of '--subject-sets' or '--subject-sets-file-json' can be provided", nil)
-			}
-
-			// read subject sets into bytes from either the flagged json file or json string
-			if ssFileJSON != "" {
-				jsonFile, err := os.Open(ssFileJSON)
-				if err != nil {
-					cli.ExitWithError(fmt.Sprintf("Failed to open file at path: %s", ssFileJSON), err)
-				}
-				defer jsonFile.Close()
-
-				bytes, err := ioutil.ReadAll(jsonFile)
-				if err != nil {
-					cli.ExitWithError(fmt.Sprintf("Failed to read bytes from file at path: %s", ssFileJSON), err)
-				}
-				ssBytes = bytes
-			} else {
-				ssBytes = []byte(ssFlagJSON)
-			}
-
-			if err := json.Unmarshal(ssBytes, &ss); err != nil {
-				cli.ExitWithError("Error unmarshalling subject sets", err)
-			}
-
-			scs, err := h.CreateSubjectConditionSet(ss, getMetadataMutable(metadataLabels))
-			if err != nil {
-				cli.ExitWithError("Error creating subject condition set", err)
-			}
-
-			var subjectSetsJSON []byte
-			if subjectSetsJSON, err = json.Marshal(scs.SubjectSets); err != nil {
-				cli.ExitWithError("Error marshalling subject condition set", err)
-			}
-
-			rows := [][]string{
-				{"Id", scs.Id},
-				{"SubjectSets", string(subjectSetsJSON)},
-			}
-
-			if mdRows := getMetadataRows(scs.Metadata); mdRows != nil {
-				rows = append(rows, mdRows...)
-			}
-
-			t := cli.NewTabular().Rows(rows...)
-			HandleSuccess(cmd, scs.Id, t, scs)
-		},
+	if err := json.Unmarshal(ssBytes, &ss); err != nil {
+		cli.ExitWithError("Error unmarshalling subject sets", err)
 	}
 
-	policy_subject_condition_setGetCmd = &cobra.Command{
-		Use:   man.Docs.GetDoc("policy/subject-condition-sets/get").Use,
-		Short: man.Docs.GetDoc("policy/subject-condition-sets/get").Short,
-		Run: func(cmd *cobra.Command, args []string) {
-			h := cli.NewHandler(cmd)
-			defer h.Close()
-
-			flagHelper := cli.NewFlagHelper(cmd)
-			id := flagHelper.GetRequiredString("id")
-
-			scs, err := h.GetSubjectConditionSet(id)
-			if err != nil {
-				cli.ExitWithError(fmt.Sprintf("Subject Condition Set with id %s not found", id), err)
-			}
-
-			var subjectSetsJSON []byte
-			if subjectSetsJSON, err = json.Marshal(scs.SubjectSets); err != nil {
-				cli.ExitWithError("Error marshalling subject condition set", err)
-			}
-
-			rows := [][]string{
-				{"Id", scs.Id},
-				{"SubjectSets", string(subjectSetsJSON)},
-			}
-
-			if mdRows := getMetadataRows(scs.Metadata); mdRows != nil {
-				rows = append(rows, mdRows...)
-			}
-
-			t := cli.NewTabular().Rows(rows...)
-			HandleSuccess(cmd, scs.Id, t, scs)
-		},
+	scs, err := h.CreateSubjectConditionSet(ss, getMetadataMutable(metadataLabels))
+	if err != nil {
+		cli.ExitWithError("Error creating subject condition set", err)
 	}
 
-	policy_subject_condition_setListCmd = &cobra.Command{
-		Use:   man.Docs.GetDoc("policy/subject-condition-sets/list").Use,
-		Short: man.Docs.GetDoc("policy/subject-condition-sets/list").Short,
-		Run: func(cmd *cobra.Command, args []string) {
-			h := cli.NewHandler(cmd)
-			defer h.Close()
-
-			scsList, err := h.ListSubjectConditionSets()
-			if err != nil {
-				cli.ExitWithError("Error listing subject condition sets", err)
-			}
-
-			t := cli.NewTable()
-			t.Headers("Id", "SubjectSets")
-			for _, scs := range scsList {
-				var subjectSetsJSON []byte
-				if subjectSetsJSON, err = json.Marshal(scs.SubjectSets); err != nil {
-					cli.ExitWithError("Error marshalling subject condition set", err)
-				}
-				rowCells := []string{scs.Id, string(subjectSetsJSON)}
-				t.Row(rowCells...)
-			}
-
-			HandleSuccess(cmd, "", t, scsList)
-		},
+	var subjectSetsJSON []byte
+	if subjectSetsJSON, err = json.Marshal(scs.SubjectSets); err != nil {
+		cli.ExitWithError("Error marshalling subject condition set", err)
 	}
 
-	policy_subject_condition_setUpdateCmd = &cobra.Command{
-		Use:   man.Docs.GetDoc("policy/subject-condition-sets/update").Use,
-		Short: man.Docs.GetDoc("policy/subject-condition-sets/update").Short,
-		Run: func(cmd *cobra.Command, args []string) {
-			h := cli.NewHandler(cmd)
-			defer h.Close()
-
-			flagHelper := cli.NewFlagHelper(cmd)
-			id := flagHelper.GetRequiredString("id")
-			metadataLabels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
-			ssFlagJSON := flagHelper.GetOptionalString("subject-sets")
-
-			var ss []*policy.SubjectSet
-			if ssFlagJSON != "" {
-				if err := json.Unmarshal([]byte(ssFlagJSON), &ss); err != nil {
-					cli.ExitWithError("Error unmarshalling subject sets", err)
-				}
-			}
-
-			_, err := h.UpdateSubjectConditionSet(id, ss, getMetadataMutable(metadataLabels), getMetadataUpdateBehavior())
-			if err != nil {
-				cli.ExitWithError("Error updating subject condition set", err)
-			}
-
-			scs, err := h.GetSubjectConditionSet(id)
-			if err != nil {
-				cli.ExitWithError("Error getting subject condition set", err)
-			}
-
-			var subjectSetsJSON []byte
-			if subjectSetsJSON, err = json.Marshal(scs.SubjectSets); err != nil {
-				cli.ExitWithError("Error marshalling subject condition set", err)
-			}
-
-			rows := [][]string{
-				{"Id", scs.Id},
-				{"SubjectSets", string(subjectSetsJSON)},
-			}
-
-			if mdRows := getMetadataRows(scs.Metadata); mdRows != nil {
-				rows = append(rows, mdRows...)
-			}
-
-			t := cli.NewTabular().Rows(rows...)
-			HandleSuccess(cmd, scs.Id, t, scs)
-		},
+	rows := [][]string{
+		{"Id", scs.Id},
+		{"SubjectSets", string(subjectSetsJSON)},
 	}
 
-	policy_subject_condition_setDeleteCmd = &cobra.Command{
-		Use:   man.Docs.GetDoc("policy/subject-condition-sets/delete").Use,
-		Short: man.Docs.GetDoc("policy/subject-condition-sets/delete").Short,
-		Run: func(cmd *cobra.Command, args []string) {
-			h := cli.NewHandler(cmd)
-			defer h.Close()
-
-			flagHelper := cli.NewFlagHelper(cmd)
-			id := flagHelper.GetRequiredString("id")
-
-			scs, err := h.GetSubjectConditionSet(id)
-			if err != nil {
-				cli.ExitWithError(fmt.Sprintf("Subject Condition Set with id %s not found", id), err)
-			}
-
-			cli.ConfirmAction(cli.ActionDelete, "Subject Condition Set", id)
-
-			if err := h.DeleteSubjectConditionSet(id); err != nil {
-				cli.ExitWithError(fmt.Sprintf("Subject Condition Set with id %s not found", id), err)
-			}
-
-			var subjectSetsJSON []byte
-			if subjectSetsJSON, err = json.Marshal(scs.SubjectSets); err != nil {
-				cli.ExitWithError("Error marshalling subject condition set", err)
-			}
-
-			rows := [][]string{
-				{"Id", scs.Id},
-				{"SubjectSets", string(subjectSetsJSON)},
-			}
-
-			if mdRows := getMetadataRows(scs.Metadata); mdRows != nil {
-				rows = append(rows, mdRows...)
-			}
-
-			t := cli.NewTabular().Rows(rows...)
-			HandleSuccess(cmd, scs.Id, t, scs)
-		},
+	if mdRows := getMetadataRows(scs.Metadata); mdRows != nil {
+		rows = append(rows, mdRows...)
 	}
-)
+
+	t := cli.NewTabular().Rows(rows...)
+	HandleSuccess(cmd, scs.Id, t, scs)
+}
+
+func policy_getSubjectConditionSet(cmd *cobra.Command, args []string) {
+	h := cli.NewHandler(cmd)
+	defer h.Close()
+
+	flagHelper := cli.NewFlagHelper(cmd)
+	id := flagHelper.GetRequiredString("id")
+
+	scs, err := h.GetSubjectConditionSet(id)
+	if err != nil {
+		cli.ExitWithError(fmt.Sprintf("Subject Condition Set with id %s not found", id), err)
+	}
+
+	var subjectSetsJSON []byte
+	if subjectSetsJSON, err = json.Marshal(scs.SubjectSets); err != nil {
+		cli.ExitWithError("Error marshalling subject condition set", err)
+	}
+
+	rows := [][]string{
+		{"Id", scs.Id},
+		{"SubjectSets", string(subjectSetsJSON)},
+	}
+
+	if mdRows := getMetadataRows(scs.Metadata); mdRows != nil {
+		rows = append(rows, mdRows...)
+	}
+
+	t := cli.NewTabular().Rows(rows...)
+	HandleSuccess(cmd, scs.Id, t, scs)
+}
+
+func policy_listSubjectConditionSets(cmd *cobra.Command, args []string) {
+	h := cli.NewHandler(cmd)
+	defer h.Close()
+
+	scsList, err := h.ListSubjectConditionSets()
+	if err != nil {
+		cli.ExitWithError("Error listing subject condition sets", err)
+	}
+
+	t := cli.NewTable()
+	t.Headers("Id", "SubjectSets")
+	for _, scs := range scsList {
+		var subjectSetsJSON []byte
+		if subjectSetsJSON, err = json.Marshal(scs.SubjectSets); err != nil {
+			cli.ExitWithError("Error marshalling subject condition set", err)
+		}
+		rowCells := []string{scs.Id, string(subjectSetsJSON)}
+		t.Row(rowCells...)
+	}
+
+	HandleSuccess(cmd, "", t, scsList)
+}
+
+func policy_updateSubjectConditionSet(cmd *cobra.Command, args []string) {
+	h := cli.NewHandler(cmd)
+	defer h.Close()
+
+	flagHelper := cli.NewFlagHelper(cmd)
+	id := flagHelper.GetRequiredString("id")
+	metadataLabels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
+	ssFlagJSON := flagHelper.GetOptionalString("subject-sets")
+
+	var ss []*policy.SubjectSet
+	if ssFlagJSON != "" {
+		if err := json.Unmarshal([]byte(ssFlagJSON), &ss); err != nil {
+			cli.ExitWithError("Error unmarshalling subject sets", err)
+		}
+	}
+
+	_, err := h.UpdateSubjectConditionSet(id, ss, getMetadataMutable(metadataLabels), getMetadataUpdateBehavior())
+	if err != nil {
+		cli.ExitWithError("Error updating subject condition set", err)
+	}
+
+	scs, err := h.GetSubjectConditionSet(id)
+	if err != nil {
+		cli.ExitWithError("Error getting subject condition set", err)
+	}
+
+	var subjectSetsJSON []byte
+	if subjectSetsJSON, err = json.Marshal(scs.SubjectSets); err != nil {
+		cli.ExitWithError("Error marshalling subject condition set", err)
+	}
+
+	rows := [][]string{
+		{"Id", scs.Id},
+		{"SubjectSets", string(subjectSetsJSON)},
+	}
+
+	if mdRows := getMetadataRows(scs.Metadata); mdRows != nil {
+		rows = append(rows, mdRows...)
+	}
+
+	t := cli.NewTabular().Rows(rows...)
+	HandleSuccess(cmd, scs.Id, t, scs)
+}
+
+func policy_deleteSubjectConditionSet(cmd *cobra.Command, args []string) {
+	h := cli.NewHandler(cmd)
+	defer h.Close()
+
+	flagHelper := cli.NewFlagHelper(cmd)
+	id := flagHelper.GetRequiredString("id")
+
+	scs, err := h.GetSubjectConditionSet(id)
+	if err != nil {
+		cli.ExitWithError(fmt.Sprintf("Subject Condition Set with id %s not found", id), err)
+	}
+
+	cli.ConfirmAction(cli.ActionDelete, "Subject Condition Set", id)
+
+	if err := h.DeleteSubjectConditionSet(id); err != nil {
+		cli.ExitWithError(fmt.Sprintf("Subject Condition Set with id %s not found", id), err)
+	}
+
+	var subjectSetsJSON []byte
+	if subjectSetsJSON, err = json.Marshal(scs.SubjectSets); err != nil {
+		cli.ExitWithError("Error marshalling subject condition set", err)
+	}
+
+	rows := [][]string{
+		{"Id", scs.Id},
+		{"SubjectSets", string(subjectSetsJSON)},
+	}
+
+	if mdRows := getMetadataRows(scs.Metadata); mdRows != nil {
+		rows = append(rows, mdRows...)
+	}
+
+	t := cli.NewTabular().Rows(rows...)
+	HandleSuccess(cmd, scs.Id, t, scs)
+}
+
+var policy_subjectConditionSetsCmd *cobra.Command
 
 func init() {
-	policyCmd.AddCommand(policy_subject_condition_setCmd)
-
-	createDoc := man.Docs.GetDoc("policy/subject-condition-sets/create")
-	policy_subject_condition_setCmd.AddCommand(policy_subject_condition_setCreateCmd)
-	injectLabelFlags(policy_subject_condition_setCreateCmd, false)
-	policy_subject_condition_setCreateCmd.Flags().StringP(
+	createDoc := man.Docs.GetCommand("policy/subject-condition-sets/create",
+		man.WithRun(policy_createSubjectConditionSet),
+	)
+	injectLabelFlags(&createDoc.Command, false)
+	createDoc.Flags().StringP(
 		createDoc.GetDocFlag("subject-sets").Name,
 		createDoc.GetDocFlag("subject-sets").Shorthand,
 		createDoc.GetDocFlag("subject-sets").Default,
 		createDoc.GetDocFlag("subject-sets").Description,
 	)
-	policy_subject_condition_setCreateCmd.Flags().StringP(
+	createDoc.Flags().StringP(
 		createDoc.GetDocFlag("subject-sets-file-json").Name,
 		createDoc.GetDocFlag("subject-sets-file-json").Shorthand,
 		createDoc.GetDocFlag("subject-sets-file-json").Default,
 		createDoc.GetDocFlag("subject-sets-file-json").Description,
 	)
 
-	getDoc := man.Docs.GetDoc("policy/subject-condition-sets/get")
-	policy_subject_condition_setCmd.AddCommand(policy_subject_condition_setGetCmd)
-	policy_subject_condition_setGetCmd.Flags().StringP(
+	getDoc := man.Docs.GetCommand("policy/subject-condition-sets/get",
+		man.WithRun(policy_getSubjectConditionSet),
+	)
+	getDoc.Flags().StringP(
 		getDoc.GetDocFlag("id").Name,
 		getDoc.GetDocFlag("id").Shorthand,
 		getDoc.GetDocFlag("id").Default,
 		getDoc.GetDocFlag("id").Description,
 	)
 
-	policy_subject_condition_setCmd.AddCommand(policy_subject_condition_setListCmd)
+	listDoc := man.Docs.GetDoc("policy/subject-condition-sets/list")
+	listDoc.Run = policy_listSubjectConditionSets
 
-	updateDoc := man.Docs.GetDoc("policy/subject-condition-sets/update")
-	policy_subject_condition_setCmd.AddCommand(policy_subject_condition_setUpdateCmd)
-	policy_subject_condition_setUpdateCmd.Flags().StringP(
+	updateDoc := man.Docs.GetCommand("policy/subject-condition-sets/update",
+		man.WithRun(policy_updateSubjectConditionSet),
+	)
+	updateDoc.Flags().StringP(
 		updateDoc.GetDocFlag("id").Name,
 		updateDoc.GetDocFlag("id").Shorthand,
 		updateDoc.GetDocFlag("id").Default,
 		updateDoc.GetDocFlag("id").Description,
 	)
-	injectLabelFlags(policy_subject_condition_setUpdateCmd, true)
-	policy_subject_condition_setUpdateCmd.Flags().StringP(
+	injectLabelFlags(&updateDoc.Command, true)
+	updateDoc.Flags().StringP(
 		updateDoc.GetDocFlag("subject-sets").Name,
 		updateDoc.GetDocFlag("subject-sets").Shorthand,
 		updateDoc.GetDocFlag("subject-sets").Default,
 		updateDoc.GetDocFlag("subject-sets").Description,
 	)
 
-	deleteDoc := man.Docs.GetDoc("policy/subject-condition-sets/delete")
-	policy_subject_condition_setCmd.AddCommand(policy_subject_condition_setDeleteCmd)
-	policy_subject_condition_setDeleteCmd.Flags().StringP(
+	deleteDoc := man.Docs.GetCommand(
+		"policy/subject-condition-sets/delete",
+		man.WithRun(policy_deleteSubjectConditionSet),
+	)
+	deleteDoc.Flags().StringP(
 		deleteDoc.GetDocFlag("id").Name,
 		deleteDoc.GetDocFlag("id").Shorthand,
 		deleteDoc.GetDocFlag("id").Default,
 		deleteDoc.GetDocFlag("id").Description,
 	)
+
+	doc := man.Docs.GetCommand("policy/subject-condition-sets",
+		man.WithSubcommands(
+			createDoc,
+			getDoc,
+			updateDoc,
+			deleteDoc,
+		),
+	)
+	policy_subjectConditionSetsCmd = &doc.Command
+	policyCmd.AddCommand(&doc.Command)
 }
 
 func getSubjectConditionSetOperatorFromChoice(choice string) (policy.SubjectMappingOperatorEnum, error) {

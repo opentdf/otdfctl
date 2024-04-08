@@ -15,13 +15,32 @@ var manLang string
 
 var Docs Manual
 
+type CommandOpts func(d *Doc)
+
 type Doc struct {
 	cobra.Command
-	DocFlags []DocFlag
+	DocFlags       []DocFlag
+	DocSubcommands []*Doc
 }
 
-func (d Doc) GetShort(subCmds []string) string {
+// deprecated
+func (d *Doc) GetShort(subCmds []string) string {
 	return fmt.Sprintf("%s [%s]", d.Short, strings.Join(subCmds, ", "))
+}
+
+func WithSubcommands(subCmds ...*Doc) CommandOpts {
+	return func(d *Doc) {
+		for _, c := range subCmds {
+			d.DocSubcommands = append(d.DocSubcommands, c)
+			d.AddCommand(&c.Command)
+		}
+	}
+}
+
+func WithRun(f func(cmd *cobra.Command, args []string)) CommandOpts {
+	return func(d *Doc) {
+		d.Run = f
+	}
 }
 
 type Manual struct {
@@ -47,6 +66,24 @@ func (m Manual) GetDoc(cmd string) *Doc {
 	}
 
 	return m.En[cmd]
+}
+
+func (m Manual) GetCommand(cmd string, opts ...CommandOpts) *Doc {
+	d := m.GetDoc(cmd)
+
+	for _, opt := range opts {
+		opt(d)
+	}
+
+	if len(d.DocSubcommands) > 0 {
+		s := make([]string, 0)
+		for _, c := range d.DocSubcommands {
+			s = append(s, c.Use)
+		}
+		d.Short = fmt.Sprintf("%s [%s]", d.Short, strings.Join(s, ", "))
+	}
+
+	return d
 }
 
 func init() {
@@ -153,6 +190,7 @@ func processDoc(doc string) (*Doc, error) {
 			Long:    styleDoc(long),
 		},
 		c.Flags,
+		nil,
 	}
 
 	return &d, nil
