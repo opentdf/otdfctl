@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	TRUCTL_CLIENT_ID_CACHE_KEY = "TRUCTL_DEFAULT_CLIENT_ID"
-	TRUCTL_OIDC_TOKEN_KEY      = "TRUCTL_OIDC_TOKEN"
+	OTDFCTL_CLIENT_ID_CACHE_KEY = "OTDFCTL_DEFAULT_CLIENT_ID"
+	OTDFCTL_OIDC_TOKEN_KEY      = "OTDFCTL_OIDC_TOKEN"
 )
 
 // we're hardcoding this for now, but eventually it will be retrieved from the backend config
@@ -41,7 +41,7 @@ func CheckTokenExpiration(tokenString string) (bool, error) {
 
 // GetOIDCTokenFromCache retrieves the OIDC token from the keyring.
 func GetOIDCTokenFromCache() (string, error) {
-	token, err := keyring.Get(TOKEN_URL, TRUCTL_OIDC_TOKEN_KEY)
+	token, err := keyring.Get(TOKEN_URL, OTDFCTL_OIDC_TOKEN_KEY)
 	if err != nil {
 		return "", err
 	}
@@ -50,7 +50,7 @@ func GetOIDCTokenFromCache() (string, error) {
 
 // GetClientIDFromCache retrieves the client ID from the keyring.
 func GetClientIDFromCache() (string, error) {
-	clientId, err := keyring.Get(TOKEN_URL, TRUCTL_CLIENT_ID_CACHE_KEY)
+	clientId, err := keyring.Get(TOKEN_URL, OTDFCTL_CLIENT_ID_CACHE_KEY)
 	if err != nil {
 		return "", err
 	}
@@ -60,7 +60,7 @@ func GetClientIDFromCache() (string, error) {
 // GetClientSecretFromCache retrieves the client secret from the keyring.
 func GetClientIdAndSecretFromCache() (string, string, error) {
 	// our clientSecret key, is our clientId, so we gotta grab that first
-	clientId, err := keyring.Get(TOKEN_URL, TRUCTL_CLIENT_ID_CACHE_KEY)
+	clientId, err := keyring.Get(TOKEN_URL, OTDFCTL_CLIENT_ID_CACHE_KEY)
 	if err != nil {
 		// we failed to get the clientId for somereason
 		return "", "", err
@@ -79,7 +79,7 @@ func GetClientIdAndSecretFromCache() (string, string, error) {
 
 // DEBUG_PrintKeyRingSecrets prints all the secrets in the keyring.
 func (h *Handler) DEBUG_PrintKeyRingSecrets() {
-	clientId, err := keyring.Get(TOKEN_URL, TRUCTL_CLIENT_ID_CACHE_KEY)
+	clientId, err := keyring.Get(TOKEN_URL, OTDFCTL_CLIENT_ID_CACHE_KEY)
 	if err != nil {
 		fmt.Println("Failed to retrieve secret from keyring:", err)
 		return
@@ -87,7 +87,7 @@ func (h *Handler) DEBUG_PrintKeyRingSecrets() {
 
 	// and our special clientId key, to grab the secret
 	secret, errSec := keyring.Get(TOKEN_URL, clientId)
-	OIDC_TOKEN, errToken := keyring.Get(TOKEN_URL, TRUCTL_OIDC_TOKEN_KEY)
+	OIDC_TOKEN, errToken := keyring.Get(TOKEN_URL, OTDFCTL_OIDC_TOKEN_KEY)
 
 	if errSec != nil {
 		fmt.Println("Failed to retrieve secret from keyring:", err)
@@ -125,10 +125,10 @@ func (h *Handler) GetTokenWithClientCredentials(clientID, clientSecret, tokenURL
 	// if the users didn't specifically specify not to cache, then we'll cache the clientID, clientSecret, and OIDC_TOKEN in the keyring
 	if !noCache {
 		// lets store our id and secret in the keyring
-		errID := keyring.Set(tokenURL, TRUCTL_CLIENT_ID_CACHE_KEY, clientID)
+		errID := keyring.Set(tokenURL, OTDFCTL_CLIENT_ID_CACHE_KEY, clientID)
 		err := keyring.Set(tokenURL, clientID, clientSecret)
 		// lets also store the oidc token
-		errToken := keyring.Set(tokenURL, TRUCTL_OIDC_TOKEN_KEY, token.AccessToken)
+		errToken := keyring.Set(tokenURL, OTDFCTL_OIDC_TOKEN_KEY, token.AccessToken)
 		if err != nil {
 			return nil, err
 		}

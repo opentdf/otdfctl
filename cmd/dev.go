@@ -103,7 +103,7 @@ func getMetadataUpdateBehavior() common.MetadataUpdateEnum {
 
 // HandleSuccess prints a success message according to the configured format (styled table or JSON)
 func HandleSuccess(command *cobra.Command, id string, t *table.Table, policyObject interface{}) {
-	if TructlCfg.Output.Format == config.OutputJSON || configFlagOverrides.OutputFormatJSON {
+	if OtdfctlCfg.Output.Format == config.OutputJSON || configFlagOverrides.OutputFormatJSON {
 		if output, err := json.MarshalIndent(policyObject, "", "  "); err != nil {
 			cli.ExitWithError("Error marshalling policy object", err)
 		} else {

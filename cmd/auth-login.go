@@ -40,7 +40,7 @@ var auth_loginClientCredentials = &cobra.Command{
 		// check if we have a clientId in the keyring, if a null value is passed in
 		if clientId == "" {
 			fmt.Println("No clientId provided. Attempting to retrieve the default from keyring.")
-			retrievedClientID, errID := keyring.Get(handlers.TOKEN_URL, handlers.TRUCTL_CLIENT_ID_CACHE_KEY)
+			retrievedClientID, errID := keyring.Get(handlers.TOKEN_URL, handlers.OTDFCTL_CLIENT_ID_CACHE_KEY)
 			if errID == nil {
 				clientId = retrievedClientID
 				fmt.Println(cli.SuccessMessage("Retrieved stored clientId from keyring"))
