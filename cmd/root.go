@@ -7,13 +7,13 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/opentdf/tructl/internal/config"
-	"github.com/opentdf/tructl/pkg/man"
+	"github.com/opentdf/otdfctl/internal/config"
+	"github.com/opentdf/otdfctl/pkg/man"
 )
 
 var (
-	cfgFile   string
-	TructlCfg config.Config
+	cfgFile    string
+	OtdfctlCfg config.Config
 
 	configFlagOverrides = config.ConfigFlagOverrides{}
 )
@@ -49,7 +49,7 @@ func init() {
 		doc.GetDocFlag("log-level").Description,
 	)
 
-	cfg, err := config.LoadConfig("tructl")
+	cfg, err := config.LoadConfig("otdfctl")
 	if err != nil {
 		fmt.Println("Error loading config:", err)
 		os.Exit(1)

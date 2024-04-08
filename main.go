@@ -4,7 +4,7 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/opentdf/tructl/cmd"
+	"github.com/opentdf/otdfctl/cmd"
 )
 
 func main() {

@@ -3,13 +3,13 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/opentdf/otdfctl/pkg/cli"
+	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/opentdf/platform/protocol/go/policy"
-	"github.com/opentdf/tructl/pkg/cli"
-	"github.com/opentdf/tructl/pkg/man"
 	"github.com/spf13/cobra"
 )
 
-// TODO: add metadata to outputs once [https://github.com/opentdf/tructl/issues/73] is addressed
+// TODO: add metadata to outputs once [https://github.com/opentdf/otdfctl/issues/73] is addressed
 
 var (
 	policy_attributeValuesCmd = &cobra.Command{
@@ -60,6 +60,34 @@ var (
 			}
 
 			handleValueSuccess(cmd, v)
+		},
+	}
+
+	policy_attributeValuesListCmd = &cobra.Command{
+		Use:   "list",
+		Short: "List attribute value",
+		Run: func(cmd *cobra.Command, args []string) {
+			h := cli.NewHandler(cmd)
+			defer h.Close()
+			flagHelper := cli.NewFlagHelper(cmd)
+			attrId := flagHelper.GetRequiredString("attribute-id")
+			state := cli.GetState(cmd)
+			vals, err := h.ListAttributeValues(attrId, state)
+			if err != nil {
+				cli.ExitWithError("Failed to list attribute values", err)
+			}
+			t := cli.NewTable()
+			t.Headers("Id", "Fqn", "Members", "Active")
+			for _, val := range vals {
+				v := cli.GetSimpleAttributeValue(val)
+				t.Row(
+					v.Id,
+					v.FQN,
+					cli.CommaSeparated(v.Members),
+					v.Active,
+				)
+			}
+			HandleSuccess(cmd, "", t, vals)
 		},
 	}
 
@@ -263,6 +291,10 @@ func init() {
 
 	policy_attributeValuesCmd.AddCommand(policy_attributeValuesGetCmd)
 	policy_attributeValuesGetCmd.Flags().StringP("id", "i", "", "Attribute value id")
+
+	policy_attributeValuesCmd.AddCommand(policy_attributeValuesListCmd)
+	policy_attributeValuesListCmd.Flags().StringP("attribute-id", "a", "", "Attribute id")
+	policy_attributeValuesListCmd.Flags().StringP("state", "s", "active", "Filter by state [active, inactive, any]")
 
 	policy_attributeValuesCmd.AddCommand(policy_attributeValuesUpdateCmd)
 	policy_attributeValuesUpdateCmd.Flags().StringP("id", "i", "", "Attribute value id")

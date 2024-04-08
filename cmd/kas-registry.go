@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/platform/protocol/go/kasregistry"
 	"github.com/opentdf/tructl/pkg/cli"
 	"github.com/opentdf/tructl/pkg/man"
@@ -51,7 +52,7 @@ var (
 			t := cli.NewTabular().
 				Rows([][]string{
 					{"Id", kas.Id},
-					// TODO: render labels [https://github.com/opentdf/tructl/issues/73]
+					// TODO: render labels [https://github.com/opentdf/otdfctl/issues/73]
 					{"URI", kas.Uri},
 					{"PublicKey Type", keyType},
 					{"PublicKey", key},
@@ -87,7 +88,7 @@ var (
 					kas.Uri,
 					keyType,
 					key,
-					// TODO: render labels [https://github.com/opentdf/tructl/issues/73]
+					// TODO: render labels [https://github.com/opentdf/otdfctl/issues/73]
 				)
 			}
 			HandleSuccess(cmd, "", t, list)
@@ -140,7 +141,7 @@ var (
 					{"URI", created.Uri},
 					{"PublicKey Type", keyType},
 					{"PublicKey", local},
-					// TODO: render labels [https://github.com/opentdf/tructl/issues/73]
+					// TODO: render labels [https://github.com/opentdf/otdfctl/issues/73]
 				}...)
 
 			HandleSuccess(cmd, created.Id, t, created)
@@ -192,7 +193,7 @@ var (
 				Rows([][]string{
 					{"Id", id},
 					{"URI", uri},
-					// TODO: render labels [https://github.com/opentdf/tructl/issues/73]
+					// TODO: render labels [https://github.com/opentdf/otdfctl/issues/73]
 				}...)
 			HandleSuccess(cmd, id, t, updated)
 		},
@@ -245,7 +246,7 @@ func init() {
 	)
 
 	kasRegistryCmd.AddCommand(kasRegistrysListCmd)
-	// TODO: active, inactive, any state querying [https://github.com/opentdf/tructl/issues/68]
+	// TODO: active, inactive, any state querying [https://github.com/opentdf/otdfctl/issues/68]
 
 	createDoc := man.Docs.GetDoc("policy/kas-registry/create")
 	kasRegistryCmd.AddCommand(kasRegistrysCreateCmd)
@@ -305,8 +306,4 @@ func init() {
 		deleteDoc.GetDocFlag("id").Default,
 		deleteDoc.GetDocFlag("id").Description,
 	)
-}
-
-func init() {
-	rootCmd.AddCommand(kasRegistryCmd)
 }

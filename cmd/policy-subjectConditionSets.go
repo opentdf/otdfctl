@@ -6,9 +6,9 @@ import (
 	"io/ioutil"
 	"os"
 
+	"github.com/opentdf/otdfctl/pkg/cli"
+	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/opentdf/platform/protocol/go/policy"
-	"github.com/opentdf/tructl/pkg/cli"
-	"github.com/opentdf/tructl/pkg/man"
 	"github.com/spf13/cobra"
 )
 

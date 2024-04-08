@@ -2,13 +2,14 @@ package cmd
 
 import (
 	"fmt"
+	"strconv"
 
-	"github.com/opentdf/tructl/pkg/cli"
-	"github.com/opentdf/tructl/pkg/man"
+	"github.com/opentdf/otdfctl/pkg/cli"
+	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/spf13/cobra"
 )
 
-// TODO: add metadata to outputs once [https://github.com/opentdf/tructl/issues/73] is addressed
+// TODO: add metadata to outputs once [https://github.com/opentdf/otdfctl/issues/73] is addressed
 
 var (
 	policy_namespacesCommands = []string{
@@ -57,17 +58,19 @@ var (
 			h := cli.NewHandler(cmd)
 			defer h.Close()
 
-			list, err := h.ListNamespaces()
+			state := cli.GetState(cmd)
+			list, err := h.ListNamespaces(state)
 			if err != nil {
 				cli.ExitWithError("Failed to list namespaces", err)
 			}
 
 			t := cli.NewTable()
-			t.Headers("Id", "Name")
+			t.Headers("Id", "Name", "Active")
 			for _, ns := range list {
 				t.Row(
 					ns.Id,
 					ns.Name,
+					strconv.FormatBool(ns.Active.GetValue()),
 				)
 			}
 			HandleSuccess(cmd, "", t, list)
@@ -174,6 +177,7 @@ func init() {
 	)
 
 	policy_namespacesCmd.AddCommand(policy_namespacesListCmd)
+	policy_namespacesListCmd.Flags().StringP("state", "s", "active", "Filter by state [active, inactive, any]")
 
 	createDoc := man.Docs.GetDoc("policy/attributes/namespaces/create")
 	policy_namespacesCmd.AddCommand(policy_namespacesCreateCmd)
