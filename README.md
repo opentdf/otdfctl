@@ -48,3 +48,4 @@ The output format (currently `styled` or `json`) is configurable in the `otdfctl
 > This is a work in progress please avoid touching until framework is defined
 
 The TUI will be used to create an interactive experience for the user.
+
