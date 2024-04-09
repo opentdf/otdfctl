@@ -34,17 +34,6 @@ jobs:
           pep440: false
       - name: print-version
         run: echo Incrementing Version ${{ steps.version.outputs.current-version }} -> ${{ steps.version.outputs.version }}
-      # TODO: remove this step when `opentdf/platform` is public
-      # special app the virtru eng team created, to grab a token for accessing other org repos, in a secure way
-      - name: Generate a token
-        id: generate_token
-        uses: actions/create-github-app-token@v1.5.0
-        with:
-          app-id: '416599'
-          private-key: '${{ secrets.GH_APP_PRIVATE_KEY }}'
-          owner: ${{ github.repository_owner }}
-          repositories: 'platform'
-      - run: git config --global url.https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/.insteadOf https://github.com/
       - name: make-targets
         env:
           SEM_VER: ${{ steps.version.outputs.version }}
