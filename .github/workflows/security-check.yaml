@@ -9,19 +9,7 @@ jobs:
   govulncheck_job:
     runs-on: ubuntu-latest
     name: Run govulncheck
-    env:
-      GOPRIVATE: github.com/opentdf/platform/*
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - name: Generate a token
-        id: generate_token
-        uses: actions/create-github-app-token@v1.5.0
-        with:
-          app-id: '416599'
-          private-key: '${{ secrets.GH_APP_PRIVATE_KEY }}'
-          owner: ${{ github.repository_owner }}
-          repositories: 'platform'
-      - run: git config --global url.https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/.insteadOf https://github.com/
       - id: govulncheck
         uses: golang/govulncheck-action@v1
         with:
