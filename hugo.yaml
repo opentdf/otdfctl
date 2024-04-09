@@ -1,5 +1,5 @@
 baseURL: http://localhost:1313
-title: tructl - OpenTDF Control Interface
+title: otdfctl - OpenTDF Control Interface
 
 assetDir: docs/assets
 contentDir: docs
