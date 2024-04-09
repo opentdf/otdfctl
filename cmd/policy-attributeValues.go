@@ -249,19 +249,39 @@ func init() {
 	createCmd := man.Docs.GetCommand("policy/attributes/values/create",
 		man.WithRun(policy_createAttributeValue),
 	)
-	createCmd.Flags().StringP("attribute-id", "a", "", "Attribute id")
-	createCmd.Flags().StringP("value", "v", "", "Value")
+	createCmd.Flags().StringP(
+		createCmd.GetDocFlag("attribute-id").Name,
+		createCmd.GetDocFlag("attribute-id").Shorthand,
+		createCmd.GetDocFlag("attribute-id").Default,
+		createCmd.GetDocFlag("attribute-id").Description,
+	)
+	createCmd.Flags().StringP(
+		createCmd.GetDocFlag("value").Name,
+		createCmd.GetDocFlag("value").Shorthand,
+		createCmd.GetDocFlag("value").Default,
+		createCmd.GetDocFlag("value").Description,
+	)
 	injectLabelFlags(&createCmd.Command, false)
 
 	getCmd := man.Docs.GetCommand("policy/attributes/values/get",
 		man.WithRun(policy_getAttributeValue),
 	)
-	getCmd.Flags().StringP("id", "i", "", "Attribute value id")
+	getCmd.Flags().StringP(
+		getCmd.GetDocFlag("id").Name,
+		getCmd.GetDocFlag("id").Shorthand,
+		getCmd.GetDocFlag("id").Default,
+		getCmd.GetDocFlag("id").Description,
+	)
 
 	listCmd := man.Docs.GetCommand("policy/attributes/values/list",
 		man.WithRun(policy_listAttributeValue),
 	)
-	listCmd.Flags().StringP("attribute-id", "a", "", "Attribute id")
+	listCmd.Flags().StringP(
+		listCmd.GetDocFlag("attribute-id").Name,
+		listCmd.GetDocFlag("attribute-id").Shorthand,
+		listCmd.GetDocFlag("attribute-id").Default,
+		listCmd.GetDocFlag("attribute-id").Description,
+	)
 	listCmd.Flags().StringP(
 		listCmd.GetDocFlag("state").Name,
 		listCmd.GetDocFlag("state").Shorthand,
@@ -272,13 +292,23 @@ func init() {
 	updateCmd := man.Docs.GetCommand("policy/attributes/values/update",
 		man.WithRun(policy_updateAttributeValue),
 	)
-	updateCmd.Flags().StringP("id", "i", "", "Attribute value id")
+	updateCmd.Flags().StringP(
+		updateCmd.GetDocFlag("id").Name,
+		updateCmd.GetDocFlag("id").Shorthand,
+		updateCmd.GetDocFlag("id").Default,
+		updateCmd.GetDocFlag("id").Description,
+	)
 	injectLabelFlags(&updateCmd.Command, true)
 
 	deactivateCmd := man.Docs.GetCommand("policy/attributes/values/deactivate",
 		man.WithRun(policy_deactivateAttributeValue),
 	)
-	deactivateCmd.Flags().StringP("id", "i", "", "Attribute value id")
+	deactivateCmd.Flags().StringP(
+		deactivateCmd.GetDocFlag("id").Name,
+		deactivateCmd.GetDocFlag("id").Shorthand,
+		deactivateCmd.GetDocFlag("id").Default,
+		deactivateCmd.GetDocFlag("id").Description,
+	)
 
 	// Attribute value members
 	// policy_attributeValuesCmd.AddCommand(policy_attributeValueMembersCmd)

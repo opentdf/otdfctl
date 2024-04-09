@@ -326,7 +326,11 @@ func init() {
 		[]string{},
 		updateDoc.GetDocFlag("action-custom").Description,
 	)
-	updateDoc.Flags().String("subject-condition-set-id", "", "Updated Subject Condition Set Id")
+	updateDoc.Flags().String(
+		updateDoc.GetDocFlag("subject-condition-set-id").Name,
+		updateDoc.GetDocFlag("subject-condition-set-id").Default,
+		updateDoc.GetDocFlag("subject-condition-set-id").Description,
+	)
 	injectLabelFlags(&updateDoc.Command, true)
 
 	deleteDoc := man.Docs.GetCommand("policy/subject-mappings/delete",

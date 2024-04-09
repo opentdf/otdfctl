@@ -29,10 +29,13 @@ func (d *Doc) GetShort(subCmds []string) string {
 }
 
 func (d *Doc) AddSubcommands(subCmds ...*Doc) {
+	cmds := make([]string, 0)
 	for _, c := range subCmds {
+		cmds = append(cmds, c.Use)
 		d.DocSubcommands = append(d.DocSubcommands, c)
 		d.AddCommand(&c.Command)
 	}
+	d.Short = d.GetShort(cmds)
 }
 
 func WithSubcommands(subCmds ...*Doc) CommandOpts {
@@ -87,7 +90,7 @@ func (m Manual) GetCommand(cmd string, opts ...CommandOpts) *Doc {
 		for _, c := range d.DocSubcommands {
 			s = append(s, c.Use)
 		}
-		d.Short = fmt.Sprintf("%s [%s]", d.Short, strings.Join(s, ", "))
+		d.Short = d.GetShort(s)
 	}
 
 	return d

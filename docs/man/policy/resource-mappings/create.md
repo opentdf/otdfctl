@@ -10,4 +10,9 @@ command:
       description: The synonym terms to match for the resource mapping.
       type: string-slice
       default: ""
+    - name: label
+      description: "Optional metadata 'labels' in the format: key=value"
+      shorthand: l
+      type: string-slice
+      default: ""
 ---

@@ -23,6 +23,15 @@ command:
       description: Known pre-existing Subject Condition Set Id
       required: true
       default: ""
+    - name: label
+      description: "Optional metadata 'labels' in the format: key=value"
+      shorthand: l
+      type: string-slice
+      default: ""
+    - name: force-replace-labels
+      description: Destructively replace entire set of existing metadata 'labels' with any provided to this command
+      type: bool
+      default: false
 ---
 
 'Actions' are updated in place, destructively replacing the current set. If you want to add or remove actions, you must provide the full set of actions on update.

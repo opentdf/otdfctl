@@ -13,4 +13,9 @@ command:
     - name: public-key-remote
       shorthand: r
       description: URI of the public key of the Key Access Server
+    - name: label
+      description: "Optional metadata 'labels' in the format: key=value"
+      shorthand: l
+      type: string-slice
+      default: ""
 ---

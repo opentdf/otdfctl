@@ -28,4 +28,9 @@ command:
       description: JSON array of Subject Sets to create a new Subject Condition Set associated with the created Subject Mapping
       required: false
       default: ""
+    - name: label
+      description: "Optional metadata 'labels' in the format: key=value"
+      shorthand: l
+      type: string-slice
+      default: ""
 ---
