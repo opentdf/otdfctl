@@ -1,6 +1,6 @@
 {
     "name": "OpenTDF - otdfctl",
-    "short_name": "OpenTDF - tructl",
+    "short_name": "OpenTDF - otdfctl",
     "icons": [
         {
             "src": "/android-chrome-192x192.png",
