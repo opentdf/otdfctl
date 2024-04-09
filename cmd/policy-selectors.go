@@ -5,9 +5,9 @@ import (
 	"fmt"
 
 	"github.com/golang-jwt/jwt"
+	"github.com/opentdf/otdfctl/pkg/cli"
+	"github.com/opentdf/otdfctl/pkg/handlers"
 	"github.com/opentdf/platform/protocol/go/policy"
-	"github.com/opentdf/tructl/pkg/cli"
-	"github.com/opentdf/tructl/pkg/handlers"
 	"github.com/spf13/cobra"
 )
 
