@@ -18,15 +18,23 @@ jobs:
         with:
           github-token: '${{ secrets.GITHUB_TOKEN }}'
       - name: Enable auto-merge
-        run: echo "merge-test; would have enabled auto-merge here for '$PR_URL'"
-        # run: gh pr merge --auto --merge "$PR_URL"
+        run: |
+          echo "enabling auto merge for dependency bump PR '$PR_URL'"
+          gh pr merge --auto --squash "$PR_URL"
         env:
           PR_URL: ${{github.event.pull_request.html_url}}
           GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
       - name: Approve the PR
+        id: approval-minor-patch
         if: ${{ steps.metadata.outputs.update-type == 'version-update:semver-patch' ||  steps.metadata.outputs.update-type == 'version-update:semver-minor' }}
-        run: echo "approve-test; would have enabled auto-merge here for '$PR_URL'"
-        # run: gh pr review --approve "$PR_URL"
+        run: |
+          echo "approving minor or patch bump in PR '$PR_URL'"
+          gh pr review --approve "$PR_URL"
         env:
           PR_URL: ${{github.event.pull_request.html_url}}
           GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      - name: Report on skip of PR approval
+        if: ${{ steps.approval-minor-patch.conclusion == 'skipped' }}
+        run: echo "Not approving PR '$PR_URL' because dependency bump is not minor or patch (major, unknown non-SEMVER bump, etc)"
+        env:
+          PR_URL: ${{github.event.pull_request.html_url}}
