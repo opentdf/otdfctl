@@ -60,14 +60,24 @@ type Manual struct {
 	Fr   map[string]*Doc
 }
 
-func (m Manual) GetDoc(cmd string) *Doc {
+func (m Manual) SetLang(l string) {
+	switch l {
+	case "en", "fr":
+		m.lang = l
+	default:
+		panic(fmt.Sprintf("Unknown language: %s", l))
+	}
+}
 
+func (m Manual) GetDoc(cmd string) *Doc {
 	if m.lang != "en" {
 		switch m.lang {
 		case "fr":
 			if _, ok := m.Fr[cmd]; ok {
 				return m.Fr[cmd]
 			}
+			// if no doc found in french, fallback to english
+			slog.Debug(fmt.Sprintf("No doc found for cmd, %s in %s", cmd, m.lang))
 		}
 	}
 
