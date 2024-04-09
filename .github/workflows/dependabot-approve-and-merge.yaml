@@ -18,16 +18,18 @@ jobs:
         with:
           github-token: '${{ secrets.GITHUB_TOKEN }}'
       - name: Enable auto-merge
-        run: echo "enabling auto merge for dependency bump PR '$PR_URL'"
-        run: gh pr merge --auto --merge "$PR_URL"
+        run: |
+          echo "enabling auto merge for dependency bump PR '$PR_URL'"
+          gh pr merge --auto --merge "$PR_URL"
         env:
           PR_URL: ${{github.event.pull_request.html_url}}
           GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
       - name: Approve the PR
         id: approval-minor-patch
         if: ${{ steps.metadata.outputs.update-type == 'version-update:semver-patch' ||  steps.metadata.outputs.update-type == 'version-update:semver-minor' }}
-        run: echo "approving minor or patch bump in PR '$PR_URL'"
-        run: gh pr review --approve "$PR_URL"
+        run: |
+          echo "approving minor or patch bump in PR '$PR_URL'"
+          gh pr review --approve "$PR_URL"
         env:
           PR_URL: ${{github.event.pull_request.html_url}}
           GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
