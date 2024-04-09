@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/platform/protocol/go/policy"
-	"github.com/opentdf/tructl/pkg/cli"
 	"github.com/spf13/cobra"
 )
 
-// TODO: add metadata to outputs once [https://github.com/opentdf/tructl/issues/73] is addressed
+// TODO: add metadata to outputs once [https://github.com/opentdf/otdfctl/issues/73] is addressed
 
 var (
 	attrValues                 []string
@@ -112,13 +112,14 @@ used to define the access controls based on subject encodings and entity entitle
 			h := cli.NewHandler(cmd)
 			defer h.Close()
 
-			attrs, err := h.ListAttributes()
+			state := cli.GetState(cmd)
+			attrs, err := h.ListAttributes(state)
 			if err != nil {
 				cli.ExitWithError("Failed to list attributes", err)
 			}
 
 			t := cli.NewTable()
-			t.Headers("Id", "Namespace", "Name", "Rule", "Values")
+			t.Headers("Id", "Namespace", "Name", "Rule", "Values", "Active")
 			for _, attr := range attrs {
 				a := cli.GetSimpleAttribute(attr)
 				t.Row(
@@ -127,6 +128,7 @@ used to define the access controls based on subject encodings and entity entitle
 					a.Name,
 					a.Rule,
 					cli.CommaSeparated(a.Values),
+					a.Active,
 				)
 			}
 			HandleSuccess(cmd, "", t, attrs)
@@ -207,6 +209,7 @@ func init() {
 
 	// List attributes
 	policy_attributesCmd.AddCommand(policy_attributesListCmd)
+	policy_attributesListCmd.Flags().StringP("state", "s", "active", "Filter by state [active, inactive, any]")
 
 	// Update an attribute
 	policy_attributesCmd.AddCommand(policy_attributeUpdateCmd)

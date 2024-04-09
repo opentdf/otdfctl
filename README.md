@@ -1,6 +1,6 @@
-# tructl: cli to manage Virtru Data Security Platform
+# otdfctl: cli to manage OpenTDF Platform
 
-This command line interface is used to manage Virtru Data Security Platform.
+This command line interface is used to manage OpenTDF Platform.
 
 The main goals are to:
 
@@ -19,9 +19,9 @@ The main goals are to:
 
 ## Usage
 
-The CLI is configured via the `tructl.yaml`. There is an example provided in `example-tructl.yaml`.
+The CLI is configured via the `otdfctl.yaml`. There is an example provided in `otdfctl-example.yaml`.
 
-Run `cp example-tructl.yaml tructl.yaml` to copy the example config when running the CLI.
+Run `cp otdfctl-example.yaml otdfctl.yaml` to copy the example config when running the CLI.
 
 Load up the platform (see its [README](https://github.com/opentdf/platform?tab=readme-ov-file#run) for instructions).
 
@@ -33,7 +33,7 @@ The CLI is built using [cobra](https://cobra.dev/).
 
 The primary function is to support CRUD operations using commands as arguments and flags as the values.
 
-The output format (currently `styled` or `json`) is configurable in the `tructl.yaml` or via CLI flag.
+The output format (currently `styled` or `json`) is configurable in the `otdfctl.yaml` or via CLI flag.
 
 #### To add a command
 

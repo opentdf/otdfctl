@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/opentdf/tructl/pkg/cli"
-	"github.com/opentdf/tructl/pkg/handlers"
+	"github.com/opentdf/otdfctl/pkg/cli"
+	"github.com/opentdf/otdfctl/pkg/handlers"
 	"github.com/spf13/cobra"
 	"github.com/zalando/go-keyring"
 )
@@ -40,7 +40,7 @@ var auth_loginClientCredentials = &cobra.Command{
 		// check if we have a clientId in the keyring, if a null value is passed in
 		if clientId == "" {
 			fmt.Println("No clientId provided. Attempting to retrieve the default from keyring.")
-			retrievedClientID, errID := keyring.Get(handlers.TOKEN_URL, handlers.TRUCTL_CLIENT_ID_CACHE_KEY)
+			retrievedClientID, errID := keyring.Get(handlers.TOKEN_URL, handlers.OTDFCTL_CLIENT_ID_CACHE_KEY)
 			if errID == nil {
 				clientId = retrievedClientID
 				fmt.Println(cli.SuccessMessage("Retrieved stored clientId from keyring"))
@@ -73,7 +73,6 @@ var auth_loginClientCredentials = &cobra.Command{
 
 		// for now we're hardcoding the TOKEN_URL as a constant at the top
 		_, err := h.GetTokenWithClientCredentials(clientId, clientSecret, handlers.TOKEN_URL, false)
-
 		if err != nil {
 			errMsg = cli.ErrorMessage("An error occurred during login. Please check your credentials and try again.", nil)
 			fmt.Println(errMsg)

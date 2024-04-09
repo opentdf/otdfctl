@@ -3,7 +3,7 @@ package cmd
 import (
 	"strings"
 
-	"github.com/opentdf/tructl/pkg/cli"
+	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/spf13/cobra"
 )
 
@@ -131,5 +131,4 @@ func init() {
 	kasGrantsDeleteCmd.Flags().StringP("attribute", "a", "", "Attribute Definition ID")
 	kasGrantsDeleteCmd.Flags().StringP("value", "v", "", "Attribute Value ID")
 	kasGrantsDeleteCmd.Flags().StringP("kas", "k", "", "Key Access Server (KAS) ID")
-	rootCmd.AddCommand(kasGrantsCmd)
 }
