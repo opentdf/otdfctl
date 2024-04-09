@@ -23,7 +23,6 @@ func styleDoc(doc string) string {
 	ds.Paragraph.Margin = uintPtr(2)
 	// Capitalize headers
 	ds.H1.StylePrimitive = ansi.StylePrimitive{
-		Upper:  boolPtr(true),
 		Color:  stringPtr("#F1F1F1"),
 		Format: "# {{.text}}",
 	}

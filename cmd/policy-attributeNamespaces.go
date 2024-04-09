@@ -145,7 +145,12 @@ func init() {
 	listCmd := man.Docs.GetCommand("policy/attributes/namespaces/list",
 		man.WithRun(policy_listAttributeNamespaces),
 	)
-	listCmd.Flags().StringP("state", "s", "active", "Filter by state [active, inactive, any]")
+	listCmd.Flags().StringP(
+		listCmd.GetDocFlag("state").Name,
+		listCmd.GetDocFlag("state").Shorthand,
+		listCmd.GetDocFlag("state").Default,
+		listCmd.GetDocFlag("state").Description,
+	)
 
 	createDoc := man.Docs.GetCommand("policy/attributes/namespaces/create",
 		man.WithRun(policy_createAttributeNamespace),
