@@ -10,9 +10,10 @@ import (
 var SDK *sdk.SDK
 
 type Handler struct {
-	sdk        *sdk.SDK
-	ctx        context.Context
-	OIDC_TOKEN string
+	sdk              *sdk.SDK
+	ctx              context.Context
+	OIDC_TOKEN       string
+	platformEndpoint string
 }
 
 func New(platformEndpoint string) (Handler, error) {
@@ -40,8 +41,9 @@ func New(platformEndpoint string) (Handler, error) {
 	}
 
 	return Handler{
-		sdk: sdk,
-		ctx: context.Background(),
+		sdk:              sdk,
+		platformEndpoint: platformEndpoint,
+		ctx:              context.Background(),
 	}, nil
 }
 
