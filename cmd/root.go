@@ -8,7 +8,7 @@ import (
 	"os"
 
 	"github.com/opentdf/otdfctl/internal/config"
-	"github.com/spf13/cobra"
+	"github.com/opentdf/otdfctl/pkg/man"
 )
 
 var (
@@ -19,12 +19,42 @@ var (
 )
 
 // rootCmd represents the base command when called without any subcommands
-var rootCmd = &cobra.Command{
-	Use:   "otdfctl",
-	Short: "manage Virtru Data Security Platform",
-	Long: `
-A command line tool to manage Virtru Data Security Platform.
-`,
+var (
+	rootCmd = &man.Docs.GetDoc("<root>").Command
+)
+
+func init() {
+	doc := man.Docs.GetDoc("<root>")
+	rootCmd = &doc.Command
+	rootCmd.PersistentFlags().BoolVar(
+		&configFlagOverrides.OutputFormatJSON,
+		doc.GetDocFlag("json").Name,
+		doc.GetDocFlag("json").DefaultAsBool(),
+		doc.GetDocFlag("json").Description,
+	)
+	rootCmd.PersistentFlags().String(
+		doc.GetDocFlag("host").Name,
+		doc.GetDocFlag("host").Default,
+		doc.GetDocFlag("host").Description,
+	)
+	rootCmd.PersistentFlags().StringVar(
+		&cfgFile,
+		doc.GetDocFlag("config-file").Name,
+		doc.GetDocFlag("config-file").Default,
+		doc.GetDocFlag("config-file").Description,
+	)
+	rootCmd.PersistentFlags().String(
+		doc.GetDocFlag("log-level").Name,
+		doc.GetDocFlag("log-level").Default,
+		doc.GetDocFlag("log-level").Description,
+	)
+
+	cfg, err := config.LoadConfig("otdfctl")
+	if err != nil {
+		fmt.Println("Error loading config:", err)
+		os.Exit(1)
+	}
+	OtdfctlCfg = *cfg
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -33,17 +63,4 @@ func Execute() {
 	if err != nil {
 		os.Exit(1)
 	}
-}
-
-func init() {
-	rootCmd.PersistentFlags().BoolVar(&configFlagOverrides.OutputFormatJSON, "json", false, "output single command in JSON (overrides configured output format)")
-	rootCmd.PersistentFlags().String("host", "localhost:8080", "host:port of the Virtru Data Security Platform gRPC server")
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config-file", "", "config file (default is $HOME/.otdfctl.yaml)")
-
-	cfg, err := config.LoadConfig("otdfctl")
-	if err != nil {
-		fmt.Println("Error loading config:", err)
-		os.Exit(1)
-	}
-	OtdfctlCfg = *cfg
 }
