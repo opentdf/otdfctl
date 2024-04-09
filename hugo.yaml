@@ -82,4 +82,4 @@ params:
 
   editURL:
     enable: true
-    base: "https://github.com/opentdf/tructl/edit/main/docs/"
+    base: "https://github.com/opentdf/otdfctl/edit/main/docs/"
