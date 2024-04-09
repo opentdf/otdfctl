@@ -15,250 +15,215 @@ import (
 // TODO: add metadata to outputs once [https://github.com/opentdf/otdfctl/issues/73] is addressed
 
 var (
-	policy_subject_mappingsCmds = []string{
-		policy_subject_mappingCreateCmd.Use,
-		policy_subject_mappingGetCmd.Use,
-		policy_subject_mappingsListCmd.Use,
-		policy_subject_mappingUpdateCmd.Use,
-		policy_subject_mappingDeleteCmd.Use,
-	}
-
 	standardActions []string
 	customActions   []string
-
-	policy_subject_mappingsCmd = &cobra.Command{
-		Use:   man.Docs.GetDoc("policy/subject-mappings").Use,
-		Short: man.Docs.GetDoc("policy/subject-mappings").GetShort(policy_subject_mappingsCmds),
-		Long:  man.Docs.GetDoc("policy/subject-mappings").Long,
-	}
-
-	policy_subject_mappingGetCmd = &cobra.Command{
-		Use:   man.Docs.GetDoc("policy/subject-mappings/get").Use,
-		Short: man.Docs.GetDoc("policy/subject-mappings/get").Short,
-		Run: func(cmd *cobra.Command, args []string) {
-			h := cli.NewHandler(cmd)
-			defer h.Close()
-
-			flagHelper := cli.NewFlagHelper(cmd)
-			id := flagHelper.GetRequiredString("id")
-
-			mapping, err := h.GetSubjectMapping(id)
-			if err != nil {
-				errMsg := fmt.Sprintf("Failed to find subject mapping (%s)", id)
-				cli.ExitWithError(errMsg, err)
-			}
-
-			var actionsJSON []byte
-			if actionsJSON, err = json.Marshal(mapping.Actions); err != nil {
-				cli.ExitWithError("Error marshalling subject mapping actions", err)
-			}
-
-			var subjectSetsJSON []byte
-			if subjectSetsJSON, err = json.Marshal(mapping.SubjectConditionSet.SubjectSets); err != nil {
-				cli.ExitWithError("Error marshalling subject condition set", err)
-			}
-
-			rows := [][]string{
-				{"Id", mapping.Id},
-				{"Subject AttrVal: Id", mapping.AttributeValue.Id},
-				{"Subject AttrVal: Value", mapping.AttributeValue.Value},
-				{"Actions", string(actionsJSON)},
-				{"Subject Condition Set: Id", mapping.SubjectConditionSet.Id},
-				{"Subject Condition Set", string(subjectSetsJSON)},
-			}
-
-			if mdRows := getMetadataRows(mapping.Metadata); mdRows != nil {
-				rows = append(rows, mdRows...)
-			}
-
-			t := cli.NewTabular().Rows(rows...)
-			HandleSuccess(cmd, mapping.Id, t, mapping)
-		},
-	}
-
-	policy_subject_mappingsListCmd = &cobra.Command{
-		Use:   man.Docs.GetDoc("policy/subject-mappings/list").Use,
-		Short: man.Docs.GetDoc("policy/subject-mappings/list").Short,
-		Run: func(cmd *cobra.Command, args []string) {
-			h := cli.NewHandler(cmd)
-			defer h.Close()
-
-			list, err := h.ListSubjectMappings()
-			if err != nil {
-				cli.ExitWithError("Failed to get subject mappings", err)
-			}
-
-			t := cli.NewTable().Width(180)
-			t.Headers("Id", "Subject AttrVal: Id", "Subject AttrVal: Value", "Actions", "Subject Condition Set: Id", "Subject Condition Set")
-			for _, sm := range list {
-				var actionsJSON []byte
-				if actionsJSON, err = json.Marshal(sm.Actions); err != nil {
-					cli.ExitWithError("Error marshalling subject mapping actions", err)
-				}
-
-				var subjectSetsJSON []byte
-				if subjectSetsJSON, err = json.Marshal(sm.SubjectConditionSet.SubjectSets); err != nil {
-					cli.ExitWithError("Error marshalling subject condition set", err)
-				}
-
-				rowCells := []string{
-					sm.Id,
-					sm.AttributeValue.Id,
-					sm.AttributeValue.Value,
-					string(actionsJSON),
-					sm.SubjectConditionSet.Id,
-					string(subjectSetsJSON),
-				}
-				t.Row(rowCells...)
-			}
-			HandleSuccess(cmd, "", t, list)
-		},
-	}
-
-	policy_subject_mappingCreateCmd = &cobra.Command{
-		Use:   man.Docs.GetDoc("policy/subject-mappings/create").Use,
-		Short: man.Docs.GetDoc("policy/subject-mappings/create").Short,
-		Run: func(cmd *cobra.Command, args []string) {
-			h := cli.NewHandler(cmd)
-			defer h.Close()
-
-			flagHelper := cli.NewFlagHelper(cmd)
-			attrValueId := flagHelper.GetRequiredString("attribute-value-id")
-			standardActions := flagHelper.GetStringSlice("action-standard", standardActions, cli.FlagHelperStringSliceOptions{Min: 0})
-			customActions := flagHelper.GetStringSlice("action-custom", customActions, cli.FlagHelperStringSliceOptions{Min: 0})
-			metadataLabels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
-			existingSCSId := flagHelper.GetOptionalString("subject-condition-set-id")
-			// NOTE: labels within a new Subject Condition Set created on a SM creation are not supported
-			newScsJSON := flagHelper.GetOptionalString("subject-condition-set-new")
-
-			// validations
-			if len(standardActions) == 0 && len(customActions) == 0 {
-				cli.ExitWithError("At least one Standard or Custom Action [--action-standard, --action-custom] is required", nil)
-			}
-			if len(standardActions) > 0 {
-				for _, a := range standardActions {
-					a = strings.ToUpper(a)
-					if a != "DECRYPT" && a != "TRANSMIT" {
-						cli.ExitWithError(fmt.Sprintf("Invalid Standard Action: '%s'. Must be one of [DECRYPT, TRANSMIT].", a), nil)
-					}
-				}
-			}
-
-			actions := getFullActionsList(standardActions, customActions)
-
-			var ss []*policy.SubjectSet
-			var scs *subjectmapping.SubjectConditionSetCreate
-			if newScsJSON != "" {
-				if err := json.Unmarshal([]byte(newScsJSON), &ss); err != nil {
-					cli.ExitWithError("Error unmarshalling subject sets", err)
-				}
-				scs = &subjectmapping.SubjectConditionSetCreate{
-					SubjectSets: ss,
-				}
-			}
-
-			mapping, err := h.CreateNewSubjectMapping(attrValueId, actions, existingSCSId, scs, getMetadataMutable(metadataLabels))
-			if err != nil {
-				cli.ExitWithError("Failed to create subject mapping", err)
-			}
-
-			var actionsJSON []byte
-			if actionsJSON, err = json.Marshal(mapping.Actions); err != nil {
-				cli.ExitWithError("Error marshalling subject mapping actions", err)
-			}
-
-			var subjectSetsJSON []byte
-			if mapping.SubjectConditionSet != nil {
-				if subjectSetsJSON, err = json.Marshal(mapping.SubjectConditionSet.SubjectSets); err != nil {
-					cli.ExitWithError("Error marshalling subject condition set", err)
-				}
-			}
-
-			rows := [][]string{
-				{"Id", mapping.Id},
-				{"Subject AttrVal: Id", mapping.AttributeValue.Id},
-				{"Actions", string(actionsJSON)},
-				{"Subject Condition Set: Id", mapping.SubjectConditionSet.Id},
-				{"Subject Condition Set", string(subjectSetsJSON)},
-				{"Attribute Value Id", mapping.AttributeValue.Id},
-			}
-
-			if mdRows := getMetadataRows(mapping.Metadata); mdRows != nil {
-				rows = append(rows, mdRows...)
-			}
-
-			t := cli.NewTabular().Rows(rows...)
-			HandleSuccess(cmd, mapping.Id, t, mapping)
-		},
-	}
-
-	policy_subject_mappingDeleteCmd = &cobra.Command{
-		Use:   man.Docs.GetDoc("policy/subject-mappings/delete").Use,
-		Short: man.Docs.GetDoc("policy/subject-mappings/delete").Short,
-		Run: func(cmd *cobra.Command, args []string) {
-			h := cli.NewHandler(cmd)
-			defer h.Close()
-
-			flagHelper := cli.NewFlagHelper(cmd)
-			id := flagHelper.GetRequiredString("id")
-
-			sm, err := h.GetSubjectMapping(id)
-			if err != nil {
-				errMsg := fmt.Sprintf("Failed to find subject mapping (%s)", id)
-				cli.ExitWithError(errMsg, err)
-			}
-
-			cli.ConfirmAction(cli.ActionDelete, "subject mapping", sm.Id)
-
-			deleted, err := h.DeleteSubjectMapping(id)
-			if err != nil {
-				errMsg := fmt.Sprintf("Failed to delete subject mapping (%s)", id)
-				cli.ExitWithError(errMsg, err)
-			}
-			HandleSuccess(cmd, id, nil, deleted)
-		},
-	}
-
-	policy_subject_mappingUpdateCmd = &cobra.Command{
-		Use:   man.Docs.GetDoc("policy/subject-mappings/update").Use,
-		Short: man.Docs.GetDoc("policy/subject-mappings/update").Short,
-		Long:  man.Docs.GetDoc("policy/subject-mappings/update").Long,
-		Run: func(cmd *cobra.Command, args []string) {
-			h := cli.NewHandler(cmd)
-			defer h.Close()
-
-			flagHelper := cli.NewFlagHelper(cmd)
-			id := flagHelper.GetRequiredString("id")
-			standardActions := flagHelper.GetStringSlice("action-standard", standardActions, cli.FlagHelperStringSliceOptions{Min: 0})
-			customActions := flagHelper.GetStringSlice("action-custom", customActions, cli.FlagHelperStringSliceOptions{Min: 0})
-			scsId := flagHelper.GetOptionalString("subject-condition-set-id")
-			labels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
-
-			if len(standardActions) > 0 {
-				for _, a := range standardActions {
-					a = strings.ToUpper(a)
-					if a != "DECRYPT" && a != "TRANSMIT" {
-						cli.ExitWithError(fmt.Sprintf("Invalid Standard Action: '%s'. Must be one of [ENCRYPT, TRANSMIT]. Other actions must be custom.", a), nil)
-					}
-				}
-			}
-			actions := getFullActionsList(standardActions, customActions)
-
-			updated, err := h.UpdateSubjectMapping(
-				id,
-				scsId,
-				actions,
-				getMetadataMutable(labels),
-				getMetadataUpdateBehavior(),
-			)
-			if err != nil {
-				cli.ExitWithError("Failed to update subject mapping", err)
-			}
-
-			HandleSuccess(cmd, id, nil, updated)
-		},
-	}
 )
+
+func policy_getSubjectMapping(cmd *cobra.Command, args []string) {
+	h := cli.NewHandler(cmd)
+	defer h.Close()
+
+	flagHelper := cli.NewFlagHelper(cmd)
+	id := flagHelper.GetRequiredString("id")
+
+	mapping, err := h.GetSubjectMapping(id)
+	if err != nil {
+		errMsg := fmt.Sprintf("Failed to find subject mapping (%s)", id)
+		cli.ExitWithError(errMsg, err)
+	}
+
+	var actionsJSON []byte
+	if actionsJSON, err = json.Marshal(mapping.Actions); err != nil {
+		cli.ExitWithError("Error marshalling subject mapping actions", err)
+	}
+
+	var subjectSetsJSON []byte
+	if subjectSetsJSON, err = json.Marshal(mapping.SubjectConditionSet.SubjectSets); err != nil {
+		cli.ExitWithError("Error marshalling subject condition set", err)
+	}
+
+	rows := [][]string{
+		{"Id", mapping.Id},
+		{"Subject AttrVal: Id", mapping.AttributeValue.Id},
+		{"Subject AttrVal: Value", mapping.AttributeValue.Value},
+		{"Actions", string(actionsJSON)},
+		{"Subject Condition Set: Id", mapping.SubjectConditionSet.Id},
+		{"Subject Condition Set", string(subjectSetsJSON)},
+	}
+
+	if mdRows := getMetadataRows(mapping.Metadata); mdRows != nil {
+		rows = append(rows, mdRows...)
+	}
+
+	t := cli.NewTabular().Rows(rows...)
+	HandleSuccess(cmd, mapping.Id, t, mapping)
+}
+
+func policy_listSubjectMappings(cmd *cobra.Command, args []string) {
+	h := cli.NewHandler(cmd)
+	defer h.Close()
+
+	list, err := h.ListSubjectMappings()
+	if err != nil {
+		cli.ExitWithError("Failed to get subject mappings", err)
+	}
+
+	t := cli.NewTable().Width(180)
+	t.Headers("Id", "Subject AttrVal: Id", "Subject AttrVal: Value", "Actions", "Subject Condition Set: Id", "Subject Condition Set")
+	for _, sm := range list {
+		var actionsJSON []byte
+		if actionsJSON, err = json.Marshal(sm.Actions); err != nil {
+			cli.ExitWithError("Error marshalling subject mapping actions", err)
+		}
+
+		var subjectSetsJSON []byte
+		if subjectSetsJSON, err = json.Marshal(sm.SubjectConditionSet.SubjectSets); err != nil {
+			cli.ExitWithError("Error marshalling subject condition set", err)
+		}
+
+		rowCells := []string{
+			sm.Id,
+			sm.AttributeValue.Id,
+			sm.AttributeValue.Value,
+			string(actionsJSON),
+			sm.SubjectConditionSet.Id,
+			string(subjectSetsJSON),
+		}
+		t.Row(rowCells...)
+	}
+	HandleSuccess(cmd, "", t, list)
+}
+
+func policy_createSubjectMapping(cmd *cobra.Command, args []string) {
+	h := cli.NewHandler(cmd)
+	defer h.Close()
+
+	flagHelper := cli.NewFlagHelper(cmd)
+	attrValueId := flagHelper.GetRequiredString("attribute-value-id")
+	standardActions := flagHelper.GetStringSlice("action-standard", standardActions, cli.FlagHelperStringSliceOptions{Min: 0})
+	customActions := flagHelper.GetStringSlice("action-custom", customActions, cli.FlagHelperStringSliceOptions{Min: 0})
+	metadataLabels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
+	existingSCSId := flagHelper.GetOptionalString("subject-condition-set-id")
+	// NOTE: labels within a new Subject Condition Set created on a SM creation are not supported
+	newScsJSON := flagHelper.GetOptionalString("subject-condition-set-new")
+
+	// validations
+	if len(standardActions) == 0 && len(customActions) == 0 {
+		cli.ExitWithError("At least one Standard or Custom Action [--action-standard, --action-custom] is required", nil)
+	}
+	if len(standardActions) > 0 {
+		for _, a := range standardActions {
+			a = strings.ToUpper(a)
+			if a != "DECRYPT" && a != "TRANSMIT" {
+				cli.ExitWithError(fmt.Sprintf("Invalid Standard Action: '%s'. Must be one of [DECRYPT, TRANSMIT].", a), nil)
+			}
+		}
+	}
+
+	actions := getFullActionsList(standardActions, customActions)
+
+	var ss []*policy.SubjectSet
+	var scs *subjectmapping.SubjectConditionSetCreate
+	if newScsJSON != "" {
+		if err := json.Unmarshal([]byte(newScsJSON), &ss); err != nil {
+			cli.ExitWithError("Error unmarshalling subject sets", err)
+		}
+		scs = &subjectmapping.SubjectConditionSetCreate{
+			SubjectSets: ss,
+		}
+	}
+
+	mapping, err := h.CreateNewSubjectMapping(attrValueId, actions, existingSCSId, scs, getMetadataMutable(metadataLabels))
+	if err != nil {
+		cli.ExitWithError("Failed to create subject mapping", err)
+	}
+
+	var actionsJSON []byte
+	if actionsJSON, err = json.Marshal(mapping.Actions); err != nil {
+		cli.ExitWithError("Error marshalling subject mapping actions", err)
+	}
+
+	var subjectSetsJSON []byte
+	if mapping.SubjectConditionSet != nil {
+		if subjectSetsJSON, err = json.Marshal(mapping.SubjectConditionSet.SubjectSets); err != nil {
+			cli.ExitWithError("Error marshalling subject condition set", err)
+		}
+	}
+
+	rows := [][]string{
+		{"Id", mapping.Id},
+		{"Subject AttrVal: Id", mapping.AttributeValue.Id},
+		{"Actions", string(actionsJSON)},
+		{"Subject Condition Set: Id", mapping.SubjectConditionSet.Id},
+		{"Subject Condition Set", string(subjectSetsJSON)},
+		{"Attribute Value Id", mapping.AttributeValue.Id},
+	}
+
+	if mdRows := getMetadataRows(mapping.Metadata); mdRows != nil {
+		rows = append(rows, mdRows...)
+	}
+
+	t := cli.NewTabular().Rows(rows...)
+	HandleSuccess(cmd, mapping.Id, t, mapping)
+}
+
+func policy_deleteSubjectMapping(cmd *cobra.Command, args []string) {
+	h := cli.NewHandler(cmd)
+	defer h.Close()
+
+	flagHelper := cli.NewFlagHelper(cmd)
+	id := flagHelper.GetRequiredString("id")
+
+	sm, err := h.GetSubjectMapping(id)
+	if err != nil {
+		errMsg := fmt.Sprintf("Failed to find subject mapping (%s)", id)
+		cli.ExitWithError(errMsg, err)
+	}
+
+	cli.ConfirmAction(cli.ActionDelete, "subject mapping", sm.Id)
+
+	deleted, err := h.DeleteSubjectMapping(id)
+	if err != nil {
+		errMsg := fmt.Sprintf("Failed to delete subject mapping (%s)", id)
+		cli.ExitWithError(errMsg, err)
+	}
+	HandleSuccess(cmd, id, nil, deleted)
+}
+
+func policy_updateSubjectMapping(cmd *cobra.Command, args []string) {
+	h := cli.NewHandler(cmd)
+	defer h.Close()
+
+	flagHelper := cli.NewFlagHelper(cmd)
+	id := flagHelper.GetRequiredString("id")
+	standardActions := flagHelper.GetStringSlice("action-standard", standardActions, cli.FlagHelperStringSliceOptions{Min: 0})
+	customActions := flagHelper.GetStringSlice("action-custom", customActions, cli.FlagHelperStringSliceOptions{Min: 0})
+	scsId := flagHelper.GetOptionalString("subject-condition-set-id")
+	labels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
+
+	if len(standardActions) > 0 {
+		for _, a := range standardActions {
+			a = strings.ToUpper(a)
+			if a != "DECRYPT" && a != "TRANSMIT" {
+				cli.ExitWithError(fmt.Sprintf("Invalid Standard Action: '%s'. Must be one of [ENCRYPT, TRANSMIT]. Other actions must be custom.", a), nil)
+			}
+		}
+	}
+	actions := getFullActionsList(standardActions, customActions)
+
+	updated, err := h.UpdateSubjectMapping(
+		id,
+		scsId,
+		actions,
+		getMetadataMutable(labels),
+		getMetadataUpdateBehavior(),
+	)
+	if err != nil {
+		cli.ExitWithError("Failed to update subject mapping", err)
+	}
+
+	HandleSuccess(cmd, id, nil, updated)
+}
 
 func getSubjectMappingMappingActionEnumFromChoice(readable string) policy.Action_StandardAction {
 	switch readable {
@@ -291,82 +256,98 @@ func getFullActionsList(standardActions, customActions []string) []*policy.Actio
 }
 
 func init() {
+	getDoc := man.Docs.GetCommand("policy/subject-mappings/get",
+		man.WithRun(policy_getSubjectMapping),
+	)
+	getDoc.Flags().StringP(
+		getDoc.GetDocFlag("id").Name,
+		getDoc.GetDocFlag("id").Shorthand,
+		getDoc.GetDocFlag("id").Default,
+		getDoc.GetDocFlag("id").Description,
+	)
 
-	// cmd := man.Docs.GetDoc("policy/subject-mappings")
+	listDoc := man.Docs.GetCommand("policy/subject-mappings/list",
+		man.WithRun(policy_listSubjectMappings),
+	)
 
-	// createCmd := man.Docs.GetDoc("policy/subject-mappings/create")
-	// createCmd.Run = runCreateSubjectMappings
-
-	// listCmd := man.Docs.GetDoc("policy/subject-mappings/list")
-	// listCmd.Run = runListSubjectMappings
-
-	// updateCmd := man.Docs.GetDoc("policy/subject-mappings/update")
-	// updateCmd.Run = runUpdateSubjectMappings
-
-	// deleteCmd := man.Docs.GetDoc("policy/subject-mappings/delete")
-	// deleteCmd.Run = runDeleteSubjectMappings
-
-	// getCmd := man.Docs.GetDoc("policy/subject-mappings/get")
-	// getCmd.Run = runGetSubjectMappings
-
-	// cmd.Short = cmd.GetShort([]string{
-	// 	createCmd.Use,
-	// 	getCmd.Use,
-	// 	listCmd.Use,
-	// 	updateCmd.Use,
-	// 	deleteCmd.Use,
-	// })
-
-	// policyCmd.AddCommand(&cmd.Command)
-
-	policyCmd.AddCommand(policy_subject_mappingsCmd)
-
-	policy_subject_mappingsCmd.AddCommand(policy_subject_mappingGetCmd)
-	policy_subject_mappingGetCmd.Flags().StringP("id", "i", "", "Id of the subject mapping")
-
-	policy_subject_mappingsCmd.AddCommand(policy_subject_mappingsListCmd)
-
-	createDoc := man.Docs.GetDoc("policy/subject-mappings/create")
-	policy_subject_mappingsCmd.AddCommand(policy_subject_mappingCreateCmd)
-	policy_subject_mappingCreateCmd.Flags().StringP(
+	createDoc := man.Docs.GetCommand("policy/subject-mappings/create",
+		man.WithRun(policy_createSubjectMapping),
+	)
+	createDoc.Flags().StringP(
 		createDoc.GetDocFlag("attribute-value-id").Name,
 		createDoc.GetDocFlag("attribute-value-id").Shorthand,
 		createDoc.GetDocFlag("attribute-value-id").Default,
 		createDoc.GetDocFlag("attribute-value-id").Description,
 	)
-	policy_subject_mappingCreateCmd.Flags().StringSliceVarP(
+	createDoc.Flags().StringSliceVarP(
 		&standardActions,
 		createDoc.GetDocFlag("action-standard").Name,
 		createDoc.GetDocFlag("action-standard").Shorthand,
 		[]string{},
 		createDoc.GetDocFlag("action-standard").Description,
 	)
-	policy_subject_mappingCreateCmd.Flags().StringSliceVarP(
+	createDoc.Flags().StringSliceVarP(
 		&customActions,
 		createDoc.GetDocFlag("action-custom").Name,
 		createDoc.GetDocFlag("action-custom").Shorthand,
 		[]string{},
 		createDoc.GetDocFlag("action-custom").Description,
 	)
-	policy_subject_mappingCreateCmd.Flags().String(
+	createDoc.Flags().String(
 		createDoc.GetDocFlag("subject-condition-set-id").Name,
 		createDoc.GetDocFlag("subject-condition-set-id").Default,
 		createDoc.GetDocFlag("subject-condition-set-id").Description,
 	)
-	policy_subject_mappingCreateCmd.Flags().String(
+	createDoc.Flags().String(
 		createDoc.GetDocFlag("subject-condition-set-new").Name,
 		createDoc.GetDocFlag("subject-condition-set-new").Default,
 		createDoc.GetDocFlag("subject-condition-set-new").Description,
 	)
-	injectLabelFlags(policy_subject_mappingCreateCmd, false)
+	injectLabelFlags(&createDoc.Command, false)
 
-	policy_subject_mappingsCmd.AddCommand(policy_subject_mappingUpdateCmd)
-	policy_subject_mappingUpdateCmd.Flags().StringP("id", "i", "", "Id of the subject mapping")
-	policy_subject_mappingUpdateCmd.Flags().StringSliceVarP(&standardActions, "action-standard", "s", []string{}, "Standard Action: [DECRYPT, TRANSMIT]. Note: destructively replaces existing Actions.")
-	policy_subject_mappingUpdateCmd.Flags().StringSliceVarP(&customActions, "action-custom", "c", []string{}, "Custom Action. Note: destructively replaces existing Actions.")
-	policy_subject_mappingUpdateCmd.Flags().String("subject-condition-set-id", "", "Updated Subject Condition Set Id")
-	injectLabelFlags(policy_subject_mappingUpdateCmd, true)
+	updateDoc := man.Docs.GetCommand("policy/subject-mappings/update",
+		man.WithRun(policy_updateSubjectMapping),
+	)
+	updateDoc.Flags().StringP(
+		updateDoc.GetDocFlag("id").Name,
+		updateDoc.GetDocFlag("id").Shorthand,
+		updateDoc.GetDocFlag("id").Default,
+		updateDoc.GetDocFlag("id").Description,
+	)
+	updateDoc.Flags().StringSliceVarP(&standardActions,
+		updateDoc.GetDocFlag("action-standard").Name,
+		updateDoc.GetDocFlag("action-standard").Shorthand,
+		[]string{},
+		updateDoc.GetDocFlag("action-standard").Description,
+	)
+	updateDoc.Flags().StringSliceVarP(&customActions,
+		updateDoc.GetDocFlag("action-custom").Name,
+		updateDoc.GetDocFlag("action-custom").Shorthand,
+		[]string{},
+		updateDoc.GetDocFlag("action-custom").Description,
+	)
+	updateDoc.Flags().String("subject-condition-set-id", "", "Updated Subject Condition Set Id")
+	injectLabelFlags(&updateDoc.Command, true)
 
-	policy_subject_mappingsCmd.AddCommand(policy_subject_mappingDeleteCmd)
-	policy_subject_mappingDeleteCmd.Flags().StringP("id", "i", "", "Id of the subject mapping")
+	deleteDoc := man.Docs.GetCommand("policy/subject-mappings/delete",
+		man.WithRun(policy_deleteSubjectMapping),
+	)
+	deleteDoc.Flags().StringP(
+		deleteDoc.GetDocFlag("id").Name,
+		deleteDoc.GetDocFlag("id").Shorthand,
+		deleteDoc.GetDocFlag("id").Default,
+		deleteDoc.GetDocFlag("id").Description,
+	)
+
+	doc := man.Docs.GetCommand("policy/subject-mappings",
+		man.WithSubcommands(
+			createDoc,
+			getDoc,
+			listDoc,
+			updateDoc,
+			deleteDoc,
+		),
+	)
+	policy_subjectMappingCmd := &doc.Command
+	policyCmd.AddCommand(policy_subjectMappingCmd)
 }
