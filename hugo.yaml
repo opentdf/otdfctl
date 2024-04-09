@@ -1,5 +1,5 @@
 baseURL: http://localhost:1313
-title: tructl - OpenTDF Control Interface
+title: otdfctl - OpenTDF Control Interface
 
 assetDir: docs/assets
 contentDir: docs
@@ -46,7 +46,7 @@ menu:
         type: search
     - name: GitHub
       weight: 5
-      url: "https://github.com/opentdf/tructl"
+      url: "https://github.com/opentdf/otdfctl"
       params:
         icon: github
 
@@ -82,4 +82,4 @@ params:
 
   editURL:
     enable: true
-    base: "https://github.com/opentdf/tructl/edit/main/docs/"
+    base: "https://github.com/opentdf/otdfctl/edit/main/docs/"
