@@ -28,6 +28,13 @@ func (d *Doc) GetShort(subCmds []string) string {
 	return fmt.Sprintf("%s [%s]", d.Short, strings.Join(subCmds, ", "))
 }
 
+func (d *Doc) AddSubcommands(subCmds ...*Doc) {
+	for _, c := range subCmds {
+		d.DocSubcommands = append(d.DocSubcommands, c)
+		d.AddCommand(&c.Command)
+	}
+}
+
 func WithSubcommands(subCmds ...*Doc) CommandOpts {
 	return func(d *Doc) {
 		for _, c := range subCmds {

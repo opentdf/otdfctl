@@ -20,5 +20,3 @@ command:
       description: Namespace of the attribute
       required: true
 ---
-
-# Create an attribute

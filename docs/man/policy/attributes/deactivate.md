@@ -8,5 +8,3 @@ command:
       description: ID of the attribute
       required: true
 ---
-
-# Deactivate an attribute

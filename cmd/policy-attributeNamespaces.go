@@ -12,199 +12,173 @@ import (
 // TODO: add metadata to outputs once [https://github.com/opentdf/otdfctl/issues/73] is addressed
 
 var (
-	policy_namespacesCommands = []string{
-		policy_namespacesCreateCmd.Use,
-		policy_namespaceGetCmd.Use,
-		policy_namespacesListCmd.Use,
-		policy_namespaceUpdateCmd.Use,
-		policy_namespaceDeactivateCmd.Use,
-	}
-
-	policy_namespacesCmd = &cobra.Command{
-		Use:   man.Docs.GetDoc("policy/attributes/namespaces").Use,
-		Short: man.Docs.GetDoc("policy/attributes/namespaces").GetShort(policy_namespacesCommands),
-		Long:  man.Docs.GetDoc("policy/attributes/namespaces").Long,
-	}
-
-	policy_namespaceGetCmd = &cobra.Command{
-		Use:   man.Docs.GetDoc("policy/attributes/namespaces/get").Use,
-		Short: man.Docs.GetDoc("policy/attributes/namespaces/get").Short,
-		Run: func(cmd *cobra.Command, args []string) {
-			h := cli.NewHandler(cmd)
-			defer h.Close()
-
-			flagHelper := cli.NewFlagHelper(cmd)
-			id := flagHelper.GetRequiredString("id")
-
-			ns, err := h.GetNamespace(id)
-			if err != nil {
-				errMsg := fmt.Sprintf("Failed to get namespace (%s)", id)
-				cli.ExitWithError(errMsg, err)
-			}
-
-			t := cli.NewTabular().
-				Rows([][]string{
-					{"Id", ns.Id},
-					{"Name", ns.Name},
-				}...)
-			HandleSuccess(cmd, ns.Id, t, ns)
-		},
-	}
-
-	policy_namespacesListCmd = &cobra.Command{
-		Use:   man.Docs.GetDoc("policy/attributes/namespaces/list").Use,
-		Short: man.Docs.GetDoc("policy/attributes/namespaces/list").Short,
-		Run: func(cmd *cobra.Command, args []string) {
-			h := cli.NewHandler(cmd)
-			defer h.Close()
-
-			state := cli.GetState(cmd)
-			list, err := h.ListNamespaces(state)
-			if err != nil {
-				cli.ExitWithError("Failed to list namespaces", err)
-			}
-
-			t := cli.NewTable()
-			t.Headers("Id", "Name", "Active")
-			for _, ns := range list {
-				t.Row(
-					ns.Id,
-					ns.Name,
-					strconv.FormatBool(ns.Active.GetValue()),
-				)
-			}
-			HandleSuccess(cmd, "", t, list)
-		},
-	}
-
-	policy_namespacesCreateCmd = &cobra.Command{
-		Use:   man.Docs.GetDoc("policy/attributes/namespaces/create").Use,
-		Short: man.Docs.GetDoc("policy/attributes/namespaces/create").Short,
-		Run: func(cmd *cobra.Command, args []string) {
-			h := cli.NewHandler(cmd)
-			defer h.Close()
-
-			flagHelper := cli.NewFlagHelper(cmd)
-			name := flagHelper.GetRequiredString("name")
-			metadataLabels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
-
-			created, err := h.CreateNamespace(name, getMetadataMutable(metadataLabels))
-			if err != nil {
-				cli.ExitWithError("Failed to create namespace", err)
-			}
-
-			t := cli.NewTabular().Rows([][]string{
-				{"Name", name},
-				{"Id", created.Id},
-			}...)
-			HandleSuccess(cmd, created.Id, t, created)
-		},
-	}
-
-	policy_namespaceDeactivateCmd = &cobra.Command{
-		Use:   man.Docs.GetDoc("policy/attributes/namespaces/deactivate").Use,
-		Short: man.Docs.GetDoc("policy/attributes/namespaces/deactivate").Short,
-		Run: func(cmd *cobra.Command, args []string) {
-			h := cli.NewHandler(cmd)
-			defer h.Close()
-
-			flagHelper := cli.NewFlagHelper(cmd)
-			id := flagHelper.GetRequiredString("id")
-
-			ns, err := h.GetNamespace(id)
-			if err != nil {
-				errMsg := fmt.Sprintf("Failed to find namespace (%s)", id)
-				cli.ExitWithError(errMsg, err)
-			}
-
-			cli.ConfirmAction(cli.ActionDeactivate, "namespace", ns.Name)
-
-			d, err := h.DeactivateNamespace(id)
-			if err != nil {
-				errMsg := fmt.Sprintf("Failed to deactivate namespace (%s)", id)
-				cli.ExitWithError(errMsg, err)
-			}
-
-			t := cli.NewTabular().
-				Rows([][]string{
-					{"Id", ns.Id},
-					{"Name", ns.Name},
-				}...)
-			HandleSuccess(cmd, ns.Id, t, d)
-		},
-	}
-
-	// Update one namespace
-	policy_namespaceUpdateCmd = &cobra.Command{
-		Use:   man.Docs.GetDoc("policy/attributes/namespaces/update").Use,
-		Short: man.Docs.GetDoc("policy/attributes/namespaces/update").Short,
-		Run: func(cmd *cobra.Command, args []string) {
-			h := cli.NewHandler(cmd)
-			defer h.Close()
-
-			flagHelper := cli.NewFlagHelper(cmd)
-			id := flagHelper.GetRequiredString("id")
-			labels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
-
-			ns, err := h.UpdateNamespace(
-				id,
-				getMetadataMutable(labels),
-				getMetadataUpdateBehavior(),
-			)
-			if err != nil {
-				cli.ExitWithError(fmt.Sprintf("Failed to update namespace (%s)", id), err)
-			}
-
-			t := cli.NewTabular().Rows([][]string{
-				{"Id", ns.Id},
-				{"Name", ns.Name},
-			}...)
-			HandleSuccess(cmd, id, t, ns)
-		},
-	}
+	policy_attributeNamespacesCmd = man.Docs.GetCommand("policy/attributes/namespaces")
 )
 
-func init() {
-	policyCmd.AddCommand(policy_namespacesCmd)
+func policy_getAttributeNamespace(cmd *cobra.Command, args []string) {
+	h := cli.NewHandler(cmd)
+	defer h.Close()
 
-	getDoc := man.Docs.GetDoc("policy/attributes/namespaces/get")
-	policy_namespacesCmd.AddCommand(policy_namespaceGetCmd)
-	policy_namespaceGetCmd.Flags().StringP(
-		getDoc.GetDocFlag("id").Name,
-		getDoc.GetDocFlag("id").Shorthand,
-		getDoc.GetDocFlag("id").Default,
-		getDoc.GetDocFlag("id").Description,
+	flagHelper := cli.NewFlagHelper(cmd)
+	id := flagHelper.GetRequiredString("id")
+
+	ns, err := h.GetNamespace(id)
+	if err != nil {
+		errMsg := fmt.Sprintf("Failed to get namespace (%s)", id)
+		cli.ExitWithError(errMsg, err)
+	}
+
+	t := cli.NewTabular().
+		Rows([][]string{
+			{"Id", ns.Id},
+			{"Name", ns.Name},
+		}...)
+	HandleSuccess(cmd, ns.Id, t, ns)
+}
+
+func policy_listAttributeNamespaces(cmd *cobra.Command, args []string) {
+	h := cli.NewHandler(cmd)
+	defer h.Close()
+
+	state := cli.GetState(cmd)
+	list, err := h.ListNamespaces(state)
+	if err != nil {
+		cli.ExitWithError("Failed to list namespaces", err)
+	}
+
+	t := cli.NewTable()
+	t.Headers("Id", "Name", "Active")
+	for _, ns := range list {
+		t.Row(
+			ns.Id,
+			ns.Name,
+			strconv.FormatBool(ns.Active.GetValue()),
+		)
+	}
+	HandleSuccess(cmd, "", t, list)
+}
+
+func policy_createAttributeNamespace(cmd *cobra.Command, args []string) {
+	h := cli.NewHandler(cmd)
+	defer h.Close()
+
+	flagHelper := cli.NewFlagHelper(cmd)
+	name := flagHelper.GetRequiredString("name")
+	metadataLabels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
+
+	created, err := h.CreateNamespace(name, getMetadataMutable(metadataLabels))
+	if err != nil {
+		cli.ExitWithError("Failed to create namespace", err)
+	}
+
+	t := cli.NewTabular().Rows([][]string{
+		{"Name", name},
+		{"Id", created.Id},
+	}...)
+	HandleSuccess(cmd, created.Id, t, created)
+}
+
+func policy_deactivateAttributeNamespace(cmd *cobra.Command, args []string) {
+	h := cli.NewHandler(cmd)
+	defer h.Close()
+
+	flagHelper := cli.NewFlagHelper(cmd)
+	id := flagHelper.GetRequiredString("id")
+
+	ns, err := h.GetNamespace(id)
+	if err != nil {
+		errMsg := fmt.Sprintf("Failed to find namespace (%s)", id)
+		cli.ExitWithError(errMsg, err)
+	}
+
+	cli.ConfirmAction(cli.ActionDeactivate, "namespace", ns.Name)
+
+	d, err := h.DeactivateNamespace(id)
+	if err != nil {
+		errMsg := fmt.Sprintf("Failed to deactivate namespace (%s)", id)
+		cli.ExitWithError(errMsg, err)
+	}
+
+	t := cli.NewTabular().
+		Rows([][]string{
+			{"Id", ns.Id},
+			{"Name", ns.Name},
+		}...)
+	HandleSuccess(cmd, ns.Id, t, d)
+}
+
+func policy_updateAttributeNamespace(cmd *cobra.Command, args []string) {
+	h := cli.NewHandler(cmd)
+	defer h.Close()
+
+	flagHelper := cli.NewFlagHelper(cmd)
+	id := flagHelper.GetRequiredString("id")
+	labels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
+
+	ns, err := h.UpdateNamespace(
+		id,
+		getMetadataMutable(labels),
+		getMetadataUpdateBehavior(),
+	)
+	if err != nil {
+		cli.ExitWithError(fmt.Sprintf("Failed to update namespace (%s)", id), err)
+	}
+
+	t := cli.NewTabular().Rows([][]string{
+		{"Id", ns.Id},
+		{"Name", ns.Name},
+	}...)
+	HandleSuccess(cmd, id, t, ns)
+}
+
+func init() {
+	getCmd := man.Docs.GetCommand("policy/attributes/namespaces/get",
+		man.WithRun(policy_getAttributeNamespace),
+	)
+	getCmd.Flags().StringP(
+		getCmd.GetDocFlag("id").Name,
+		getCmd.GetDocFlag("id").Shorthand,
+		getCmd.GetDocFlag("id").Default,
+		getCmd.GetDocFlag("id").Description,
 	)
 
-	policy_namespacesCmd.AddCommand(policy_namespacesListCmd)
-	policy_namespacesListCmd.Flags().StringP("state", "s", "active", "Filter by state [active, inactive, any]")
+	listCmd := man.Docs.GetCommand("policy/attributes/namespaces/list",
+		man.WithRun(policy_listAttributeNamespaces),
+	)
+	listCmd.Flags().StringP("state", "s", "active", "Filter by state [active, inactive, any]")
 
-	createDoc := man.Docs.GetDoc("policy/attributes/namespaces/create")
-	policy_namespacesCmd.AddCommand(policy_namespacesCreateCmd)
-	policy_namespacesCreateCmd.Flags().StringP(
+	createDoc := man.Docs.GetCommand("policy/attributes/namespaces/create",
+		man.WithRun(policy_createAttributeNamespace),
+	)
+	createDoc.Flags().StringP(
 		createDoc.GetDocFlag("name").Name,
 		createDoc.GetDocFlag("name").Shorthand,
 		createDoc.GetDocFlag("name").Default,
 		createDoc.GetDocFlag("name").Description,
 	)
-	injectLabelFlags(policy_namespacesCreateCmd, false)
+	injectLabelFlags(&createDoc.Command, false)
 
-	updateDoc := man.Docs.GetDoc("policy/attributes/namespaces/update")
-	policy_namespacesCmd.AddCommand(policy_namespaceUpdateCmd)
-	policy_namespaceUpdateCmd.Flags().StringP(
-		updateDoc.GetDocFlag("id").Name,
-		updateDoc.GetDocFlag("id").Shorthand,
-		updateDoc.GetDocFlag("id").Default,
-		updateDoc.GetDocFlag("id").Description,
+	updateCmd := man.Docs.GetCommand("policy/attributes/namespaces/update",
+		man.WithRun(policy_updateAttributeNamespace),
 	)
-	injectLabelFlags(policy_namespaceUpdateCmd, true)
+	updateCmd.Flags().StringP(
+		updateCmd.GetDocFlag("id").Name,
+		updateCmd.GetDocFlag("id").Shorthand,
+		updateCmd.GetDocFlag("id").Default,
+		updateCmd.GetDocFlag("id").Description,
+	)
+	injectLabelFlags(&updateCmd.Command, true)
 
-	deactivateDoc := man.Docs.GetDoc("policy/attributes/namespaces/deactivate")
-	policy_namespacesCmd.AddCommand(policy_namespaceDeactivateCmd)
-	policy_namespaceDeactivateCmd.Flags().StringP(
-		deactivateDoc.GetDocFlag("id").Name,
-		deactivateDoc.GetDocFlag("id").Shorthand,
-		deactivateDoc.GetDocFlag("id").Default,
-		deactivateDoc.GetDocFlag("id").Description,
+	deactivateCmd := man.Docs.GetCommand("policy/attributes/namespaces/deactivate",
+		man.WithRun(policy_deactivateAttributeNamespace),
 	)
+	deactivateCmd.Flags().StringP(
+		deactivateCmd.GetDocFlag("id").Name,
+		deactivateCmd.GetDocFlag("id").Shorthand,
+		deactivateCmd.GetDocFlag("id").Default,
+		deactivateCmd.GetDocFlag("id").Description,
+	)
+
+	policy_attributeNamespacesCmd.AddSubcommands(getCmd, listCmd, createDoc, updateCmd, deactivateCmd)
+	policy_attributesCmd.AddCommand(&policy_attributeNamespacesCmd.Command)
 }

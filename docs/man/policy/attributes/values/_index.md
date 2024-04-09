@@ -6,6 +6,4 @@ command:
     - value
 ---
 
-# Manage Attribute Values
-
 This command allows you to manage the values of an attribute.

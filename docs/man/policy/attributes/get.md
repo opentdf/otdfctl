@@ -7,5 +7,3 @@ command:
       shorthand: i
       description: ID of the attribute
 ---
-
-# Get an attribute
