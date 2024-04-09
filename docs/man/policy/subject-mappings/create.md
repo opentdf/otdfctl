@@ -11,8 +11,7 @@ command:
     - name: action-standard
       description: The standard action to map to a subject set
       shorthand: s
-      type: enum
-      values: ["DECRYPT", "TRANSMIT"]
+      enum: [DECRYPT, TRANSMIT]
       required: true
       default: ""
     - name: action-custom
@@ -31,6 +30,5 @@ command:
     - name: label
       description: "Optional metadata 'labels' in the format: key=value"
       shorthand: l
-      type: string-slice
       default: ""
 ---

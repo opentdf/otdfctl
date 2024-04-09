@@ -16,6 +16,5 @@ command:
     - name: label
       description: "Optional metadata 'labels' in the format: key=value"
       shorthand: l
-      type: string-slice
       default: ""
 ---

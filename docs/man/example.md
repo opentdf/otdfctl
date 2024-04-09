@@ -12,7 +12,6 @@ command:
     - name: flag
       short: f
       description: A flag that does something
-      type: string
       required: false
       default: "default value"
     # - name: another-flag
