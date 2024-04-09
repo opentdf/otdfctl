@@ -14,15 +14,15 @@ import (
 var (
 	selectors []string
 
-	policy_selectorsCmd = &cobra.Command{
+	dev_selectorsCmd = &cobra.Command{
 		Use:   "selectors",
 		Short: "Validate selectors",
-		Long:  `Test validation of different selectors with different syntax.`,
+		Long:  `Generation and validation of different selectors with jq selector syntax.`,
 	}
 
-	policy_selectorsGetCmd = &cobra.Command{
-		Use:   "find",
-		Short: "Find a set of selected keys and values for a Subject Context",
+	dev_selectorsGenCmd = &cobra.Command{
+		Use:   "gen",
+		Short: "Generate a set of selector expressions for keys and values of a Subject Context",
 		Run: func(cmd *cobra.Command, args []string) {
 			h := cli.NewHandler(cmd)
 			defer h.Close()
@@ -30,7 +30,6 @@ var (
 			flagHelper := cli.NewFlagHelper(cmd)
 			subject := flagHelper.GetRequiredString("subject")
 			contextType := flagHelper.GetRequiredString("type")
-			syntax := flagHelper.GetRequiredString("syntax")
 
 			var value any
 			if contextType == "json" || contextType == "" {
@@ -53,16 +52,9 @@ var (
 				cli.ExitWithError("Invalid subject context type. Must be of type: [json, jwt]", nil)
 			}
 
-			result := []*policy.SubjectProperty{}
-
-			if syntax == "jq" {
-				r, err := handlers.ProcessSubjectContext(value, "", []*policy.SubjectProperty{})
-				if err != nil {
-					cli.ExitWithError("Failed to process subject context keys and values", err)
-				}
-				result = r
-			} else {
-				cli.ExitWithError("Invalid syntax. Must be of type: [jq]", nil)
+			result, err := handlers.ProcessSubjectContext(value, "", []*policy.SubjectProperty{})
+			if err != nil {
+				cli.ExitWithError("Failed to process subject context keys and values", err)
 			}
 
 			rows := [][]string{}
@@ -71,21 +63,19 @@ var (
 			}
 
 			t := cli.NewTabular().Rows(rows...)
-			// TODO: we need to escape the JSON so don't use handlesuccess here
 			cli.PrintSuccessTable(cmd, "", t)
 		},
 	}
 
-	policy_selectorsTestCmd = &cobra.Command{
+	dev_selectorsTestCmd = &cobra.Command{
 		Use:   "test",
-		Short: "Test a set of selectors on a Subject Context",
+		Short: "Test resolution of a set of selector expressions for keys and values of a Subject Context.",
 		Run: func(cmd *cobra.Command, args []string) {
 			h := cli.NewHandler(cmd)
 			defer h.Close()
 
 			flagHelper := cli.NewFlagHelper(cmd)
 			subject := flagHelper.GetRequiredString("subject")
-			syntax := flagHelper.GetRequiredString("syntax")
 			contextType := flagHelper.GetRequiredString("type")
 			selectors := flagHelper.GetStringSlice("selectors", selectors, cli.FlagHelperStringSliceOptions{Min: 1})
 
@@ -109,16 +99,9 @@ var (
 				cli.ExitWithError("Invalid subject context type. Must be of type: [json, jwt]", nil)
 			}
 
-			result := []*policy.SubjectProperty{}
-
-			if syntax == "jq" {
-				r, err := handlers.TestSubjectContext(value, "jq", selectors)
-				if err != nil {
-					cli.ExitWithError("Failed to process subject context keys and values", err)
-				}
-				result = r
-			} else {
-				cli.ExitWithError("Invalid syntax. Must be of type: [jq]", nil)
+			result, err := handlers.TestSubjectContext(value, selectors)
+			if err != nil {
+				cli.ExitWithError("Failed to process subject context keys and values", err)
 			}
 
 			rows := [][]string{}
@@ -133,16 +116,14 @@ var (
 )
 
 func init() {
-	policyCmd.AddCommand(policy_selectorsCmd)
+	devCmd.AddCommand(dev_selectorsCmd)
 
-	policy_selectorsCmd.AddCommand(policy_selectorsGetCmd)
-	policy_selectorsGetCmd.Flags().StringP("subject", "s", "", "A Subject Context string (JSON or JWT, default JSON)")
-	policy_selectorsGetCmd.Flags().StringP("type", "t", "json", "The type of the Subject Context: [json, jwt]")
-	policy_selectorsGetCmd.Flags().StringP("syntax", "y", "", "Syntax: [jq]")
+	dev_selectorsCmd.AddCommand(dev_selectorsGenCmd)
+	dev_selectorsGenCmd.Flags().StringP("subject", "s", "", "A Subject Context string (JSON or JWT, default JSON)")
+	dev_selectorsGenCmd.Flags().StringP("type", "t", "json", "The type of the Subject Context: [json, jwt]")
 
-	policy_selectorsCmd.AddCommand(policy_selectorsTestCmd)
-	policy_selectorsTestCmd.Flags().StringP("subject", "s", "", "A Subject Context string (JSON or JWT, default JSON)")
-	policy_selectorsTestCmd.Flags().StringP("type", "t", "json", "The type of the Subject Context: [json, jwt]")
-	policy_selectorsTestCmd.Flags().StringP("syntax", "y", "", "Syntax: [jq]")
-	policy_selectorsTestCmd.Flags().StringArrayVarP(&selectors, "selector", "x", []string{}, "Individual selectors to test against the Subject Context (i.e. .key, .example[1].group)")
+	dev_selectorsCmd.AddCommand(dev_selectorsTestCmd)
+	dev_selectorsTestCmd.Flags().StringP("subject", "s", "", "A Subject Context string (JSON or JWT, default JSON)")
+	dev_selectorsTestCmd.Flags().StringP("type", "t", "json", "The type of the Subject Context: [json, jwt]")
+	dev_selectorsTestCmd.Flags().StringArrayVarP(&selectors, "selector", "x", []string{}, "Individual selectors to test against the Subject Context (i.e. .key, .example[1].group)")
 }

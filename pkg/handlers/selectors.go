@@ -103,11 +103,7 @@ func isPrimitive(t reflect.Kind) bool {
 	}
 }
 
-func TestSubjectContext(subject interface{}, syntax string, selectors []string) ([]*policy.SubjectProperty, error) {
-	if syntax != "jq" {
-		return nil, fmt.Errorf("unsupported syntax: %s", syntax)
-	}
-
+func TestSubjectContext(subject interface{}, selectors []string) ([]*policy.SubjectProperty, error) {
 	// genericize type to avoid panic parsing jwt.MapClaims in gojq
 	var sub any
 	if _, ok := subject.(jwt.MapClaims); ok {
