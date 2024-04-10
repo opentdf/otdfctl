@@ -3,11 +3,12 @@ package cli
 import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/lipgloss/table"
+	"golang.org/x/term"
 )
 
 type Table table.Table
 
-var defaultTableWidth = 120
+var defaultTableWidth int
 
 func NewTable() *table.Table {
 	t := table.New()
@@ -26,4 +27,19 @@ func NewTable() *table.Table {
 				return lipgloss.NewStyle().Foreground(lipgloss.ANSIColor(250)).Background(lipgloss.Color("#2B2B2B"))
 			}
 		})
+}
+
+func init() {
+	// dynamically set the default table width based on terminal size breakpoints
+	w, _, err := term.GetSize(0)
+	if err != nil {
+		w = 80
+	}
+	if w > 180 {
+		defaultTableWidth = 180
+	} else if w > 120 {
+		defaultTableWidth = 120
+	} else {
+		defaultTableWidth = 80
+	}
 }

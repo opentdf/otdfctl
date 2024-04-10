@@ -8,26 +8,21 @@ import (
 	"github.com/charmbracelet/lipgloss/table"
 	"github.com/opentdf/otdfctl/internal/config"
 	"github.com/opentdf/otdfctl/pkg/cli"
+	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/opentdf/platform/protocol/go/common"
 	"github.com/spf13/cobra"
 )
 
-var devCmd = &cobra.Command{
-	Use:   "dev",
-	Short: "Development tools",
-}
+// devCmd is the command for playground-style development
+var devCmd = man.Docs.GetCommand("dev")
 
-var designCmd = &cobra.Command{
-	Use:   "design-system",
-	Short: "Show design system",
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("Design system\n")
-		fmt.Printf("=============\n\n")
+func dev_designSystem(cmd *cobra.Command, args []string) {
+	fmt.Printf("Design system\n")
+	fmt.Printf("=============\n\n")
 
-		printDSComponent("Table", renderDSTable())
+	printDSComponent("Table", renderDSTable())
 
-		printDSComponent("Messages", renderDSMessages())
-	},
+	printDSComponent("Messages", renderDSMessages())
 }
 
 func printDSComponent(title string, component string) {
@@ -123,6 +118,9 @@ func injectLabelFlags(cmd *cobra.Command, isUpdate bool) {
 }
 
 func init() {
-	rootCmd.AddCommand(devCmd)
-	devCmd.AddCommand(designCmd)
+	designCmd := man.Docs.GetCommand("dev/design-system",
+		man.WithRun(dev_designSystem),
+	)
+	devCmd.AddCommand(&designCmd.Command)
+	rootCmd.AddCommand(&devCmd.Command)
 }

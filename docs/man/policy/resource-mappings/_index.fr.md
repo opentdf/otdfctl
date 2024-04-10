@@ -1,7 +1,7 @@
 ---
-command: "resource-mappings"
-aliases: ["resource-mapping", "resource-encodings", "resource-encoding"]
-short: "Gérer les mappages de ressources"
+title: Gérer les mappages de ressources
+command:
+  name: resource-mappings
 ---
 
 # Gérer les mappages de ressources
