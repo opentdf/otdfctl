@@ -54,7 +54,7 @@ func dev_selectorsGen(cmd *cobra.Command, args []string) {
 
 	rows := [][]string{}
 	for _, r := range result {
-		rows = append(rows, []string{r.ExternalField, r.ExternalValue})
+		rows = append(rows, []string{r.ExternalSelectorValue, r.ExternalValue})
 	}
 
 	t := cli.NewTabular().Rows(rows...)
@@ -97,7 +97,7 @@ func dev_selectorsTest(cmd *cobra.Command, args []string) {
 
 	rows := [][]string{}
 	for _, r := range result {
-		rows = append(rows, []string{r.ExternalField, r.ExternalValue})
+		rows = append(rows, []string{r.ExternalSelectorValue, r.ExternalValue})
 	}
 
 	t := cli.NewTabular().Rows(rows...)

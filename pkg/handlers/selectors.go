@@ -69,7 +69,7 @@ func ProcessSubjectContext(subject interface{}, currSelector string, result []*p
 		reflect.Float64,
 		reflect.Complex64,
 		reflect.Complex128:
-		result = append(result, &policy.SubjectProperty{ExternalField: currSelector + "'", ExternalValue: fmt.Sprintf("%v", subject)})
+		result = append(result, &policy.SubjectProperty{ExternalSelectorValue: currSelector + "'", ExternalValue: fmt.Sprintf("%v", subject)})
 
 	default:
 		return nil, fmt.Errorf("unsupported type %v", currType.Kind())
@@ -136,7 +136,7 @@ func TestSubjectContext(subject interface{}, selectors []string) ([]*policy.Subj
 				// ignore error: we don't have a match but that is not an error state in this case
 			} else {
 				if v != nil {
-					found = append(found, &policy.SubjectProperty{ExternalField: "'" + s + "'", ExternalValue: fmt.Sprintf("%v", v)})
+					found = append(found, &policy.SubjectProperty{ExternalSelectorValue: "'" + s + "'", ExternalValue: fmt.Sprintf("%v", v)})
 				}
 			}
 		}
