@@ -13,6 +13,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// devCmd is the command for playground-style development
+var devCmd = man.Docs.GetCommand("dev")
+
 func dev_designSystem(cmd *cobra.Command, args []string) {
 	fmt.Printf("Design system\n")
 	fmt.Printf("=============\n\n")
@@ -115,13 +118,9 @@ func injectLabelFlags(cmd *cobra.Command, isUpdate bool) {
 }
 
 func init() {
-
 	designCmd := man.Docs.GetCommand("dev/design-system",
 		man.WithRun(dev_designSystem),
 	)
-
-	cmd := man.Docs.GetCommand("dev",
-		man.WithSubcommands(designCmd),
-	)
-	rootCmd.AddCommand(&cmd.Command)
+	devCmd.AddCommand(&designCmd.Command)
+	rootCmd.AddCommand(&devCmd.Command)
 }
