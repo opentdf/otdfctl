@@ -15,7 +15,7 @@ import (
 var (
 	selectors []string
 
-	dev_selectorsCmd = man.Docs.GetCommand("dev/selectors")
+	dev_selectorsCmd *cobra.Command
 )
 
 func dev_selectorsGen(cmd *cobra.Command, args []string) {
@@ -144,6 +144,10 @@ func init() {
 		testCmd.GetDocFlag("selector").Description,
 	)
 
-	dev_selectorsCmd.AddSubcommands(genCmd, testCmd)
-	devCmd.AddCommand(&dev_selectorsCmd.Command)
+	doc := man.Docs.GetCommand("dev/selectors",
+		man.WithSubcommands(genCmd, testCmd),
+	)
+
+	dev_selectorsCmd = &doc.Command
+	devCmd.AddCommand(dev_selectorsCmd)
 }

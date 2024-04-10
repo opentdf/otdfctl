@@ -14,11 +14,7 @@ import (
 )
 
 // devCmd is the command for playground-style development
-var devCmd = &cobra.Command{
-	Use:   man.Docs.GetDoc("dev").Use,
-	Short: man.Docs.GetDoc("dev").Short,
-	Long:  man.Docs.GetDoc("dev").Long,
-}
+var devCmd = man.Docs.GetCommand("dev")
 
 func dev_designSystem(cmd *cobra.Command, args []string) {
 	fmt.Printf("Design system\n")
@@ -126,5 +122,5 @@ func init() {
 		man.WithRun(dev_designSystem),
 	)
 	devCmd.AddCommand(&designCmd.Command)
-	rootCmd.AddCommand(devCmd)
+	rootCmd.AddCommand(&devCmd.Command)
 }
