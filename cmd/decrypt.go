@@ -34,14 +34,14 @@ func dev_tdfDecryptCmd(cmd *cobra.Command, args []string) {
 			cli.ExitWithError("Failed to write decrypted data to file", err)
 		}
 		defer f.Close()
-		_, err = f.WriteString(decrypted)
+		_, err = f.Write(decrypted.Bytes())
 		if err != nil {
 			cli.ExitWithError("Failed to write decrypted data to file", err)
 		}
 		return
 	}
 	// Print decrypted content to stdout
-	fmt.Print(decrypted)
+	fmt.Print(decrypted.String())
 }
 
 func init() {

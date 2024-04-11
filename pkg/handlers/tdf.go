@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"strings"
 
 	"github.com/opentdf/platform/sdk"
 )
@@ -32,23 +31,23 @@ func (h Handler) EncryptBytes(b []byte, values []string, out string) (*sdk.TDFOb
 	)
 }
 
-func (h Handler) DecryptTDF(filePath string) (string, error) {
+func (h Handler) DecryptTDF(filePath string) (*bytes.Buffer, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	defer file.Close()
 
 	// Decrypt the TDF
 	tdfreader, err := h.sdk.LoadTDF(file)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	buf := new(strings.Builder)
+	buf := new(bytes.Buffer)
 	_, err = io.Copy(buf, tdfreader)
 	if err != nil && err != io.EOF {
-		return "", err
+		return nil, err
 	}
-	return buf.String(), nil
+	return buf, nil
 }
