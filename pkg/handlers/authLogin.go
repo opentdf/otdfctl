@@ -15,9 +15,20 @@ const (
 	OTDFCTL_OIDC_TOKEN_KEY      = "OTDFCTL_OIDC_TOKEN"
 )
 
-// we're hardcoding this for now, but eventually it will be retrieved from the backend config
-// TODO udpate to use the wellknown endpoint for the platform (https://github.com/opentdf/platform/pull/296)
-const TOKEN_URL = "http://localhost:8888/auth/realms/opentdf/protocol/openid-connect/token"
+// TODO: get this dynamically from the platform via SDK or dialing directly
+const PlatformTokenUrl = "http://localhost:8888/auth/realms/opentdf/protocol/openid-connect/token"
+
+// var platformWellKnown wellknown.Well
+
+// func init() {
+// 	// get platform endpoint here
+// 	wellknownClient, err := wellknownconfiguration.NewWellKnownServiceClient()
+// 	// sdk, err := sdk.New("http://localhost:8080", sdk.WithInsecureConn())
+// 	if err != nil {
+// 		panic(fmt.Sprintf("failed to init sdk to get well-known configuration: %s", err.Error()))
+// 	}
+// 	wellKnown, err := sdk.WellKnown.GetWe
+// }
 
 // CheckTokenExpiration checks if an OIDC token has expired.
 // Returns true if the token is still valid, false otherwise.
@@ -41,7 +52,7 @@ func CheckTokenExpiration(tokenString string) (bool, error) {
 
 // GetOIDCTokenFromCache retrieves the OIDC token from the keyring.
 func GetOIDCTokenFromCache() (string, error) {
-	token, err := keyring.Get(TOKEN_URL, OTDFCTL_OIDC_TOKEN_KEY)
+	token, err := keyring.Get(PlatformTokenUrl, OTDFCTL_OIDC_TOKEN_KEY)
 	if err != nil {
 		return "", err
 	}
@@ -50,7 +61,7 @@ func GetOIDCTokenFromCache() (string, error) {
 
 // GetClientIDFromCache retrieves the client ID from the keyring.
 func GetClientIDFromCache() (string, error) {
-	clientId, err := keyring.Get(TOKEN_URL, OTDFCTL_CLIENT_ID_CACHE_KEY)
+	clientId, err := keyring.Get(PlatformTokenUrl, OTDFCTL_CLIENT_ID_CACHE_KEY)
 	if err != nil {
 		return "", err
 	}
@@ -60,7 +71,7 @@ func GetClientIDFromCache() (string, error) {
 // GetClientSecretFromCache retrieves the client secret from the keyring.
 func GetClientIdAndSecretFromCache() (string, string, error) {
 	// our clientSecret key, is our clientId, so we gotta grab that first
-	clientId, err := keyring.Get(TOKEN_URL, OTDFCTL_CLIENT_ID_CACHE_KEY)
+	clientId, err := keyring.Get(PlatformTokenUrl, OTDFCTL_CLIENT_ID_CACHE_KEY)
 	if err != nil {
 		// we failed to get the clientId for somereason
 		return "", "", err
@@ -70,7 +81,7 @@ func GetClientIdAndSecretFromCache() (string, string, error) {
 		return "", "", fmt.Errorf("no clientId found in keyring")
 	}
 
-	clientSecret, err := keyring.Get(TOKEN_URL, clientId)
+	clientSecret, err := keyring.Get(PlatformTokenUrl, clientId)
 	if err != nil {
 		return "", "", err
 	}
@@ -79,15 +90,15 @@ func GetClientIdAndSecretFromCache() (string, string, error) {
 
 // DEBUG_PrintKeyRingSecrets prints all the secrets in the keyring.
 func (h *Handler) DEBUG_PrintKeyRingSecrets() {
-	clientId, err := keyring.Get(TOKEN_URL, OTDFCTL_CLIENT_ID_CACHE_KEY)
+	clientId, err := keyring.Get(PlatformTokenUrl, OTDFCTL_CLIENT_ID_CACHE_KEY)
 	if err != nil {
 		fmt.Println("Failed to retrieve secret from keyring:", err)
 		return
 	}
 
 	// and our special clientId key, to grab the secret
-	secret, errSec := keyring.Get(TOKEN_URL, clientId)
-	OIDC_TOKEN, errToken := keyring.Get(TOKEN_URL, OTDFCTL_OIDC_TOKEN_KEY)
+	secret, errSec := keyring.Get(PlatformTokenUrl, clientId)
+	OIDC_TOKEN, errToken := keyring.Get(PlatformTokenUrl, OTDFCTL_OIDC_TOKEN_KEY)
 
 	if errSec != nil {
 		fmt.Println("Failed to retrieve secret from keyring:", err)
@@ -108,7 +119,7 @@ func (h *Handler) GetTokenWithClientCredentials(clientID, clientSecret, tokenURL
 	// did the user pass a custom tokenURL?
 	if tokenURL == "" {
 		// use the default hardcoded constant
-		tokenURL = TOKEN_URL
+		tokenURL = PlatformTokenUrl
 	}
 
 	config := clientcredentials.Config{

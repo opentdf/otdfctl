@@ -25,7 +25,7 @@ func auth_clientCredentials(cmd *cobra.Command, args []string) {
 	// check if we have a clientId in the keyring, if a null value is passed in
 	if clientId == "" {
 		fmt.Println("No clientId provided. Attempting to retrieve the default from keyring.")
-		retrievedClientID, errID := keyring.Get(handlers.TOKEN_URL, handlers.OTDFCTL_CLIENT_ID_CACHE_KEY)
+		retrievedClientID, errID := keyring.Get(handlers.PlatformTokenUrl, handlers.OTDFCTL_CLIENT_ID_CACHE_KEY)
 		if errID == nil {
 			clientId = retrievedClientID
 			fmt.Println(cli.SuccessMessage("Retrieved stored clientId from keyring"))
@@ -42,7 +42,7 @@ func auth_clientCredentials(cmd *cobra.Command, args []string) {
 
 	// check if we have a clientSecret in the keyring, if a null value is passed in
 	if clientSecret == "" {
-		retrievedSecret, krErr := keyring.Get(handlers.TOKEN_URL, clientId)
+		retrievedSecret, krErr := keyring.Get(handlers.PlatformTokenUrl, clientId)
 		if krErr == nil {
 			clientSecret = retrievedSecret
 			fmt.Println(cli.SuccessMessage("Retrieved stored clientSecret from keyring"))
@@ -56,8 +56,8 @@ func auth_clientCredentials(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	// for now we're hardcoding the TOKEN_URL as a constant at the top
-	_, err := h.GetTokenWithClientCredentials(clientId, clientSecret, handlers.TOKEN_URL, false)
+	// for now we're hardcoding the PlatformTokenUrl as a constant at the top
+	_, err := h.GetTokenWithClientCredentials(clientId, clientSecret, handlers.PlatformTokenUrl, false)
 	if err != nil {
 		errMsg = cli.ErrorMessage("An error occurred during login. Please check your credentials and try again.", nil)
 		fmt.Println(errMsg)
