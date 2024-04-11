@@ -6,6 +6,7 @@ require (
 	github.com/adrg/frontmatter v0.2.0
 	github.com/charmbracelet/bubbles v0.18.0
 	github.com/charmbracelet/bubbletea v0.25.0
+	github.com/charmbracelet/glamour v0.7.0
 	github.com/charmbracelet/huh v0.3.0
 	github.com/charmbracelet/lipgloss v0.10.0
 	github.com/creasty/defaults v1.7.0
@@ -19,6 +20,7 @@ require (
 	github.com/spf13/viper v1.18.2
 	github.com/zalando/go-keyring v0.2.4
 	golang.org/x/oauth2 v0.16.0
+	golang.org/x/term v0.18.0
 	google.golang.org/grpc v1.62.1
 )
 
@@ -31,7 +33,6 @@ require (
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/catppuccin/go v0.2.0 // indirect
-	github.com/charmbracelet/glamour v0.7.0 // indirect
 	github.com/containerd/console v1.0.4 // indirect
 	github.com/danieljoos/wincred v1.2.0 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.2.0 // indirect
@@ -84,7 +85,6 @@ require (
 	golang.org/x/net v0.23.0 // indirect
 	golang.org/x/sync v0.6.0 // indirect
 	golang.org/x/sys v0.18.0 // indirect
-	golang.org/x/term v0.18.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20240325203815-454cdb8f5daa // indirect

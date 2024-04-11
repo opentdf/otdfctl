@@ -2,8 +2,10 @@ package cli
 
 import (
 	"strconv"
+	"time"
 
 	"github.com/opentdf/otdfctl/pkg/handlers"
+	"github.com/opentdf/platform/protocol/go/common"
 	"github.com/opentdf/platform/protocol/go/policy"
 )
 
@@ -14,6 +16,7 @@ type SimpleAttribute struct {
 	Values    []string
 	Namespace string
 	Active    string
+	Metadata  map[string]string
 }
 
 type SimpleAttributeValue struct {
@@ -21,6 +24,27 @@ type SimpleAttributeValue struct {
 	FQN     string
 	Members []string
 	Active  string
+}
+
+func ConstructMetadata(m *common.Metadata) map[string]string {
+	metadata := map[string]string{
+		"Created At": m.CreatedAt.AsTime().Format(time.UnixDate),
+		"Updated At": m.UpdatedAt.AsTime().Format(time.UnixDate),
+	}
+
+	// if m.Labels != nil {
+	// 	for k, v := range m.Labels {
+	// 		metadata[k] = v
+	// 	}
+	// }
+	labels := []string{}
+	if m.Labels != nil {
+		for k, v := range m.Labels {
+			labels = append(labels, k+": "+v)
+		}
+	}
+	metadata["Labels"] = CommaSeparated(labels)
+	return metadata
 }
 
 func GetSimpleAttribute(a *policy.Attribute) SimpleAttribute {
@@ -36,6 +60,7 @@ func GetSimpleAttribute(a *policy.Attribute) SimpleAttribute {
 		Values:    values,
 		Namespace: a.GetNamespace().GetName(),
 		Active:    strconv.FormatBool(a.GetActive().GetValue()),
+		Metadata:  ConstructMetadata(a.GetMetadata()),
 	}
 }
 

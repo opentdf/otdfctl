@@ -74,6 +74,9 @@ func policy_getAttribute(cmd *cobra.Command, args []string) {
 			{"Rule", a.Rule},
 			{"Values", cli.CommaSeparated(a.Values)},
 			{"Namespace", a.Namespace},
+			{"Metadata.Labels", a.Metadata["Labels"]},
+			{"Metadata.CreatedAt", a.Metadata["Created At"]},
+			{"Metadata.UpdatedAt", a.Metadata["Updated At"]},
 		}...)
 	HandleSuccess(cmd, a.Id, t, attr)
 }
