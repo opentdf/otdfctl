@@ -54,10 +54,6 @@ func policy_getSubjectMapping(cmd *cobra.Command, args []string) {
 		{"Metadata.UpdatedAt", metadata["Updated At"]},
 	}
 
-	if mdRows := getMetadataRows(mapping.Metadata); mdRows != nil {
-		rows = append(rows, mdRows...)
-	}
-
 	t := cli.NewTabular().Rows(rows...)
 	HandleSuccess(cmd, mapping.Id, t, mapping)
 }

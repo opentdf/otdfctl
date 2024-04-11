@@ -87,7 +87,7 @@ func policy_getSubjectConditionSet(cmd *cobra.Command, args []string) {
 	if err != nil {
 		cli.ExitWithError(fmt.Sprintf("Subject Condition Set with id %s not found", id), err)
 	}
-
+	metadata := cli.ConstructMetadata(scs.Metadata)
 	var subjectSetsJSON []byte
 	if subjectSetsJSON, err = json.Marshal(scs.SubjectSets); err != nil {
 		cli.ExitWithError("Error marshalling subject condition set", err)
@@ -96,10 +96,9 @@ func policy_getSubjectConditionSet(cmd *cobra.Command, args []string) {
 	rows := [][]string{
 		{"Id", scs.Id},
 		{"SubjectSets", string(subjectSetsJSON)},
-	}
-
-	if mdRows := getMetadataRows(scs.Metadata); mdRows != nil {
-		rows = append(rows, mdRows...)
+		{"Metadata.Labels", metadata["Labels"]},
+		{"Metadata.CreatedAt", metadata["Created At"]},
+		{"Metadata.UpdatedAt", metadata["Updated At"]},
 	}
 
 	t := cli.NewTabular().Rows(rows...)
