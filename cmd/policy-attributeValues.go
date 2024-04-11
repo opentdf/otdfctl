@@ -334,10 +334,14 @@ func init() {
 }
 
 func handleValueSuccess(cmd *cobra.Command, v *policy.Value) {
+	metadata := cli.ConstructMetadata(v.GetMetadata())
 	rows := [][]string{
 		{"Id", v.Id},
 		{"FQN", v.Fqn},
 		{"Value", v.Value},
+		{"Metadata.Labels", metadata["Labels"]},
+		{"Metadata.CreatedAt", metadata["Created At"]},
+		{"Metadata.UpdatedAt", metadata["Updated At"]},
 	}
 	members := v.GetMembers()
 	if len(members) > 0 {
