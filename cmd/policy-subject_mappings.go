@@ -31,7 +31,7 @@ func policy_getSubjectMapping(cmd *cobra.Command, args []string) {
 		errMsg := fmt.Sprintf("Failed to find subject mapping (%s)", id)
 		cli.ExitWithError(errMsg, err)
 	}
-
+	metadata := cli.ConstructMetadata(mapping.Metadata)
 	var actionsJSON []byte
 	if actionsJSON, err = json.Marshal(mapping.Actions); err != nil {
 		cli.ExitWithError("Error marshalling subject mapping actions", err)
@@ -49,6 +49,9 @@ func policy_getSubjectMapping(cmd *cobra.Command, args []string) {
 		{"Actions", string(actionsJSON)},
 		{"Subject Condition Set: Id", mapping.SubjectConditionSet.Id},
 		{"Subject Condition Set", string(subjectSetsJSON)},
+		{"Metadata.Labels", metadata["Labels"]},
+		{"Metadata.CreatedAt", metadata["Created At"]},
+		{"Metadata.UpdatedAt", metadata["Updated At"]},
 	}
 
 	if mdRows := getMetadataRows(mapping.Metadata); mdRows != nil {
