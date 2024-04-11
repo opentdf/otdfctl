@@ -32,11 +32,6 @@ func ConstructMetadata(m *common.Metadata) map[string]string {
 		"Updated At": m.UpdatedAt.AsTime().Format(time.UnixDate),
 	}
 
-	// if m.Labels != nil {
-	// 	for k, v := range m.Labels {
-	// 		metadata[k] = v
-	// 	}
-	// }
 	labels := []string{}
 	if m.Labels != nil {
 		for k, v := range m.Labels {

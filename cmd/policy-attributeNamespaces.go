@@ -23,6 +23,7 @@ func policy_getAttributeNamespace(cmd *cobra.Command, args []string) {
 	id := flagHelper.GetRequiredString("id")
 
 	ns, err := h.GetNamespace(id)
+	metadata := cli.ConstructMetadata(ns.Metadata)
 	if err != nil {
 		errMsg := fmt.Sprintf("Failed to get namespace (%s)", id)
 		cli.ExitWithError(errMsg, err)
@@ -32,6 +33,9 @@ func policy_getAttributeNamespace(cmd *cobra.Command, args []string) {
 		Rows([][]string{
 			{"Id", ns.Id},
 			{"Name", ns.Name},
+			{"Metadata.Labels", metadata["Labels"]},
+			{"Metadata.CreatedAt", metadata["Created At"]},
+			{"Metadata.UpdatedAt", metadata["Updated At"]},
 		}...)
 	HandleSuccess(cmd, ns.Id, t, ns)
 }
