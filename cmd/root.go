@@ -9,6 +9,7 @@ import (
 
 	"github.com/opentdf/otdfctl/internal/config"
 	"github.com/opentdf/otdfctl/pkg/man"
+	"github.com/spf13/cobra"
 )
 
 var (
@@ -48,6 +49,7 @@ func init() {
 		doc.GetDocFlag("log-level").Default,
 		doc.GetDocFlag("log-level").Description,
 	)
+	rootCmd.AddGroup(&cobra.Group{ID: "tdf"})
 
 	cfg, err := config.LoadConfig("otdfctl")
 	if err != nil {

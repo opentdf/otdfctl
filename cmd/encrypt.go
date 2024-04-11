@@ -102,6 +102,7 @@ func init() {
 		[]string{},
 		encryptCmd.GetDocFlag("attr").Description,
 	)
+	encryptCmd.Command.GroupID = "tdf"
 
 	rootCmd.AddCommand(&encryptCmd.Command)
 }

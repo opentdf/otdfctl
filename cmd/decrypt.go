@@ -60,6 +60,7 @@ func init() {
 		decryptCmd.GetDocFlag("output").Default,
 		decryptCmd.GetDocFlag("output").Description,
 	)
+	decryptCmd.Command.GroupID = "tdf"
 
 	rootCmd.AddCommand(&decryptCmd.Command)
 }
