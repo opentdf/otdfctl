@@ -24,7 +24,7 @@ func New(platformEndpoint string) (Handler, error) {
 		return Handler{}, err
 	}
 
-	sdk, err := sdk.New(platformEndpoint, sdk.WithClientCredentials(clientId, clientSecret, scopes), sdk.WithTokenEndpoint(PlatformTokenUrl), sdk.WithInsecureConn())
+	sdk, err := sdk.New(platformEndpoint, sdk.WithClientCredentials(clientId, clientSecret, scopes), sdk.WithTokenEndpoint(TOKEN_URL), sdk.WithInsecureConn())
 	if err != nil {
 		return Handler{}, err
 	}
