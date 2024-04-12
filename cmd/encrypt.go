@@ -38,9 +38,20 @@ func dev_tdfEncryptCmd(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	if filePath == "" && text == "" && len(piped) == 0 {
+	inputCount := 0
+	if filePath != "" {
+		inputCount++
+	}
+	if text != "" {
+		inputCount++
+	}
+	if len(piped) > 0 {
+		inputCount++
+	}
+
+	if inputCount == 0 {
 		cli.ExitWithError("Must provide ONE of the following to encrypt: [text, file, stdin input]", nil)
-	} else if filePath != "" && text != "" && len(piped) > 0 {
+	} else if inputCount > 0 {
 		cli.ExitWithError("Must provide ONLY ONE of the following to encrypt: [text, file, stdin input]", nil)
 	}
 
