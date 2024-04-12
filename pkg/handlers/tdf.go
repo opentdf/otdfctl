@@ -19,10 +19,9 @@ func (h Handler) EncryptBytes(b []byte, values []string, out string) (*sdk.TDFOb
 	}
 	defer tdfFile.Close()
 
-	// TODO: validate values are FQNs and add to TDF
-
+	// TODO: validate values are FQNs or return an error
 	return h.sdk.CreateTDF(tdfFile, bytes.NewReader(b),
-		// sdk.WithDataAttributes(values...),
+		sdk.WithDataAttributes(values...),
 		sdk.WithKasInformation(sdk.KASInfo{
 			URL:       fmt.Sprintf("http://%s", h.platformEndpoint),
 			PublicKey: "",
