@@ -31,7 +31,6 @@ func policy_getSubjectMapping(cmd *cobra.Command, args []string) {
 		errMsg := fmt.Sprintf("Failed to find subject mapping (%s)", id)
 		cli.ExitWithError(errMsg, err)
 	}
-	metadata := cli.ConstructMetadata(mapping.Metadata)
 	var actionsJSON []byte
 	if actionsJSON, err = json.Marshal(mapping.Actions); err != nil {
 		cli.ExitWithError("Error marshalling subject mapping actions", err)
@@ -49,9 +48,9 @@ func policy_getSubjectMapping(cmd *cobra.Command, args []string) {
 		{"Actions", string(actionsJSON)},
 		{"Subject Condition Set: Id", mapping.SubjectConditionSet.Id},
 		{"Subject Condition Set", string(subjectSetsJSON)},
-		{"Metadata.Labels", metadata["Labels"]},
-		{"Metadata.CreatedAt", metadata["Created At"]},
-		{"Metadata.UpdatedAt", metadata["Updated At"]},
+	}
+	if mdRows := getMetadataRows(mapping.Metadata); mdRows != nil {
+		rows = append(rows, mdRows...)
 	}
 
 	t := cli.NewTabular().Rows(rows...)
@@ -151,7 +150,6 @@ func policy_createSubjectMapping(cmd *cobra.Command, args []string) {
 			cli.ExitWithError("Error marshalling subject condition set", err)
 		}
 	}
-	metadata := cli.ConstructMetadata(mapping.Metadata)
 
 	rows := [][]string{
 		{"Id", mapping.Id},
@@ -160,9 +158,6 @@ func policy_createSubjectMapping(cmd *cobra.Command, args []string) {
 		{"Subject Condition Set: Id", mapping.SubjectConditionSet.Id},
 		{"Subject Condition Set", string(subjectSetsJSON)},
 		{"Attribute Value Id", mapping.AttributeValue.Id},
-		{"Metadata.Labels", metadata["Labels"]},
-		{"Metadata.CreatedAt", metadata["Created At"]},
-		{"Metadata.UpdatedAt", metadata["Updated At"]},
 	}
 
 	if mdRows := getMetadataRows(mapping.Metadata); mdRows != nil {
@@ -193,13 +188,11 @@ func policy_deleteSubjectMapping(cmd *cobra.Command, args []string) {
 		errMsg := fmt.Sprintf("Failed to delete subject mapping (%s)", id)
 		cli.ExitWithError(errMsg, err)
 	}
-	metadata := cli.ConstructMetadata(deleted.Metadata)
-	t := cli.NewTabular().Rows([][]string{
-		{"Id", sm.Id},
-		{"Metadata.Labels", metadata["Labels"]},
-		{"Metadata.CreatedAt", metadata["Created At"]},
-		{"Metadata.UpdatedAt", metadata["Updated At"]},
-	}...)
+	rows := [][]string{{"Id", sm.Id}}
+	if mdRows := getMetadataRows(deleted.Metadata); mdRows != nil {
+		rows = append(rows, mdRows...)
+	}
+	t := cli.NewTabular().Rows(rows...)
 	HandleSuccess(cmd, id, t, deleted)
 }
 
@@ -234,13 +227,11 @@ func policy_updateSubjectMapping(cmd *cobra.Command, args []string) {
 	if err != nil {
 		cli.ExitWithError("Failed to update subject mapping", err)
 	}
-	metadata := cli.ConstructMetadata(updated.Metadata)
-	t := cli.NewTabular().Rows([][]string{
-		{"Id", id},
-		{"Metadata.Labels", metadata["Labels"]},
-		{"Metadata.CreatedAt", metadata["Created At"]},
-		{"Metadata.UpdatedAt", metadata["Updated At"]},
-	}...)
+	rows := [][]string{{"Id", id}}
+	if mdRows := getMetadataRows(updated.Metadata); mdRows != nil {
+		rows = append(rows, mdRows...)
+	}
+	t := cli.NewTabular().Rows(rows...)
 
 	HandleSuccess(cmd, id, t, updated)
 }

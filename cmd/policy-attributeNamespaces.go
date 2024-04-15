@@ -23,20 +23,19 @@ func policy_getAttributeNamespace(cmd *cobra.Command, args []string) {
 	id := flagHelper.GetRequiredString("id")
 
 	ns, err := h.GetNamespace(id)
-	metadata := cli.ConstructMetadata(ns.Metadata)
 	if err != nil {
 		errMsg := fmt.Sprintf("Failed to get namespace (%s)", id)
 		cli.ExitWithError(errMsg, err)
 	}
-
+	rows := [][]string{
+		{"Id", ns.Id},
+		{"Name", ns.Name},
+	}
+	if mdRows := getMetadataRows(ns.Metadata); mdRows != nil {
+		rows = append(rows, mdRows...)
+	}
 	t := cli.NewTabular().
-		Rows([][]string{
-			{"Id", ns.Id},
-			{"Name", ns.Name},
-			{"Metadata.Labels", metadata["Labels"]},
-			{"Metadata.CreatedAt", metadata["Created At"]},
-			{"Metadata.UpdatedAt", metadata["Updated At"]},
-		}...)
+		Rows(rows...)
 	HandleSuccess(cmd, ns.Id, t, ns)
 }
 
@@ -77,15 +76,15 @@ func policy_createAttributeNamespace(cmd *cobra.Command, args []string) {
 	if err != nil {
 		cli.ExitWithError("Failed to create namespace", err)
 	}
-	metadata := cli.ConstructMetadata(created.Metadata)
-
-	t := cli.NewTabular().Rows([][]string{
+	rows := [][]string{
 		{"Name", name},
 		{"Id", created.Id},
-		{"Metadata.Labels", metadata["Labels"]},
-		{"Metadata.CreatedAt", metadata["Created At"]},
-		{"Metadata.UpdatedAt", metadata["Updated At"]},
-	}...)
+	}
+	if mdRows := getMetadataRows(created.Metadata); mdRows != nil {
+		rows = append(rows, mdRows...)
+	}
+
+	t := cli.NewTabular().Rows(rows...)
 	HandleSuccess(cmd, created.Id, t, created)
 }
 
@@ -109,16 +108,15 @@ func policy_deactivateAttributeNamespace(cmd *cobra.Command, args []string) {
 		errMsg := fmt.Sprintf("Failed to deactivate namespace (%s)", id)
 		cli.ExitWithError(errMsg, err)
 	}
-	metadata := cli.ConstructMetadata(d.Metadata)
-
+	rows := [][]string{
+		{"Id", ns.Id},
+		{"Name", ns.Name},
+	}
+	if mdRows := getMetadataRows(d.Metadata); mdRows != nil {
+		rows = append(rows, mdRows...)
+	}
 	t := cli.NewTabular().
-		Rows([][]string{
-			{"Id", ns.Id},
-			{"Name", ns.Name},
-			{"Metadata.Labels", metadata["Labels"]},
-			{"Metadata.CreatedAt", metadata["Created At"]},
-			{"Metadata.UpdatedAt", metadata["Updated At"]},
-		}...)
+		Rows(rows...)
 	HandleSuccess(cmd, ns.Id, t, d)
 }
 
@@ -138,15 +136,15 @@ func policy_updateAttributeNamespace(cmd *cobra.Command, args []string) {
 	if err != nil {
 		cli.ExitWithError(fmt.Sprintf("Failed to update namespace (%s)", id), err)
 	}
-	metadata := cli.ConstructMetadata(ns.Metadata)
-
-	t := cli.NewTabular().Rows([][]string{
+	rows := [][]string{
 		{"Id", ns.Id},
 		{"Name", ns.Name},
-		{"Metadata.Labels", metadata["Labels"]},
-		{"Metadata.CreatedAt", metadata["Created At"]},
-		{"Metadata.UpdatedAt", metadata["Updated At"]},
-	}...)
+	}
+	if mdRows := getMetadataRows(ns.Metadata); mdRows != nil {
+		rows = append(rows, mdRows...)
+	}
+
+	t := cli.NewTabular().Rows(rows...)
 	HandleSuccess(cmd, id, t, ns)
 }
 
