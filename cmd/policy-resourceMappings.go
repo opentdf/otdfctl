@@ -32,12 +32,16 @@ func policy_createResourceMapping(cmd *cobra.Command, args []string) {
 	if err != nil {
 		cli.ExitWithError("Failed to create resource mapping", err)
 	}
+	metadata := cli.ConstructMetadata(resourceMapping.Metadata)
 
 	t := cli.NewTabular().Rows([][]string{
 		{"Id", resourceMapping.Id},
 		{"Attribute Value Id", resourceMapping.AttributeValue.Id},
 		{"Attribute Value", resourceMapping.AttributeValue.Value},
 		{"Terms", strings.Join(resourceMapping.Terms, ", ")},
+		{"Metadata.Labels", metadata["Labels"]},
+		{"Metadata.CreatedAt", metadata["Created At"]},
+		{"Metadata.UpdatedAt", metadata["Updated At"]},
 	}...)
 	HandleSuccess(cmd, resourceMapping.Id, t, resourceMapping)
 }

@@ -74,10 +74,14 @@ func policy_createAttributeNamespace(cmd *cobra.Command, args []string) {
 	if err != nil {
 		cli.ExitWithError("Failed to create namespace", err)
 	}
+	metadata := cli.ConstructMetadata(created.Metadata)
 
 	t := cli.NewTabular().Rows([][]string{
 		{"Name", name},
 		{"Id", created.Id},
+		{"Metadata.Labels", metadata["Labels"]},
+		{"Metadata.CreatedAt", metadata["Created At"]},
+		{"Metadata.UpdatedAt", metadata["Updated At"]},
 	}...)
 	HandleSuccess(cmd, created.Id, t, created)
 }

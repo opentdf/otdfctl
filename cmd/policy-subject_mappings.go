@@ -148,6 +148,7 @@ func policy_createSubjectMapping(cmd *cobra.Command, args []string) {
 			cli.ExitWithError("Error marshalling subject condition set", err)
 		}
 	}
+	metadata := cli.ConstructMetadata(mapping.Metadata)
 
 	rows := [][]string{
 		{"Id", mapping.Id},
@@ -156,6 +157,9 @@ func policy_createSubjectMapping(cmd *cobra.Command, args []string) {
 		{"Subject Condition Set: Id", mapping.SubjectConditionSet.Id},
 		{"Subject Condition Set", string(subjectSetsJSON)},
 		{"Attribute Value Id", mapping.AttributeValue.Id},
+		{"Metadata.Labels", metadata["Labels"]},
+		{"Metadata.CreatedAt", metadata["Created At"]},
+		{"Metadata.UpdatedAt", metadata["Updated At"]},
 	}
 
 	if mdRows := getMetadataRows(mapping.Metadata); mdRows != nil {

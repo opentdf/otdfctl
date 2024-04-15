@@ -34,6 +34,7 @@ func policy_createAttribute(cmd *cobra.Command, args []string) {
 	if err != nil {
 		cli.ExitWithError("Failed to create attribute", err)
 	}
+	metadata := cli.ConstructMetadata(attr.Metadata)
 
 	a := cli.GetSimpleAttribute(&policy.Attribute{
 		Id:        attr.Id,
@@ -48,6 +49,9 @@ func policy_createAttribute(cmd *cobra.Command, args []string) {
 		{"Rule", a.Rule},
 		{"Values", cli.CommaSeparated(a.Values)},
 		{"Namespace", a.Namespace},
+		{"Metadata.Labels", metadata["Labels"]},
+		{"Metadata.CreatedAt", metadata["Created At"]},
+		{"Metadata.UpdatedAt", metadata["Updated At"]},
 	}...)
 
 	HandleSuccess(cmd, a.Id, t, attr)
