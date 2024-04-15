@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/charmbracelet/lipgloss/table"
 	"github.com/opentdf/otdfctl/internal/config"
@@ -47,8 +48,8 @@ func renderDSMessages() string {
 func getMetadataRows(m *common.Metadata) [][]string {
 	if m != nil {
 		metadataRows := [][]string{
-			{"Created At", m.CreatedAt.String()},
-			{"Updated At", m.UpdatedAt.String()},
+			{"Created At", m.CreatedAt.AsTime().Format(time.UnixDate)},
+			{"Updated At", m.UpdatedAt.AsTime().Format(time.UnixDate)},
 		}
 		if m.Labels != nil {
 			labelRows := []string{}
