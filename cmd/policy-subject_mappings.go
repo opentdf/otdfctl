@@ -190,7 +190,14 @@ func policy_deleteSubjectMapping(cmd *cobra.Command, args []string) {
 		errMsg := fmt.Sprintf("Failed to delete subject mapping (%s)", id)
 		cli.ExitWithError(errMsg, err)
 	}
-	HandleSuccess(cmd, id, nil, deleted)
+	metadata := cli.ConstructMetadata(deleted.Metadata)
+	t := cli.NewTabular().Rows([][]string{
+		{"Id", sm.Id},
+		{"Metadata.Labels", metadata["Labels"]},
+		{"Metadata.CreatedAt", metadata["Created At"]},
+		{"Metadata.UpdatedAt", metadata["Updated At"]},
+	}...)
+	HandleSuccess(cmd, id, t, deleted)
 }
 
 func policy_updateSubjectMapping(cmd *cobra.Command, args []string) {
@@ -224,8 +231,15 @@ func policy_updateSubjectMapping(cmd *cobra.Command, args []string) {
 	if err != nil {
 		cli.ExitWithError("Failed to update subject mapping", err)
 	}
+	metadata := cli.ConstructMetadata(updated.Metadata)
+	t := cli.NewTabular().Rows([][]string{
+		{"Id", id},
+		{"Metadata.Labels", metadata["Labels"]},
+		{"Metadata.CreatedAt", metadata["Created At"]},
+		{"Metadata.UpdatedAt", metadata["Updated At"]},
+	}...)
 
-	HandleSuccess(cmd, id, nil, updated)
+	HandleSuccess(cmd, id, t, updated)
 }
 
 func getSubjectMappingMappingActionEnumFromChoice(readable string) policy.Action_StandardAction {

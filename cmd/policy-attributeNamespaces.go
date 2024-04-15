@@ -106,11 +106,15 @@ func policy_deactivateAttributeNamespace(cmd *cobra.Command, args []string) {
 		errMsg := fmt.Sprintf("Failed to deactivate namespace (%s)", id)
 		cli.ExitWithError(errMsg, err)
 	}
+	metadata := cli.ConstructMetadata(d.Metadata)
 
 	t := cli.NewTabular().
 		Rows([][]string{
 			{"Id", ns.Id},
 			{"Name", ns.Name},
+			{"Metadata.Labels", metadata["Labels"]},
+			{"Metadata.CreatedAt", metadata["Created At"]},
+			{"Metadata.UpdatedAt", metadata["Updated At"]},
 		}...)
 	HandleSuccess(cmd, ns.Id, t, d)
 }
@@ -131,10 +135,14 @@ func policy_updateAttributeNamespace(cmd *cobra.Command, args []string) {
 	if err != nil {
 		cli.ExitWithError(fmt.Sprintf("Failed to update namespace (%s)", id), err)
 	}
+	metadata := cli.ConstructMetadata(ns.Metadata)
 
 	t := cli.NewTabular().Rows([][]string{
 		{"Id", ns.Id},
 		{"Name", ns.Name},
+		{"Metadata.Labels", metadata["Labels"]},
+		{"Metadata.CreatedAt", metadata["Created At"]},
+		{"Metadata.UpdatedAt", metadata["Updated At"]},
 	}...)
 	HandleSuccess(cmd, id, t, ns)
 }

@@ -34,7 +34,6 @@ func policy_createAttribute(cmd *cobra.Command, args []string) {
 	if err != nil {
 		cli.ExitWithError("Failed to create attribute", err)
 	}
-	metadata := cli.ConstructMetadata(attr.Metadata)
 
 	a := cli.GetSimpleAttribute(&policy.Attribute{
 		Id:        attr.Id,
@@ -49,9 +48,9 @@ func policy_createAttribute(cmd *cobra.Command, args []string) {
 		{"Rule", a.Rule},
 		{"Values", cli.CommaSeparated(a.Values)},
 		{"Namespace", a.Namespace},
-		{"Metadata.Labels", metadata["Labels"]},
-		{"Metadata.CreatedAt", metadata["Created At"]},
-		{"Metadata.UpdatedAt", metadata["Updated At"]},
+		{"Metadata.Labels", a.Metadata["Labels"]},
+		{"Metadata.CreatedAt", a.Metadata["Created At"]},
+		{"Metadata.UpdatedAt", a.Metadata["Updated At"]},
 	}...)
 
 	HandleSuccess(cmd, a.Id, t, attr)
@@ -139,6 +138,9 @@ func policy_deactivateAttribute(cmd *cobra.Command, args []string) {
 			{"Rule", a.Rule},
 			{"Values", cli.CommaSeparated(a.Values)},
 			{"Namespace", a.Namespace},
+			{"Metadata.Labels", a.Metadata["Labels"]},
+			{"Metadata.CreatedAt", a.Metadata["Created At"]},
+			{"Metadata.UpdatedAt", a.Metadata["Updated At"]},
 		}...)
 	HandleSuccess(cmd, a.Id, t, a)
 }
@@ -154,7 +156,16 @@ func policy_updateAttribute(cmd *cobra.Command, args []string) {
 	if a, err := h.UpdateAttribute(id, getMetadataMutable(labels), getMetadataUpdateBehavior()); err != nil {
 		cli.ExitWithError(fmt.Sprintf("Failed to update attribute (%s)", id), err)
 	} else {
-		HandleSuccess(cmd, id, nil, a)
+		metadata := cli.ConstructMetadata(a.Metadata)
+		t := cli.NewTabular().
+			Rows([][]string{
+				{"Id", a.Id},
+				{"Name", a.Name},
+				{"Metadata.Labels", metadata["Labels"]},
+				{"Metadata.CreatedAt", metadata["Created At"]},
+				{"Metadata.UpdatedAt", metadata["Updated At"]},
+			}...)
+		HandleSuccess(cmd, id, t, a)
 	}
 }
 
