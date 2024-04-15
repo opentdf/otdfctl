@@ -4,7 +4,10 @@ title: Manage policy
 command:
   name: policy
   aliases: []
-  flags: []
+  flags:
+    - name: json
+      description: output single command in JSON (overrides configured output format)
+      default: 'false'
 ---
 
 Manage policies within the platform.
