@@ -46,16 +46,13 @@ func renderDSMessages() string {
 
 func getMetadataRows(m *common.Metadata) [][]string {
 	if m != nil {
+		metadata := cli.ConstructMetadata(m)
 		metadataRows := [][]string{
-			{"Created At", m.CreatedAt.String()},
-			{"Updated At", m.UpdatedAt.String()},
+			{"Created At", metadata["Created At"]},
+			{"Updated At", metadata["Updated At"]},
 		}
 		if m.Labels != nil {
-			labelRows := []string{}
-			for k, v := range m.Labels {
-				labelRows = append(labelRows, fmt.Sprintf("%s: %s", k, v))
-			}
-			metadataRows = append(metadataRows, []string{"Labels", cli.CommaSeparated(labelRows)})
+			metadataRows = append(metadataRows, []string{"Labels", metadata["Labels"]})
 		}
 		return metadataRows
 	}

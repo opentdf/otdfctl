@@ -42,13 +42,17 @@ func policy_createAttribute(cmd *cobra.Command, args []string) {
 		Values:    attr.Values,
 		Namespace: attr.Namespace,
 	})
-
-	t := cli.NewTabular().Rows([][]string{
+	rows := [][]string{
 		{"Name", a.Name},
 		{"Rule", a.Rule},
 		{"Values", cli.CommaSeparated(a.Values)},
 		{"Namespace", a.Namespace},
-	}...)
+	}
+	if mdRows := getMetadataRows(attr.Metadata); mdRows != nil {
+		rows = append(rows, mdRows...)
+	}
+
+	t := cli.NewTabular().Rows(rows...)
 
 	HandleSuccess(cmd, a.Id, t, attr)
 }
@@ -67,14 +71,18 @@ func policy_getAttribute(cmd *cobra.Command, args []string) {
 	}
 
 	a := cli.GetSimpleAttribute(attr)
+	rows := [][]string{
+		{"Id", a.Id},
+		{"Name", a.Name},
+		{"Rule", a.Rule},
+		{"Values", cli.CommaSeparated(a.Values)},
+		{"Namespace", a.Namespace},
+	}
+	if mdRows := getMetadataRows(attr.Metadata); mdRows != nil {
+		rows = append(rows, mdRows...)
+	}
 	t := cli.NewTabular().
-		Rows([][]string{
-			{"Id", a.Id},
-			{"Name", a.Name},
-			{"Rule", a.Rule},
-			{"Values", cli.CommaSeparated(a.Values)},
-			{"Namespace", a.Namespace},
-		}...)
+		Rows(rows...)
 	HandleSuccess(cmd, a.Id, t, attr)
 }
 
@@ -89,7 +97,7 @@ func policy_listAttributes(cmd *cobra.Command, args []string) {
 	}
 
 	t := cli.NewTable()
-	t.Headers("Id", "Namespace", "Name", "Rule", "Values", "Active")
+	t.Headers("Id", "Namespace", "Name", "Rule", "Values", "Active", "Labels", "Created At", "Updated At")
 	for _, attr := range attrs {
 		a := cli.GetSimpleAttribute(attr)
 		t.Row(
@@ -99,6 +107,9 @@ func policy_listAttributes(cmd *cobra.Command, args []string) {
 			a.Rule,
 			cli.CommaSeparated(a.Values),
 			a.Active,
+			a.Metadata["Labels"],
+			a.Metadata["Created At"],
+			a.Metadata["Updated At"],
 		)
 	}
 	HandleSuccess(cmd, "", t, attrs)
@@ -126,13 +137,17 @@ func policy_deactivateAttribute(cmd *cobra.Command, args []string) {
 	}
 
 	a := cli.GetSimpleAttribute(attr)
+	rows := [][]string{
+		{"Name", a.Name},
+		{"Rule", a.Rule},
+		{"Values", cli.CommaSeparated(a.Values)},
+		{"Namespace", a.Namespace},
+	}
+	if mdRows := getMetadataRows(attr.Metadata); mdRows != nil {
+		rows = append(rows, mdRows...)
+	}
 	t := cli.NewTabular().
-		Rows([][]string{
-			{"Name", a.Name},
-			{"Rule", a.Rule},
-			{"Values", cli.CommaSeparated(a.Values)},
-			{"Namespace", a.Namespace},
-		}...)
+		Rows(rows...)
 	HandleSuccess(cmd, a.Id, t, a)
 }
 
@@ -147,7 +162,16 @@ func policy_updateAttribute(cmd *cobra.Command, args []string) {
 	if a, err := h.UpdateAttribute(id, getMetadataMutable(labels), getMetadataUpdateBehavior()); err != nil {
 		cli.ExitWithError(fmt.Sprintf("Failed to update attribute (%s)", id), err)
 	} else {
-		HandleSuccess(cmd, id, nil, a)
+		rows := [][]string{
+			{"Id", a.Id},
+			{"Name", a.Name},
+		}
+		if mdRows := getMetadataRows(a.Metadata); mdRows != nil {
+			rows = append(rows, mdRows...)
+		}
+		t := cli.NewTabular().
+			Rows(rows...)
+		HandleSuccess(cmd, id, t, a)
 	}
 }
 

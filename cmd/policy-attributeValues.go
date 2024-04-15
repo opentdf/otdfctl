@@ -64,7 +64,7 @@ func policy_listAttributeValue(cmd *cobra.Command, args []string) {
 		cli.ExitWithError("Failed to list attribute values", err)
 	}
 	t := cli.NewTable()
-	t.Headers("Id", "Fqn", "Members", "Active")
+	t.Headers("Id", "Fqn", "Members", "Active", "Labels", "Created At", "Updated At")
 	for _, val := range vals {
 		v := cli.GetSimpleAttributeValue(val)
 		t.Row(
@@ -72,6 +72,9 @@ func policy_listAttributeValue(cmd *cobra.Command, args []string) {
 			v.FQN,
 			cli.CommaSeparated(v.Members),
 			v.Active,
+			v.Metadata["Labels"],
+			v.Metadata["Created At"],
+			v.Metadata["Updated At"],
 		)
 	}
 	HandleSuccess(cmd, "", t, vals)
@@ -338,6 +341,9 @@ func handleValueSuccess(cmd *cobra.Command, v *policy.Value) {
 		{"Id", v.Id},
 		{"FQN", v.Fqn},
 		{"Value", v.Value},
+	}
+	if mdRows := getMetadataRows(v.Metadata); mdRows != nil {
+		rows = append(rows, mdRows...)
 	}
 	members := v.GetMembers()
 	if len(members) > 0 {
