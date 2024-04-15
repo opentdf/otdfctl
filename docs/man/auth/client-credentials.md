@@ -1,15 +1,15 @@
 ---
-title: Set up client credentials
+title: Authenticate to the platform with the client-credentials flow
 
 command:
   name: client-credentials
   flags:
-    - name: clientId
+    - name: client-id
       description: Client ID
       required: true
-    - name: clientSecret
+    - name: client-secret
       description: Client secret
 ---
 
-Allows the user to login in via clientId and clientSecret. This will subsequently be stored in the
+Allows the user to login in via client ID and secret. This will subsequently be stored in the
 OS-specific keychain by default.

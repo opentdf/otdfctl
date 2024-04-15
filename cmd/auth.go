@@ -15,8 +15,8 @@ func auth_clientCredentials(cmd *cobra.Command, args []string) {
 	defer h.Close()
 
 	flagHelper := cli.NewFlagHelper(cmd)
-	clientId := flagHelper.GetOptionalString("clientId")
-	clientSecret := flagHelper.GetOptionalString("clientSecret")
+	clientId := flagHelper.GetOptionalString("client-id")
+	clientSecret := flagHelper.GetOptionalString("client-secret")
 	// noCache := flagHelper.GetOptionalString("noCache")
 	errMsg := fmt.Sprintf("Please provide required flag: (%s)", "Param Not Found")
 
@@ -24,7 +24,7 @@ func auth_clientCredentials(cmd *cobra.Command, args []string) {
 
 	// check if we have a clientId in the keyring, if a null value is passed in
 	if clientId == "" {
-		fmt.Println("No clientId provided. Attempting to retrieve the default from keyring.")
+		fmt.Println("No client-id provided. Attempting to retrieve the default from keyring.")
 		retrievedClientID, errID := keyring.Get(handlers.TOKEN_URL, handlers.OTDFCTL_CLIENT_ID_CACHE_KEY)
 		if errID == nil {
 			clientId = retrievedClientID
@@ -34,7 +34,7 @@ func auth_clientCredentials(cmd *cobra.Command, args []string) {
 
 	// now lets check if we still don't have it, and if not, throw and error
 	if clientId == "" {
-		errMsg = fmt.Sprintf("Please provide required flag: (%s)", "clientId")
+		errMsg = fmt.Sprintf("Please provide required flag: (%s)", "client-id")
 		fmt.Println(cli.ErrorMessage(errMsg, nil))
 		cli.ExitWithError("Failed to create attribute", nil)
 		return
@@ -50,7 +50,7 @@ func auth_clientCredentials(cmd *cobra.Command, args []string) {
 	}
 	// check if we still don't have it, and if not throw an error
 	if clientSecret == "" {
-		errMsg = fmt.Sprintf("Please provide required flag: (%s)", "clientSecret")
+		errMsg = fmt.Sprintf("Please provide required flag: (%s)", "client-secret")
 		fmt.Println(cli.ErrorMessage(errMsg, nil))
 		cli.ExitWithError("Failed to create attribute", nil)
 		return
@@ -65,7 +65,7 @@ func auth_clientCredentials(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	fmt.Println(cli.SuccessMessage("Successfully logged in with clientId and clientSecret"))
+	fmt.Println(cli.SuccessMessage("Successfully logged in with client ID and secret"))
 }
 
 func init() {
@@ -73,14 +73,14 @@ func init() {
 		man.WithRun(auth_clientCredentials),
 	)
 	clientCredentialsCmd.Flags().String(
-		clientCredentialsCmd.GetDocFlag("clientId").Name,
-		clientCredentialsCmd.GetDocFlag("clientId").Default,
-		clientCredentialsCmd.GetDocFlag("clientId").Description,
+		clientCredentialsCmd.GetDocFlag("client-id").Name,
+		clientCredentialsCmd.GetDocFlag("client-id").Default,
+		clientCredentialsCmd.GetDocFlag("client-id").Description,
 	)
 	clientCredentialsCmd.Flags().String(
-		clientCredentialsCmd.GetDocFlag("clientSecret").Name,
-		clientCredentialsCmd.GetDocFlag("clientSecret").Default,
-		clientCredentialsCmd.GetDocFlag("clientSecret").Description,
+		clientCredentialsCmd.GetDocFlag("client-secret").Name,
+		clientCredentialsCmd.GetDocFlag("client-secret").Default,
+		clientCredentialsCmd.GetDocFlag("client-secret").Description,
 	)
 
 	cmd := man.Docs.GetCommand("auth",

@@ -15,7 +15,7 @@ const (
 	OTDFCTL_OIDC_TOKEN_KEY      = "OTDFCTL_OIDC_TOKEN"
 )
 
-// TODO: get this dynamically from the platform via SDK or dialing directly
+// TODO: get this dynamically from the platform via SDK or dialing directly: [https://github.com/opentdf/platform/issues/147]
 const TOKEN_URL = "http://localhost:8888/auth/realms/opentdf/protocol/openid-connect/token"
 
 // var platformWellKnown wellknown.Well
