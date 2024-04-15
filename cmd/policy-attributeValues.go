@@ -64,7 +64,7 @@ func policy_listAttributeValue(cmd *cobra.Command, args []string) {
 		cli.ExitWithError("Failed to list attribute values", err)
 	}
 	t := cli.NewTable()
-	t.Headers("Id", "Fqn", "Members", "Active", "Metadata.Labels", "Metadata.CreatedAt", "Metadata.UpdatedAt")
+	t.Headers("Id", "Fqn", "Members", "Active", "Labels", "Created At", "Updated At")
 	for _, val := range vals {
 		v := cli.GetSimpleAttributeValue(val)
 		t.Row(

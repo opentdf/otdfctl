@@ -28,7 +28,11 @@ type SimpleAttributeValue struct {
 }
 
 func ConstructMetadata(m *common.Metadata) map[string]string {
-	metadata := map[string]string{
+	var metadata map[string]string
+	if m == nil {
+		return metadata
+	}
+	metadata = map[string]string{
 		"Created At": m.CreatedAt.AsTime().Format(time.UnixDate),
 		"Updated At": m.UpdatedAt.AsTime().Format(time.UnixDate),
 	}

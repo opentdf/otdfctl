@@ -79,7 +79,7 @@ func policy_listResourceMappings(cmd *cobra.Command, args []string) {
 	}
 
 	t := cli.NewTable()
-	t.Headers("Id", "Attribute Value Id", "Attribute Value", "Terms", "Metadata.Labels", "Metadata.CreatedAt", "Metadata.UpdatedAt")
+	t.Headers("Id", "Attribute Value Id", "Attribute Value", "Terms", "Labels", "Created At", "Updated At")
 	for _, resourceMapping := range rmList {
 		metadata := cli.ConstructMetadata(resourceMapping.Metadata)
 		t.Row(resourceMapping.Id, resourceMapping.AttributeValue.Id, resourceMapping.AttributeValue.Value, strings.Join(resourceMapping.Terms, ", "), metadata["Labels"], metadata["Created At"], metadata["Updated At"])

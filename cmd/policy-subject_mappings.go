@@ -66,7 +66,7 @@ func policy_listSubjectMappings(cmd *cobra.Command, args []string) {
 		cli.ExitWithError("Failed to get subject mappings", err)
 	}
 	t := cli.NewTable().Width(180)
-	t.Headers("Id", "Subject AttrVal: Id", "Subject AttrVal: Value", "Actions", "Subject Condition Set: Id", "Subject Condition Set", "Metadata.Labels", "Metadata.CreatedAt", "Metadata.UpdatedAt")
+	t.Headers("Id", "Subject AttrVal: Id", "Subject AttrVal: Value", "Actions", "Subject Condition Set: Id", "Subject Condition Set", "Labels", "Created At", "Updated At")
 	for _, sm := range list {
 		var actionsJSON []byte
 		if actionsJSON, err = json.Marshal(sm.Actions); err != nil {

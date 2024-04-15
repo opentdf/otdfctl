@@ -114,7 +114,7 @@ func policy_listSubjectConditionSets(cmd *cobra.Command, args []string) {
 	}
 
 	t := cli.NewTable()
-	t.Headers("Id", "SubjectSets", "Metadata.Labels", "Metadata.CreatedAt", "Metadata.UpdatedAt")
+	t.Headers("Id", "SubjectSets", "Labels", "Created At", "Updated At")
 	for _, scs := range scsList {
 		var subjectSetsJSON []byte
 		if subjectSetsJSON, err = json.Marshal(scs.SubjectSets); err != nil {

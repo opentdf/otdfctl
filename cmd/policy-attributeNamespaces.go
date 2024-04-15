@@ -49,7 +49,7 @@ func policy_listAttributeNamespaces(cmd *cobra.Command, args []string) {
 		cli.ExitWithError("Failed to list namespaces", err)
 	}
 	t := cli.NewTable()
-	t.Headers("Id", "Name", "Active", "Metadata.Labels", "Metadata.CreatedAt", "Metadata.UpdatedAt")
+	t.Headers("Id", "Name", "Active", "Labels", "Created At", "Updated At")
 	for _, ns := range list {
 		metadata := cli.ConstructMetadata(ns.Metadata)
 		t.Row(
