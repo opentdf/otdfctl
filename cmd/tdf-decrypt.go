@@ -16,7 +16,7 @@ func dev_tdfDecryptCmd(cmd *cobra.Command, args []string) {
 
 	flagHelper := cli.NewFlagHelper(cmd)
 	tdfFile := flagHelper.GetOptionalString("file")
-	output := flagHelper.GetOptionalString("output")
+	output := flagHelper.GetOptionalString("out")
 
 	if tdfFile == "" {
 		cli.ExitWithError("Must provide a TDF file to decrypt", nil)
@@ -55,10 +55,10 @@ func init() {
 		decryptCmd.GetDocFlag("file").Description,
 	)
 	decryptCmd.Flags().StringP(
-		decryptCmd.GetDocFlag("output").Name,
-		decryptCmd.GetDocFlag("output").Shorthand,
-		decryptCmd.GetDocFlag("output").Default,
-		decryptCmd.GetDocFlag("output").Description,
+		decryptCmd.GetDocFlag("out").Name,
+		decryptCmd.GetDocFlag("out").Shorthand,
+		decryptCmd.GetDocFlag("out").Default,
+		decryptCmd.GetDocFlag("out").Description,
 	)
 	decryptCmd.Command.GroupID = "tdf"
 

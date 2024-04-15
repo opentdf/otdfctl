@@ -19,7 +19,6 @@ func dev_tdfEncryptCmd(cmd *cobra.Command, args []string) {
 
 	flagHelper := cli.NewFlagHelper(cmd)
 	filePath := flagHelper.GetOptionalString("file")
-	text := flagHelper.GetOptionalString("text")
 	out := flagHelper.GetOptionalString("out")
 	values := flagHelper.GetStringSlice("attr", attrValues, cli.FlagHelperStringSliceOptions{Min: 0})
 
@@ -42,17 +41,14 @@ func dev_tdfEncryptCmd(cmd *cobra.Command, args []string) {
 	if filePath != "" {
 		inputCount++
 	}
-	if text != "" {
-		inputCount++
-	}
 	if len(piped) > 0 {
 		inputCount++
 	}
 
 	if inputCount == 0 {
-		cli.ExitWithError("Must provide ONE of the following to encrypt: [text, file, stdin input]", nil)
+		cli.ExitWithError("Must provide ONE of the following to encrypt: [file, stdin input]", nil)
 	} else if inputCount > 0 {
-		cli.ExitWithError("Must provide ONLY ONE of the following to encrypt: [text, file, stdin input]", nil)
+		cli.ExitWithError("Must provide ONLY ONE of the following to encrypt: [file, stdin input]", nil)
 	}
 
 	var bytes []byte
@@ -71,17 +67,15 @@ func dev_tdfEncryptCmd(cmd *cobra.Command, args []string) {
 		if out == "" {
 			out = filePath
 		}
-	} else if text != "" {
-		bytes = []byte(text)
 	} else {
 		bytes = piped
 	}
 	tdfFile, err := h.EncryptBytes(bytes, values, out)
 	if err != nil {
-		cli.ExitWithError("Failed to encrypt text", err)
+		cli.ExitWithError("Failed to encrypt", err)
 	}
 
-	cli.SuccessMessage(fmt.Sprintf("Successfully encrypted data.\nTDF manifest: %+v", tdfFile.Manifest()))
+	fmt.Println(cli.SuccessMessage(fmt.Sprintf("Successfully encrypted data. TDF manifest: %+v", tdfFile.Manifest())))
 }
 
 func init() {
@@ -93,12 +87,6 @@ func init() {
 		encryptCmd.GetDocFlag("file").Shorthand,
 		encryptCmd.GetDocFlag("file").Default,
 		encryptCmd.GetDocFlag("file").Description,
-	)
-	encryptCmd.Flags().StringP(
-		encryptCmd.GetDocFlag("text").Name,
-		encryptCmd.GetDocFlag("text").Shorthand,
-		encryptCmd.GetDocFlag("text").Default,
-		encryptCmd.GetDocFlag("text").Description,
 	)
 	encryptCmd.Flags().StringP(
 		encryptCmd.GetDocFlag("out").Name,

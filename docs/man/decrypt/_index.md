@@ -7,9 +7,9 @@ command:
       shorthand: f
       description: The TDF file with path from the current working directory being decrypted (default 'sensitive.txt.tdf')
       default: 'sensitive.txt.tdf'
-    - name: output
+    - name: out
       shorthand: o
-      description: "The decrypted output destination. Default: 'file'. Options: ['file', 'stdout']"
+      description: "The decrypted out destination. Default: 'stdout'. Options: ['file', 'stdout']"
       default: 'stdout'
 ---
 

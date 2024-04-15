@@ -7,10 +7,6 @@ command:
       shorthand: f
       description: A file to encrypt at a path relative to the current working directory.
       default: ''
-    - name: text
-      shorthand: t
-      description: A string of text to encrypt.
-      default: ''
     - name: out
       shorthand: o
       description: A filename and extension that will be TDFd (i.e. '-o password.txt' -> 'password.txt.tdf', default 'sensitive.txt.tdf' or <file>.tdf) and placed in the current working directory.
@@ -20,4 +16,4 @@ command:
       description: Attribute value Fully Qualified Names (FQNs, i.e. 'https://example.com/attr/attr1/value/value1') to apply to the encrypted data.
 ---
 
-Build a Trusted Data Format (TDF) with encrypted content from a file, string of text, or input from stdin utilizing OpenTDF platform.
+Build a Trusted Data Format (TDF) with encrypted content from a specified file or input from stdin utilizing OpenTDF platform.
