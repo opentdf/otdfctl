@@ -66,9 +66,8 @@ func policy_listSubjectMappings(cmd *cobra.Command, args []string) {
 	if err != nil {
 		cli.ExitWithError("Failed to get subject mappings", err)
 	}
-
 	t := cli.NewTable().Width(180)
-	t.Headers("Id", "Subject AttrVal: Id", "Subject AttrVal: Value", "Actions", "Subject Condition Set: Id", "Subject Condition Set")
+	t.Headers("Id", "Subject AttrVal: Id", "Subject AttrVal: Value", "Actions", "Subject Condition Set: Id", "Subject Condition Set", "Metadata.Labels", "Metadata.CreatedAt", "Metadata.UpdatedAt")
 	for _, sm := range list {
 		var actionsJSON []byte
 		if actionsJSON, err = json.Marshal(sm.Actions); err != nil {
@@ -79,6 +78,7 @@ func policy_listSubjectMappings(cmd *cobra.Command, args []string) {
 		if subjectSetsJSON, err = json.Marshal(sm.SubjectConditionSet.SubjectSets); err != nil {
 			cli.ExitWithError("Error marshalling subject condition set", err)
 		}
+		metadata := cli.ConstructMetadata(sm.Metadata)
 
 		rowCells := []string{
 			sm.Id,
@@ -87,6 +87,9 @@ func policy_listSubjectMappings(cmd *cobra.Command, args []string) {
 			string(actionsJSON),
 			sm.SubjectConditionSet.Id,
 			string(subjectSetsJSON),
+			metadata["Labels"],
+			metadata["Created At"],
+			metadata["Updated At"],
 		}
 		t.Row(rowCells...)
 	}

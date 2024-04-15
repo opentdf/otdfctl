@@ -95,7 +95,7 @@ func policy_listAttributes(cmd *cobra.Command, args []string) {
 	}
 
 	t := cli.NewTable()
-	t.Headers("Id", "Namespace", "Name", "Rule", "Values", "Active")
+	t.Headers("Id", "Namespace", "Name", "Rule", "Values", "Active", "Metadata.Labels", "Metadata.CreatedAt", "Metadata.UpdatedAt")
 	for _, attr := range attrs {
 		a := cli.GetSimpleAttribute(attr)
 		t.Row(
@@ -105,6 +105,9 @@ func policy_listAttributes(cmd *cobra.Command, args []string) {
 			a.Rule,
 			cli.CommaSeparated(a.Values),
 			a.Active,
+			a.Metadata["Labels"],
+			a.Metadata["Created At"],
+			a.Metadata["Updated At"],
 		)
 	}
 	HandleSuccess(cmd, "", t, attrs)

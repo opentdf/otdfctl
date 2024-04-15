@@ -119,13 +119,14 @@ func policy_listSubjectConditionSets(cmd *cobra.Command, args []string) {
 	}
 
 	t := cli.NewTable()
-	t.Headers("Id", "SubjectSets")
+	t.Headers("Id", "SubjectSets", "Metadata.Labels", "Metadata.CreatedAt", "Metadata.UpdatedAt")
 	for _, scs := range scsList {
 		var subjectSetsJSON []byte
 		if subjectSetsJSON, err = json.Marshal(scs.SubjectSets); err != nil {
 			cli.ExitWithError("Error marshalling subject condition set", err)
 		}
-		rowCells := []string{scs.Id, string(subjectSetsJSON)}
+		metadata := cli.ConstructMetadata(scs.Metadata)
+		rowCells := []string{scs.Id, string(subjectSetsJSON), metadata["Labels"], metadata["Created At"], metadata["Updated At"]}
 		t.Row(rowCells...)
 	}
 
