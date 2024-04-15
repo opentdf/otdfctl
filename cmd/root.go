@@ -26,12 +26,6 @@ var (
 func init() {
 	doc := man.Docs.GetDoc("<root>")
 	rootCmd = &doc.Command
-	rootCmd.PersistentFlags().BoolVar(
-		&configFlagOverrides.OutputFormatJSON,
-		doc.GetDocFlag("json").Name,
-		doc.GetDocFlag("json").DefaultAsBool(),
-		doc.GetDocFlag("json").Description,
-	)
 	rootCmd.PersistentFlags().String(
 		doc.GetDocFlag("host").Name,
 		doc.GetDocFlag("host").Default,
