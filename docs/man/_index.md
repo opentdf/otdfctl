@@ -12,7 +12,7 @@ command:
       description: host:port of the Virtru Data Security Platform gRPC server
       default: localhost:8080
     - name: config-file
-      description: config file (default is ./otdfctl.yaml)
+      description: config file (default is $HOME/.otdfctl.yaml)
       default: ''
     - name: log-level
       description: log level (debug, info, warn, error, fatal, panic)
