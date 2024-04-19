@@ -21,7 +21,6 @@ func config_updateOutput(cmd *cobra.Command, args []string) {
 }
 
 func init() {
-
 	outputCmd := man.Docs.GetCommand("config/output",
 		man.WithRun(config_updateOutput),
 	)
@@ -34,5 +33,5 @@ func init() {
 	cmd := man.Docs.GetCommand("config",
 		man.WithSubcommands(outputCmd),
 	)
-	rootCmd.AddCommand(&cmd.Command)
+	RootCmd.AddCommand(&cmd.Command)
 }

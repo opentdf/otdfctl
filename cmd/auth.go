@@ -86,5 +86,5 @@ func init() {
 	cmd := man.Docs.GetCommand("auth",
 		man.WithSubcommands(clientCredentialsCmd),
 	)
-	rootCmd.AddCommand(&cmd.Command)
+	RootCmd.AddCommand(&cmd.Command)
 }

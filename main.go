@@ -7,6 +7,10 @@ import (
 	"github.com/opentdf/otdfctl/cmd"
 )
 
+func Execute() {
+	cmd.Execute()
+}
+
 func main() {
 	// f, err := os.Create("cpu.pprof")
 	// if err != nil {
@@ -23,5 +27,5 @@ func main() {
 
 	slog.SetDefault(logger)
 
-	cmd.Execute()
+	Execute()
 }
