@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 
 	"github.com/opentdf/otdfctl/pkg/cli"
@@ -11,14 +10,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var dev_tdfCmd *cobra.Command
-
 func dev_tdfEncryptCmd(cmd *cobra.Command, args []string) {
 	h := cli.NewHandler(cmd)
 	defer h.Close()
 
 	flagHelper := cli.NewFlagHelper(cmd)
-	filePath := flagHelper.GetOptionalString("file")
+	var filePath string
+	if len(args) > 0 {
+		filePath = args[0]
+	}
 	out := flagHelper.GetOptionalString("out")
 	values := flagHelper.GetStringSlice("attr", attrValues, cli.FlagHelperStringSliceOptions{Min: 0})
 
@@ -46,9 +46,9 @@ func dev_tdfEncryptCmd(cmd *cobra.Command, args []string) {
 	}
 
 	if inputCount == 0 {
-		cli.ExitWithError("Must provide ONE of the following to encrypt: [file, stdin input]", nil)
-	} else if inputCount > 0 {
-		cli.ExitWithError("Must provide ONLY ONE of the following to encrypt: [file, stdin input]", nil)
+		cli.ExitWithError("Must provide ONE of the following to encrypt: [file argument, stdin input]", nil)
+	} else if inputCount > 1 {
+		cli.ExitWithError("Must provide ONLY ONE of the following to encrypt: [file argument, stdin input]", nil)
 	}
 
 	var bytes []byte
@@ -59,7 +59,7 @@ func dev_tdfEncryptCmd(cmd *cobra.Command, args []string) {
 		}
 		defer fileToEncrypt.Close()
 
-		bytes, err = ioutil.ReadAll(fileToEncrypt)
+		bytes, err = io.ReadAll(fileToEncrypt)
 		if err != nil {
 			cli.ExitWithError(fmt.Sprintf("Failed to read bytes from file at path: %s", filePath), err)
 		}
@@ -74,19 +74,22 @@ func dev_tdfEncryptCmd(cmd *cobra.Command, args []string) {
 	if err != nil {
 		cli.ExitWithError("Failed to encrypt", err)
 	}
+	defer tdfFile.Close()
 
-	fmt.Println(cli.SuccessMessage(fmt.Sprintf("Successfully encrypted data. TDF manifest: %+v", tdfFile.Manifest())))
+	f, err := os.Open(tdfFile.Name())
+	if err != nil {
+		cli.ExitWithError(fmt.Sprintf("Failed to write encrypted file %s to stdout", tdfFile.Name()), err)
+	}
+
+	_, e := io.Copy(os.Stdout, f)
+	if e != nil {
+		cli.ExitWithError("Failed to write encrypted data to stdout", e)
+	}
 }
 
 func init() {
 	encryptCmd := man.Docs.GetCommand("encrypt",
 		man.WithRun(dev_tdfEncryptCmd),
-	)
-	encryptCmd.Flags().StringP(
-		encryptCmd.GetDocFlag("file").Name,
-		encryptCmd.GetDocFlag("file").Shorthand,
-		encryptCmd.GetDocFlag("file").Default,
-		encryptCmd.GetDocFlag("file").Description,
 	)
 	encryptCmd.Flags().StringP(
 		encryptCmd.GetDocFlag("out").Name,
@@ -103,5 +106,5 @@ func init() {
 	)
 	encryptCmd.Command.GroupID = "tdf"
 
-	rootCmd.AddCommand(&encryptCmd.Command)
+	RootCmd.AddCommand(&encryptCmd.Command)
 }

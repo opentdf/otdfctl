@@ -9,18 +9,18 @@ import (
 	"github.com/opentdf/platform/sdk"
 )
 
-func (h Handler) EncryptBytes(b []byte, values []string, out string) (*sdk.TDFObject, error) {
+func (h Handler) EncryptBytes(b []byte, values []string, out string) (*os.File, error) {
 	if out == "" {
 		out = "sensitive.txt"
 	}
+
 	tdfFile, err := os.Create(fmt.Sprintf("%s.tdf", out))
 	if err != nil {
 		return nil, err
 	}
-	defer tdfFile.Close()
 
-	// TODO: validate values are FQNs or return an error
-	return h.sdk.CreateTDF(tdfFile, bytes.NewReader(b),
+	// TODO: validate values are FQNs or return an error [https://github.com/opentdf/platform/issues/515]
+	_, err = h.sdk.CreateTDF(tdfFile, bytes.NewReader(b),
 		sdk.WithDataAttributes(values...),
 		sdk.WithKasInformation(sdk.KASInfo{
 			URL:       fmt.Sprintf("http://%s", h.platformEndpoint),
@@ -28,6 +28,10 @@ func (h Handler) EncryptBytes(b []byte, values []string, out string) (*sdk.TDFOb
 		},
 		),
 	)
+	if err != nil {
+		return nil, err
+	}
+	return tdfFile, nil
 }
 
 func (h Handler) DecryptTDF(filePath string) (*bytes.Buffer, error) {

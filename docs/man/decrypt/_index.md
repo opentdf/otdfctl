@@ -1,12 +1,8 @@
 ---
 title: Decrypt a TDF file
 command:
-  name: decrypt
+  name: decrypt [file]
   flags:
-    - name: file
-      shorthand: f
-      description: The TDF file with path from the current working directory being decrypted (default 'sensitive.txt.tdf')
-      default: 'sensitive.txt.tdf'
     - name: out
       shorthand: o
       description: "The decrypted out destination. Default: 'stdout'. Options: ['file', 'stdout']"
@@ -14,3 +10,18 @@ command:
 ---
 
 Decrypt a Trusted Data Format (TDF) file and output the contents to stdout or a file in the current working directory.
+
+The first argument is the TDF file with path from the current working directory being decrypted (default 'sensitive.txt.tdf').
+
+Examples:
+
+```bash
+# default to sensitive.txt.tdf, then print to stdout
+otdfctl decrypt
+
+# specify the TDF to decrypt then output decrypted contents
+otdfctl decrypt hello.txt.tdf # print to stdout
+otdfctl decrypt hello.txt.tdf > hello.txt # consume stdout to write to hello.txt file
+otdfctl decrypt hello.txt.tdf -o hello.txt # write to hello.txt file
+
+```
