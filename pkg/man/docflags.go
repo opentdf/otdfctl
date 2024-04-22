@@ -1,17 +1,25 @@
 package man
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/opentdf/otdfctl/pkg/cli"
+)
 
 type DocFlag struct {
-	Name        string `yaml:"name"`
-	Description string `yaml:"description"`
-	Shorthand   string `yaml:"shorthand"`
-	Default     string `yaml:"default"`
+	Name        string   `yaml:"name"`
+	Description string   `yaml:"description"`
+	Shorthand   string   `yaml:"shorthand"`
+	Default     string   `yaml:"default"`
+	Enum        []string `yaml:"enum"`
 }
 
 func (d *Doc) GetDocFlag(name string) DocFlag {
 	for _, f := range d.DocFlags {
 		if f.Name == name {
+			if len(f.Enum) > 0 {
+				f.Description = fmt.Sprintf("%s %s", f.Description, cli.CommaSeparated(f.Enum))
+			}
 			return f
 		}
 	}
