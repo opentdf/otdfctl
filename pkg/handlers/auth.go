@@ -18,18 +18,6 @@ const (
 // TODO: get this dynamically from the platform via SDK or dialing directly: [https://github.com/opentdf/platform/issues/147]
 const TOKEN_URL = "http://localhost:8888/auth/realms/opentdf/protocol/openid-connect/token"
 
-// var platformWellKnown wellknown.Well
-
-// func init() {
-// 	// get platform endpoint here
-// 	wellknownClient, err := wellknownconfiguration.NewWellKnownServiceClient()
-// 	// sdk, err := sdk.New("http://localhost:8080", sdk.WithInsecureConn())
-// 	if err != nil {
-// 		panic(fmt.Sprintf("failed to init sdk to get well-known configuration: %s", err.Error()))
-// 	}
-// 	wellKnown, err := sdk.WellKnown.GetWe
-// }
-
 // CheckTokenExpiration checks if an OIDC token has expired.
 // Returns true if the token is still valid, false otherwise.
 func CheckTokenExpiration(tokenString string) (bool, error) {
