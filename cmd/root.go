@@ -41,16 +41,7 @@ func init() {
 // Execute adds all child commands to the root command and sets flags appropriately.
 // The config file and key are defaulted to otdfctl.yaml.
 func Execute() {
-	cfg, err := config.LoadConfig("", "otdfctl")
-	if err != nil {
-		fmt.Println("Error loading config:", err)
-		os.Exit(1)
-	}
-	OtdfctlCfg = *cfg
-	err = RootCmd.Execute()
-	if err != nil {
-		os.Exit(1)
-	}
+	ExecuteWithBootstrap("", "")
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.

@@ -42,7 +42,7 @@ func LoadConfig(file string, key string) (*Config, error) {
 	// default the config values if not passed in
 	if file == "" && key == "" {
 		key = "otdfctl"
-		slog.Debug("LoadConfig: file & key not provided, using default file", "config file", file)
+		slog.Debug("LoadConfig: file and key not provided, using default file", "config file", file)
 	} else {
 		slog.Debug("LoadConfig", "config file", file, "config key", key)
 	}
