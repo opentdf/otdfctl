@@ -119,5 +119,5 @@ func init() {
 		man.WithRun(dev_designSystem),
 	)
 	devCmd.AddCommand(&designCmd.Command)
-	rootCmd.AddCommand(&devCmd.Command)
+	RootCmd.AddCommand(&devCmd.Command)
 }

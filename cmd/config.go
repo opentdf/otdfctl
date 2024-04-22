@@ -16,12 +16,11 @@ func config_updateOutput(cmd *cobra.Command, args []string) {
 	flagHelper := cli.NewFlagHelper(cmd)
 	format := flagHelper.GetRequiredString("format")
 
-	config.UpdateOutputFormat(format)
+	config.UpdateOutputFormat(cfgKey, format)
 	fmt.Println(cli.SuccessMessage(fmt.Sprintf("Output format updated to %s", format)))
 }
 
 func init() {
-
 	outputCmd := man.Docs.GetCommand("config/output",
 		man.WithRun(config_updateOutput),
 	)
@@ -34,5 +33,5 @@ func init() {
 	cmd := man.Docs.GetCommand("config",
 		man.WithSubcommands(outputCmd),
 	)
-	rootCmd.AddCommand(&cmd.Command)
+	RootCmd.AddCommand(&cmd.Command)
 }

@@ -177,6 +177,8 @@ github.com/opencontainers/image-spec v1.1.0/go.mod h1:W4s4sFTMaBeK1BQLXbG4AdM2sz
 github.com/opentdf/platform/protocol/go v0.0.0-20240328192545-ab689ebe9123 h1:otRtkhiBu075GliWAxX12QpiK4dlJdeOtSjomfJ25h0=
 github.com/opentdf/platform/protocol/go v0.0.0-20240328192545-ab689ebe9123/go.mod h1:QcLUArzpnfaLehOin8EBM77dCyyUwlRg/kH6uhy+HVE=
 github.com/opentdf/platform/protocol/go v0.0.0-20240403220730-0dc1115f9822/go.mod h1:QcLUArzpnfaLehOin8EBM77dCyyUwlRg/kH6uhy+HVE=
+github.com/opentdf/platform/protocol/go v0.0.0-20240419180709-f27ab98e49a2 h1:bZyQ2PdXlZiq/eEx/Iw9utIrrb75XrqEbUYbcO5YxNU=
+github.com/opentdf/platform/protocol/go v0.0.0-20240419180709-f27ab98e49a2/go.mod h1:qOBx0d9F2dGeTc703tp+HCGhW6nLYXKZ+vmZ2H9xcPI=
 github.com/opentdf/platform/sdk v0.0.0-20240328192545-ab689ebe9123 h1:flVFbXMjPRZ8t9GRxoGAva14qEMia1DOQbkJvb3ImXs=
 github.com/opentdf/platform/sdk v0.0.0-20240328192545-ab689ebe9123/go.mod h1:+HlyE1QyT7HsW5UlDGnBZVm0YdEfdv7g+K6pWDV8OAg=
 github.com/opentdf/platform/sdk v0.0.0-20240403220730-0dc1115f9822/go.mod h1:qRjuZshMizjv7u0K7smgdfSuKz4x7XZb7sJqSdzop+c=
