@@ -60,6 +60,7 @@ func (f FlagHelper) GetRequiredInt32(flag string) int32 {
 	return v
 }
 
+// Transforms into enum value and defaults to active state
 func GetState(cmd *cobra.Command) common.ActiveStateEnum {
 	state := common.ActiveStateEnum_ACTIVE_STATE_ENUM_ACTIVE
 	stateFlag := strings.ToUpper(cmd.Flag("state").Value.String())

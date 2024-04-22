@@ -134,5 +134,5 @@ func GetAttributeRuleFromReadableString(rule string) (policy.AttributeRuleTypeEn
 	case AttributeRuleHierarchy:
 		return policy.AttributeRuleTypeEnum_ATTRIBUTE_RULE_TYPE_ENUM_HIERARCHY, nil
 	}
-	return 0, fmt.Errorf("invalid attribute rule: %s", rule)
+	return 0, fmt.Errorf("invalid attribute rule: %s, must be one of [%s, %s, %s]", rule, AttributeRuleAllOf, AttributeRuleAnyOf, AttributeRuleHierarchy)
 }
