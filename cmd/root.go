@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	cfgFile    string
+	cfgKey     string
 	OtdfctlCfg config.Config
 
 	configFlagOverrides = config.ConfigFlagOverrides{}
@@ -31,29 +31,39 @@ func init() {
 		doc.GetDocFlag("host").Default,
 		doc.GetDocFlag("host").Description,
 	)
-	RootCmd.PersistentFlags().StringVar(
-		&cfgFile,
-		doc.GetDocFlag("config-file").Name,
-		doc.GetDocFlag("config-file").Default,
-		doc.GetDocFlag("config-file").Description,
-	)
 	RootCmd.PersistentFlags().String(
 		doc.GetDocFlag("log-level").Name,
 		doc.GetDocFlag("log-level").Default,
 		doc.GetDocFlag("log-level").Description,
 	)
+}
 
-	cfg, err := config.LoadConfig("otdfctl")
+// Execute adds all child commands to the root command and sets flags appropriately.
+// The config file and key are defaulted to otdfctl.yaml.
+func Execute() {
+	cfg, err := config.LoadConfig("", "otdfctl")
 	if err != nil {
 		fmt.Println("Error loading config:", err)
 		os.Exit(1)
 	}
 	OtdfctlCfg = *cfg
+	err = RootCmd.Execute()
+	if err != nil {
+		os.Exit(1)
+	}
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
-func Execute() {
-	err := RootCmd.Execute()
+// It also allows the config file & key to be bootstrapped for wrapping the CLI.
+func ExecuteWithBootstrap(configFile, configKey string) {
+	cfgKey = configKey
+	cfg, err := config.LoadConfig(configFile, configKey)
+	if err != nil {
+		fmt.Println("Error loading config:", err)
+		os.Exit(1)
+	}
+	OtdfctlCfg = *cfg
+	err = RootCmd.Execute()
 	if err != nil {
 		os.Exit(1)
 	}
