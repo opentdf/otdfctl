@@ -6,6 +6,7 @@ require (
 	github.com/adrg/frontmatter v0.2.0
 	github.com/charmbracelet/bubbles v0.18.0
 	github.com/charmbracelet/bubbletea v0.25.0
+	github.com/charmbracelet/glamour v0.7.0
 	github.com/charmbracelet/huh v0.3.0
 	github.com/charmbracelet/lipgloss v0.10.0
 	github.com/creasty/defaults v1.7.0
@@ -13,13 +14,14 @@ require (
 	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/itchyny/gojq v0.12.15
 	github.com/muesli/reflow v0.3.0
-	github.com/opentdf/platform/protocol/go v0.0.0-20240410165157-e5a33244cff4
-	github.com/opentdf/platform/sdk v0.0.0-20240410165157-e5a33244cff4
+	github.com/opentdf/platform/protocol/go v0.0.0-20240419180709-f27ab98e49a2
+	github.com/opentdf/platform/sdk v0.0.0-20240328192545-ab689ebe9123
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/viper v1.18.2
 	github.com/zalando/go-keyring v0.2.4
-	golang.org/x/oauth2 v0.17.0
-	google.golang.org/grpc v1.63.2
+	golang.org/x/oauth2 v0.16.0
+	golang.org/x/term v0.19.0
+	google.golang.org/grpc v1.62.1
 )
 
 require (
@@ -31,7 +33,6 @@ require (
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/catppuccin/go v0.2.0 // indirect
-	github.com/charmbracelet/glamour v0.7.0 // indirect
 	github.com/containerd/console v1.0.4 // indirect
 	github.com/danieljoos/wincred v1.2.0 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.3.0 // indirect
@@ -44,7 +45,6 @@ require (
 	github.com/gorilla/css v1.0.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.19.1 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
-	github.com/imfing/hextra v0.7.3 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/itchyny/timefmt-go v0.1.5 // indirect
 	github.com/lestrrat-go/blackmagic v1.0.2 // indirect
@@ -64,7 +64,6 @@ require (
 	github.com/muesli/cancelreader v0.2.2 // indirect
 	github.com/muesli/termenv v0.15.2 // indirect
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
-	github.com/opentdf/platform/lib/ocrypto v0.0.0-20240410165157-e5a33244cff4 // indirect
 	github.com/pelletier/go-toml/v2 v2.1.0 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/rogpeppe/go-internal v1.12.0 // indirect
@@ -85,7 +84,6 @@ require (
 	golang.org/x/net v0.24.0 // indirect
 	golang.org/x/sync v0.6.0 // indirect
 	golang.org/x/sys v0.19.0 // indirect
-	golang.org/x/term v0.19.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20240401170217-c3f982113cda // indirect
