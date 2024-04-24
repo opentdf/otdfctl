@@ -3,6 +3,8 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+	"os"
 	"strings"
 
 	"github.com/charmbracelet/lipgloss/table"
@@ -112,6 +114,38 @@ func injectLabelFlags(cmd *cobra.Command, isUpdate bool) {
 	if isUpdate {
 		cmd.Flags().BoolVar(&forceReplaceMetadataLabels, "force-replace-labels", false, "Destructively replace entire set of existing metadata 'labels' with any provided to this command.")
 	}
+}
+
+// Read bytes from stdin without blocking by checking size first
+func readPipedStdin() []byte {
+	var piped []byte
+	in := os.Stdin
+	stdin, err := in.Stat()
+	if err != nil {
+		cli.ExitWithError("Failed to read from stdin", err)
+	}
+	size := stdin.Size()
+	if size > 0 {
+		piped, err = io.ReadAll(os.Stdin)
+		if err != nil {
+			cli.ExitWithError("Failed to read from stdin", err)
+		}
+	}
+	return piped
+}
+
+func readBytesFromFile(filePath string) []byte {
+	fileToEncrypt, err := os.Open(filePath)
+	if err != nil {
+		cli.ExitWithError(fmt.Sprintf("Failed to open file at path: %s", filePath), err)
+	}
+	defer fileToEncrypt.Close()
+
+	bytes, err := io.ReadAll(fileToEncrypt)
+	if err != nil {
+		cli.ExitWithError(fmt.Sprintf("Failed to read bytes from file at path: %s", filePath), err)
+	}
+	return bytes
 }
 
 func init() {

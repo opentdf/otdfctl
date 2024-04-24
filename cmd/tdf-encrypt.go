@@ -22,20 +22,7 @@ func dev_tdfEncryptCmd(cmd *cobra.Command, args []string) {
 	out := flagHelper.GetOptionalString("out")
 	values := flagHelper.GetStringSlice("attr", attrValues, cli.FlagHelperStringSliceOptions{Min: 0})
 
-	// Read bytes from stdin without blocking by checking size first
-	var piped []byte
-	in := os.Stdin
-	stdin, err := in.Stat()
-	if err != nil {
-		cli.ExitWithError("Failed to read from stdin", err)
-	}
-	size := stdin.Size()
-	if size > 0 {
-		piped, err = io.ReadAll(os.Stdin)
-		if err != nil {
-			cli.ExitWithError("Failed to read from stdin", err)
-		}
-	}
+	piped := readPipedStdin()
 
 	inputCount := 0
 	if filePath != "" {
@@ -53,16 +40,7 @@ func dev_tdfEncryptCmd(cmd *cobra.Command, args []string) {
 
 	var bytes []byte
 	if filePath != "" {
-		fileToEncrypt, err := os.Open(filePath)
-		if err != nil {
-			cli.ExitWithError(fmt.Sprintf("Failed to open file at path: %s", filePath), err)
-		}
-		defer fileToEncrypt.Close()
-
-		bytes, err = io.ReadAll(fileToEncrypt)
-		if err != nil {
-			cli.ExitWithError(fmt.Sprintf("Failed to read bytes from file at path: %s", filePath), err)
-		}
+		bytes = readBytesFromFile(filePath)
 		// default <filename.extension>.tdf as output
 		if out == "" {
 			out = filePath

@@ -34,15 +34,8 @@ func (h Handler) EncryptBytes(b []byte, values []string, out string) (*os.File, 
 	return tdfFile, nil
 }
 
-func (h Handler) DecryptTDF(filePath string) (*bytes.Buffer, error) {
-	file, err := os.Open(filePath)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-
-	// Decrypt the TDF
-	tdfreader, err := h.sdk.LoadTDF(file)
+func (h Handler) DecryptTDF(toDecrypt []byte) (*bytes.Buffer, error) {
+	tdfreader, err := h.sdk.LoadTDF(bytes.NewReader(toDecrypt))
 	if err != nil {
 		return nil, err
 	}

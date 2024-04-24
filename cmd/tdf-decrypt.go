@@ -16,17 +16,22 @@ func dev_tdfDecryptCmd(cmd *cobra.Command, args []string) {
 	flagHelper := cli.NewFlagHelper(cmd)
 	output := flagHelper.GetOptionalString("out")
 
-	// check for a TDF flag argument
+	// check for piped input
+	piped := readPipedStdin()
+
+	// Prefer file argument over piped input over default filename
+	var bytesToDecrypt []byte
 	var tdfFile string
 	if len(args) > 0 {
 		tdfFile = args[0]
-	}
-	// default to sensitive.txt.tdf if no file is provided
-	if tdfFile == "" {
-		tdfFile = "sensitive.txt.tdf"
+		bytesToDecrypt = readBytesFromFile(tdfFile)
+	} else if len(piped) > 0 {
+		bytesToDecrypt = piped
+	} else {
+		bytesToDecrypt = readBytesFromFile("sensitive.txt.tdf")
 	}
 
-	decrypted, err := h.DecryptTDF(tdfFile)
+	decrypted, err := h.DecryptTDF(bytesToDecrypt)
 	if err != nil {
 		cli.ExitWithError("Failed to decrypt file", err)
 	}
