@@ -38,8 +38,6 @@ func dev_tdfDecryptCmd(cmd *cobra.Command, args []string) {
 		return
 	} else if output != "" {
 		// Here 'output' is the filename given with -o
-		// Write decrypted string to file with stripped .tdf extension
-		fmt.Println("Decrypting " + tdfFile)
 		f, err := os.Create(output)
 		if err != nil {
 			cli.ExitWithError("Failed to write decrypted data to file", err)
