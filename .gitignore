@@ -14,5 +14,3 @@ output/
 
 # Ignore any TDF files created by the CLI
 *.tdf
-# Ignore the default output file for decrypted text TDFs
-sensitive.txt
