@@ -14,7 +14,7 @@ command:
 
 Build a Trusted Data Format (TDF) with encrypted content from a specified file or input from stdin utilizing OpenTDF platform.
 
-Examples:
+## Examples:
 
 ```bash
 # default to sensitive.txt.tdf
