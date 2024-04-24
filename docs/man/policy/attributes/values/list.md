@@ -1,6 +1,6 @@
 ---
 title: List attribute values
-command :
+command:
   name: list
   flags:
     - name: attribute-id
@@ -9,7 +9,10 @@ command :
     - name: state
       shorthand: s
       description: Filter by state
-      enum: [active, inactive, any]
+      enum:
+        - active
+        - inactive
+        - any
       default: active
 ---
 
