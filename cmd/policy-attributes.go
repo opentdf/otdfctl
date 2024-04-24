@@ -222,7 +222,6 @@ func init() {
 	listDoc := man.Docs.GetCommand("policy/attributes/list",
 		man.WithRun(policy_listAttributes),
 	)
-	//"state", "s", "active", "Filter by state [active, inactive, any]"
 	listDoc.Flags().StringP(
 		listDoc.GetDocFlag("state").Name,
 		listDoc.GetDocFlag("state").Shorthand,

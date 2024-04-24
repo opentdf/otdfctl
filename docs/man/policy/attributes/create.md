@@ -10,6 +10,10 @@ command:
     - name: rule
       shorthand: r
       description: Rule of the attribute
+      enum:
+        - ANY_OF
+        - ALL_OF
+        - HIERARCHY
       required: true
     - name: value
       shorthand: v
