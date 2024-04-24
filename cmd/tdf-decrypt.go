@@ -32,7 +32,26 @@ func dev_tdfDecryptCmd(cmd *cobra.Command, args []string) {
 		cli.ExitWithError("Failed to decrypt file", err)
 	}
 
-	if output == "file" {
+	if output == "stdout" {
+		// Print decrypted content to stdout
+		fmt.Print(decrypted.String())
+		return
+	} else if output != "" {
+		// Here 'output' is the filename given with -o
+		// Write decrypted string to file with stripped .tdf extension
+		fmt.Println("Decrypting " + tdfFile)
+		f, err := os.Create(output)
+		if err != nil {
+			cli.ExitWithError("Failed to write decrypted data to file", err)
+		}
+		defer f.Close()
+		_, err = f.Write(decrypted.Bytes())
+		if err != nil {
+			cli.ExitWithError("Failed to write decrypted data to file", err)
+		}
+		return
+	} else {
+		// Here the 'output' filename is based on the input filename
 		// Write decrypted string to file with stripped .tdf extension
 		f, err := os.Create(strings.Replace(tdfFile, ".tdf", "", 1))
 		if err != nil {
@@ -45,8 +64,6 @@ func dev_tdfDecryptCmd(cmd *cobra.Command, args []string) {
 		}
 		return
 	}
-	// Print decrypted content to stdout
-	fmt.Print(decrypted.String())
 }
 
 func init() {
