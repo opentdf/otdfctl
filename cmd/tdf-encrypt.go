@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/man"
@@ -38,28 +39,38 @@ func dev_tdfEncryptCmd(cmd *cobra.Command, args []string) {
 		cli.ExitWithError("Must provide ONLY ONE of the following to encrypt: [file argument, stdin input]", nil)
 	}
 
+	// prefer filepath argument over stdin input
 	var bytes []byte
 	if filePath != "" {
 		bytes = readBytesFromFile(filePath)
-		// default <filename.extension>.tdf as output
-		if out == "" {
-			out = filePath
-		}
 	} else {
 		bytes = piped
 	}
-	tdfFile, err := h.EncryptBytes(bytes, values, out)
+
+	// Do the encryption
+	encrypted, err := h.EncryptBytes(bytes, values)
 	if err != nil {
 		cli.ExitWithError("Failed to encrypt", err)
 	}
-	defer tdfFile.Close()
 
-	f, err := os.Open(tdfFile.Name())
-	if err != nil {
-		cli.ExitWithError(fmt.Sprintf("Failed to write encrypted file %s to stdout", tdfFile.Name()), err)
+	// Find the destination as the output flag filename or stdout
+	var dest *os.File
+	if out != "" {
+		// make sure output ends in .tdf extension
+		if !strings.HasSuffix(out, ".tdf") {
+			out += ".tdf"
+		}
+		tdfFile, err := os.Create(out)
+		if err != nil {
+			cli.ExitWithError(fmt.Sprintf("Failed to write encrypted file %s", out), err)
+		}
+		defer tdfFile.Close()
+		dest = tdfFile
+	} else {
+		dest = os.Stdout
 	}
 
-	_, e := io.Copy(os.Stdout, f)
+	_, e := io.Copy(dest, encrypted)
 	if e != nil {
 		cli.ExitWithError("Failed to write encrypted data to stdout", e)
 	}

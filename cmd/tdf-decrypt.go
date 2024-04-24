@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
@@ -28,7 +29,7 @@ func dev_tdfDecryptCmd(cmd *cobra.Command, args []string) {
 	} else if len(piped) > 0 {
 		bytesToDecrypt = piped
 	} else {
-		bytesToDecrypt = readBytesFromFile("sensitive.txt.tdf")
+		cli.ExitWithError("Must provide ONE of the following to decrypt: [file argument, stdin input]", errors.New("no input provided"))
 	}
 
 	decrypted, err := h.DecryptTDF(bytesToDecrypt)

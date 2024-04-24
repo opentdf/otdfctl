@@ -4,23 +4,16 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"os"
 
 	"github.com/opentdf/platform/sdk"
 )
 
-func (h Handler) EncryptBytes(b []byte, values []string, out string) (*os.File, error) {
-	if out == "" {
-		out = "sensitive.txt"
-	}
-
-	tdfFile, err := os.Create(fmt.Sprintf("%s.tdf", out))
-	if err != nil {
-		return nil, err
-	}
+func (h Handler) EncryptBytes(b []byte, values []string) (*bytes.Buffer, error) {
+	var encrypted []byte
+	enc := bytes.NewBuffer(encrypted)
 
 	// TODO: validate values are FQNs or return an error [https://github.com/opentdf/platform/issues/515]
-	_, err = h.sdk.CreateTDF(tdfFile, bytes.NewReader(b),
+	_, err := h.sdk.CreateTDF(enc, bytes.NewReader(b),
 		sdk.WithDataAttributes(values...),
 		sdk.WithKasInformation(sdk.KASInfo{
 			URL:       fmt.Sprintf("http://%s", h.platformEndpoint),
@@ -31,7 +24,7 @@ func (h Handler) EncryptBytes(b []byte, values []string, out string) (*os.File, 
 	if err != nil {
 		return nil, err
 	}
-	return tdfFile, nil
+	return enc, nil
 }
 
 func (h Handler) DecryptTDF(toDecrypt []byte) (*bytes.Buffer, error) {
