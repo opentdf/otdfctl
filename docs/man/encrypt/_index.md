@@ -5,7 +5,7 @@ command:
   flags:
     - name: out
       shorthand: o
-      description: A filename and extension that will be TDFd (i.e. '-o password.txt' -> 'password.txt.tdf') and placed in the current working directory.
+      description: The output file TDF in the current working directory instead of stdout ('-o file.txt' and '-o file.txt.tdf' both write the TDF as file.txt.tdf).
       default: ''
     - name: attr
       shorthand: a

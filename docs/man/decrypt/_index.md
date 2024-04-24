@@ -5,7 +5,7 @@ command:
   flags:
     - name: out
       shorthand: o
-      description: 'The file destination for decrypted content to be written.'
+      description: 'The file destination for decrypted content to be written instead of stdout.'
       default: ''
 ---
 
@@ -17,9 +17,9 @@ The first argument is the TDF file with path from the current working directory 
 
 ```bash
 # specify the TDF to decrypt then output decrypted contents
-otdfctl decrypt hello.txt.tdf # print to stdout
+otdfctl decrypt hello.txt.tdf # write to stdout
 otdfctl decrypt hello.txt.tdf > hello.txt # consume stdout to write to hello.txt file
-otdfctl decrypt hello.txt.tdf -o hello.txt # write to hello.txt file
+otdfctl decrypt hello.txt.tdf -o hello.txt # write to hello.txt file instead of stdout
 
 # pipe the TDF to decrypt
 cat hello.txt.tdf | otdfctl decrypt > hello.txt
