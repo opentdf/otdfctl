@@ -5,8 +5,8 @@ command:
   flags:
     - name: out
       shorthand: o
-      description: "The decrypted out destination. Default: 'stdout'. Options: ['file', 'stdout']"
-      default: 'stdout'
+      description: 'The file destination for decrypted content to be written.'
+      default: ''
 ---
 
 Decrypt a Trusted Data Format (TDF) file and output the contents to stdout or a file in the current working directory.
@@ -23,5 +23,4 @@ otdfctl decrypt
 otdfctl decrypt hello.txt.tdf # print to stdout
 otdfctl decrypt hello.txt.tdf > hello.txt # consume stdout to write to hello.txt file
 otdfctl decrypt hello.txt.tdf -o hello.txt # write to hello.txt file
-
 ```
