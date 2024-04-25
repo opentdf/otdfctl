@@ -9,6 +9,7 @@ import (
 
 	"github.com/opentdf/otdfctl/internal/config"
 	"github.com/opentdf/otdfctl/pkg/man"
+	"github.com/spf13/cobra"
 )
 
 var (
@@ -36,6 +37,7 @@ func init() {
 		doc.GetDocFlag("log-level").Default,
 		doc.GetDocFlag("log-level").Description,
 	)
+	RootCmd.AddGroup(&cobra.Group{ID: "tdf"})
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.

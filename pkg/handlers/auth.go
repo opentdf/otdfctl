@@ -15,8 +15,7 @@ const (
 	OTDFCTL_OIDC_TOKEN_KEY      = "OTDFCTL_OIDC_TOKEN"
 )
 
-// we're hardcoding this for now, but eventually it will be retrieved from the backend config
-// TODO udpate to use the wellknown endpoint for the platform (https://github.com/opentdf/platform/pull/296)
+// TODO: get this dynamically from the platform via SDK or dialing directly: [https://github.com/opentdf/platform/issues/147]
 const TOKEN_URL = "http://localhost:8888/auth/realms/opentdf/protocol/openid-connect/token"
 
 // CheckTokenExpiration checks if an OIDC token has expired.
