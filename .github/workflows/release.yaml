@@ -33,22 +33,22 @@ jobs:
           increment: ${{ github.event.inputs.versionBumpType }}
           pep440: false
       - name: print-version
-        run: echo Incrementing Version ${{ steps.version.outputs.current-version }} -> ${{ steps.version.outputs.version }}
+        run: echo Incrementing Version ${{ steps.version.outputs.current-v-version }} -> ${{ steps.version.outputs.v-version }}
       - name: make-targets
         env:
-          SEM_VER: ${{ steps.version.outputs.version }}
+          SEM_VER: ${{ steps.version.outputs.v-version }}
         run: make build
       - name: smoke-test
         run: go test ./... -short -race -cover
       - name: Compress the builds and generate checksums
         env:
-          SEM_VER: ${{ steps.version.outputs.version }}
+          SEM_VER: ${{ steps.version.outputs.v-version }}
         run: make zip-builds
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
           files: './output/**/*'
           body: 'This is a test release, and will be removed'
-          tag_name: ${{ steps.version.outputs.version }}
+          tag_name: ${{ steps.version.outputs.v-version }}
           repository: opentdf/otdfctl
           generate_release_notes: true
