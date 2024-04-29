@@ -11,6 +11,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/muesli/reflow/wordwrap"
+	"github.com/opentdf/otdfctl/pkg/handlers"
 	"github.com/opentdf/otdfctl/tui/constants"
 )
 
@@ -67,6 +68,7 @@ type AttributeView struct {
 	list          []list.Item
 	idx           int
 	editMode      bool
+	sdk           handlers.Handler
 }
 
 func SetupViewport(m AttributeView, msg tea.WindowSizeMsg) (AttributeView, []tea.Cmd) {
@@ -190,7 +192,7 @@ func (m AttributeView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.IsNew() {
 				listIdx -= 1
 			}
-			return InitAttributeList(m.list, listIdx)
+			return InitAttributeList(m.list, listIdx, m.sdk)
 		case tea.KeyShiftRight:
 			if !m.IsNew() {
 				m.list[m.idx] = list.Item(item)
@@ -198,7 +200,7 @@ func (m AttributeView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.list = append(m.list, list.Item(item))
 			}
 
-			return InitAttributeList(m.list, m.idx)
+			return InitAttributeList(m.list, m.idx, m.sdk)
 		case tea.KeyEnter:
 			m.nextInput()
 		case tea.KeyCtrlC, tea.KeyEsc:

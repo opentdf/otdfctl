@@ -4,12 +4,14 @@ import (
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/opentdf/otdfctl/pkg/handlers"
 	"github.com/opentdf/otdfctl/tui/constants"
 )
 
 type AttributeList struct {
 	list  list.Model
 	width int
+	sdk   handlers.Handler
 }
 
 type AttributeItem struct {
@@ -33,10 +35,10 @@ func (m AttributeItem) Description() string {
 	return m.description
 }
 
-func InitAttributeList(items []list.Item, selectIdx int) (tea.Model, tea.Cmd) {
+func InitAttributeList(items []list.Item, selectIdx int, sdk handlers.Handler) (tea.Model, tea.Cmd) {
 	// TODO: fetch items from API
 
-	m := AttributeList{}
+	m := AttributeList{sdk: sdk}
 	m.list = list.New([]list.Item{}, list.NewDefaultDelegate(), constants.WindowSize.Width, constants.WindowSize.Height)
 	if selectIdx > 0 {
 		m.list.Select(selectIdx)
@@ -76,7 +78,7 @@ func (m AttributeList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c", "q":
 			return m, tea.Quit
 		case "ctrl+[", "backspace":
-			am, _ := InitAppMenu()
+			am, _ := InitAppMenu(m.sdk)
 			am.list.Select(1)
 			return am.Update(WindowMsg())
 		case "down", "j":
