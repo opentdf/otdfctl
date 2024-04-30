@@ -26,7 +26,7 @@ func FooterMessage(msg string) string {
 
 func ErrorMessage(msg string, err error) string {
 	if err != nil {
-		msg = ": " + err.Error()
+		msg += ": " + err.Error()
 	}
 
 	return lipgloss.JoinHorizontal(

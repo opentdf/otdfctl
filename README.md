@@ -17,6 +17,12 @@ The main goals are to:
 
 ## Installation
 
+Install the pre-reqs: 
+- [Hugo](https://gohugo.io/)
+- [git-lfs](https://git-lfs.com/)
+
+For MacOS: `brew install hugo git-lfs`
+
 ## Usage
 
 The CLI is configured via the `otdfctl.yaml`. There is an example provided in `otdfctl-example.yaml`.

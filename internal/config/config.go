@@ -38,12 +38,13 @@ const (
 )
 
 // Load config with viper.
-func LoadConfig(key string) (*Config, error) {
-	if key == "" {
+func LoadConfig(file string, key string) (*Config, error) {
+	// default the config values if not passed in
+	if file == "" && key == "" {
 		key = "otdfctl"
-		slog.Debug("LoadConfig: key not provided, using default", "config file", key)
+		slog.Debug("LoadConfig: file and key not provided, using default file", "config file", file)
 	} else {
-		slog.Debug("LoadConfig", "config file", key)
+		slog.Debug("LoadConfig", "config file", file, "config key", key)
 	}
 
 	config := &Config{}
@@ -61,6 +62,12 @@ func LoadConfig(key string) (*Config, error) {
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()
 
+	// Allow for a custom config file to be passed in
+	// This takes precedence over the AddConfigPath/SetConfigName
+	if file != "" {
+		viper.SetConfigFile(file)
+	}
+
 	if err := viper.ReadInConfig(); err != nil {
 		return nil, errors.Join(err, ErrLoadingConfig)
 	}
@@ -77,13 +84,17 @@ func LoadConfig(key string) (*Config, error) {
 	return config, nil
 }
 
-func UpdateOutputFormat(format string) {
+func UpdateOutputFormat(cfgKey, format string) {
 	v := viper.GetViper()
 	format = strings.ToLower(format)
+	formatter := "output.format"
+	if cfgKey != "" {
+		formatter = cfgKey + "." + formatter
+	}
 	if format == OutputJSON {
-		v.Set("output.format", OutputJSON)
+		v.Set(formatter, OutputJSON)
 	} else {
-		v.Set("output.format", OutputStyled)
+		v.Set(formatter, OutputStyled)
 	}
 	viper.WriteConfig()
 }

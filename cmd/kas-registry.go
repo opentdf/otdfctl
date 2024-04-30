@@ -5,13 +5,11 @@ import (
 
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/man"
-	"github.com/opentdf/platform/protocol/go/kasregistry"
+	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/spf13/cobra"
 )
 
-var (
-	policy_kasRegistryCmd *cobra.Command
-)
+var policy_kasRegistryCmd *cobra.Command
 
 func policy_getKeyAccessRegistry(cmd *cobra.Command, args []string) {
 	h := cli.NewHandler(cmd)
@@ -89,17 +87,17 @@ func policy_createKeyAccessRegistry(cmd *cobra.Command, args []string) {
 		cli.ExitWithError("Issue with create flags 'public-key-local' and 'public-key-remote': ", e)
 	}
 
-	key := &kasregistry.PublicKey{}
+	key := &policy.PublicKey{}
 	keyType := "Local"
 	if local != "" {
 		if remote != "" {
 			e := fmt.Errorf("Only one public key is allowed. Please pass either a local or remote public key but not both")
 			cli.ExitWithError("Issue with create flags 'public-key-local' and 'public-key-remote': ", e)
 		}
-		key.PublicKey = &kasregistry.PublicKey_Local{Local: local}
+		key.PublicKey = &policy.PublicKey_Local{Local: local}
 	} else {
 		keyType = "Remote"
-		key.PublicKey = &kasregistry.PublicKey_Remote{Remote: remote}
+		key.PublicKey = &policy.PublicKey_Remote{Remote: remote}
 	}
 
 	created, err := h.CreateKasRegistryEntry(
@@ -140,14 +138,14 @@ func policy_updateKeyAccessRegistry(cmd *cobra.Command, args []string) {
 	}
 
 	// TODO: should update of a type of key be a dangerous mutation or cause a need for confirmation in the CLI?
-	var pubKey *kasregistry.PublicKey
+	var pubKey *policy.PublicKey
 	if local != "" && remote != "" {
 		e := fmt.Errorf("Only one public key is allowed. Please pass either a local or remote public key but not both")
 		cli.ExitWithError("Issue with update flags 'public-key-local' and 'public-key-remote': ", e)
 	} else if local != "" {
-		pubKey = &kasregistry.PublicKey{PublicKey: &kasregistry.PublicKey_Local{Local: local}}
+		pubKey = &policy.PublicKey{PublicKey: &policy.PublicKey_Local{Local: local}}
 	} else if remote != "" {
-		pubKey = &kasregistry.PublicKey{PublicKey: &kasregistry.PublicKey_Remote{Remote: remote}}
+		pubKey = &policy.PublicKey{PublicKey: &policy.PublicKey_Remote{Remote: remote}}
 	}
 
 	updated, err := h.UpdateKasRegistryEntry(

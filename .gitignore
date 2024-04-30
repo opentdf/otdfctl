@@ -11,3 +11,6 @@ otdfctl
 public/
 .hugo_build.lock
 output/
+
+# Ignore any TDF files created by the CLI
+*.tdf

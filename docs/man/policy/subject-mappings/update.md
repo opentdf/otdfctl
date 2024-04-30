@@ -9,8 +9,10 @@ command:
       required: true
     - name: action-standard
       description: The standard action to map to a subject set
+      enum:
+        - DECRYPT
+        - TRANSMIT
       shorthand: s
-      enum: [DECRYPT, TRANSMIT]
       required: true
       default: ""
     - name: action-custom

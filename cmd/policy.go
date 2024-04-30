@@ -20,5 +20,5 @@ func init() {
 		doc.GetDocFlag("json").DefaultAsBool(),
 		doc.GetDocFlag("json").Description,
 	)
-	rootCmd.AddCommand(policyCmd)
+	RootCmd.AddCommand(policyCmd)
 }

@@ -14,5 +14,5 @@ func init() {
 			tui.StartTea(h)
 		}),
 	)
-	rootCmd.AddCommand(&cmd.Command)
+	RootCmd.AddCommand(&cmd.Command)
 }

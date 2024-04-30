@@ -1,8 +1,11 @@
 package cmd
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
+	"io"
+	"os"
 	"strings"
 
 	"github.com/charmbracelet/lipgloss/table"
@@ -114,10 +117,46 @@ func injectLabelFlags(cmd *cobra.Command, isUpdate bool) {
 	}
 }
 
+// Read bytes from stdin without blocking by checking size first
+func readPipedStdin() []byte {
+	stat, err := os.Stdin.Stat()
+	if err != nil {
+		cli.ExitWithError("Failed to read stat from stdin", err)
+	}
+	if (stat.Mode() & os.ModeCharDevice) == 0 {
+		var buf []byte
+		scanner := bufio.NewScanner(os.Stdin)
+
+		for scanner.Scan() {
+			buf = append(buf, scanner.Bytes()...)
+		}
+
+		if err := scanner.Err(); err != nil {
+			cli.ExitWithError("failed to scan bytes from stdin", err)
+		}
+		return buf
+	}
+	return nil
+}
+
+func readBytesFromFile(filePath string) []byte {
+	fileToEncrypt, err := os.Open(filePath)
+	if err != nil {
+		cli.ExitWithError(fmt.Sprintf("Failed to open file at path: %s", filePath), err)
+	}
+	defer fileToEncrypt.Close()
+
+	bytes, err := io.ReadAll(fileToEncrypt)
+	if err != nil {
+		cli.ExitWithError(fmt.Sprintf("Failed to read bytes from file at path: %s", filePath), err)
+	}
+	return bytes
+}
+
 func init() {
 	designCmd := man.Docs.GetCommand("dev/design-system",
 		man.WithRun(dev_designSystem),
 	)
 	devCmd.AddCommand(&designCmd.Command)
-	rootCmd.AddCommand(&devCmd.Command)
+	RootCmd.AddCommand(&devCmd.Command)
 }
