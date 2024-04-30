@@ -45,10 +45,7 @@ func auth_clientCredentials(cmd *cobra.Command, args []string) {
 
 	_, err := handlers.GetTokenWithClientCredentials(cmd.Context(), clientID, clientSecret, handlers.TOKEN_URL, false)
 	if err != nil {
-		errMsg := cli.ErrorMessage("An error occurred during login. Please check your credentials and try again.", nil)
-		fmt.Println(errMsg)
-		cli.ExitWithError(errMsg, err)
-		return
+		cli.ExitWithError("An error occurred during login. Please check your credentials and try again", err)
 	}
 
 	fmt.Println(cli.SuccessMessage("Successfully logged in with client ID and secret"))
