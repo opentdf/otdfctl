@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/opentdf/otdfctl/pkg/cli"
@@ -15,49 +16,34 @@ var clientCredentialsCmd = man.Docs.GetCommand("auth/client-credentials",
 )
 
 func auth_clientCredentials(cmd *cobra.Command, args []string) {
-	h := cli.NewHandler(cmd)
-	defer h.Close()
-
 	flagHelper := cli.NewFlagHelper(cmd)
-	clientId := flagHelper.GetOptionalString("client-id")
+	clientID := flagHelper.GetOptionalString("client-id")
 	clientSecret := flagHelper.GetOptionalString("client-secret")
 
-	// check if we have a clientId in the keyring, if a null value is passed in
-	if clientId == "" {
+	// if not provided by flag, check keyring cache for clientID
+	if clientID == "" {
 		fmt.Println("No client-id provided. Attempting to retrieve the default from keyring.")
-		retrievedClientID, errID := keyring.Get(handlers.TOKEN_URL, handlers.OTDFCTL_CLIENT_ID_CACHE_KEY)
-		if errID == nil {
-			clientId = retrievedClientID
-			fmt.Println(cli.SuccessMessage("Retrieved stored clientId from keyring"))
+		retrievedClientID, err := handlers.GetClientIDFromCache()
+		if err != nil || retrievedClientID == "" {
+			cli.ExitWithError("Please provide required flag: (client-id)", errors.New("no client-id found"))
+		} else {
+			clientID = retrievedClientID
+			fmt.Println(cli.SuccessMessage("Retrieved stored client-id from keyring"))
 		}
-	}
-
-	// now lets check if we still don't have it, and if not, throw and error
-	if clientId == "" {
-		errMsg := fmt.Sprintf("Please provide required flag: (%s)", "client-id")
-		fmt.Println(cli.ErrorMessage(errMsg, nil))
-		cli.ExitWithError("Failed to create attribute", nil)
-		return
 	}
 
 	// check if we have a clientSecret in the keyring, if a null value is passed in
 	if clientSecret == "" {
-		retrievedSecret, krErr := keyring.Get(handlers.TOKEN_URL, clientId)
-		if krErr == nil {
+		retrievedSecret, krErr := keyring.Get(handlers.TOKEN_URL, clientID)
+		if krErr == nil || retrievedSecret == "" {
+			cli.ExitWithError("Please provide required flag: (client-secret)", errors.New("no client-secret found"))
+		} else {
 			clientSecret = retrievedSecret
-			fmt.Println(cli.SuccessMessage("Retrieved stored clientSecret from keyring"))
+			fmt.Println(cli.SuccessMessage("Retrieved stored client-secret from keyring"))
 		}
 	}
-	// check if we still don't have it, and if not throw an error
-	if clientSecret == "" {
-		errMsg := fmt.Sprintf("Please provide required flag: (%s)", "client-secret")
-		fmt.Println(cli.ErrorMessage(errMsg, nil))
-		cli.ExitWithError("Failed to create attribute", nil)
-		return
-	}
 
-	// for now we're hardcoding the TOKEN_URL as a constant at the top
-	_, err := h.GetTokenWithClientCredentials(clientId, clientSecret, handlers.TOKEN_URL, false)
+	_, err := handlers.GetTokenWithClientCredentials(cmd.Context(), clientID, clientSecret, handlers.TOKEN_URL, false)
 	if err != nil {
 		errMsg := cli.ErrorMessage("An error occurred during login. Please check your credentials and try again.", nil)
 		fmt.Println(errMsg)

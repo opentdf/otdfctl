@@ -2,12 +2,17 @@ package handlers
 
 import (
 	"context"
+	"errors"
 
 	"github.com/opentdf/platform/protocol/go/common"
 	"github.com/opentdf/platform/sdk"
 )
 
-var SDK *sdk.SDK
+var (
+	SDK *sdk.SDK
+
+	ErrUnauthenticated = errors.New("unauthenticated")
+)
 
 type Handler struct {
 	sdk              *sdk.SDK

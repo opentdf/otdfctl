@@ -5,4 +5,4 @@ command:
   name: print-access-token
 ---
 
-Retrieves the cached OIDC token from the OS-specific keychain and prints if found.
+Retrieves the cached OIDC Access Token from the OS-specific keychain and prints to stdout if found.

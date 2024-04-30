@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -40,33 +41,25 @@ func CheckTokenExpiration(tokenString string) (bool, error) {
 
 // GetOIDCTokenFromCache retrieves the OIDC token from the keyring.
 func GetOIDCTokenFromCache() (string, error) {
-	token, err := keyring.Get(TOKEN_URL, OTDFCTL_OIDC_TOKEN_KEY)
-	if err != nil {
-		return "", err
-	}
-	return token, nil
+	return keyring.Get(TOKEN_URL, OTDFCTL_OIDC_TOKEN_KEY)
 }
 
 // GetClientIDFromCache retrieves the client ID from the keyring.
 func GetClientIDFromCache() (string, error) {
-	clientId, err := keyring.Get(TOKEN_URL, OTDFCTL_CLIENT_ID_CACHE_KEY)
-	if err != nil {
-		return "", err
-	}
-	return clientId, nil
+	return keyring.Get(TOKEN_URL, OTDFCTL_CLIENT_ID_CACHE_KEY)
+}
+
+// GetClientSecretFromCache retrieves the client secret from the keyring.
+func GetClientSecretFromCache(clientID string) (string, error) {
+	return keyring.Get(TOKEN_URL, clientID)
 }
 
 // GetClientSecretFromCache retrieves the client secret from the keyring.
 func GetClientIdAndSecretFromCache() (string, string, error) {
-	// our clientSecret key, is our clientId, so we gotta grab that first
+	// we use the client id to cache the secret, so retrieve it first
 	clientId, err := keyring.Get(TOKEN_URL, OTDFCTL_CLIENT_ID_CACHE_KEY)
-	if err != nil {
-		// we failed to get the clientId for somereason
-		return "", "", err
-	}
-
-	if clientId == "" {
-		return "", "", fmt.Errorf("no clientId found in keyring")
+	if err != nil || clientId == "" {
+		return "", "", ErrUnauthenticated
 	}
 
 	clientSecret, err := keyring.Get(TOKEN_URL, clientId)
@@ -76,34 +69,8 @@ func GetClientIdAndSecretFromCache() (string, string, error) {
 	return clientSecret, clientId, nil
 }
 
-// DEBUG_PrintKeyRingSecrets prints all the secrets in the keyring.
-func (h *Handler) DEBUG_PrintKeyRingSecrets() {
-	clientId, err := keyring.Get(TOKEN_URL, OTDFCTL_CLIENT_ID_CACHE_KEY)
-	if err != nil {
-		fmt.Println("Failed to retrieve secret from keyring:", err)
-		return
-	}
-
-	// and our special clientId key, to grab the secret
-	secret, errSec := keyring.Get(TOKEN_URL, clientId)
-	OIDC_TOKEN, errToken := keyring.Get(TOKEN_URL, OTDFCTL_OIDC_TOKEN_KEY)
-
-	if errSec != nil {
-		fmt.Println("Failed to retrieve secret from keyring:", err)
-		return
-	}
-
-	if errToken != nil {
-		fmt.Println("Failed to retrieve secret from keyring:", errToken)
-		return
-	}
-
-	fmt.Println(clientId, ":", secret)
-	fmt.Println("Stored OIDC_TOKEN OF:", OIDC_TOKEN)
-}
-
 // GetTokenWithClientCredentials uses the OAuth2 client credentials flow to obtain a token.
-func (h *Handler) GetTokenWithClientCredentials(clientID, clientSecret, tokenURL string, noCache bool) (*oauth2.Token, error) {
+func GetTokenWithClientCredentials(ctx context.Context, clientID, clientSecret, tokenURL string, noCache bool) (*oauth2.Token, error) {
 	// did the user pass a custom tokenURL?
 	if tokenURL == "" {
 		// use the default hardcoded constant
@@ -116,7 +83,7 @@ func (h *Handler) GetTokenWithClientCredentials(clientID, clientSecret, tokenURL
 		TokenURL:     tokenURL,
 	}
 
-	token, err := config.Token(h.ctx)
+	token, err := config.Token(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -140,6 +107,5 @@ func (h *Handler) GetTokenWithClientCredentials(clientID, clientSecret, tokenURL
 			return nil, fmt.Errorf("failed to store OIDC Token in keyring: %v", errToken)
 		}
 	}
-	h.OIDC_TOKEN = token.AccessToken
 	return token, nil
 }
