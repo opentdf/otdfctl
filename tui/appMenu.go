@@ -5,7 +5,6 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/opentdf/otdfctl/pkg/handlers"
 	"github.com/opentdf/otdfctl/tui/constants"
-	"github.com/opentdf/platform/protocol/go/common"
 )
 
 const (
@@ -84,27 +83,7 @@ func (m AppMenu) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// 	return nl, cmd
 			case attributeMenu:
 				// list attributes
-				res, err := m.sdk.ListAttributes(common.ActiveStateEnum_ACTIVE_STATE_ENUM_ANY)
-				if err != nil {
-					return m, nil
-				}
-				var attrs []list.Item
-				for _, attr := range res {
-					var vals []string
-					for _, val := range attr.Values {
-						vals = append(vals, val.Value)
-					}
-					item := AttributeItem{
-						id:        attr.Id,
-						namespace: attr.Namespace.Name,
-						name:      attr.Name,
-						rule:      attr.Rule.String(),
-						values:    vals,
-					}
-					attrs = append(attrs, item)
-				}
-
-				al, cmd := InitAttributeList(attrs, 0, m.sdk)
+				al, cmd := InitAttributeList("", m.sdk)
 				return al, cmd
 			}
 		}

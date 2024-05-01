@@ -192,15 +192,17 @@ func (m AttributeView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.IsNew() {
 				listIdx -= 1
 			}
-			return InitAttributeList(m.list, listIdx, m.sdk)
+			return InitAttributeList(item.id, m.sdk)
 		case tea.KeyShiftRight:
 			if !m.IsNew() {
+				// edit
 				m.list[m.idx] = list.Item(item)
 			} else {
+				// create
 				m.list = append(m.list, list.Item(item))
 			}
 
-			return InitAttributeList(m.list, m.idx, m.sdk)
+			return InitAttributeList(item.id, m.sdk)
 		case tea.KeyEnter:
 			m.nextInput()
 		case tea.KeyCtrlC, tea.KeyEsc:

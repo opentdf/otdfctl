@@ -6,6 +6,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/opentdf/otdfctl/pkg/handlers"
 	"github.com/opentdf/otdfctl/tui/constants"
+	"github.com/opentdf/platform/protocol/go/common"
 )
 
 type AttributeList struct {
@@ -35,16 +36,37 @@ func (m AttributeItem) Description() string {
 	return m.description
 }
 
-func InitAttributeList(items []list.Item, selectIdx int, sdk handlers.Handler) (tea.Model, tea.Cmd) {
+func InitAttributeList(id string, sdk handlers.Handler) (tea.Model, tea.Cmd) {
 	// TODO: fetch items from API
-
 	m := AttributeList{sdk: sdk}
 	m.list = list.New([]list.Item{}, list.NewDefaultDelegate(), constants.WindowSize.Width, constants.WindowSize.Height)
-	if selectIdx > 0 {
-		m.list.Select(selectIdx)
+	res, err := sdk.ListAttributes(common.ActiveStateEnum_ACTIVE_STATE_ENUM_ANY)
+	if err != nil {
+		return m, nil
 	}
+	var attrs []list.Item
+	selectIdx := 0
+	for i, attr := range res {
+		var vals []string
+		for _, val := range attr.Values {
+			vals = append(vals, val.Value)
+		}
+		if attr.Id == id {
+			selectIdx = i
+		}
+		item := AttributeItem{
+			id:        attr.Id,
+			namespace: attr.Namespace.Name,
+			name:      attr.Name,
+			rule:      attr.Rule.String(),
+			values:    vals,
+		}
+		attrs = append(attrs, item)
+	}
+	// println(selectIdx)
 	m.list.Title = "Attributes"
-	m.list.SetItems(items)
+	m.list.SetItems(attrs)
+	m.list.Select(selectIdx)
 	return m.Update(WindowMsg())
 }
 
@@ -79,7 +101,8 @@ func (m AttributeList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case "ctrl+[", "backspace":
 			am, _ := InitAppMenu(m.sdk)
-			am.list.Select(1)
+			// make enum for Attributes idx in AppMenu
+			am.list.Select(0)
 			return am.Update(WindowMsg())
 		case "down", "j":
 			if m.list.Index() < len(m.list.Items())-1 {
