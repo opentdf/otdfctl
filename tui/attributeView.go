@@ -124,6 +124,22 @@ func (m AttributeView) Init() tea.Cmd {
 	return nil
 }
 
+func (m AttributeView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.Type {
+		case tea.KeyCtrlC, tea.KeyEsc:
+			return m, tea.Quit
+		}
+	}
+	return m, nil
+}
+
+func (m AttributeView) View() string {
+	return "Attribute View"
+}
+
 // func (m AttributeView) IsNew() bool {
 // 	return m.idx >= len(m.list)
 // }
