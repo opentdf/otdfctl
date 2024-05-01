@@ -112,10 +112,11 @@ func (m AttributeList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.list.Index() > 0 {
 				m.list.Select(m.list.Index() - 1)
 			}
-		case "c":
-			return InitAttributeView(m.list.Items(), len(m.list.Items()))
+		// case "c":
+		// create new attribute
+		// return InitAttributeView(m.list.Items(), len(m.list.Items()))
 		case "enter", "e":
-			return InitAttributeView(m.list.Items(), m.list.Index())
+			return InitAttributeView(m.list.Items()[m.list.Index()].(AttributeItem).id, m.sdk)
 		case "ctrl+d":
 			m.list.RemoveItem(m.list.Index())
 			newIndex := m.list.Index() - 1
