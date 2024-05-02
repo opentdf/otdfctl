@@ -13,6 +13,7 @@ import (
 
 var clearCachedCredsCmd = man.Docs.GetCommand("auth/clear-cached-credentials",
 	man.WithRun(auth_clearCreds),
+	man.WithHiddenFlags("with-client-creds", "with-client-creds-file"),
 )
 
 func auth_clearCreds(cmd *cobra.Command, args []string) {

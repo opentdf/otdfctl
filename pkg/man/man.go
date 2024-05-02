@@ -53,6 +53,19 @@ func WithRun(f func(cmd *cobra.Command, args []string)) CommandOpts {
 	}
 }
 
+// Hide any global or persisent flags from parent commands on the given command
+func WithHiddenFlags(flags ...string) CommandOpts {
+	return func(d *Doc) {
+		// to hide root global flags, must set a custom help func that hides then calls the parent help func
+		d.SetHelpFunc(func(command *cobra.Command, strings []string) {
+			for _, f := range flags {
+				command.Flags().MarkHidden(f)
+			}
+			command.Parent().HelpFunc()(command, strings)
+		})
+	}
+}
+
 type Manual struct {
 	lang string
 	Docs map[string]*Doc
