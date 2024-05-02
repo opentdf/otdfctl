@@ -16,8 +16,7 @@ type AttributeList struct {
 }
 
 type AttributeItem struct {
-	id          int
-	_id         string
+	id          string
 	namespace   string
 	name        string
 	description string
@@ -57,8 +56,7 @@ func InitAttributeList(id string, sdk handlers.Handler) (tea.Model, tea.Cmd) {
 			selectIdx = i
 		}
 		item := AttributeItem{
-			id:        i,
-			_id:       attr.Id,
+			id:        attr.Id,
 			namespace: attr.Namespace.Name,
 			name:      attr.Name,
 			rule:      attr.Rule.String(),
@@ -119,7 +117,7 @@ func (m AttributeList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// create new attribute
 		// return InitAttributeView(m.list.Items(), len(m.list.Items()))
 		case "enter", "e":
-			return InitAttributeView(m.list.Items()[m.list.Index()].(AttributeItem)._id, m.sdk)
+			return InitAttributeView(m.list.Items()[m.list.Index()].(AttributeItem).id, m.sdk)
 		case "ctrl+d":
 			m.list.RemoveItem(m.list.Index())
 			newIndex := m.list.Index() - 1

@@ -18,44 +18,56 @@ import (
 
 // type menuState int
 
+type AttributeSubItem struct {
+	title       string
+	description string
+}
+
 // type AttributeItem struct {
 // 	id          menuState
 // 	title       string
 // 	description string
 // }
 
-// func (m AttributeItem) FilterValue() string {
-// 	return m.title
-// }
+func (m AttributeSubItem) FilterValue() string {
+	return m.title
+}
 
-// func (m AttributeItem) Title() string {
-// 	return m.title
-// }
+func (m AttributeSubItem) Title() string {
+	return m.title
+}
 
-// func (m AttributeItem) Description() string {
-// 	return m.description
-// }
+func (m AttributeSubItem) Description() string {
+	return m.description
+}
 
 type AttributeView struct {
-	list list.Model
-	view tea.Model
-	sdk  handlers.Handler
+	read Read
+	// list list.Model
+	// sdk  handlers.Handler
 }
 
 func InitAttributeView(id string, h handlers.Handler) (AttributeView, tea.Cmd) {
-	m := AttributeView{
-		view: nil,
-		sdk:  h,
-	}
+	read := Read{title: "Read Attribute"}
+	m := AttributeView{read: read}
 	attr, err := h.GetAttribute(id)
 	if err != nil {
 		return m, nil
 	}
-	m.list = list.New([]list.Item{}, list.NewDefaultDelegate(), 8, 8)
-	m.list.Title = "OpenTDF"
-	m.list.SetItems([]list.Item{
+	model, _ := InitRead("Read Attribute", []list.Item{
 		// AppMenuItem{title: "Namespaces", description: "Manage namespaces", id: namespaceMenu},
-		AttributeItem{title: "ID", description: "ID >" + attr.Id, _id: attr.Id, id: 0, name: "OK"},
+		AttributeSubItem{title: "ID", description: attr.Id},
+		// AppMenuItem{title: "Entitlements", description: "Manage entitlements", id: entitlementMenu},
+		// AppMenuItem{title: "Resource Encodings", description: "Manage resource encodings", id: resourceEncodingMenu},
+		// AppMenuItem{title: "Subject Encodings", description: "Manage subject encodings", id: subjectEncodingMenu},
+	})
+	m.read = model.(Read)
+
+	m.read.list = list.New([]list.Item{}, list.NewDefaultDelegate(), constants.WindowSize.Width, constants.WindowSize.Height)
+	m.read.list.Title = "Read Attribute"
+	m.read.list.SetItems([]list.Item{
+		// AppMenuItem{title: "Namespaces", description: "Manage namespaces", id: namespaceMenu},
+		AttributeSubItem{title: "ID", description: attr.Id},
 		// AppMenuItem{title: "Entitlements", description: "Manage entitlements", id: entitlementMenu},
 		// AppMenuItem{title: "Resource Encodings", description: "Manage resource encodings", id: resourceEncodingMenu},
 		// AppMenuItem{title: "Subject Encodings", description: "Manage subject encodings", id: subjectEncodingMenu},
@@ -75,7 +87,7 @@ func (m AttributeView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		constants.WindowSize = msg
-		m.list.SetSize(msg.Width, msg.Height)
+		m.read.list.SetSize(msg.Width, msg.Height)
 		return m, nil
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -98,10 +110,10 @@ func (m AttributeView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	var cmd tea.Cmd
-	m.list, cmd = m.list.Update(msg)
+	m.read.list, cmd = m.read.list.Update(msg)
 	return m, cmd
 }
 
 func (m AttributeView) View() string {
-	return ViewList(m.list)
+	return m.read.View()
 }
