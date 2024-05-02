@@ -7,25 +7,12 @@ import (
 )
 
 type Read struct {
-	title string
-	keys  []string
-	vals  []string
 	list  list.Model
 	width int
 }
 
-type item struct {
-	title string
-}
-
-func (i item) FilterValue() string { return i.title }
-
-func (i item) Title() string {
-	return i.title
-}
-
 func InitRead(title string, items []list.Item) (tea.Model, tea.Cmd) {
-	m := Read{title: title}
+	m := Read{}
 	m.list = list.New(items, list.NewDefaultDelegate(), constants.WindowSize.Width, constants.WindowSize.Height)
 	m.list.Title = title
 	return m.Update(WindowMsg())
