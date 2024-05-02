@@ -47,11 +47,15 @@ func InitAttributeView(id string, h handlers.Handler) (AttributeView, tea.Cmd) {
 		view: nil,
 		sdk:  h,
 	}
+	attr, err := h.GetAttribute(id)
+	if err != nil {
+		return m, nil
+	}
 	m.list = list.New([]list.Item{}, list.NewDefaultDelegate(), 8, 8)
 	m.list.Title = "OpenTDF"
 	m.list.SetItems([]list.Item{
 		// AppMenuItem{title: "Namespaces", description: "Manage namespaces", id: namespaceMenu},
-		AttributeItem{title: "Attributes", description: "Manage attributes", id: "213"},
+		AttributeItem{title: "OK", description: "Id >" + attr.Id, id: attr.Id},
 		// AppMenuItem{title: "Entitlements", description: "Manage entitlements", id: entitlementMenu},
 		// AppMenuItem{title: "Resource Encodings", description: "Manage resource encodings", id: resourceEncodingMenu},
 		// AppMenuItem{title: "Subject Encodings", description: "Manage subject encodings", id: subjectEncodingMenu},
