@@ -7,7 +7,7 @@ import (
 )
 
 func policy_updateKasGrant(cmd *cobra.Command, args []string) {
-	h := cli.NewHandler(cmd)
+	h := NewHandler(cmd)
 	defer h.Close()
 
 	flagHelper := cli.NewFlagHelper(cmd)
@@ -51,7 +51,7 @@ func policy_updateKasGrant(cmd *cobra.Command, args []string) {
 }
 
 func policy_deleteKasGrant(cmd *cobra.Command, args []string) {
-	h := cli.NewHandler(cmd)
+	h := NewHandler(cmd)
 	defer h.Close()
 
 	flagHelper := cli.NewFlagHelper(cmd)

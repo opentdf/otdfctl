@@ -19,7 +19,7 @@ var (
 )
 
 func dev_selectorsGen(cmd *cobra.Command, args []string) {
-	h := cli.NewHandler(cmd)
+	h := NewHandler(cmd)
 	defer h.Close()
 
 	flagHelper := cli.NewFlagHelper(cmd)
@@ -62,7 +62,7 @@ func dev_selectorsGen(cmd *cobra.Command, args []string) {
 }
 
 func dev_selectorsTest(cmd *cobra.Command, args []string) {
-	h := cli.NewHandler(cmd)
+	h := NewHandler(cmd)
 	defer h.Close()
 
 	flagHelper := cli.NewFlagHelper(cmd)

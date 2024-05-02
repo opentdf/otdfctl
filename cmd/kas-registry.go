@@ -12,7 +12,7 @@ import (
 var policy_kasRegistryCmd *cobra.Command
 
 func policy_getKeyAccessRegistry(cmd *cobra.Command, args []string) {
-	h := cli.NewHandler(cmd)
+	h := NewHandler(cmd)
 	defer h.Close()
 
 	flagHelper := cli.NewFlagHelper(cmd)
@@ -43,7 +43,7 @@ func policy_getKeyAccessRegistry(cmd *cobra.Command, args []string) {
 }
 
 func policy_listKeyAccessRegistries(cmd *cobra.Command, args []string) {
-	h := cli.NewHandler(cmd)
+	h := NewHandler(cmd)
 	defer h.Close()
 
 	list, err := h.ListKasRegistryEntries()
@@ -73,7 +73,7 @@ func policy_listKeyAccessRegistries(cmd *cobra.Command, args []string) {
 }
 
 func policy_createKeyAccessRegistry(cmd *cobra.Command, args []string) {
-	h := cli.NewHandler(cmd)
+	h := NewHandler(cmd)
 	defer h.Close()
 
 	flagHelper := cli.NewFlagHelper(cmd)
@@ -122,7 +122,7 @@ func policy_createKeyAccessRegistry(cmd *cobra.Command, args []string) {
 }
 
 func policy_updateKeyAccessRegistry(cmd *cobra.Command, args []string) {
-	h := cli.NewHandler(cmd)
+	h := NewHandler(cmd)
 	defer h.Close()
 
 	flagHelper := cli.NewFlagHelper(cmd)
@@ -168,7 +168,7 @@ func policy_updateKeyAccessRegistry(cmd *cobra.Command, args []string) {
 }
 
 func policy_deleteKeyAccessRegistry(cmd *cobra.Command, args []string) {
-	h := cli.NewHandler(cmd)
+	h := NewHandler(cmd)
 	defer h.Close()
 
 	flagHelper := cli.NewFlagHelper(cmd)

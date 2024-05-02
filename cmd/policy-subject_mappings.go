@@ -20,7 +20,7 @@ var (
 )
 
 func policy_getSubjectMapping(cmd *cobra.Command, args []string) {
-	h := cli.NewHandler(cmd)
+	h := NewHandler(cmd)
 	defer h.Close()
 
 	flagHelper := cli.NewFlagHelper(cmd)
@@ -58,7 +58,7 @@ func policy_getSubjectMapping(cmd *cobra.Command, args []string) {
 }
 
 func policy_listSubjectMappings(cmd *cobra.Command, args []string) {
-	h := cli.NewHandler(cmd)
+	h := NewHandler(cmd)
 	defer h.Close()
 
 	list, err := h.ListSubjectMappings()
@@ -96,7 +96,7 @@ func policy_listSubjectMappings(cmd *cobra.Command, args []string) {
 }
 
 func policy_createSubjectMapping(cmd *cobra.Command, args []string) {
-	h := cli.NewHandler(cmd)
+	h := NewHandler(cmd)
 	defer h.Close()
 
 	flagHelper := cli.NewFlagHelper(cmd)
@@ -169,7 +169,7 @@ func policy_createSubjectMapping(cmd *cobra.Command, args []string) {
 }
 
 func policy_deleteSubjectMapping(cmd *cobra.Command, args []string) {
-	h := cli.NewHandler(cmd)
+	h := NewHandler(cmd)
 	defer h.Close()
 
 	flagHelper := cli.NewFlagHelper(cmd)
@@ -197,7 +197,7 @@ func policy_deleteSubjectMapping(cmd *cobra.Command, args []string) {
 }
 
 func policy_updateSubjectMapping(cmd *cobra.Command, args []string) {
-	h := cli.NewHandler(cmd)
+	h := NewHandler(cmd)
 	defer h.Close()
 
 	flagHelper := cli.NewFlagHelper(cmd)
