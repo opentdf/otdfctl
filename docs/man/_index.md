@@ -18,4 +18,6 @@ command:
         - fatal
         - panic
       default: info
+    - name: with-client-creds-file
+      description: path to a JSON file containing a `clientId` and `clientSecret` for authentication via client-credentials flow
 ---

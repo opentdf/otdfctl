@@ -11,8 +11,11 @@ import (
 	"github.com/zalando/go-keyring"
 )
 
-var clientCredentialsCmd = man.Docs.GetCommand("auth/client-credentials",
-	man.WithRun(auth_clientCredentials),
+var (
+	clientCredentialsCmd = man.Docs.GetCommand("auth/client-credentials",
+		man.WithRun(auth_clientCredentials),
+	)
+	noCacheCreds bool
 )
 
 func auth_clientCredentials(cmd *cobra.Command, args []string) {
@@ -22,13 +25,17 @@ func auth_clientCredentials(cmd *cobra.Command, args []string) {
 
 	// if not provided by flag, check keyring cache for clientID
 	if clientID == "" {
-		fmt.Println("No client-id provided. Attempting to retrieve the default from keyring.")
+		if !noCacheCreds {
+			fmt.Println("No client-id provided. Attempting to retrieve the default from keyring.")
+		}
 		retrievedClientID, err := handlers.GetClientIDFromCache()
 		if err != nil || retrievedClientID == "" {
 			cli.ExitWithError("Please provide required flag: (client-id)", errors.New("no client-id found"))
 		} else {
 			clientID = retrievedClientID
-			fmt.Println(cli.SuccessMessage("Retrieved stored client-id from keyring"))
+			if !noCacheCreds {
+				fmt.Println(cli.SuccessMessage("Retrieved stored client-id from keyring"))
+			}
 		}
 	}
 
@@ -39,16 +46,22 @@ func auth_clientCredentials(cmd *cobra.Command, args []string) {
 			cli.ExitWithError("Please provide required flag: (client-secret)", errors.New("no client-secret found"))
 		} else {
 			clientSecret = retrievedSecret
-			fmt.Println(cli.SuccessMessage("Retrieved stored client-secret from keyring"))
+			if !noCacheCreds {
+				fmt.Println(cli.SuccessMessage("Retrieved stored client-secret from keyring"))
+			}
 		}
 	}
 
-	_, err := handlers.GetTokenWithClientCredentials(cmd.Context(), clientID, clientSecret, handlers.TOKEN_URL, false)
+	tok, err := handlers.GetTokenWithClientCredentials(cmd.Context(), clientID, clientSecret, handlers.TOKEN_URL, noCacheCreds)
 	if err != nil {
 		cli.ExitWithError("An error occurred during login. Please check your credentials and try again", err)
 	}
 
-	fmt.Println(cli.SuccessMessage("Successfully logged in with client ID and secret"))
+	if !noCacheCreds {
+		fmt.Println(cli.SuccessMessage("Successfully logged in with client ID and secret"))
+	} else {
+		fmt.Print(tok)
+	}
 }
 
 func init() {
@@ -64,5 +77,12 @@ func init() {
 		clientCredentialsCmd.GetDocFlag("client-secret").Name,
 		clientCredentialsCmd.GetDocFlag("client-secret").Default,
 		clientCredentialsCmd.GetDocFlag("client-secret").Description,
+	)
+	clientCredentialsCmd.Flags().BoolVarP(
+		&noCacheCreds,
+		clientCredentialsCmd.GetDocFlag("no-cache").Name,
+		clientCredentialsCmd.GetDocFlag("no-cache").Shorthand,
+		clientCredentialsCmd.GetDocFlag("no-cache").DefaultAsBool(),
+		clientCredentialsCmd.GetDocFlag("no-cache").Description,
 	)
 }
