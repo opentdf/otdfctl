@@ -38,7 +38,6 @@ func (m AttributeItem) Description() string {
 }
 
 func InitAttributeList(id string, sdk handlers.Handler) (tea.Model, tea.Cmd) {
-	// TODO: fetch items from API
 	m := AttributeList{sdk: sdk}
 	m.list = list.New([]list.Item{}, list.NewDefaultDelegate(), constants.WindowSize.Width, constants.WindowSize.Height)
 	res, err := sdk.ListAttributes(common.ActiveStateEnum_ACTIVE_STATE_ENUM_ANY)

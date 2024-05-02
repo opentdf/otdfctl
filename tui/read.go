@@ -12,10 +12,8 @@ type Read struct {
 	vals  []string
 	list  list.Model
 	width int
-	// list list.Model
 }
 
-// type item string
 type item struct {
 	title string
 }
@@ -29,6 +27,7 @@ func (i item) Title() string {
 func InitRead(title string, items []list.Item) (tea.Model, tea.Cmd) {
 	m := Read{title: title}
 	m.list = list.New(items, list.NewDefaultDelegate(), constants.WindowSize.Width, constants.WindowSize.Height)
+	m.list.Title = title
 	return m.Update(WindowMsg())
 }
 
@@ -53,24 +52,5 @@ func (m Read) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Read) View() string {
-	// key and value
-	// items := []list.Item{}
-	// for i, key := range m.keys {
-	// 	items = append(items, item{title: key + " > " + m.vals[i]})
-	// }
-	// l := list.New(items, list.NewDefaultDelegate(), constants.WindowSize.Width, constants.WindowSize.Height)
-	// l.Title = m.title
-	// l.SetItems(items)
-	// l := list.Model{
-	// 	Title: m.title,
-	// 	Items: []list.Item{},
-	// }
-	// return m.vals[0]
-	// m.list = l
 	return ViewList(m.list)
-	// a := ""
-	// for _, i := range items {
-	// 	a += i.(item).title + "\n"
-	// }
-	// return a
 }
