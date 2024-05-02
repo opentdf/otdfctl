@@ -18,23 +18,23 @@ import (
 
 // type menuState int
 
-type AppMenuItem2 struct {
-	id          menuState
-	title       string
-	description string
-}
+// type AttributeItem struct {
+// 	id          menuState
+// 	title       string
+// 	description string
+// }
 
-func (m AppMenuItem2) FilterValue() string {
-	return m.title
-}
+// func (m AttributeItem) FilterValue() string {
+// 	return m.title
+// }
 
-func (m AppMenuItem2) Title() string {
-	return m.title
-}
+// func (m AttributeItem) Title() string {
+// 	return m.title
+// }
 
-func (m AppMenuItem2) Description() string {
-	return m.description
-}
+// func (m AttributeItem) Description() string {
+// 	return m.description
+// }
 
 type AttributeView struct {
 	list list.Model
@@ -42,8 +42,8 @@ type AttributeView struct {
 	sdk  handlers.Handler
 }
 
-func InitAttributeView(id string, h handlers.Handler) (AppMenu, tea.Cmd) {
-	m := AppMenu{
+func InitAttributeView(id string, h handlers.Handler) (AttributeView, tea.Cmd) {
+	m := AttributeView{
 		view: nil,
 		sdk:  h,
 	}
@@ -51,14 +51,14 @@ func InitAttributeView(id string, h handlers.Handler) (AppMenu, tea.Cmd) {
 	m.list.Title = "OpenTDF"
 	m.list.SetItems([]list.Item{
 		// AppMenuItem{title: "Namespaces", description: "Manage namespaces", id: namespaceMenu},
-		AppMenuItem{title: "Attributes", description: "Manage attributes", id: attributeMenu},
+		AttributeItem{title: "Attributes", description: "Manage attributes", id: "213"},
 		// AppMenuItem{title: "Entitlements", description: "Manage entitlements", id: entitlementMenu},
 		// AppMenuItem{title: "Resource Encodings", description: "Manage resource encodings", id: resourceEncodingMenu},
 		// AppMenuItem{title: "Subject Encodings", description: "Manage subject encodings", id: subjectEncodingMenu},
 	})
 
 	model, msg := m.Update(WindowMsg())
-	m = model.(AppMenu)
+	m = model.(AttributeView)
 	return m, msg
 	// return m, func() tea.Msg { return nil }
 }
@@ -79,17 +79,17 @@ func (m AttributeView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case "ctrl+d":
 			return m, nil
-		case "enter":
-			switch m.list.SelectedItem().(AppMenuItem).id {
-			// case namespaceMenu:
-			// 	// get namespaces
-			// 	nl, cmd := InitNamespaceList([]list.Item{}, 0)
-			// 	return nl, cmd
-			case attributeMenu:
-				// list attributes
-				al, cmd := InitAttributeList("", m.sdk)
-				return al, cmd
-			}
+			// case "enter":
+			// 	switch m.list.SelectedItem().(AttributeItem).id {
+			// 	// case namespaceMenu:
+			// 	// 	// get namespaces
+			// 	// 	nl, cmd := InitNamespaceList([]list.Item{}, 0)
+			// 	// 	return nl, cmd
+			// 	case attributeMenu:
+			// 		// list attributes
+			// 		al, cmd := InitAttributeList("", m.sdk)
+			// 		return al, cmd
+			// 	}
 		}
 	}
 

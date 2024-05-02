@@ -22,6 +22,7 @@ type AttributeItem struct {
 	description string
 	rule        string
 	values      []string
+	title       string
 }
 
 func (m AttributeItem) FilterValue() string {
