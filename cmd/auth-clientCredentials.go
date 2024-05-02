@@ -3,12 +3,12 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"log/slog"
 
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/handlers"
 	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/spf13/cobra"
-	"github.com/zalando/go-keyring"
 )
 
 var (
@@ -22,37 +22,38 @@ func auth_clientCredentials(cmd *cobra.Command, args []string) {
 	flagHelper := cli.NewFlagHelper(cmd)
 	clientID := flagHelper.GetOptionalString("client-id")
 	clientSecret := flagHelper.GetOptionalString("client-secret")
+	var err error
 
+	if clientCredsFile != "" {
+		creds, err := handlers.GetClientCredsFromFile(clientCredsFile)
+		if err != nil {
+			cli.ExitWithError("Failed to parse client credentials JSON", err)
+		}
+		clientID = creds.ClientID
+		clientSecret = creds.ClientSecret
+	}
 	// if not provided by flag, check keyring cache for clientID
 	if clientID == "" {
-		if !noCacheCreds {
-			fmt.Println("No client-id provided. Attempting to retrieve the default from keyring.")
-		}
-		retrievedClientID, err := handlers.GetClientIDFromCache()
-		if err != nil || retrievedClientID == "" {
+		slog.Debug("No client-id provided. Attempting to retrieve the default from keyring.")
+		clientID, err = handlers.GetClientIDFromCache()
+		if err != nil || clientID == "" {
 			cli.ExitWithError("Please provide required flag: (client-id)", errors.New("no client-id found"))
 		} else {
-			clientID = retrievedClientID
-			if !noCacheCreds {
-				fmt.Println(cli.SuccessMessage("Retrieved stored client-id from keyring"))
-			}
+			slog.Debug(cli.SuccessMessage("Retrieved stored client-id from keyring"))
 		}
 	}
 
 	// check if we have a clientSecret in the keyring, if a null value is passed in
 	if clientSecret == "" {
-		retrievedSecret, krErr := keyring.Get(handlers.TOKEN_URL, clientID)
-		if krErr == nil || retrievedSecret == "" {
+		clientSecret, err = handlers.GetClientSecretFromCache(clientID)
+		if err == nil || clientSecret == "" {
 			cli.ExitWithError("Please provide required flag: (client-secret)", errors.New("no client-secret found"))
 		} else {
-			clientSecret = retrievedSecret
-			if !noCacheCreds {
-				fmt.Println(cli.SuccessMessage("Retrieved stored client-secret from keyring"))
-			}
+			slog.Debug("Retrieved stored client-secret from keyring")
 		}
 	}
 
-	tok, err := handlers.GetTokenWithClientCredentials(cmd.Context(), clientID, clientSecret, handlers.TOKEN_URL, noCacheCreds)
+	tok, err := handlers.GetTokenWithClientCreds(cmd.Context(), clientID, clientSecret, handlers.TOKEN_URL, noCacheCreds)
 	if err != nil {
 		cli.ExitWithError("An error occurred during login. Please check your credentials and try again", err)
 	}
@@ -60,21 +61,25 @@ func auth_clientCredentials(cmd *cobra.Command, args []string) {
 	if !noCacheCreds {
 		fmt.Println(cli.SuccessMessage("Successfully logged in with client ID and secret"))
 	} else {
-		fmt.Print(tok)
+		fmt.Print(tok.AccessToken)
 	}
 }
 
 func init() {
 	clientCredentialsCmd := man.Docs.GetCommand("auth/client-credentials",
 		man.WithRun(auth_clientCredentials),
+		// use the individual client-id and client-secret flags here instead of the global with-client-creds flag
+		man.WithHiddenFlags("with-client-creds"),
 	)
-	clientCredentialsCmd.Flags().String(
+	clientCredentialsCmd.Flags().StringP(
 		clientCredentialsCmd.GetDocFlag("client-id").Name,
+		clientCredentialsCmd.GetDocFlag("client-id").Shorthand,
 		clientCredentialsCmd.GetDocFlag("client-id").Default,
 		clientCredentialsCmd.GetDocFlag("client-id").Description,
 	)
-	clientCredentialsCmd.Flags().String(
+	clientCredentialsCmd.Flags().StringP(
 		clientCredentialsCmd.GetDocFlag("client-secret").Name,
+		clientCredentialsCmd.GetDocFlag("client-secret").Shorthand,
 		clientCredentialsCmd.GetDocFlag("client-secret").Default,
 		clientCredentialsCmd.GetDocFlag("client-secret").Description,
 	)

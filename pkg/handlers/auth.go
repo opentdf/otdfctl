@@ -2,7 +2,10 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
@@ -54,23 +57,70 @@ func GetClientSecretFromCache(clientID string) (string, error) {
 	return keyring.Get(TOKEN_URL, clientID)
 }
 
-// GetClientSecretFromCache retrieves the client secret from the keyring.
-func GetClientIdAndSecretFromCache() (string, string, error) {
-	// we use the client id to cache the secret, so retrieve it first
-	clientId, err := keyring.Get(TOKEN_URL, OTDFCTL_CLIENT_ID_CACHE_KEY)
-	if err != nil || clientId == "" {
-		return "", "", ErrUnauthenticated
-	}
-
-	clientSecret, err := keyring.Get(TOKEN_URL, clientId)
-	if err != nil {
-		return "", "", err
-	}
-	return clientSecret, clientId, nil
+// Client ID and Secret for use in the client credentials flow.
+type ClientCreds struct {
+	ClientID     string `json:"clientId"`
+	ClientSecret string `json:"clientSecret"`
 }
 
-// GetTokenWithClientCredentials uses the OAuth2 client credentials flow to obtain a token.
-func GetTokenWithClientCredentials(ctx context.Context, clientID, clientSecret, tokenURL string, noCache bool) (*oauth2.Token, error) {
+func GetClientCredsFromFile(filepath string) (ClientCreds, error) {
+	creds := ClientCreds{}
+	// read the file, parse the JSON, and return the client ID and secret
+	f, err := os.Open(filepath)
+	if err != nil {
+		return creds, errors.Join(errors.New("failed to open creds file"), err)
+	}
+	defer f.Close()
+
+	// read the file
+	if err := json.NewDecoder(f).Decode(&creds); err != nil {
+		return creds, errors.Join(errors.New("failed to decode creds file"), err)
+	}
+
+	return creds, nil
+}
+
+// Parse the JSON and return the client ID and secret
+func GetClientCredsFromJSON(credsJSON []byte) (ClientCreds, error) {
+	creds := ClientCreds{}
+	if err := json.Unmarshal(credsJSON, &creds); err != nil {
+		return creds, errors.Join(errors.New("failed to decode creds JSON"), err)
+	}
+
+	return creds, nil
+}
+
+// Retrieves the client secret from the keyring.
+func GetClientCredsFromCache() (ClientCreds, error) {
+	creds := ClientCreds{}
+	// we use the client id to cache the secret, so retrieve it first
+	clientID, err := keyring.Get(TOKEN_URL, OTDFCTL_CLIENT_ID_CACHE_KEY)
+	if err != nil || clientID == "" {
+		return creds, errors.Join(errors.New("could not find clientID in OS keyring"), ErrUnauthenticated)
+	}
+
+	clientSecret, err := keyring.Get(TOKEN_URL, clientID)
+	if err != nil {
+		return creds, err
+	}
+	return ClientCreds{
+		ClientID:     clientID,
+		ClientSecret: clientSecret,
+	}, nil
+}
+
+func GetClientCreds(file string, credsJSON []byte) (ClientCreds, error) {
+	if file != "" {
+		return GetClientCredsFromFile(file)
+	}
+	if len(credsJSON) > 0 {
+		return GetClientCredsFromJSON(credsJSON)
+	}
+	return GetClientCredsFromCache()
+}
+
+// Uses the OAuth2 client credentials flow to obtain a token.
+func GetTokenWithClientCreds(ctx context.Context, clientID, clientSecret, tokenURL string, noCache bool) (*oauth2.Token, error) {
 	// did the user pass a custom tokenURL?
 	if tokenURL == "" {
 		// use the default hardcoded constant

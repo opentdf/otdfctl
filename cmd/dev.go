@@ -3,6 +3,7 @@ package cmd
 import (
 	"bufio"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -11,6 +12,7 @@ import (
 	"github.com/charmbracelet/lipgloss/table"
 	"github.com/opentdf/otdfctl/internal/config"
 	"github.com/opentdf/otdfctl/pkg/cli"
+	"github.com/opentdf/otdfctl/pkg/handlers"
 	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/opentdf/platform/protocol/go/common"
 	"github.com/spf13/cobra"
@@ -151,6 +153,29 @@ func readBytesFromFile(filePath string) []byte {
 		cli.ExitWithError(fmt.Sprintf("Failed to read bytes from file at path: %s", filePath), err)
 	}
 	return bytes
+}
+
+// instantiates a new handler with authentication via client credentials
+func NewHandler(cmd *cobra.Command) handlers.Handler {
+	platformEndpoint := cmd.Flag("host").Value.String()
+	var (
+		creds handlers.ClientCreds
+		err   error
+	)
+
+	// load client credentials from file, JSON, or OS keyring
+	creds, err = handlers.GetClientCreds(clientCredsFile, []byte(clientCredsJSON))
+	if err != nil {
+		cli.ExitWithError("Failed to get client credentials", err)
+	}
+	h, err := handlers.New(platformEndpoint, creds.ClientID, creds.ClientSecret)
+	if err != nil {
+		if errors.Is(err, handlers.ErrUnauthenticated) {
+			cli.ExitWithError(fmt.Sprintf("Not logged in. Please authenticate via CLI auth flow(s) before using command (%s)", cmd.Use), err)
+		}
+		cli.ExitWithError("Failed to connect to server", err)
+	}
+	return h
 }
 
 func init() {

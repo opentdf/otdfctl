@@ -16,6 +16,7 @@ var (
 	cfgKey          string
 	OtdfctlCfg      config.Config
 	clientCredsFile string
+	clientCredsJSON string
 
 	configFlagOverrides = config.ConfigFlagOverrides{}
 )
@@ -38,11 +39,17 @@ func init() {
 		doc.GetDocFlag("log-level").Default,
 		doc.GetDocFlag("log-level").Description,
 	)
-	RootCmd.PersistentFlags().StringP(
-		clientCredsFile,
+	RootCmd.PersistentFlags().StringVar(
+		&clientCredsFile,
 		doc.GetDocFlag("with-client-creds-file").Name,
 		doc.GetDocFlag("with-client-creds-file").Default,
 		doc.GetDocFlag("with-client-creds-file").Description,
+	)
+	RootCmd.PersistentFlags().StringVar(
+		&clientCredsJSON,
+		doc.GetDocFlag("with-client-creds").Name,
+		doc.GetDocFlag("with-client-creds").Default,
+		doc.GetDocFlag("with-client-creds").Description,
 	)
 	RootCmd.AddGroup(&cobra.Group{ID: "tdf"})
 }
