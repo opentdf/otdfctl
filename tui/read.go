@@ -67,7 +67,7 @@ func (m Read) View() string {
 	// }
 	// return m.vals[0]
 	m.list = l
-	return ViewList(l)
+	return ViewList(m.list)
 	a := ""
 	for _, i := range items {
 		a += i.(item).title + "\n"
