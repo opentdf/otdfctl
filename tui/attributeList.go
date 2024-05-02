@@ -63,7 +63,6 @@ func InitAttributeList(id string, sdk handlers.Handler) (tea.Model, tea.Cmd) {
 		}
 		attrs = append(attrs, item)
 	}
-	// println(selectIdx)
 	m.list.Title = "Attributes"
 	m.list.SetItems(attrs)
 	m.list.Select(selectIdx)
