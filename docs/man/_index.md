@@ -6,7 +6,7 @@ command:
   aliases: []
   flags:
     - name: host
-      description: host:port of the Virtru Data Security Platform gRPC server
+      description: host:port of the OpenTDF Platform gRPC server
       default: localhost:8080
     - name: log-level
       description: log level
@@ -19,5 +19,8 @@ command:
         - panic
       default: info
     - name: with-client-creds-file
-      description: path to a JSON file containing a `clientId` and `clientSecret` for authentication via client-credentials flow
+      description: path to a JSON file containing a 'clientId' and 'clientSecret' for auth via client-credentials flow
+    - name: with-client-creds
+      description: JSON string containing a 'clientId' and 'clientSecret' for auth via client-credentials flow
+      default: ''
 ---

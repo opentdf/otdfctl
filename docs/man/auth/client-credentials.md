@@ -5,14 +5,14 @@ command:
   name: client-credentials
   flags:
     - name: client-id
-      description: Client ID
+      description: A clientId for use in client-credentials auth flow
       shorthand: i
       required: true
     - name: client-secret
-      description: Client secret
+      description: A clientSecret for use in client-credentials auth flow
       shorthand: s
     - name: no-cache
-      description: Do not cache credentials on the native OS and print token value to stdout instead
+      description: Do not cache credentials on the native OS and print access token to stdout instead
 ---
 
 Allows the user to login in via Client ID and Secret. The client credentials and OIDC Access Token will be stored
