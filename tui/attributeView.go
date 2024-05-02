@@ -55,7 +55,7 @@ func InitAttributeView(id string, h handlers.Handler) (AttributeView, tea.Cmd) {
 	m.list.Title = "OpenTDF"
 	m.list.SetItems([]list.Item{
 		// AppMenuItem{title: "Namespaces", description: "Manage namespaces", id: namespaceMenu},
-		AttributeItem{title: "OK", description: "Id >" + attr.Id, id: attr.Id},
+		AttributeItem{title: "ID", description: "ID >" + attr.Id, _id: attr.Id, id: 0, name: "OK"},
 		// AppMenuItem{title: "Entitlements", description: "Manage entitlements", id: entitlementMenu},
 		// AppMenuItem{title: "Resource Encodings", description: "Manage resource encodings", id: resourceEncodingMenu},
 		// AppMenuItem{title: "Subject Encodings", description: "Manage subject encodings", id: subjectEncodingMenu},
