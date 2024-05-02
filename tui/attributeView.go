@@ -4,6 +4,7 @@ import (
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/handlers"
 	"github.com/opentdf/otdfctl/tui/constants"
 )
@@ -61,7 +62,9 @@ type AttributeView struct {
 	// idx           int
 	// editMode      bool
 	// sdk           handlers.Handler
-	list list.Model
+	list  list.Model
+	read  Read
+	width int
 }
 
 // func SetupViewport(m AttributeView, msg tea.WindowSizeMsg) (AttributeView, []tea.Cmd) {
@@ -103,6 +106,7 @@ type AttributeView struct {
 // }
 
 func InitAttributeView(id string, sdk handlers.Handler) (tea.Model, tea.Cmd) {
+	read, _ := InitRead("Read Attribute")
 	m := AttributeView{
 		// title:    "Attribute",
 		// keys:     []string{"ID", "Name", "Namespace", "Rule", "Values"},
@@ -112,11 +116,19 @@ func InitAttributeView(id string, sdk handlers.Handler) (tea.Model, tea.Cmd) {
 		// width:    80,
 		// height:   20,
 		// sdk:      sdk,
+		read: read.(Read),
 	}
-	_, err := sdk.GetAttribute(id)
+	attr, err := sdk.GetAttribute(id)
 	if err != nil {
 		return m, nil
 	}
+	var vals []string
+	for _, val := range attr.Values {
+		vals = append(vals, val.Value)
+	}
+	// m.read.title = "Read Attribute"
+	m.read.keys = []string{"Id", "Name", "Rule", "Values", "Namespace", "Labels", "Created At", "Updated At"}
+	m.read.vals = []string{attr.Id, attr.Name, attr.Rule.String(), cli.CommaSeparated(vals), attr.Namespace.Name, "TODO", attr.Metadata.CreatedAt.String(), attr.Metadata.UpdatedAt.String()}
 	return m, nil
 }
 
@@ -125,8 +137,12 @@ func (m AttributeView) Init() tea.Cmd {
 }
 
 func (m AttributeView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-
 	switch msg := msg.(type) {
+	// case tea.WindowSizeMsg:
+	// 	constants.WindowSize = msg
+	// 	m.list.SetSize(msg.Width, msg.Height)
+	// 	m.width = msg.Width
+	// 	return m, nil
 	case tea.KeyMsg:
 		switch msg.Type {
 		case tea.KeyCtrlC, tea.KeyEsc:
@@ -137,7 +153,7 @@ func (m AttributeView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m AttributeView) View() string {
-	return "Attribute View"
+	return m.read.View()
 }
 
 // func (m AttributeView) IsNew() bool {
