@@ -33,12 +33,10 @@ type AttributeView struct {
 }
 
 func InitAttributeView(id string, h handlers.Handler) (AttributeView, tea.Cmd) {
-	m := AttributeView{sdk: h}
 	attr, err := h.GetAttribute(id)
 	if err != nil {
-		return m, nil
+		// return error view
 	}
-	m.attr = attr
 	var vals []string
 	for _, val := range attr.Values {
 		vals = append(vals, val.Value)
@@ -52,9 +50,8 @@ func InitAttributeView(id string, h handlers.Handler) (AttributeView, tea.Cmd) {
 		AttributeSubItem{title: "Created At", description: attr.Metadata.CreatedAt.String()},
 		AttributeSubItem{title: "Updated At", description: attr.Metadata.UpdatedAt.String()},
 	}
-
 	model, _ := InitRead("Read Attribute", items)
-	m.read = model.(Read)
+	m := AttributeView{sdk: h, attr: attr, read: model.(Read)}
 	model, msg := m.Update(WindowMsg())
 	m = model.(AttributeView)
 	return m, msg
