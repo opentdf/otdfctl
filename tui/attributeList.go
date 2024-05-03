@@ -103,14 +103,6 @@ func (m AttributeList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// make enum for Attributes idx in AppMenu
 			am.list.Select(0)
 			return am.Update(WindowMsg())
-		case "down", "j":
-			if m.list.Index() < len(m.list.Items())-1 {
-				m.list.Select(m.list.Index() + 1)
-			}
-		case "up", "k":
-			if m.list.Index() > 0 {
-				m.list.Select(m.list.Index() - 1)
-			}
 		// case "c":
 		// create new attribute
 		// return InitAttributeView(m.list.Items(), len(m.list.Items()))
@@ -125,7 +117,9 @@ func (m AttributeList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.list.Select(newIndex)
 		}
 	}
-	return m, nil
+	var cmd tea.Cmd
+	m.list, cmd = m.list.Update(msg)
+	return m, cmd
 }
 
 func (m AttributeList) View() string {
