@@ -3,6 +3,7 @@ package tui
 import (
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/opentdf/otdfctl/pkg/handlers"
 	"github.com/opentdf/otdfctl/tui/constants"
 )
 
@@ -38,20 +39,22 @@ func (m AppMenuItem) Description() string {
 type AppMenu struct {
 	list list.Model
 	view tea.Model
+	sdk  handlers.Handler
 }
 
-func InitAppMenu() (AppMenu, tea.Cmd) {
+func InitAppMenu(h handlers.Handler) (AppMenu, tea.Cmd) {
 	m := AppMenu{
 		view: nil,
+		sdk:  h,
 	}
 	m.list = list.New([]list.Item{}, list.NewDefaultDelegate(), 8, 8)
 	m.list.Title = "OpenTDF"
 	m.list.SetItems([]list.Item{
-		AppMenuItem{title: "Namespaces", description: "Manage namespaces", id: namespaceMenu},
+		// AppMenuItem{title: "Namespaces", description: "Manage namespaces", id: namespaceMenu},
 		AppMenuItem{title: "Attributes", description: "Manage attributes", id: attributeMenu},
-		AppMenuItem{title: "Entitlements", description: "Manage entitlements", id: entitlementMenu},
-		AppMenuItem{title: "Resource Encodings", description: "Manage resource encodings", id: resourceEncodingMenu},
-		AppMenuItem{title: "Subject Encodings", description: "Manage subject encodings", id: subjectEncodingMenu},
+		// AppMenuItem{title: "Entitlements", description: "Manage entitlements", id: entitlementMenu},
+		// AppMenuItem{title: "Resource Encodings", description: "Manage resource encodings", id: resourceEncodingMenu},
+		// AppMenuItem{title: "Subject Encodings", description: "Manage subject encodings", id: subjectEncodingMenu},
 	})
 	return m, func() tea.Msg { return nil }
 }
@@ -74,16 +77,13 @@ func (m AppMenu) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		case "enter":
 			switch m.list.SelectedItem().(AppMenuItem).id {
+			// case namespaceMenu:
+			// 	// get namespaces
+			// 	nl, cmd := InitNamespaceList([]list.Item{}, 0)
+			// 	return nl, cmd
 			case attributeMenu:
-				item := AttributeItem{
-					id:          "8a6755f2-efa8-4758-b893-af9a488e0bea",
-					namespace:   "demo.com",
-					name:        "relto",
-					rule:        "hierarchical",
-					description: "The relto attribute is used to describe the relationship of the resource to the country of origin.",
-					values:      []string{"USA", "GBR"},
-				}
-				al, cmd := InitAttributeList([]list.Item{item}, 0)
+				// list attributes
+				al, cmd := InitAttributeList("", m.sdk)
 				return al, cmd
 			}
 		}
