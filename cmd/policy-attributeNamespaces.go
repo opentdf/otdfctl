@@ -11,12 +11,10 @@ import (
 
 // TODO: add metadata to outputs once [https://github.com/opentdf/otdfctl/issues/73] is addressed
 
-var (
-	policy_attributeNamespacesCmd = man.Docs.GetCommand("policy/attributes/namespaces")
-)
+var policy_attributeNamespacesCmd = man.Docs.GetCommand("policy/attributes/namespaces")
 
 func policy_getAttributeNamespace(cmd *cobra.Command, args []string) {
-	h := cli.NewHandler(cmd)
+	h := NewHandler(cmd)
 	defer h.Close()
 
 	flagHelper := cli.NewFlagHelper(cmd)
@@ -40,7 +38,7 @@ func policy_getAttributeNamespace(cmd *cobra.Command, args []string) {
 }
 
 func policy_listAttributeNamespaces(cmd *cobra.Command, args []string) {
-	h := cli.NewHandler(cmd)
+	h := NewHandler(cmd)
 	defer h.Close()
 
 	state := cli.GetState(cmd)
@@ -65,7 +63,7 @@ func policy_listAttributeNamespaces(cmd *cobra.Command, args []string) {
 }
 
 func policy_createAttributeNamespace(cmd *cobra.Command, args []string) {
-	h := cli.NewHandler(cmd)
+	h := NewHandler(cmd)
 	defer h.Close()
 
 	flagHelper := cli.NewFlagHelper(cmd)
@@ -89,7 +87,7 @@ func policy_createAttributeNamespace(cmd *cobra.Command, args []string) {
 }
 
 func policy_deactivateAttributeNamespace(cmd *cobra.Command, args []string) {
-	h := cli.NewHandler(cmd)
+	h := NewHandler(cmd)
 	defer h.Close()
 
 	flagHelper := cli.NewFlagHelper(cmd)
@@ -121,7 +119,7 @@ func policy_deactivateAttributeNamespace(cmd *cobra.Command, args []string) {
 }
 
 func policy_updateAttributeNamespace(cmd *cobra.Command, args []string) {
-	h := cli.NewHandler(cmd)
+	h := NewHandler(cmd)
 	defer h.Close()
 
 	flagHelper := cli.NewFlagHelper(cmd)

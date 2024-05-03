@@ -13,7 +13,7 @@ import (
 )
 
 func policy_createSubjectConditionSet(cmd *cobra.Command, args []string) {
-	h := cli.NewHandler(cmd)
+	h := NewHandler(cmd)
 	defer h.Close()
 	var (
 		ss      []*policy.SubjectSet
@@ -77,7 +77,7 @@ func policy_createSubjectConditionSet(cmd *cobra.Command, args []string) {
 }
 
 func policy_getSubjectConditionSet(cmd *cobra.Command, args []string) {
-	h := cli.NewHandler(cmd)
+	h := NewHandler(cmd)
 	defer h.Close()
 
 	flagHelper := cli.NewFlagHelper(cmd)
@@ -105,7 +105,7 @@ func policy_getSubjectConditionSet(cmd *cobra.Command, args []string) {
 }
 
 func policy_listSubjectConditionSets(cmd *cobra.Command, args []string) {
-	h := cli.NewHandler(cmd)
+	h := NewHandler(cmd)
 	defer h.Close()
 
 	scsList, err := h.ListSubjectConditionSets()
@@ -129,7 +129,7 @@ func policy_listSubjectConditionSets(cmd *cobra.Command, args []string) {
 }
 
 func policy_updateSubjectConditionSet(cmd *cobra.Command, args []string) {
-	h := cli.NewHandler(cmd)
+	h := NewHandler(cmd)
 	defer h.Close()
 
 	flagHelper := cli.NewFlagHelper(cmd)
@@ -173,7 +173,7 @@ func policy_updateSubjectConditionSet(cmd *cobra.Command, args []string) {
 }
 
 func policy_deleteSubjectConditionSet(cmd *cobra.Command, args []string) {
-	h := cli.NewHandler(cmd)
+	h := NewHandler(cmd)
 	defer h.Close()
 
 	flagHelper := cli.NewFlagHelper(cmd)

@@ -22,7 +22,7 @@ func policy_createAttributeValue(cmd *cobra.Command, args []string) {
 	metadataLabels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
 	// TODO: support create with members when update is unblocked to remove/alter them after creation [https://github.com/opentdf/platform/issues/476]
 
-	h := cli.NewHandler(cmd)
+	h := NewHandler(cmd)
 	defer h.Close()
 
 	attr, err := h.GetAttribute(attrId)
@@ -42,7 +42,7 @@ func policy_getAttributeValue(cmd *cobra.Command, args []string) {
 	flagHelper := cli.NewFlagHelper(cmd)
 	id := flagHelper.GetRequiredString("id")
 
-	h := cli.NewHandler(cmd)
+	h := NewHandler(cmd)
 	defer h.Close()
 
 	v, err := h.GetAttributeValue(id)
@@ -54,7 +54,7 @@ func policy_getAttributeValue(cmd *cobra.Command, args []string) {
 }
 
 func policy_listAttributeValue(cmd *cobra.Command, args []string) {
-	h := cli.NewHandler(cmd)
+	h := NewHandler(cmd)
 	defer h.Close()
 	flagHelper := cli.NewFlagHelper(cmd)
 	attrId := flagHelper.GetRequiredString("attribute-id")
@@ -85,7 +85,7 @@ func policy_updateAttributeValue(cmd *cobra.Command, args []string) {
 	id := flagHelper.GetRequiredString("id")
 	metadataLabels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
 
-	h := cli.NewHandler(cmd)
+	h := NewHandler(cmd)
 	defer h.Close()
 
 	_, err := h.GetAttributeValue(id)
@@ -105,7 +105,7 @@ func policy_deactivateAttributeValue(cmd *cobra.Command, args []string) {
 	flagHelper := cli.NewFlagHelper(cmd)
 	id := flagHelper.GetRequiredString("id")
 
-	h := cli.NewHandler(cmd)
+	h := NewHandler(cmd)
 	defer h.Close()
 
 	value, err := h.GetAttributeValue(id)
@@ -144,7 +144,7 @@ func policy_deactivateAttributeValue(cmd *cobra.Command, args []string) {
 // 		id := flagHelper.GetRequiredString("id")
 // 		members := flagHelper.GetStringSlice("member", attrValueMembers, cli.FlagHelperStringSliceOptions{})
 
-// 		h := cli.NewHandler(cmd)
+// 		h := NewHandler(cmd)
 // 		defer h.Close()
 
 // 		prev, err := h.GetAttributeValue(id)
@@ -179,7 +179,7 @@ func policy_deactivateAttributeValue(cmd *cobra.Command, args []string) {
 // 		id := flagHelper.GetRequiredString("id")
 // 		members := flagHelper.GetStringSlice("members", attrValueMembers, cli.FlagHelperStringSliceOptions{})
 
-// 		h := cli.NewHandler(cmd)
+// 		h := NewHandler(cmd)
 // 		defer h.Close()
 
 // 		prev, err := h.GetAttributeValue(id)
@@ -223,7 +223,7 @@ func policy_deactivateAttributeValue(cmd *cobra.Command, args []string) {
 // 		id := flagHelper.GetRequiredString("id")
 // 		members := flagHelper.GetStringSlice("members", attrValueMembers, cli.FlagHelperStringSliceOptions{})
 
-// 		h := cli.NewHandler(cmd)
+// 		h := NewHandler(cmd)
 // 		defer h.Close()
 
 // 		prev, err := h.GetAttributeValue(id)

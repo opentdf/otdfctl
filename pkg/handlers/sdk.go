@@ -22,14 +22,10 @@ type Handler struct {
 }
 
 // Creates a new handler wrapping the SDK, which is authenticated through the cached client-credentials flow tokens
-func New(platformEndpoint string) (Handler, error) {
+func New(platformEndpoint, clientID, clientSecret string) (Handler, error) {
 	scopes := []string{"email"}
-	clientSecret, clientId, err := GetClientIdAndSecretFromCache()
-	if err != nil {
-		return Handler{}, err
-	}
 
-	sdk, err := sdk.New(platformEndpoint, sdk.WithClientCredentials(clientId, clientSecret, scopes), sdk.WithTokenEndpoint(TOKEN_URL), sdk.WithInsecureConn())
+	sdk, err := sdk.New(platformEndpoint, sdk.WithClientCredentials(clientID, clientSecret, scopes), sdk.WithTokenEndpoint(TOKEN_URL), sdk.WithInsecureConn())
 	if err != nil {
 		return Handler{}, err
 	}
