@@ -10,9 +10,9 @@ import (
 )
 
 type AttributeList struct {
-	list  list.Model
-	width int
-	sdk   handlers.Handler
+	list list.Model
+	// width int
+	sdk handlers.Handler
 }
 
 type AttributeItem struct {
@@ -38,11 +38,10 @@ func (m AttributeItem) Description() string {
 }
 
 func InitAttributeList(id string, sdk handlers.Handler) (tea.Model, tea.Cmd) {
-	m := AttributeList{sdk: sdk}
-	m.list = list.New([]list.Item{}, list.NewDefaultDelegate(), constants.WindowSize.Width, constants.WindowSize.Height)
+	l := list.New([]list.Item{}, list.NewDefaultDelegate(), constants.WindowSize.Width, constants.WindowSize.Height)
 	res, err := sdk.ListAttributes(common.ActiveStateEnum_ACTIVE_STATE_ENUM_ANY)
 	if err != nil {
-		return m, nil
+		// return error view
 	}
 	var attrs []list.Item
 	selectIdx := 0
@@ -63,9 +62,10 @@ func InitAttributeList(id string, sdk handlers.Handler) (tea.Model, tea.Cmd) {
 		}
 		attrs = append(attrs, item)
 	}
-	m.list.Title = "Attributes"
-	m.list.SetItems(attrs)
-	m.list.Select(selectIdx)
+	l.Title = "Attributes"
+	l.SetItems(attrs)
+	l.Select(selectIdx)
+	m := AttributeList{sdk: sdk, list: l}
 	return m.Update(WindowMsg())
 }
 
@@ -92,7 +92,7 @@ func (m AttributeList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		constants.WindowSize = msg
 		m.list.SetSize(msg.Width, msg.Height)
-		m.width = msg.Width
+		// m.width = msg.Width
 		return m, nil
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -108,13 +108,13 @@ func (m AttributeList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// return InitAttributeView(m.list.Items(), len(m.list.Items()))
 		case "enter", "e":
 			return InitAttributeView(m.list.Items()[m.list.Index()].(AttributeItem).id, m.sdk)
-		case "ctrl+d":
-			m.list.RemoveItem(m.list.Index())
-			newIndex := m.list.Index() - 1
-			if newIndex < 0 {
-				newIndex = 0
-			}
-			m.list.Select(newIndex)
+			// case "ctrl+d":
+			// 	m.list.RemoveItem(m.list.Index())
+			// 	newIndex := m.list.Index() - 1
+			// 	if newIndex < 0 {
+			// 		newIndex = 0
+			// 	}
+			// 	m.list.Select(newIndex)
 		}
 	}
 	var cmd tea.Cmd
