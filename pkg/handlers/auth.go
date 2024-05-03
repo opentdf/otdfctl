@@ -63,16 +63,15 @@ type ClientCreds struct {
 	ClientSecret string `json:"clientSecret"`
 }
 
+// Retrieves credentials by reading specified file
 func GetClientCredsFromFile(filepath string) (ClientCreds, error) {
 	creds := ClientCreds{}
-	// read the file, parse the JSON, and return the client ID and secret
 	f, err := os.Open(filepath)
 	if err != nil {
 		return creds, errors.Join(errors.New("failed to open creds file"), err)
 	}
 	defer f.Close()
 
-	// read the file
 	if err := json.NewDecoder(f).Decode(&creds); err != nil {
 		return creds, errors.Join(errors.New("failed to decode creds file"), err)
 	}
