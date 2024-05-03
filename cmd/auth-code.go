@@ -36,10 +36,11 @@ type OpenTdfTokenSource struct {
 
 /*
 To run manually against OpenTDF Platform with provisioned keycloak:
- 1. Navigate to http://localhost:8888/auth/admin/master/console/#/opentdf/clients and select 'tdf-entity-resolution' client
- 2. Update the provisioned keycloak to set client (tdf-entity-resolution) > settings > capability config > client authentication to 'false' which means:
+ 1. Navigate to http://localhost:8888/auth/admin/master/console/#/opentdf/clients and login as an admin utilizing the configured admin credentials in the platform
+ 2. switch to the opentdf realm instead of the master realm in the dropdown on the top left, then select the 'tdf-entity-resolution' client
+ 3. Update the provisioned keycloak to set client (tdf-entity-resolution) > settings > capability config > client authentication to 'false' which means:
     "This defines the type of the OIDC client. When it's ON, the OIDC type is set to confidential access type. When it's OFF, it is set to public access type"
- 3. Add a wildcard redirect_uri to the client (tdf-entity-resolution) > settings > access settings > valid redirect URIs
+ 4. Add a wildcard redirect_uri to the client (tdf-entity-resolution) > settings > access settings > valid redirect URIs
 
 To actually secure this, we need to:
  1. provision a new public client to keycloak
