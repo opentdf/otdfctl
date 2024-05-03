@@ -46,6 +46,7 @@ To actually secure this, we need to:
  1. provision a new public client to keycloak
  2. serve the callback endpoint with TLS in a real service to secure the redirect_uri (probably by auth service?)
  3. make sure that new seeded public client allowlists the secured redirect_uri within the provisioning process
+ 4. figure out if we want to _always_ serve a callback endpoint in an idp-agnostic way, or how we turn this on/off configurably
 
 Either way, we need an sdk.WithOIDCAccessToken() with option to use the access token.
 
