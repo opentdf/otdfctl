@@ -10,7 +10,7 @@ import (
 )
 
 func config_updateOutput(cmd *cobra.Command, args []string) {
-	h := cli.NewHandler(cmd)
+	h := NewHandler(cmd)
 	defer h.Close()
 
 	flagHelper := cli.NewFlagHelper(cmd)

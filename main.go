@@ -16,7 +16,7 @@ func main() {
 	// defer pprof.StopCPUProfile()
 
 	l := new(slog.LevelVar)
-	l.Set(slog.LevelDebug)
+	l.Set(slog.LevelInfo)
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 		Level: l,
 	}))

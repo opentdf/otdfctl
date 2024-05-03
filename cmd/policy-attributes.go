@@ -20,7 +20,7 @@ var (
 )
 
 func policy_createAttribute(cmd *cobra.Command, args []string) {
-	h := cli.NewHandler(cmd)
+	h := NewHandler(cmd)
 	defer h.Close()
 
 	flagHelper := cli.NewFlagHelper(cmd)
@@ -61,7 +61,7 @@ func policy_getAttribute(cmd *cobra.Command, args []string) {
 	flagHelper := cli.NewFlagHelper(cmd)
 	id := flagHelper.GetRequiredString("id")
 
-	h := cli.NewHandler(cmd)
+	h := NewHandler(cmd)
 	defer h.Close()
 
 	attr, err := h.GetAttribute(id)
@@ -87,7 +87,7 @@ func policy_getAttribute(cmd *cobra.Command, args []string) {
 }
 
 func policy_listAttributes(cmd *cobra.Command, args []string) {
-	h := cli.NewHandler(cmd)
+	h := NewHandler(cmd)
 	defer h.Close()
 
 	state := cli.GetState(cmd)
@@ -119,7 +119,7 @@ func policy_deactivateAttribute(cmd *cobra.Command, args []string) {
 	flagHelper := cli.NewFlagHelper(cmd)
 	id := flagHelper.GetRequiredString("id")
 
-	h := cli.NewHandler(cmd)
+	h := NewHandler(cmd)
 	defer h.Close()
 
 	attr, err := h.GetAttribute(id)
@@ -152,7 +152,7 @@ func policy_deactivateAttribute(cmd *cobra.Command, args []string) {
 }
 
 func policy_updateAttribute(cmd *cobra.Command, args []string) {
-	h := cli.NewHandler(cmd)
+	h := NewHandler(cmd)
 	defer h.Close()
 
 	flagHelper := cli.NewFlagHelper(cmd)

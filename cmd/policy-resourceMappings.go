@@ -18,7 +18,7 @@ var (
 )
 
 func policy_createResourceMapping(cmd *cobra.Command, args []string) {
-	h := cli.NewHandler(cmd)
+	h := NewHandler(cmd)
 	defer h.Close()
 
 	flagHelper := cli.NewFlagHelper(cmd)
@@ -46,7 +46,7 @@ func policy_createResourceMapping(cmd *cobra.Command, args []string) {
 }
 
 func policy_getResourceMapping(cmd *cobra.Command, args []string) {
-	h := cli.NewHandler(cmd)
+	h := NewHandler(cmd)
 	defer h.Close()
 
 	flagHelper := cli.NewFlagHelper(cmd)
@@ -70,7 +70,7 @@ func policy_getResourceMapping(cmd *cobra.Command, args []string) {
 }
 
 func policy_listResourceMappings(cmd *cobra.Command, args []string) {
-	h := cli.NewHandler(cmd)
+	h := NewHandler(cmd)
 	defer h.Close()
 
 	rmList, err := h.ListResourceMappings()
@@ -88,7 +88,7 @@ func policy_listResourceMappings(cmd *cobra.Command, args []string) {
 }
 
 func policy_updateResourceMapping(cmd *cobra.Command, args []string) {
-	h := cli.NewHandler(cmd)
+	h := NewHandler(cmd)
 	defer h.Close()
 
 	flagHelper := cli.NewFlagHelper(cmd)
@@ -115,7 +115,7 @@ func policy_updateResourceMapping(cmd *cobra.Command, args []string) {
 }
 
 func policy_deleteResourceMapping(cmd *cobra.Command, args []string) {
-	h := cli.NewHandler(cmd)
+	h := NewHandler(cmd)
 	defer h.Close()
 
 	flagHelper := cli.NewFlagHelper(cmd)
