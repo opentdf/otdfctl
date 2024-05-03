@@ -7,8 +7,9 @@ import (
 func init() {
 	cmd := man.Docs.GetCommand("auth",
 		man.WithSubcommands(clientCredentialsCmd),
-		man.WithSubcommands(printAccessToken),
+		man.WithSubcommands(printAccessTokenCmd),
 		man.WithSubcommands(clearCachedCredsCmd),
+		man.WithSubcommands(codeLoginCmd),
 	)
 	RootCmd.AddCommand(&cmd.Command)
 }

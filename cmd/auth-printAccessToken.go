@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var printAccessToken = man.Docs.GetCommand("auth/print-access-token",
+var printAccessTokenCmd = man.Docs.GetCommand("auth/print-access-token",
 	man.WithRun(auth_printAccessToken),
 )
 
