@@ -4,12 +4,15 @@ import (
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/opentdf/otdfctl/pkg/handlers"
 	"github.com/opentdf/otdfctl/tui/constants"
+	"github.com/opentdf/platform/protocol/go/common"
 )
 
 type AttributeList struct {
 	list  list.Model
 	width int
+	sdk   handlers.Handler
 }
 
 type AttributeItem struct {
@@ -19,6 +22,7 @@ type AttributeItem struct {
 	description string
 	rule        string
 	values      []string
+	title       string
 }
 
 func (m AttributeItem) FilterValue() string {
@@ -33,16 +37,35 @@ func (m AttributeItem) Description() string {
 	return m.description
 }
 
-func InitAttributeList(items []list.Item, selectIdx int) (tea.Model, tea.Cmd) {
-	// TODO: fetch items from API
-
-	m := AttributeList{}
+func InitAttributeList(id string, sdk handlers.Handler) (tea.Model, tea.Cmd) {
+	m := AttributeList{sdk: sdk}
 	m.list = list.New([]list.Item{}, list.NewDefaultDelegate(), constants.WindowSize.Width, constants.WindowSize.Height)
-	if selectIdx > 0 {
-		m.list.Select(selectIdx)
+	res, err := sdk.ListAttributes(common.ActiveStateEnum_ACTIVE_STATE_ENUM_ANY)
+	if err != nil {
+		return m, nil
+	}
+	var attrs []list.Item
+	selectIdx := 0
+	for i, attr := range res {
+		var vals []string
+		for _, val := range attr.Values {
+			vals = append(vals, val.Value)
+		}
+		if attr.Id == id {
+			selectIdx = i
+		}
+		item := AttributeItem{
+			id:        attr.Id,
+			namespace: attr.Namespace.Name,
+			name:      attr.Name,
+			rule:      attr.Rule.String(),
+			values:    vals,
+		}
+		attrs = append(attrs, item)
 	}
 	m.list.Title = "Attributes"
-	m.list.SetItems(items)
+	m.list.SetItems(attrs)
+	m.list.Select(selectIdx)
 	return m.Update(WindowMsg())
 }
 
@@ -76,8 +99,9 @@ func (m AttributeList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c", "q":
 			return m, tea.Quit
 		case "ctrl+[", "backspace":
-			am, _ := InitAppMenu()
-			am.list.Select(1)
+			am, _ := InitAppMenu(m.sdk)
+			// make enum for Attributes idx in AppMenu
+			am.list.Select(0)
 			return am.Update(WindowMsg())
 		case "down", "j":
 			if m.list.Index() < len(m.list.Items())-1 {
@@ -87,10 +111,11 @@ func (m AttributeList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.list.Index() > 0 {
 				m.list.Select(m.list.Index() - 1)
 			}
-		case "c":
-			return InitAttributeView(m.list.Items(), len(m.list.Items()))
+		// case "c":
+		// create new attribute
+		// return InitAttributeView(m.list.Items(), len(m.list.Items()))
 		case "enter", "e":
-			return InitAttributeView(m.list.Items(), m.list.Index())
+			return InitAttributeView(m.list.Items()[m.list.Index()].(AttributeItem).id, m.sdk)
 		case "ctrl+d":
 			m.list.RemoveItem(m.list.Index())
 			newIndex := m.list.Index() - 1
