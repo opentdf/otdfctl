@@ -23,18 +23,18 @@ func (m Read) Init() tea.Cmd {
 }
 
 func (m Read) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch msg := msg.(type) {
-	case tea.WindowSizeMsg:
-		constants.WindowSize = msg
-		m.list.SetSize(msg.Width, msg.Height)
-		m.width = msg.Width
-		return m, nil
-	case tea.KeyMsg:
-		switch msg.Type {
-		case tea.KeyCtrlC, tea.KeyEsc:
-			return m, tea.Quit
-		}
-	}
+	// switch msg := msg.(type) {
+	// case tea.WindowSizeMsg:
+	// 	constants.WindowSize = msg
+	// 	m.list.SetSize(msg.Width, msg.Height)
+	// 	m.width = msg.Width
+	// 	return m, nil
+	// case tea.KeyMsg:
+	// 	switch msg.Type {
+	// 	case tea.KeyCtrlC, tea.KeyEsc:
+	// 		return m, tea.Quit
+	// 	}
+	// }
 	return m, nil
 }
 

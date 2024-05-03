@@ -6,6 +6,7 @@ import (
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/handlers"
 	"github.com/opentdf/otdfctl/tui/constants"
+	"github.com/opentdf/platform/protocol/go/policy"
 )
 
 type AttributeSubItem struct {
@@ -26,15 +27,18 @@ func (m AttributeSubItem) Description() string {
 }
 
 type AttributeView struct {
+	attr *policy.Attribute
 	read Read
+	sdk  handlers.Handler
 }
 
 func InitAttributeView(id string, h handlers.Handler) (AttributeView, tea.Cmd) {
-	m := AttributeView{}
+	m := AttributeView{sdk: h}
 	attr, err := h.GetAttribute(id)
 	if err != nil {
 		return m, nil
 	}
+	m.attr = attr
 	var vals []string
 	for _, val := range attr.Values {
 		vals = append(vals, val.Value)
@@ -68,6 +72,8 @@ func (m AttributeView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	case tea.KeyMsg:
 		switch msg.String() {
+		case "backspace":
+			return InitAttributeList(m.attr.Id, m.sdk)
 		case "ctrl+c", "q":
 			return m, tea.Quit
 		case "ctrl+d":
