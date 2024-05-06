@@ -78,6 +78,13 @@ func (m AttributeView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case "ctrl+d":
 			return m, nil
+		case "enter":
+			if m.read.list.SelectedItem().(AttributeSubItem).title == "Labels" {
+				// return InitLabelList(m.attr, m.sdk)
+				// list values
+				// vl, cmd := InitAttributeValueList(m.attr.Id, m.sdk)
+				// return vl, cmd
+			}
 			// case "enter":
 			// 	switch m.list.SelectedItem().(AttributeItem).id {
 			// 	// case namespaceMenu:
