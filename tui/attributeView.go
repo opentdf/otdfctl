@@ -41,14 +41,17 @@ func InitAttributeView(id string, h handlers.Handler) (AttributeView, tea.Cmd) {
 	for _, val := range attr.Values {
 		vals = append(vals, val.Value)
 	}
+	sa := cli.GetSimpleAttribute(attr)
 	items := []list.Item{
 		AttributeSubItem{title: "ID", description: attr.Id},
 		AttributeSubItem{title: "Name", description: attr.Name},
 		AttributeSubItem{title: "Rule", description: attr.Rule.String()},
 		AttributeSubItem{title: "Values", description: cli.CommaSeparated(vals)},
 		AttributeSubItem{title: "Namespace", description: attr.Namespace.Name},
-		AttributeSubItem{title: "Created At", description: attr.Metadata.CreatedAt.String()},
-		AttributeSubItem{title: "Updated At", description: attr.Metadata.UpdatedAt.String()},
+		// AttributeSubItem{title: "Labels", description: cli.CommaSeparated(maps.Keys(attr.Metadata.Labels))},
+		AttributeSubItem{title: "Labels", description: sa.Metadata["Labels"]},
+		AttributeSubItem{title: "Created At", description: sa.Metadata["Created At"]},
+		AttributeSubItem{title: "Updated At", description: sa.Metadata["Updated At"]},
 	}
 	model, _ := InitRead("Read Attribute", items)
 	m := AttributeView{sdk: h, attr: attr, read: model.(Read)}
