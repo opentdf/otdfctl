@@ -16,13 +16,8 @@ type AttributeList struct {
 }
 
 type AttributeItem struct {
-	id          string
-	namespace   string
-	name        string
-	description string
-	rule        string
-	values      []string
-	title       string
+	id   string
+	name string
 }
 
 func (m AttributeItem) FilterValue() string {
@@ -34,7 +29,7 @@ func (m AttributeItem) Title() string {
 }
 
 func (m AttributeItem) Description() string {
-	return m.description
+	return m.id
 }
 
 func InitAttributeList(id string, sdk handlers.Handler) (tea.Model, tea.Cmd) {
@@ -54,11 +49,11 @@ func InitAttributeList(id string, sdk handlers.Handler) (tea.Model, tea.Cmd) {
 			selectIdx = i
 		}
 		item := AttributeItem{
-			id:        attr.Id,
-			namespace: attr.Namespace.Name,
-			name:      attr.Name,
-			rule:      attr.Rule.String(),
-			values:    vals,
+			id: attr.Id,
+			// namespace: attr.Namespace.Name,
+			name: attr.Name,
+			// rule:      attr.Rule.String(),
+			// values:    vals,
 		}
 		attrs = append(attrs, item)
 	}
