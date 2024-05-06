@@ -37,18 +37,18 @@ func InitAttributeView(id string, h handlers.Handler) (AttributeView, tea.Cmd) {
 	if err != nil {
 		// return error view
 	}
-	var vals []string
-	for _, val := range attr.Values {
-		vals = append(vals, val.Value)
-	}
+	// var vals []string
+	// for _, val := range attr.Values {
+	// 	vals = append(vals, val.Value)
+	// }
 	sa := cli.GetSimpleAttribute(attr)
 	items := []list.Item{
-		AttributeSubItem{title: "ID", description: attr.Id},
-		AttributeSubItem{title: "Name", description: attr.Name},
-		AttributeSubItem{title: "Rule", description: attr.Rule.String()},
-		AttributeSubItem{title: "Values", description: cli.CommaSeparated(vals)},
-		AttributeSubItem{title: "Namespace", description: attr.Namespace.Name},
-		// AttributeSubItem{title: "Labels", description: cli.CommaSeparated(maps.Keys(attr.Metadata.Labels))},
+		AttributeSubItem{title: "ID", description: sa.Id},
+		AttributeSubItem{title: "Name", description: sa.Name},
+		AttributeSubItem{title: "Rule", description: sa.Rule},
+		AttributeSubItem{title: "Values", description: cli.CommaSeparated(sa.Values)},
+		AttributeSubItem{title: "Namespace", description: sa.Namespace},
+		AttributeSubItem{title: "Active", description: sa.Active},
 		AttributeSubItem{title: "Labels", description: sa.Metadata["Labels"]},
 		AttributeSubItem{title: "Created At", description: sa.Metadata["Created At"]},
 		AttributeSubItem{title: "Updated At", description: sa.Metadata["Updated At"]},
