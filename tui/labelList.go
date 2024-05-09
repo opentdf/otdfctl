@@ -13,7 +13,7 @@ import (
 type LabelList struct {
 	attr *policy.Attribute
 	sdk  handlers.Handler
-	read tea.Model
+	read Read
 }
 
 type LabelItem struct {
@@ -44,7 +44,7 @@ func InitLabelList(attr *policy.Attribute, sdk handlers.Handler) (tea.Model, tea
 		items = append(items, item)
 	}
 	model, _ := InitRead("Read Labels", items)
-	return LabelList{attr: attr, sdk: sdk, read: model}, nil
+	return LabelList{attr: attr, sdk: sdk, read: model.(Read)}, nil
 }
 
 func (m LabelList) Init() tea.Cmd {
@@ -59,15 +59,24 @@ func (m LabelList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	case tea.KeyMsg:
 		switch msg.String() {
-		// case "backspace":
-		// 	return InitAttributeList(m.attr.Id, m.sdk)
+		case "backspace":
+			return InitAttributeView(m.attr.Id, m.sdk)
 		case "ctrl+c", "q":
 			return m, tea.Quit
+		case "enter", "e":
+			// edit?
+			return m, nil
+		case "c":
+			// create new label
+			return m, nil
+		case "d":
+			// delete label
+			return m, nil
 		}
 	}
 	return m, nil
 }
 
 func (m LabelList) View() string {
-	return ""
+	return ViewList(m.read.list)
 }
