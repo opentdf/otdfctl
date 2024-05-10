@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"errors"
+	"net/url"
 
 	"github.com/opentdf/platform/protocol/go/common"
 	"github.com/opentdf/platform/sdk"
@@ -22,10 +23,40 @@ type Handler struct {
 }
 
 // Creates a new handler wrapping the SDK, which is authenticated through the cached client-credentials flow tokens
-func New(platformEndpoint, clientID, clientSecret string) (Handler, error) {
+func New(platformEndpoint, clientID, clientSecret string, insecure bool) (Handler, error) {
 	scopes := []string{"email"}
 
-	sdk, err := sdk.New(platformEndpoint, sdk.WithClientCredentials(clientID, clientSecret, scopes), sdk.WithTokenEndpoint(TOKEN_URL), sdk.WithInsecureConn())
+	opts := []sdk.Option{
+		sdk.WithClientCredentials(clientID, clientSecret, scopes),
+		sdk.WithTokenEndpoint(TOKEN_URL),
+	}
+
+	// Try an parse scheme out of platformEndpoint
+	// If it fails, use the default scheme of https
+	// There has to be a better way to do this
+	platformURL, err := url.Parse(platformEndpoint)
+	if err != nil {
+		return Handler{}, err
+	}
+
+	switch platformURL.Scheme {
+	case "http":
+		opts = append(opts, sdk.WithInsecurePlaintextConn())
+		if platformURL.Port() == "" {
+			platformURL.Host += ":80"
+		}
+	case "https":
+		if platformURL.Port() == "" {
+			platformURL.Host += ":443"
+		}
+	default:
+		return Handler{}, errors.New("invalid scheme")
+	}
+	if insecure {
+		opts = append(opts, sdk.WithInsecureSkipVerifyConn())
+	}
+
+	sdk, err := sdk.New(platformURL.Host, opts...)
 	if err != nil {
 		return Handler{}, err
 	}

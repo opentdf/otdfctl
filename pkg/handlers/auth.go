@@ -2,9 +2,11 @@ package handlers
 
 import (
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"os"
 	"time"
 
@@ -20,7 +22,14 @@ const (
 )
 
 // TODO: get this dynamically from the platform via SDK or dialing directly: [https://github.com/opentdf/platform/issues/147]
-const TOKEN_URL = "http://localhost:8888/auth/realms/opentdf/protocol/openid-connect/token"
+var TOKEN_URL = "http://localhost:8888/auth/realms/opentdf/protocol/openid-connect/token"
+
+func init() {
+	tokenURL := os.Getenv("OTDFCTL_TOKEN_URL")
+	if tokenURL != "" {
+		TOKEN_URL = tokenURL
+	}
+}
 
 // CheckTokenExpiration checks if an OIDC token has expired.
 // Returns true if the token is still valid, false otherwise.
@@ -119,11 +128,20 @@ func GetClientCreds(file string, credsJSON []byte) (ClientCreds, error) {
 }
 
 // Uses the OAuth2 client credentials flow to obtain a token.
-func GetTokenWithClientCreds(ctx context.Context, clientID, clientSecret, tokenURL string, noCache bool) (*oauth2.Token, error) {
+func GetTokenWithClientCreds(ctx context.Context, clientID, clientSecret, tokenURL string, noCache bool, insecure bool) (*oauth2.Token, error) {
 	// did the user pass a custom tokenURL?
 	if tokenURL == "" {
 		// use the default hardcoded constant
 		tokenURL = TOKEN_URL
+	}
+
+	// Only need to set the insecure client if the user passed the insecure flag
+	if insecure {
+		tr := &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		}
+		insecureClient := &http.Client{Transport: tr}
+		ctx = context.WithValue(ctx, oauth2.HTTPClient, insecureClient)
 	}
 
 	config := clientcredentials.Config{
