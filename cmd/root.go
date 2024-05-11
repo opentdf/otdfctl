@@ -44,6 +44,11 @@ func init() {
 		doc.GetDocFlag("log-level").Default,
 		doc.GetDocFlag("log-level").Description,
 	)
+	RootCmd.PersistentFlags().Bool(
+		doc.GetDocFlag("plaintext").Name,
+		doc.GetDocFlag("plaintext").DefaultAsBool(),
+		doc.GetDocFlag("plaintext").Description,
+	)
 	RootCmd.PersistentFlags().StringVar(
 		&clientCredsFile,
 		doc.GetDocFlag("with-client-creds-file").Name,

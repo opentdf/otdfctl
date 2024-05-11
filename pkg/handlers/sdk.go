@@ -3,7 +3,7 @@ package handlers
 import (
 	"context"
 	"errors"
-	"net/url"
+	"strings"
 
 	"github.com/opentdf/platform/protocol/go/common"
 	"github.com/opentdf/platform/sdk"
@@ -23,7 +23,7 @@ type Handler struct {
 }
 
 // Creates a new handler wrapping the SDK, which is authenticated through the cached client-credentials flow tokens
-func New(platformEndpoint, clientID, clientSecret string, insecure bool) (Handler, error) {
+func New(platformEndpoint, clientID, clientSecret string, insecure, plaintext bool) (Handler, error) {
 	scopes := []string{"email"}
 
 	opts := []sdk.Option{
@@ -31,32 +31,18 @@ func New(platformEndpoint, clientID, clientSecret string, insecure bool) (Handle
 		sdk.WithTokenEndpoint(TOKEN_URL),
 	}
 
-	// Try an parse scheme out of platformEndpoint
-	// If it fails, use the default scheme of https
-	// There has to be a better way to do this
-	platformURL, err := url.Parse(platformEndpoint)
-	if err != nil {
-		return Handler{}, err
+	platformEndpoint = stripScheme(platformEndpoint)
+
+	if plaintext {
+		opts = append(opts, sdk.WithInsecurePlaintextConn())
 	}
 
-	switch platformURL.Scheme {
-	case "http":
-		opts = append(opts, sdk.WithInsecurePlaintextConn())
-		if platformURL.Port() == "" {
-			platformURL.Host += ":80"
-		}
-	case "https":
-		if platformURL.Port() == "" {
-			platformURL.Host += ":443"
-		}
-	default:
-		return Handler{}, errors.New("invalid scheme")
-	}
+	// Insecure will take precedence over plaintext forcing a tls connection
 	if insecure {
 		opts = append(opts, sdk.WithInsecureSkipVerifyConn())
 	}
 
-	sdk, err := sdk.New(platformURL.Host, opts...)
+	sdk, err := sdk.New(platformEndpoint, opts...)
 	if err != nil {
 		return Handler{}, err
 	}
@@ -105,4 +91,15 @@ func buildMetadata(metadata *common.MetadataMutable, fns ...func(*common.Metadat
 		metadata = fn(metadata)
 	}
 	return metadata
+}
+
+// Strips the scheme from the endpoint incase it was provided
+func stripScheme(endpoint string) string {
+	if strings.HasPrefix(endpoint, "http://") {
+		return strings.TrimPrefix(endpoint, "http://")
+	}
+	if strings.HasPrefix(endpoint, "https://") {
+		return strings.TrimPrefix(endpoint, "https://")
+	}
+	return endpoint
 }

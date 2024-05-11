@@ -21,6 +21,9 @@ command:
         - fatal
         - panic
       default: info
+    - name: plaintext
+      description: use plaintext connection
+      default: false
     - name: with-client-creds-file
       description: path to a JSON file containing a 'clientId' and 'clientSecret' for auth via client-credentials flow
     - name: with-client-creds

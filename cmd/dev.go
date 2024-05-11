@@ -162,12 +162,16 @@ func NewHandler(cmd *cobra.Command) handlers.Handler {
 	if err != nil {
 		cli.ExitWithError("Failed to get insecure flag", err)
 	}
+	plaintext, err := cmd.Flags().GetBool("plaintext")
+	if err != nil {
+		cli.ExitWithError("Failed to get plaintext flag", err)
+	}
 	// load client credentials from file, JSON, or OS keyring
 	creds, err := handlers.GetClientCreds(clientCredsFile, []byte(clientCredsJSON))
 	if err != nil {
 		cli.ExitWithError("Failed to get client credentials", err)
 	}
-	h, err := handlers.New(platformEndpoint, creds.ClientID, creds.ClientSecret, insecure)
+	h, err := handlers.New(platformEndpoint, creds.ClientID, creds.ClientSecret, insecure, plaintext)
 	if err != nil {
 		if errors.Is(err, handlers.ErrUnauthenticated) {
 			cli.ExitWithError(fmt.Sprintf("Not logged in. Please authenticate via CLI auth flow(s) before using command (%s %s)", cmd.Parent().Use, cmd.Use), err)
