@@ -8,6 +8,9 @@ command:
     - name: host
       description: host:port of the OpenTDF Platform gRPC server
       default: localhost:8080
+    - name: insecure
+      description: use insecure connection
+      default: false
     - name: log-level
       description: log level
       enum:
