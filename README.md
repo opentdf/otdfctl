@@ -15,14 +15,6 @@ The main goals are to:
 - [ ] Add support for `--verbose` persistent flag
 - [ ] Helper functions to support common tasks like pretty printing and json output
 
-## Installation
-
-Install the pre-reqs: 
-- [Hugo](https://gohugo.io/)
-- [git-lfs](https://git-lfs.com/)
-
-For MacOS: `brew install hugo git-lfs`
-
 ## Usage
 
 The CLI is configured via the `otdfctl.yaml`. There is an example provided in `otdfctl-example.yaml`.
@@ -59,6 +51,3 @@ The TUI will be used to create an interactive experience for the user.
 
 Documentation drives the CLI in this project. This can be found in `/docs/man` and is used in the
 CLI via the `man.Docs.GetDoc()` function.
-
-To run the documentation locally, run `hugo server --buildDrafts --disableFastRender`. This will
-start a local server at `http://localhost:1313/`.
