@@ -22,7 +22,10 @@ func auth_clientCredentials(cmd *cobra.Command, args []string) {
 	flagHelper := cli.NewFlagHelper(cmd)
 	clientID := flagHelper.GetOptionalString("client-id")
 	clientSecret := flagHelper.GetOptionalString("client-secret")
+
 	var err error
+
+	insecure, _ := cmd.Flags().GetBool("insecure")
 
 	if clientCredsFile != "" {
 		creds, err := handlers.GetClientCredsFromFile(clientCredsFile)
@@ -53,7 +56,7 @@ func auth_clientCredentials(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	tok, err := handlers.GetTokenWithClientCreds(cmd.Context(), clientID, clientSecret, handlers.TOKEN_URL, noCacheCreds)
+	tok, err := handlers.GetTokenWithClientCreds(cmd.Context(), clientID, clientSecret, handlers.TOKEN_URL, noCacheCreds, insecure)
 	if err != nil {
 		cli.ExitWithError("An error occurred during login. Please check your credentials and try again", err)
 	}

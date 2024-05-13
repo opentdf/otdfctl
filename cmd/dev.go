@@ -158,13 +158,16 @@ func readBytesFromFile(filePath string) []byte {
 // instantiates a new handler with authentication via client credentials
 func NewHandler(cmd *cobra.Command) handlers.Handler {
 	platformEndpoint := cmd.Flag("host").Value.String()
-
+	insecure, err := cmd.Flags().GetBool("insecure")
+	if err != nil {
+		cli.ExitWithError("Failed to get insecure flag", err)
+	}
 	// load client credentials from file, JSON, or OS keyring
 	creds, err := handlers.GetClientCreds(clientCredsFile, []byte(clientCredsJSON))
 	if err != nil {
 		cli.ExitWithError("Failed to get client credentials", err)
 	}
-	h, err := handlers.New(platformEndpoint, creds.ClientID, creds.ClientSecret)
+	h, err := handlers.New(platformEndpoint, creds.ClientID, creds.ClientSecret, insecure)
 	if err != nil {
 		if errors.Is(err, handlers.ErrUnauthenticated) {
 			cli.ExitWithError(fmt.Sprintf("Not logged in. Please authenticate via CLI auth flow(s) before using command (%s %s)", cmd.Parent().Use, cmd.Use), err)

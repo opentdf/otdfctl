@@ -34,6 +34,11 @@ func init() {
 		doc.GetDocFlag("host").Default,
 		doc.GetDocFlag("host").Description,
 	)
+	RootCmd.PersistentFlags().Bool(
+		doc.GetDocFlag("insecure").Name,
+		doc.GetDocFlag("insecure").DefaultAsBool(),
+		doc.GetDocFlag("insecure").Description,
+	)
 	RootCmd.PersistentFlags().String(
 		doc.GetDocFlag("log-level").Name,
 		doc.GetDocFlag("log-level").Default,
