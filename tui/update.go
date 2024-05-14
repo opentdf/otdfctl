@@ -25,15 +25,19 @@ var (
 	blurredButton = fmt.Sprintf("[ %s ]", blurredStyle.Render("Submit"))
 )
 
-type model struct {
+type Update struct {
 	focusIndex int
 	inputs     []textinput.Model
 	cursorMode cursor.Mode
+	keys       []string
+	// vals       []string
 }
 
-func initialModel() model {
-	m := model{
-		inputs: make([]textinput.Model, 3),
+func InitUpdate(keys []string, vals []string) Update {
+	m := Update{
+		inputs: make([]textinput.Model, len(keys)),
+		keys:   keys,
+		// vals:   vals,
 	}
 
 	var t textinput.Model
@@ -41,21 +45,26 @@ func initialModel() model {
 		t = textinput.New()
 		t.Cursor.Style = cursorStyle
 		t.CharLimit = 32
-
-		switch i {
-		case 0:
-			t.Placeholder = "Nickname"
+		t.SetValue(vals[i])
+		if i == 0 {
 			t.Focus()
 			t.PromptStyle = focusedStyle
 			t.TextStyle = focusedStyle
-		case 1:
-			t.Placeholder = "Email"
-			t.CharLimit = 64
-		case 2:
-			t.Placeholder = "Password"
-			t.EchoMode = textinput.EchoPassword
-			t.EchoCharacter = '•'
 		}
+		// switch i {
+		// case 0:
+		// 	t.Placeholder = "Nickname"
+		// 	t.Focus()
+		// 	t.PromptStyle = focusedStyle
+		// 	t.TextStyle = focusedStyle
+		// case 1:
+		// 	t.Placeholder = "Email"
+		// 	t.CharLimit = 64
+		// case 2:
+		// 	t.Placeholder = "Password"
+		// 	t.EchoMode = textinput.EchoPassword
+		// 	t.EchoCharacter = '•'
+		// }
 
 		m.inputs[i] = t
 	}
@@ -63,11 +72,11 @@ func initialModel() model {
 	return m
 }
 
-func (m model) Init() tea.Cmd {
+func (m Update) Init() tea.Cmd {
 	return textinput.Blink
 }
 
-func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m Update) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -134,7 +143,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
-func (m *model) updateInputs(msg tea.Msg) tea.Cmd {
+func (m *Update) updateInputs(msg tea.Msg) tea.Cmd {
 	cmds := make([]tea.Cmd, len(m.inputs))
 
 	// Only text inputs with Focus() set will respond, so it's safe to simply
@@ -146,10 +155,11 @@ func (m *model) updateInputs(msg tea.Msg) tea.Cmd {
 	return tea.Batch(cmds...)
 }
 
-func (m model) View() string {
+func (m Update) View() string {
 	var b strings.Builder
 
 	for i := range m.inputs {
+		b.WriteString(m.keys[i] + "\n")
 		b.WriteString(m.inputs[i].View())
 		if i < len(m.inputs)-1 {
 			b.WriteRune('\n')
