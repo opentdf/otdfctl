@@ -102,7 +102,10 @@ func (m Update) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// Did the user press enter while the submit button was focused?
 			// If so, exit.
 			if s == "enter" && m.focusIndex == len(m.inputs) {
-				return m, tea.Quit
+				return m, nil
+				// type updateMsg string
+				// a := interface{}(nil)
+				// return m, "abc".(tea.Cmd)
 			}
 
 			// Cycle indexes

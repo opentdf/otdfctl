@@ -61,10 +61,10 @@ func (m LabelList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "backspace":
 			return InitAttributeView(m.attr.Id, m.sdk)
-		case "ctrl+c", "q":
+		case "ctrl+c", "q", "esc":
 			return m, tea.Quit
 		case "enter", "e":
-			return InitLabelUpdate(m.read.list.Items()[m.read.list.Index()].(LabelItem)), nil
+			return InitLabelUpdate(m.read.list.Items()[m.read.list.Index()].(LabelItem), m.attr, m.sdk), nil
 		case "c":
 			// create new label
 			return m, nil
