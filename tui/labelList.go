@@ -67,14 +67,15 @@ func (m LabelList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// return InitLabelUpdate(m.read.list.Index(), m.attr, m.sdk), nil
 			return InitLabelUpdate(m.read.list.Items()[m.read.list.Index()].(LabelItem), m.attr, m.sdk), nil
 		case "c":
-			// create new label
-			return m, nil
+			return InitLabelUpdate(LabelItem{}, m.attr, m.sdk), nil
 		case "d":
 			// delete label
 			return m, nil
 		}
 	}
-	return m, nil
+	var cmd tea.Cmd
+	m.read.list, cmd = m.read.list.Update(msg)
+	return m, cmd
 }
 
 func (m LabelList) View() string {
