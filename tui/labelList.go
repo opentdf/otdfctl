@@ -64,8 +64,8 @@ func (m LabelList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c", "q", "esc":
 			return m, tea.Quit
 		case "enter", "e":
-			return InitLabelUpdate(m.read.list.Index(), m.attr, m.sdk), nil
-			// return InitLabelUpdate(m.read.list.Items()[m.read.list.Index()].(LabelItem), m.attr, m.sdk), nil
+			// return InitLabelUpdate(m.read.list.Index(), m.attr, m.sdk), nil
+			return InitLabelUpdate(m.read.list.Items()[m.read.list.Index()].(LabelItem), m.attr, m.sdk), nil
 		case "c":
 			// create new label
 			return m, nil
