@@ -6,6 +6,7 @@ import (
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/handlers"
 	"github.com/opentdf/otdfctl/tui/constants"
+	"github.com/opentdf/platform/protocol/go/policy"
 )
 
 type AttributeSubItem struct {
@@ -26,31 +27,30 @@ func (m AttributeSubItem) Description() string {
 }
 
 type AttributeView struct {
+	attr *policy.Attribute
 	read Read
+	sdk  handlers.Handler
 }
 
 func InitAttributeView(id string, h handlers.Handler) (AttributeView, tea.Cmd) {
-	m := AttributeView{}
 	attr, err := h.GetAttribute(id)
 	if err != nil {
-		return m, nil
+		// return error view
 	}
-	var vals []string
-	for _, val := range attr.Values {
-		vals = append(vals, val.Value)
-	}
+	sa := cli.GetSimpleAttribute(attr)
 	items := []list.Item{
-		AttributeSubItem{title: "ID", description: attr.Id},
-		AttributeSubItem{title: "Name", description: attr.Name},
-		AttributeSubItem{title: "Rule", description: attr.Rule.String()},
-		AttributeSubItem{title: "Values", description: cli.CommaSeparated(vals)},
-		AttributeSubItem{title: "Namespace", description: attr.Namespace.Name},
-		AttributeSubItem{title: "Created At", description: attr.Metadata.CreatedAt.String()},
-		AttributeSubItem{title: "Updated At", description: attr.Metadata.UpdatedAt.String()},
+		AttributeSubItem{title: "ID", description: sa.Id},
+		AttributeSubItem{title: "Name", description: sa.Name},
+		AttributeSubItem{title: "Rule", description: sa.Rule},
+		AttributeSubItem{title: "Values", description: cli.CommaSeparated(sa.Values)},
+		AttributeSubItem{title: "Namespace", description: sa.Namespace},
+		AttributeSubItem{title: "Active", description: sa.Active},
+		AttributeSubItem{title: "Labels", description: sa.Metadata["Labels"]},
+		AttributeSubItem{title: "Created At", description: sa.Metadata["Created At"]},
+		AttributeSubItem{title: "Updated At", description: sa.Metadata["Updated At"]},
 	}
-
 	model, _ := InitRead("Read Attribute", items)
-	m.read = model.(Read)
+	m := AttributeView{sdk: h, attr: attr, read: model.(Read)}
 	model, msg := m.Update(WindowMsg())
 	m = model.(AttributeView)
 	return m, msg
@@ -68,10 +68,16 @@ func (m AttributeView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	case tea.KeyMsg:
 		switch msg.String() {
+		case "backspace":
+			return InitAttributeList(m.attr.Id, m.sdk)
 		case "ctrl+c", "q":
 			return m, tea.Quit
 		case "ctrl+d":
 			return m, nil
+		case "enter":
+			if m.read.list.SelectedItem().(AttributeSubItem).title == "Labels" {
+				return InitLabelList(m.attr, m.sdk)
+			}
 			// case "enter":
 			// 	switch m.list.SelectedItem().(AttributeItem).id {
 			// 	// case namespaceMenu:
