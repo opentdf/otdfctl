@@ -37,10 +37,6 @@ func InitAttributeView(id string, h handlers.Handler) (AttributeView, tea.Cmd) {
 	if err != nil {
 		// return error view
 	}
-	// var vals []string
-	// for _, val := range attr.Values {
-	// 	vals = append(vals, val.Value)
-	// }
 	sa := cli.GetSimpleAttribute(attr)
 	items := []list.Item{
 		AttributeSubItem{title: "ID", description: sa.Id},
@@ -81,9 +77,6 @@ func (m AttributeView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "enter":
 			if m.read.list.SelectedItem().(AttributeSubItem).title == "Labels" {
 				return InitLabelList(m.attr, m.sdk)
-				// list values
-				// vl, cmd := InitAttributeValueList(m.attr.Id, m.sdk)
-				// return vl, cmd
 			}
 			// case "enter":
 			// 	switch m.list.SelectedItem().(AttributeItem).id {
