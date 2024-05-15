@@ -30,14 +30,12 @@ type Update struct {
 	inputs     []textinput.Model
 	cursorMode cursor.Mode
 	keys       []string
-	// vals       []string
 }
 
 func InitUpdate(keys []string, vals []string) Update {
 	m := Update{
 		inputs: make([]textinput.Model, len(keys)),
 		keys:   keys,
-		// vals:   vals,
 	}
 
 	var t textinput.Model
@@ -51,20 +49,6 @@ func InitUpdate(keys []string, vals []string) Update {
 			t.PromptStyle = focusedStyle
 			t.TextStyle = focusedStyle
 		}
-		// switch i {
-		// case 0:
-		// 	t.Placeholder = "Nickname"
-		// 	t.Focus()
-		// 	t.PromptStyle = focusedStyle
-		// 	t.TextStyle = focusedStyle
-		// case 1:
-		// 	t.Placeholder = "Email"
-		// 	t.CharLimit = 64
-		// case 2:
-		// 	t.Placeholder = "Password"
-		// 	t.EchoMode = textinput.EchoPassword
-		// 	t.EchoCharacter = '•'
-		// }
 
 		m.inputs[i] = t
 	}
@@ -103,9 +87,6 @@ func (m Update) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// If so, exit.
 			if s == "enter" && m.focusIndex == len(m.inputs) {
 				return m, nil
-				// type updateMsg string
-				// a := interface{}(nil)
-				// return m, "abc".(tea.Cmd)
 			}
 
 			// Cycle indexes
