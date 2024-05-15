@@ -11,8 +11,7 @@ import (
 
 type AttributeList struct {
 	list list.Model
-	// width int
-	sdk handlers.Handler
+	sdk  handlers.Handler
 }
 
 type AttributeItem struct {
@@ -49,11 +48,8 @@ func InitAttributeList(id string, sdk handlers.Handler) (tea.Model, tea.Cmd) {
 			selectIdx = i
 		}
 		item := AttributeItem{
-			id: attr.Id,
-			// namespace: attr.Namespace.Name,
+			id:   attr.Id,
 			name: attr.Name,
-			// rule:      attr.Rule.String(),
-			// values:    vals,
 		}
 		attrs = append(attrs, item)
 	}
@@ -87,7 +83,6 @@ func (m AttributeList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		constants.WindowSize = msg
 		m.list.SetSize(msg.Width, msg.Height)
-		// m.width = msg.Width
 		return m, nil
 	case tea.KeyMsg:
 		switch msg.String() {
