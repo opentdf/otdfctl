@@ -8,8 +8,6 @@ import (
 	"github.com/opentdf/platform/protocol/go/policy"
 )
 
-// func (m LabelList)
-
 type LabelList struct {
 	attr *policy.Attribute
 	sdk  handlers.Handler
