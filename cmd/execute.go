@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/opentdf/otdfctl/internal/config"
@@ -45,7 +46,10 @@ func Execute(opts ...ExecuteOptFunc) {
 	// 	fmt.Println("Error loading config:", err)
 	// 	os.Exit(1)
 	// }
-	OtdfctlCfg = *cfg
+	// TODO remove this when we force creation of the config
+	if cfg != nil {
+		OtdfctlCfg = *cfg
+	}
 
 	if c.mountTo != nil {
 		MountRoot(c.mountTo, c.renameCmd)
@@ -55,4 +59,19 @@ func Execute(opts ...ExecuteOptFunc) {
 			os.Exit(1)
 		}
 	}
+}
+
+func MountRoot(newRoot *cobra.Command, cmd *cobra.Command) error {
+	if newRoot == nil {
+		return fmt.Errorf("newRoot is nil")
+	}
+
+	if cmd != nil {
+		RootCmd.Use = cmd.Use
+		RootCmd.Short = cmd.Short
+		RootCmd.Long = cmd.Long
+	}
+
+	newRoot.AddCommand(RootCmd)
+	return nil
 }

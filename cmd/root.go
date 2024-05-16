@@ -4,8 +4,6 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/opentdf/otdfctl/internal/config"
 	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/spf13/cobra"
@@ -57,19 +55,4 @@ func init() {
 		doc.GetDocFlag("with-client-creds").Description,
 	)
 	RootCmd.AddGroup(&cobra.Group{ID: "tdf"})
-}
-
-func MountRoot(newRoot *cobra.Command, cmd *cobra.Command) error {
-	if newRoot == nil {
-		return fmt.Errorf("newRoot is nil")
-	}
-
-	if cmd != nil {
-		RootCmd.Use = cmd.Use
-		RootCmd.Short = cmd.Short
-		RootCmd.Long = cmd.Long
-	}
-
-	newRoot.AddCommand(RootCmd)
-	return nil
 }
