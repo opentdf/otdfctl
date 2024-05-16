@@ -8,8 +8,8 @@ command:
     - name: host
       description: host:port of the OpenTDF Platform gRPC server
       default: localhost:8080
-    - name: insecure
-      description: use insecure connection
+    - name: tls-no-verify
+      description: disable verification of the server's TLS certificate
       default: false
     - name: log-level
       description: log level
