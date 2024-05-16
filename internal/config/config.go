@@ -38,6 +38,8 @@ const (
 )
 
 // Load config with viper.
+// TODO force creation of the config in the `~/.config/otdfctl` directory
+// TODO the config file in gh is config.yaml -- might want to emulate this
 func LoadConfig(file string, key string) (*Config, error) {
 	// default the config values if not passed in
 	if file == "" && key == "" {
