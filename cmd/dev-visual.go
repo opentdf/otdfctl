@@ -47,11 +47,16 @@ func dev_visual(cmd *cobra.Command, args []string) {
 		// Get the hello from the query parameters.
 		// code := r.URL.Query().Get("hello")
 
-		respBody := `{"data":"Hello world from CLI server"}`
+		// turn the policyInMemory into a JSON for the response body
+		respBody, err := json.Marshal(policyInMemory)
+		if err != nil {
+			cli.ExitWithError("Failed to marshal policy data", err)
+		}
+
 		// Write the user info to the response.
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(respBody)
+		w.Write(respBody)
 
 		// Send a value to the stop channel to simulate the SIGINT signal.
 		stop <- syscall.SIGINT
