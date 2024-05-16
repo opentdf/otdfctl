@@ -66,7 +66,7 @@ func init() {
 		doc.GetDocFlag("with-client-creds").Description,
 	)
 	RootCmd.AddGroup(&cobra.Group{ID: "tdf"})
-	RootCmd.PersistentPostRunE = func(cmd *cobra.Command, args []string) error {
+	RootCmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
 		configFile, _ := cmd.Flags().GetString("config-file")
 		configKey, _ := cmd.Flags().GetString("config-key")
 
