@@ -5,7 +5,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/opentdf/otdfctl/internal/config"
 	"github.com/opentdf/otdfctl/pkg/man"
@@ -29,6 +28,16 @@ var (
 func init() {
 	doc := man.Docs.GetDoc("<root>")
 	RootCmd = &doc.Command
+	RootCmd.PersistentFlags().String(
+		doc.GetDocFlag("config-file").Name,
+		doc.GetDocFlag("config-file").Default,
+		doc.GetDocFlag("config-file").Description,
+	)
+	RootCmd.PersistentFlags().String(
+		doc.GetDocFlag("config-key").Name,
+		doc.GetDocFlag("config-key").Default,
+		doc.GetDocFlag("config-key").Description,
+	)
 	RootCmd.PersistentFlags().String(
 		doc.GetDocFlag("host").Name,
 		doc.GetDocFlag("host").Default,
@@ -57,26 +66,21 @@ func init() {
 		doc.GetDocFlag("with-client-creds").Description,
 	)
 	RootCmd.AddGroup(&cobra.Group{ID: "tdf"})
+	RootCmd.PersistentPostRunE = func(cmd *cobra.Command, args []string) error {
+		configFile, _ := cmd.Flags().GetString("config-file")
+		configKey, _ := cmd.Flags().GetString("config-key")
+
+		cfg, err := config.LoadConfig(configFile, configKey)
+		if err != nil {
+			return fmt.Errorf("issue loading config: %w", err)
+		}
+		OtdfctlCfg = *cfg
+		return nil
+	}
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // The config file and key are defaulted to otdfctl.yaml.
 func Execute() {
-	ExecuteWithBootstrap("", "")
-}
-
-// Execute adds all child commands to the root command and sets flags appropriately.
-// It also allows the config file & key to be bootstrapped for wrapping the CLI.
-func ExecuteWithBootstrap(configFile, configKey string) {
-	cfgKey = configKey
-	cfg, err := config.LoadConfig(configFile, configKey)
-	if err != nil {
-		fmt.Println("Error loading config:", err)
-		os.Exit(1)
-	}
-	OtdfctlCfg = *cfg
-	err = RootCmd.Execute()
-	if err != nil {
-		os.Exit(1)
-	}
+	RootCmd.Execute()
 }

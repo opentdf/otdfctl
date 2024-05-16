@@ -5,6 +5,12 @@ command:
   name: otdfctl
   aliases: []
   flags:
+    - name: config-file
+      description: path to the configuration file
+      default: ''
+    - name: config-key
+      description: key is the name of the configuration file without the extension
+      default: 'otdfctl'
     - name: host
       description: host:port of the OpenTDF Platform gRPC server
       default: localhost:8080
