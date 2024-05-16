@@ -35,9 +35,9 @@ func init() {
 		doc.GetDocFlag("host").Description,
 	)
 	RootCmd.PersistentFlags().Bool(
-		doc.GetDocFlag("insecure").Name,
-		doc.GetDocFlag("insecure").DefaultAsBool(),
-		doc.GetDocFlag("insecure").Description,
+		doc.GetDocFlag("tls-no-verify").Name,
+		doc.GetDocFlag("tls-no-verify").DefaultAsBool(),
+		doc.GetDocFlag("tls-no-verify").Description,
 	)
 	RootCmd.PersistentFlags().String(
 		doc.GetDocFlag("log-level").Name,

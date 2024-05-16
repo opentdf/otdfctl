@@ -23,7 +23,7 @@ type Handler struct {
 }
 
 // Creates a new handler wrapping the SDK, which is authenticated through the cached client-credentials flow tokens
-func New(platformEndpoint, clientID, clientSecret string, insecure bool) (Handler, error) {
+func New(platformEndpoint, clientID, clientSecret string, tlsNoVerify bool) (Handler, error) {
 	scopes := []string{"email"}
 
 	opts := []sdk.Option{
@@ -49,11 +49,11 @@ func New(platformEndpoint, clientID, clientSecret string, insecure bool) (Handle
 		if platformURL.Port() == "" {
 			platformURL.Host += ":443"
 		}
+		if tlsNoVerify {
+			opts = append(opts, sdk.WithInsecureSkipVerifyConn())
+		}
 	default:
 		return Handler{}, errors.New("invalid scheme")
-	}
-	if insecure {
-		opts = append(opts, sdk.WithInsecureSkipVerifyConn())
 	}
 
 	sdk, err := sdk.New(platformURL.Host, opts...)
