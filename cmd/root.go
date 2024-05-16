@@ -80,3 +80,18 @@ func ExecuteWithBootstrap(configFile, configKey string) {
 		os.Exit(1)
 	}
 }
+
+func MountRoot(newRoot *cobra.Command, cmd *cobra.Command) error {
+	if newRoot == nil {
+		return fmt.Errorf("newRoot is nil")
+	}
+
+	if cmd != nil {
+		RootCmd.Use = cmd.Use
+		RootCmd.Short = cmd.Short
+		RootCmd.Long = cmd.Long
+	}
+
+	newRoot.AddCommand(RootCmd)
+	return nil
+}
