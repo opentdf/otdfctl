@@ -25,7 +25,7 @@ func auth_clientCredentials(cmd *cobra.Command, args []string) {
 
 	var err error
 
-	insecure, _ := cmd.Flags().GetBool("insecure")
+	tlsNoVerify, _ := cmd.Flags().GetBool("tls-no-verify")
 
 	if clientCredsFile != "" {
 		creds, err := handlers.GetClientCredsFromFile(clientCredsFile)
@@ -56,7 +56,7 @@ func auth_clientCredentials(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	tok, err := handlers.GetTokenWithClientCreds(cmd.Context(), clientID, clientSecret, handlers.TOKEN_URL, noCacheCreds, insecure)
+	tok, err := handlers.GetTokenWithClientCreds(cmd.Context(), clientID, clientSecret, handlers.TOKEN_URL, noCacheCreds, tlsNoVerify)
 	if err != nil {
 		cli.ExitWithError("An error occurred during login. Please check your credentials and try again", err)
 	}
