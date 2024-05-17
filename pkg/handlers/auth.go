@@ -128,7 +128,7 @@ func GetClientCreds(file string, credsJSON []byte) (ClientCreds, error) {
 }
 
 // Uses the OAuth2 client credentials flow to obtain a token.
-func GetTokenWithClientCreds(ctx context.Context, clientID, clientSecret, tokenURL string, noCache bool, insecure bool) (*oauth2.Token, error) {
+func GetTokenWithClientCreds(ctx context.Context, clientID, clientSecret, tokenURL string, noCache bool, tlsNoVerify bool) (*oauth2.Token, error) {
 	// did the user pass a custom tokenURL?
 	if tokenURL == "" {
 		// use the default hardcoded constant
@@ -136,7 +136,7 @@ func GetTokenWithClientCreds(ctx context.Context, clientID, clientSecret, tokenU
 	}
 
 	// Only need to set the insecure client if the user passed the insecure flag
-	if insecure {
+	if tlsNoVerify {
 		tr := &http.Transport{
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 		}
