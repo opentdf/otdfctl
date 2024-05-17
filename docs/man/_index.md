@@ -6,8 +6,8 @@ command:
   aliases: []
   flags:
     - name: host
-      description: host:port of the OpenTDF Platform gRPC server
-      default: localhost:8080
+      description: Hostname of the platform (i.e. https://localhost)
+      default:
     - name: tls-no-verify
       description: disable verification of the server's TLS certificate
       default: false

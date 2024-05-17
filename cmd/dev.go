@@ -158,6 +158,10 @@ func readBytesFromFile(filePath string) []byte {
 // instantiates a new handler with authentication via client credentials
 func NewHandler(cmd *cobra.Command) handlers.Handler {
 	platformEndpoint := cmd.Flag("host").Value.String()
+	if platformEndpoint == "" {
+		cli.ExitWithError("required flag(s) \"host\" not set", fmt.Errorf("host flag not set"))
+	}
+
 	tlsNoVerify, err := cmd.Flags().GetBool("tls-no-verify")
 	if err != nil {
 		cli.ExitWithError("Failed to get tls-no-verify flag", err)
