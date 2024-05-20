@@ -77,23 +77,23 @@ func dev_nanoTdfEncryptCmd(cmd *cobra.Command, args []string) {
 }
 
 func init() {
-	encryptCmd := man.Docs.GetCommand("encrypt-nano",
+	encryptNanoCmd := man.Docs.GetCommand("encrypt-nano",
 		man.WithRun(dev_nanoTdfEncryptCmd),
 	)
-	encryptCmd.Flags().StringP(
-		encryptCmd.GetDocFlag("out").Name,
-		encryptCmd.GetDocFlag("out").Shorthand,
-		encryptCmd.GetDocFlag("out").Default,
-		encryptCmd.GetDocFlag("out").Description,
+	encryptNanoCmd.Flags().StringP(
+		encryptNanoCmd.GetDocFlag("out").Name,
+		encryptNanoCmd.GetDocFlag("out").Shorthand,
+		encryptNanoCmd.GetDocFlag("out").Default,
+		encryptNanoCmd.GetDocFlag("out").Description,
 	)
-	encryptCmd.Flags().StringSliceVarP(
+	encryptNanoCmd.Flags().StringSliceVarP(
 		&attrValues,
-		encryptCmd.GetDocFlag("attr").Name,
-		encryptCmd.GetDocFlag("attr").Shorthand,
+		encryptNanoCmd.GetDocFlag("attr").Name,
+		encryptNanoCmd.GetDocFlag("attr").Shorthand,
 		[]string{},
-		encryptCmd.GetDocFlag("attr").Description,
+		encryptNanoCmd.GetDocFlag("attr").Description,
 	)
-	encryptCmd.Command.GroupID = "tdf"
+	encryptNanoCmd.Command.GroupID = "tdf"
 
-	RootCmd.AddCommand(&encryptCmd.Command)
+	RootCmd.AddCommand(&encryptNanoCmd.Command)
 }

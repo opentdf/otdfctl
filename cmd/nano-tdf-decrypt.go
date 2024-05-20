@@ -55,16 +55,16 @@ func dev_nanoTdfDecryptCmd(cmd *cobra.Command, args []string) {
 }
 
 func init() {
-	decryptCmd := man.Docs.GetCommand("decrypt-nano",
+	decryptNanoCmd := man.Docs.GetCommand("decrypt-nano",
 		man.WithRun(dev_nanoTdfDecryptCmd),
 	)
-	decryptCmd.Flags().StringP(
-		decryptCmd.GetDocFlag("out").Name,
-		decryptCmd.GetDocFlag("out").Shorthand,
-		decryptCmd.GetDocFlag("out").Default,
-		decryptCmd.GetDocFlag("out").Description,
+	decryptNanoCmd.Flags().StringP(
+		decryptNanoCmd.GetDocFlag("out").Name,
+		decryptNanoCmd.GetDocFlag("out").Shorthand,
+		decryptNanoCmd.GetDocFlag("out").Default,
+		decryptNanoCmd.GetDocFlag("out").Description,
 	)
-	decryptCmd.Command.GroupID = "tdf"
+	decryptNanoCmd.Command.GroupID = "tdf"
 
-	RootCmd.AddCommand(&decryptCmd.Command)
+	RootCmd.AddCommand(&decryptNanoCmd.Command)
 }
