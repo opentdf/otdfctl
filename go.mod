@@ -14,7 +14,7 @@ require (
 	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/itchyny/gojq v0.12.15
 	github.com/opentdf/platform/protocol/go v0.2.0
-	github.com/opentdf/platform/sdk v0.2.1-0.20240522145653-8ba46ea69c33
+	github.com/opentdf/platform/sdk v0.2.1-0.20240522152125-423213240053
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/viper v1.18.2
 	github.com/stretchr/testify v1.9.0

@@ -18,13 +18,13 @@ Build a Nano Trusted Data Format (NanoTDF) with encrypted content from a specifi
 
 ```bash
 # output to stdout
-echo "some text" | otdfctl nano-encrypt
-otdfctl nano-encrypt hello.txt
+echo "some text" | otdfctl encrypt-nano
+otdfctl encrypt-nano hello.txt
 # pipe stdout to a bucket
-echo "my secret" | otdfctl nano-encrypt | aws s3 cp - s3://my-bucket/secret.txt.tdf
+echo "my secret" | otdfctl encrypt-nano | aws s3 cp - s3://my-bucket/secret.txt.tdf
 
 # output hello.txt.tdf in root directory
-echo "hello world" | otdfctl nano-encrypt -o hello.txt
-cat hello.txt | otdfctl nano-encrypt -o hello.txt
-cat hello.txt | otdfctl nano-encrypt -o hello.txt.tdf #.tdf extension is only added once
+echo "hello world" | otdfctl encrypt-nano -o hello.txt
+cat hello.txt | otdfctl encrypt-nano -o hello.txt
+cat hello.txt | otdfctl encrypt-nano -o hello.txt.tdf #.tdf extension is only added once
 ```

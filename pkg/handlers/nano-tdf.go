@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 )
 
@@ -15,7 +14,7 @@ func (h Handler) EncryptNanoBytes(b []byte, values []string) (*bytes.Buffer, err
 		return nil, err
 	}
 
-	nanoTDFCOnfig.SetKasUrl(fmt.Sprintf("http://%s", h.platformEndpoint))
+	nanoTDFCOnfig.SetKasUrl(h.platformEndpoint)
 	nanoTDFCOnfig.SetAttributes(values)
 
 	// TODO: validate values are FQNs or return an error [https://github.com/opentdf/platform/issues/515]

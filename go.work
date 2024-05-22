@@ -1,0 +1,6 @@
+go 1.22.3
+
+use (
+	.
+	../opentdf-v2-poc/lib/ocrypto
+)
