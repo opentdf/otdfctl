@@ -198,6 +198,7 @@ func processDoc(doc string) (*Doc, error) {
 		Title   string `yaml:"title"`
 		Command struct {
 			Name    string    `yaml:"name"`
+			Hidden  bool      `yaml:"hidden"`
 			Aliases []string  `yaml:"aliases"`
 			Flags   []DocFlag `yaml:"flags"`
 		} `yaml:"command"`
@@ -218,6 +219,7 @@ func processDoc(doc string) (*Doc, error) {
 	d := Doc{
 		cobra.Command{
 			Use:     c.Name,
+			Hidden:  c.Hidden,
 			Aliases: c.Aliases,
 			Short:   matter.Title,
 			Long:    styleDoc(long),
