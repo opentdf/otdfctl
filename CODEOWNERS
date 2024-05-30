@@ -1,3 +1,4 @@
 # CODEOWNERS
 
-* @opentdf/opentdf-cli @suchak1 @jrschumacher @jakedoublev
+* @opentdf/cli 
+* @suchak1 @jrschumacher @jakedoublev
