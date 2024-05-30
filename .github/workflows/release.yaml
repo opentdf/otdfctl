@@ -35,7 +35,7 @@ jobs:
             const username = context.actor;
             const data = fs.readFileSync('CODEOWNERS', 'utf8');
             const authorized = data.split(' @').includes(username);
-            if (authorized) {
+            if (!authorized) {
               console.log(`${username} is authorized to release`);
             } else {
               core.setFailed(`${username} is not authorized to release`);
