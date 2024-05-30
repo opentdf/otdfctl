@@ -43,16 +43,16 @@ jobs:
                 team_slug,
                 username,
               })
-            #   if (response.data.state === 'active') {
-            #     console.log(`${username} is a member of the team ${team_slug}.`);
-            #   } else {
-            #     console.log(`${username} is not an active member of the team ${team_slug}.`);
-            #     core.setFailed(`${username} is not an active member of the team ${team_slug}.`);
-            #   }
-            # } catch(error) {
-            #   console.log(`Error checking membership: ${error}`);
-            #   core.setFailed(`Error checking membership: ${error}`);
-            # }
+            //   if (response.data.state === 'active') {
+            //     console.log(`${username} is a member of the team ${team_slug}.`);
+            //   } else {
+            //     console.log(`${username} is not an active member of the team ${team_slug}.`);
+            //     core.setFailed(`${username} is not an active member of the team ${team_slug}.`);
+            //   }
+            // } catch(error) {
+            //   console.log(`Error checking membership: ${error}`);
+            //   core.setFailed(`Error checking membership: ${error}`);
+            // }
               console.log(data);
             } catch (error) {
               console.error(error);
