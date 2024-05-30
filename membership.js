@@ -11,8 +11,9 @@ const membership = async (org, team_slug, username) => {
         //     team_slug: team_slug || 'all',
         //     username,
         // });
-        const { data } = octokit.rest.teams.list({
+        const {data} = await octokit.rest.teams.listMembersInOrg({
             org,
+            team_slug,
           });
         console.log(data);
     } catch (error) {

@@ -49,7 +49,7 @@ jobs:
 
             // API request to check team membership
             try {
-              const { data } = await github.rest.teams.getMembershipForUserInOrg({
+              const { data } = await github.rest.teams.listMembersInOrg({
                 org,
                 team_slug,
                 username,
