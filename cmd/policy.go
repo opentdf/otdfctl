@@ -1,23 +1,24 @@
 package cmd
 
-import "github.com/spf13/cobra"
-
-var (
-	// PolicyCmd is the command for managing policies
-	policyCmd = &cobra.Command{
-		Use:   "policy",
-		Short: "Manage policies",
-		Long: `
-Manage policies within the platform.
-
-Policy is a set of rules that are enforced by the platform. Specific to the the data centric
-security, policy revolves around data attributes (referred to as attributes). Within the context
-of attributes are namespaces, values, subject-mappings, resource-mappings, key-access-server grants,
-and other key elements.
-`,
-	}
+import (
+	"github.com/opentdf/otdfctl/pkg/man"
+	"github.com/spf13/cobra"
 )
 
+// PolicyCmd is the command for managing policies
+var policyCmd = &cobra.Command{
+	Use:   man.Docs.GetDoc("policy").Use,
+	Short: man.Docs.GetDoc("policy").Short,
+	Long:  man.Docs.GetDoc("policy").Long,
+}
+
 func init() {
-	rootCmd.AddCommand(policyCmd)
+	doc := man.Docs.GetDoc("policy")
+	policyCmd.PersistentFlags().BoolVar(
+		&configFlagOverrides.OutputFormatJSON,
+		doc.GetDocFlag("json").Name,
+		doc.GetDocFlag("json").DefaultAsBool(),
+		doc.GetDocFlag("json").Description,
+	)
+	RootCmd.AddCommand(policyCmd)
 }

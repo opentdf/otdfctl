@@ -4,21 +4,19 @@ import (
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/opentdf/tructl/tui/constants"
+	"github.com/opentdf/otdfctl/pkg/handlers"
+	"github.com/opentdf/otdfctl/tui/constants"
+	"github.com/opentdf/platform/protocol/go/common"
 )
 
 type AttributeList struct {
-	list  list.Model
-	width int
+	list list.Model
+	sdk  handlers.Handler
 }
 
 type AttributeItem struct {
-	id          string
-	namespace   string
-	name        string
-	description string
-	rule        string
-	values      []string
+	id   string
+	name string
 }
 
 func (m AttributeItem) FilterValue() string {
@@ -30,19 +28,35 @@ func (m AttributeItem) Title() string {
 }
 
 func (m AttributeItem) Description() string {
-	return m.description
+	return m.id
 }
 
-func InitAttributeList(items []list.Item, selectIdx int) (tea.Model, tea.Cmd) {
-	// TODO: fetch items from API
-
-	m := AttributeList{}
-	m.list = list.New([]list.Item{}, list.NewDefaultDelegate(), constants.WindowSize.Width, constants.WindowSize.Height)
-	if selectIdx > 0 {
-		m.list.Select(selectIdx)
+func InitAttributeList(id string, sdk handlers.Handler) (tea.Model, tea.Cmd) {
+	l := list.New([]list.Item{}, list.NewDefaultDelegate(), constants.WindowSize.Width, constants.WindowSize.Height)
+	res, err := sdk.ListAttributes(common.ActiveStateEnum_ACTIVE_STATE_ENUM_ANY)
+	if err != nil {
+		// return error view
 	}
-	m.list.Title = "Attributes"
-	m.list.SetItems(items)
+	var attrs []list.Item
+	selectIdx := 0
+	for i, attr := range res {
+		var vals []string
+		for _, val := range attr.Values {
+			vals = append(vals, val.Value)
+		}
+		if attr.Id == id {
+			selectIdx = i
+		}
+		item := AttributeItem{
+			id:   attr.Id,
+			name: attr.Name,
+		}
+		attrs = append(attrs, item)
+	}
+	l.Title = "Attributes"
+	l.SetItems(attrs)
+	l.Select(selectIdx)
+	m := AttributeList{sdk: sdk, list: l}
 	return m.Update(WindowMsg())
 }
 
@@ -65,43 +79,37 @@ func CreateViewFormat(num int) string {
 }
 
 func (m AttributeList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		constants.WindowSize = msg
 		m.list.SetSize(msg.Width, msg.Height)
-		m.width = msg.Width
 		return m, nil
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "ctrl+c", "q":
 			return m, tea.Quit
 		case "ctrl+[", "backspace":
-			am, _ := InitAppMenu()
-			am.list.Select(1)
+			am, _ := InitAppMenu(m.sdk)
+			// make enum for Attributes idx in AppMenu
+			am.list.Select(0)
 			return am.Update(WindowMsg())
-		case "down", "j":
-			if m.list.Index() < len(m.list.Items())-1 {
-				m.list.Select(m.list.Index() + 1)
-			}
-		case "up", "k":
-			if m.list.Index() > 0 {
-				m.list.Select(m.list.Index() - 1)
-			}
-		case "c":
-			return InitAttributeView(m.list.Items(), len(m.list.Items()))
+		// case "c":
+		// create new attribute
+		// return InitAttributeView(m.list.Items(), len(m.list.Items()))
 		case "enter", "e":
-			return InitAttributeView(m.list.Items(), m.list.Index())
-		case "ctrl+d":
-			m.list.RemoveItem(m.list.Index())
-			newIndex := m.list.Index() - 1
-			if newIndex < 0 {
-				newIndex = 0
-			}
-			m.list.Select(newIndex)
+			return InitAttributeView(m.list.Items()[m.list.Index()].(AttributeItem).id, m.sdk)
+			// case "ctrl+d":
+			// 	m.list.RemoveItem(m.list.Index())
+			// 	newIndex := m.list.Index() - 1
+			// 	if newIndex < 0 {
+			// 		newIndex = 0
+			// 	}
+			// 	m.list.Select(newIndex)
 		}
 	}
-	return m, nil
+	var cmd tea.Cmd
+	m.list, cmd = m.list.Update(msg)
+	return m, cmd
 }
 
 func (m AttributeList) View() string {

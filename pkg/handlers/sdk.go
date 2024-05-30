@@ -2,46 +2,69 @@ package handlers
 
 import (
 	"context"
+	"errors"
+	"net/url"
 
 	"github.com/opentdf/platform/protocol/go/common"
 	"github.com/opentdf/platform/sdk"
 )
 
-var SDK *sdk.SDK
+var (
+	SDK *sdk.SDK
+
+	ErrUnauthenticated = errors.New("unauthenticated")
+)
 
 type Handler struct {
-	sdk        *sdk.SDK
-	ctx        context.Context
-	OIDC_TOKEN string
+	sdk              *sdk.SDK
+	ctx              context.Context
+	OIDC_TOKEN       string
+	platformEndpoint string
 }
 
-func New(platformEndpoint string) (Handler, error) {
-	// define the scopes in an array
-	// scopes := []string{"email"}
-	// normally, we should try to retrieve an active OICD token here, however, the SDK has no option for passing a token
-	// so instead, we'll check if we have a clientId and clientSecret stored, and if so, we'll use those to init the SDK, otherwise, we'll use the insecure connection (which will stop working once we enforce auth on the backend)
-	// clientSecret, clientId, err := GetClientIdAndSecretFromCache()
+// Creates a new handler wrapping the SDK, which is authenticated through the cached client-credentials flow tokens
+func New(platformEndpoint, clientID, clientSecret string, tlsNoVerify bool) (Handler, error) {
+	scopes := []string{"email"}
 
-	// if err != nil {
-	// 	return Handler{}, err
-	// }
+	opts := []sdk.Option{
+		sdk.WithClientCredentials(clientID, clientSecret, scopes),
+		sdk.WithTokenEndpoint(TOKEN_URL),
+	}
 
-	// scopes := []string{"email"}
-	// create the sdk with the client credentials
-	// NOTE FROM AVERY: The below line is commented out because although it should work, the SDK
-	// is having trouble with the "WithClientCredentials" endpoint
-	// so although the commented out line should work, and will work in the future, today it doesn't, so
-	// to facilitate development, we're leaving it commented, until the SDK is fixed, and using the insecure connection instead
-	// note that for now we're hard coding the TOKEN_URL until we have an endpoint to get the config from
-	// sdk, err := sdk.New(platformEndpoint, sdk.WithClientCredentials(clientId, clientSecret, scopes), sdk.WithTokenEndpoint(TOKEN_URL))
-	sdk, err := sdk.New(platformEndpoint, sdk.WithInsecureConn())
+	// Try an parse scheme out of platformEndpoint
+	// If it fails, use the default scheme of https
+	// There has to be a better way to do this
+	platformURL, err := url.Parse(platformEndpoint)
+	if err != nil {
+		return Handler{}, err
+	}
+
+	switch platformURL.Scheme {
+	case "http":
+		opts = append(opts, sdk.WithInsecurePlaintextConn())
+		if platformURL.Port() == "" {
+			platformURL.Host += ":80"
+		}
+	case "https":
+		if platformURL.Port() == "" {
+			platformURL.Host += ":443"
+		}
+		if tlsNoVerify {
+			opts = append(opts, sdk.WithInsecureSkipVerifyConn())
+		}
+	default:
+		return Handler{}, errors.New("invalid scheme")
+	}
+
+	sdk, err := sdk.New(platformURL.Host, opts...)
 	if err != nil {
 		return Handler{}, err
 	}
 
 	return Handler{
-		sdk: sdk,
-		ctx: context.Background(),
+		sdk:              sdk,
+		platformEndpoint: platformEndpoint,
+		ctx:              context.Background(),
 	}, nil
 }
 

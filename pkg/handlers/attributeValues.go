@@ -6,6 +6,14 @@ import (
 	"github.com/opentdf/platform/protocol/go/policy/attributes"
 )
 
+func (h *Handler) ListAttributeValues(attributeId string, state common.ActiveStateEnum) ([]*policy.Value, error) {
+	resp, err := h.sdk.Attributes.ListAttributeValues(h.ctx, &attributes.ListAttributeValuesRequest{AttributeId: attributeId, State: state})
+	if err != nil {
+		return nil, err
+	}
+	return resp.Values, err
+}
+
 // Creates and returns the created value
 func (h *Handler) CreateAttributeValue(attributeId string, value string, metadata *common.MetadataMutable) (*policy.Value, error) {
 	resp, err := h.sdk.Attributes.CreateAttributeValue(h.ctx, &attributes.CreateAttributeValueRequest{

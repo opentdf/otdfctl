@@ -2,5 +2,15 @@ bin/.DS_Store
 .DS_Store
 target/
 .vscode/launch.json
-tructl.yaml
+otdfctl.yaml
+
+# Ignore the tructl binary
+otdfctl
+
+# Hugo
+public/
+.hugo_build.lock
 output/
+
+# Ignore any TDF files created by the CLI
+*.tdf

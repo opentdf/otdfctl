@@ -1,16 +1,14 @@
 package cmd
 
-import "github.com/spf13/cobra"
-
-var (
-	// authCmd is the command for managing local authentication session (login, logout, and token caching)
-	authCmd = &cobra.Command{
-		Use:   "auth",
-		Short: "Manage local authentication session",
-		Long:  `This command will allow you to manage your local authentication session in regards to the DSP platform.`,
-	}
+import (
+	"github.com/opentdf/otdfctl/pkg/man"
 )
 
 func init() {
-	rootCmd.AddCommand(authCmd)
+	cmd := man.Docs.GetCommand("auth",
+		man.WithSubcommands(clientCredentialsCmd),
+		man.WithSubcommands(printAccessToken),
+		man.WithSubcommands(clearCachedCredsCmd),
+	)
+	RootCmd.AddCommand(&cmd.Command)
 }

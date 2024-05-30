@@ -1,33 +1,33 @@
 package cmd
 
 import (
+	"bufio"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
+	"os"
 	"strings"
 
 	"github.com/charmbracelet/lipgloss/table"
+	"github.com/opentdf/otdfctl/internal/config"
+	"github.com/opentdf/otdfctl/pkg/cli"
+	"github.com/opentdf/otdfctl/pkg/handlers"
+	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/opentdf/platform/protocol/go/common"
-	"github.com/opentdf/tructl/internal/config"
-	"github.com/opentdf/tructl/pkg/cli"
 	"github.com/spf13/cobra"
 )
 
-var devCmd = &cobra.Command{
-	Use:   "dev",
-	Short: "Development tools",
-}
+// devCmd is the command for playground-style development
+var devCmd = man.Docs.GetCommand("dev")
 
-var designCmd = &cobra.Command{
-	Use:   "design-system",
-	Short: "Show design system",
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("Design system\n")
-		fmt.Printf("=============\n\n")
+func dev_designSystem(cmd *cobra.Command, args []string) {
+	fmt.Printf("Design system\n")
+	fmt.Printf("=============\n\n")
 
-		printDSComponent("Table", renderDSTable())
+	printDSComponent("Table", renderDSTable())
 
-		printDSComponent("Messages", renderDSMessages())
-	},
+	printDSComponent("Messages", renderDSMessages())
 }
 
 func printDSComponent(title string, component string) {
@@ -51,16 +51,13 @@ func renderDSMessages() string {
 
 func getMetadataRows(m *common.Metadata) [][]string {
 	if m != nil {
+		metadata := cli.ConstructMetadata(m)
 		metadataRows := [][]string{
-			{"Created At", m.CreatedAt.String()},
-			{"Updated At", m.UpdatedAt.String()},
+			{"Created At", metadata["Created At"]},
+			{"Updated At", metadata["Updated At"]},
 		}
 		if m.Labels != nil {
-			labelRows := []string{}
-			for k, v := range m.Labels {
-				labelRows = append(labelRows, fmt.Sprintf("%s: %s", k, v))
-			}
-			metadataRows = append(metadataRows, []string{"Labels", cli.CommaSeparated(labelRows)})
+			metadataRows = append(metadataRows, []string{"Labels", metadata["Labels"]})
 		}
 		return metadataRows
 	}
@@ -103,7 +100,7 @@ func getMetadataUpdateBehavior() common.MetadataUpdateEnum {
 
 // HandleSuccess prints a success message according to the configured format (styled table or JSON)
 func HandleSuccess(command *cobra.Command, id string, t *table.Table, policyObject interface{}) {
-	if TructlCfg.Output.Format == config.OutputJSON || configFlagOverrides.OutputFormatJSON {
+	if OtdfctlCfg.Output.Format == config.OutputJSON || configFlagOverrides.OutputFormatJSON {
 		if output, err := json.MarshalIndent(policyObject, "", "  "); err != nil {
 			cli.ExitWithError("Error marshalling policy object", err)
 		} else {
@@ -122,7 +119,72 @@ func injectLabelFlags(cmd *cobra.Command, isUpdate bool) {
 	}
 }
 
+// Read bytes from stdin without blocking by checking size first
+func readPipedStdin() []byte {
+	stat, err := os.Stdin.Stat()
+	if err != nil {
+		cli.ExitWithError("Failed to read stat from stdin", err)
+	}
+	if (stat.Mode() & os.ModeCharDevice) == 0 {
+		var buf []byte
+		scanner := bufio.NewScanner(os.Stdin)
+
+		for scanner.Scan() {
+			buf = append(buf, scanner.Bytes()...)
+		}
+
+		if err := scanner.Err(); err != nil {
+			cli.ExitWithError("failed to scan bytes from stdin", err)
+		}
+		return buf
+	}
+	return nil
+}
+
+func readBytesFromFile(filePath string) []byte {
+	fileToEncrypt, err := os.Open(filePath)
+	if err != nil {
+		cli.ExitWithError(fmt.Sprintf("Failed to open file at path: %s", filePath), err)
+	}
+	defer fileToEncrypt.Close()
+
+	bytes, err := io.ReadAll(fileToEncrypt)
+	if err != nil {
+		cli.ExitWithError(fmt.Sprintf("Failed to read bytes from file at path: %s", filePath), err)
+	}
+	return bytes
+}
+
+// instantiates a new handler with authentication via client credentials
+func NewHandler(cmd *cobra.Command) handlers.Handler {
+	platformEndpoint := cmd.Flag("host").Value.String()
+	if platformEndpoint == "" {
+		cli.ExitWithError("required flag(s) \"host\" not set", fmt.Errorf("host flag not set"))
+	}
+
+	tlsNoVerify, err := cmd.Flags().GetBool("tls-no-verify")
+	if err != nil {
+		cli.ExitWithError("Failed to get tls-no-verify flag", err)
+	}
+	// load client credentials from file, JSON, or OS keyring
+	creds, err := handlers.GetClientCreds(clientCredsFile, []byte(clientCredsJSON))
+	if err != nil {
+		cli.ExitWithError("Failed to get client credentials", err)
+	}
+	h, err := handlers.New(platformEndpoint, creds.ClientID, creds.ClientSecret, tlsNoVerify)
+	if err != nil {
+		if errors.Is(err, handlers.ErrUnauthenticated) {
+			cli.ExitWithError(fmt.Sprintf("Not logged in. Please authenticate via CLI auth flow(s) before using command (%s %s)", cmd.Parent().Use, cmd.Use), err)
+		}
+		cli.ExitWithError("Failed to connect to server", err)
+	}
+	return h
+}
+
 func init() {
-	rootCmd.AddCommand(devCmd)
-	devCmd.AddCommand(designCmd)
+	designCmd := man.Docs.GetCommand("dev/design-system",
+		man.WithRun(dev_designSystem),
+	)
+	devCmd.AddCommand(&designCmd.Command)
+	RootCmd.AddCommand(&devCmd.Command)
 }
