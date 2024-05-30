@@ -6,11 +6,14 @@ const octokit = new Octokit({
 
 const membership = async (org, team_slug, username) => {
     try {
-        const { data } = await octokit.teams.getMembershipForUserInOrg({
+        // const { data } = await octokit.teams.getMembershipForUserInOrg({
+        //     org,
+        //     team_slug: team_slug || 'all',
+        //     username,
+        // });
+        const { data } = octokit.rest.teams.list({
             org,
-            team_slug: team_slug || 'all',
-            username,
-        });
+          });
         console.log(data);
     } catch (error) {
         console.error(error);
