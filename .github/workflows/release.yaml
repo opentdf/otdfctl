@@ -25,7 +25,6 @@ jobs:
       GOPRIVATE: github.com/opentdf/platform/*
       BIN_NAME: otdfctl
     steps:
-<<<<<<< HEAD
       - name: Is actor in ${{ env.MAINTAINER_TEAM }}
         uses: actions/github-script@v7
         with:
