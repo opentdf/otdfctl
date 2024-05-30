@@ -25,12 +25,21 @@ jobs:
       GOPRIVATE: github.com/opentdf/platform/*
       BIN_NAME: otdfctl
     steps:
+      - uses: actions/checkout@v4
+      # setup node
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm i @octokit/rest
+      - run: node membership.js
+        env: 
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Is actor in ${{ env.MAINTAINER_TEAM }}
         uses: actions/github-script@v7
         with:
-          github-token: not real
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            console.log('context', context);
+            // console.log('context', context);
             const org = context.repo.owner;
             console.log('org', org);
             const team_slug = "${{ env.MAINTAINER_TEAM }}";
@@ -59,7 +68,8 @@ jobs:
             } catch (error) {
               console.error(error);
             }
-      # - uses: actions/checkout@v4
+      - 
+      
       # - uses: actions/setup-go@v5
       #   with:
       #     go-version-file: './go.mod'
