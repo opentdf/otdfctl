@@ -9,16 +9,16 @@ func (h Handler) EncryptNanoBytes(b []byte, values []string) (*bytes.Buffer, err
 	var encrypted []byte
 	enc := bytes.NewBuffer(encrypted)
 
-	nanoTDFCOnfig, err := h.sdk.NewNanoTDFConfig()
+	nanoTDFConfig, err := h.sdk.NewNanoTDFConfig()
 	if err != nil {
 		return nil, err
 	}
 
-	nanoTDFCOnfig.SetKasUrl(h.platformEndpoint)
-	nanoTDFCOnfig.SetAttributes(values)
+	nanoTDFConfig.SetKasURL(h.platformEndpoint)
+	nanoTDFConfig.SetAttributes(values)
 
 	// TODO: validate values are FQNs or return an error [https://github.com/opentdf/platform/issues/515]
-	_, err = h.sdk.CreateNanoTDF(enc, bytes.NewReader(b), *nanoTDFCOnfig)
+	_, err = h.sdk.CreateNanoTDF(enc, bytes.NewReader(b), *nanoTDFConfig)
 	if err != nil {
 		return nil, err
 	}
