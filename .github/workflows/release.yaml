@@ -11,9 +11,6 @@ on:
           - patch
           - minor
           - major
-      # TODO remove after test
-  pull_request:
-
 env:
   MAINTAINER_TEAM: cli
 
@@ -35,41 +32,40 @@ jobs:
             const username = context.actor;
             const data = fs.readFileSync('CODEOWNERS', 'utf8');
             const authorized = data.split(' @').includes(username);
-            if (!authorized) {
+            if (authorized) {
               console.log(`${username} is authorized to release`);
             } else {
               core.setFailed(`${username} is not authorized to release`);
             }
-      
-      # - uses: actions/setup-go@v5
-      #   with:
-      #     go-version-file: './go.mod'
-      #     cache: false
-      # - name: Get next version
-      #   uses: reecetech/version-increment@2024.4.4
-      #   id: version
-      #   with:
-      #     release_branch: main
-      #     scheme: semver
-      #     increment: ${{ github.event.inputs.versionBumpType }}
-      #     pep440: false
-      # - name: print-version
-      #   run: echo Incrementing Version ${{ steps.version.outputs.current-v-version }} -> ${{ steps.version.outputs.v-version }}
-      # - name: make-targets
-      #   env:
-      #     SEM_VER: ${{ steps.version.outputs.v-version }}
-      #   run: make build
-      # - name: smoke-test
-      #   run: go test ./... -short -race -cover
-      # - name: Compress the builds and generate checksums
-      #   env:
-      #     SEM_VER: ${{ steps.version.outputs.v-version }}
-      #   run: make zip-builds
-      # - name: Release
-      #   uses: softprops/action-gh-release@v2
-      #   with:
-      #     files: './output/**/*'
-      #     body: 'This is a test release, and will be removed'
-      #     tag_name: ${{ steps.version.outputs.v-version }}
-      #     repository: opentdf/otdfctl
-      #     generate_release_notes: true
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: './go.mod'
+          cache: false
+      - name: Get next version
+        uses: reecetech/version-increment@2024.4.4
+        id: version
+        with:
+          release_branch: main
+          scheme: semver
+          increment: ${{ github.event.inputs.versionBumpType }}
+          pep440: false
+      - name: print-version
+        run: echo Incrementing Version ${{ steps.version.outputs.current-v-version }} -> ${{ steps.version.outputs.v-version }}
+      - name: make-targets
+        env:
+          SEM_VER: ${{ steps.version.outputs.v-version }}
+        run: make build
+      - name: smoke-test
+        run: go test ./... -short -race -cover
+      - name: Compress the builds and generate checksums
+        env:
+          SEM_VER: ${{ steps.version.outputs.v-version }}
+        run: make zip-builds
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: './output/**/*'
+          body: 'This is a test release, and will be removed'
+          tag_name: ${{ steps.version.outputs.v-version }}
+          repository: opentdf/otdfctl
+          generate_release_notes: true
