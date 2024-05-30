@@ -15,7 +15,7 @@ on:
   pull_request:
 
 env:
-  MAINTAINER_TEAM: opentdf-cli
+  MAINTAINER_TEAM: cli
 
 jobs:
   build-targets:
@@ -30,8 +30,11 @@ jobs:
         with:
           script: |
             const org = context.repo.owner;
+            console.log('org', org);
             const team_slug = "${{ env.MAINTAINER_TEAM }}";
+            console.log('team_slug', team_slug);
             const username = context.actor;
+            console.log('username', username);
 
             // API request to check team membership
             try {
@@ -50,47 +53,47 @@ jobs:
               console.log(`Error checking membership: ${error}`);
               core.setFailed(`Error checking membership: ${error}`);
             }
-      - uses: actions/checkout@v3
-      - uses: actions/setup-go@v5
-        with:
-          go-version-file: './go.mod'
-          cache: false
-      - name: Get next version
-        uses: reecetech/version-increment@2023.9.3
-        id: version
-        with:
-          release_branch: main
-          scheme: semver
-          increment: ${{ github.event.inputs.versionBumpType }}
-          pep440: false
-      - name: print-version
-        run: echo Incrementing Version ${{ steps.version.outputs.current-version }} -> ${{ steps.version.outputs.version }}
-      # TODO: remove this step when `opentdf/platform` is public
-      # special app the virtru eng team created, to grab a token for accessing other org repos, in a secure way
-      - name: Generate a token
-        id: generate_token
-        uses: actions/create-github-app-token@v1.5.0
-        with:
-          app-id: '416599'
-          private-key: '${{ secrets.GH_APP_PRIVATE_KEY }}'
-          owner: ${{ github.repository_owner }}
-          repositories: 'platform'
-      - run: git config --global url.https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/.insteadOf https://github.com/
-      - name: make-targets
-        env:
-          SEM_VER: ${{ steps.version.outputs.version }}
-        run: make build
-      - name: smoke-test
-        run: go test ./... -short -race -cover
-      - name: Compress the builds and generate checksums
-        env:
-          SEM_VER: ${{ steps.version.outputs.version }}
-        run: make zip-builds
-      - name: Release
-        uses: softprops/action-gh-release@v1
-        with:
-          files: './output/**/*'
-          body: 'This is a test release, and will be removed'
-          tag_name: ${{ steps.version.outputs.version }}
-          repository: opentdf/tructl
-          generate_release_notes: true
+      # - uses: actions/checkout@v3
+      # - uses: actions/setup-go@v5
+      #   with:
+      #     go-version-file: './go.mod'
+      #     cache: false
+      # - name: Get next version
+      #   uses: reecetech/version-increment@2023.9.3
+      #   id: version
+      #   with:
+      #     release_branch: main
+      #     scheme: semver
+      #     increment: ${{ github.event.inputs.versionBumpType }}
+      #     pep440: false
+      # - name: print-version
+      #   run: echo Incrementing Version ${{ steps.version.outputs.current-version }} -> ${{ steps.version.outputs.version }}
+      # # TODO: remove this step when `opentdf/platform` is public
+      # # special app the virtru eng team created, to grab a token for accessing other org repos, in a secure way
+      # - name: Generate a token
+      #   id: generate_token
+      #   uses: actions/create-github-app-token@v1.5.0
+      #   with:
+      #     app-id: '416599'
+      #     private-key: '${{ secrets.GH_APP_PRIVATE_KEY }}'
+      #     owner: ${{ github.repository_owner }}
+      #     repositories: 'platform'
+      # - run: git config --global url.https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/.insteadOf https://github.com/
+      # - name: make-targets
+      #   env:
+      #     SEM_VER: ${{ steps.version.outputs.version }}
+      #   run: make build
+      # - name: smoke-test
+      #   run: go test ./... -short -race -cover
+      # - name: Compress the builds and generate checksums
+      #   env:
+      #     SEM_VER: ${{ steps.version.outputs.version }}
+      #   run: make zip-builds
+      # - name: Release
+      #   uses: softprops/action-gh-release@v1
+      #   with:
+      #     files: './output/**/*'
+      #     body: 'This is a test release, and will be removed'
+      #     tag_name: ${{ steps.version.outputs.version }}
+      #     repository: opentdf/tructl
+      #     generate_release_notes: true
