@@ -144,10 +144,13 @@ func init() {
 		testCmd.GetDocFlag("selector").Description,
 	)
 
-	doc := man.Docs.GetCommand("dev/selectors",
-		man.WithSubcommands(genCmd, testCmd),
-	)
+	// TODO: put back dev selectors command once the flattening lib is provided by platform
+	// issue: https://github.com/opentdf/otdfctl/issues/125
 
-	dev_selectorsCmd = &doc.Command
-	devCmd.AddCommand(dev_selectorsCmd)
+	// doc := man.Docs.GetCommand("dev/selectors",
+	// 	man.WithSubcommands(genCmd, testCmd),
+	// )
+
+	// dev_selectorsCmd = &doc.Command
+	// devCmd.AddCommand(dev_selectorsCmd)
 }
