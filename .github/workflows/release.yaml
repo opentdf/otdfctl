@@ -11,6 +11,7 @@ on:
           - patch
           - minor
           - major
+
 jobs:
   build-targets:
     name: build-targets
@@ -20,6 +21,21 @@ jobs:
       BIN_NAME: otdfctl
     steps:
       - uses: actions/checkout@v4
+      - name: Verify user is authorized to release
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const username = context.actor;
+            const data = fs.readFileSync('CODEOWNERS', 'utf8');
+            const lines = data.split('\n');
+            const release = lines.find(line => line.startsWith('release'));
+            const authorized = release.split(' @').includes(username);
+            if (authorized) {
+              console.log(`${username} is authorized to release`);
+            } else {
+              core.setFailed(`${username} is not authorized to release`);
+            }
       - uses: actions/setup-go@v5
         with:
           go-version-file: './go.mod'
