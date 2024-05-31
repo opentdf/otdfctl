@@ -28,7 +28,9 @@ jobs:
             const fs = require('fs');
             const username = context.actor;
             const data = fs.readFileSync('CODEOWNERS', 'utf8');
-            const authorized = data.split(' @').includes(username);
+            const lines = data.split('\n');
+            const release = lines.find(line => line.startsWith('release'));
+            const authorized = release.split(' @').includes(username);
             if (authorized) {
               console.log(`${username} is authorized to release`);
             } else {
