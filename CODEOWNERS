@@ -1,4 +1,6 @@
 # CODEOWNERS
 
-* @opentdf/cli 
+* @opentdf/cli
+
+# These are users authorized to release
 release @suchak1 @jrschumacher @jakedoublev
