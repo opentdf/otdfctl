@@ -5,7 +5,7 @@ import "github.com/charmbracelet/lipgloss"
 func SuccessMessage(msg string) string {
 	return lipgloss.JoinHorizontal(
 		lipgloss.Left,
-		statusBarStyle.Background(lipgloss.AdaptiveColor{Light: "#43BF6D", Dark: "#73F59F"}).
+		styleSuccessStatusBar.
 			MarginBottom(1).
 			Render("SUCCESS"), msg)
 }
@@ -15,7 +15,7 @@ func FooterMessage(msg string) string {
 		return ""
 	}
 	w := lipgloss.Width
-	note := footerLabelStyle.Render("NOTE ")
+	note := footerLabelStyle.Render("NOTE")
 	footer := footerTextStyle.Copy().Width(defaultTableWidth - w(note)).Render(msg)
 	return lipgloss.JoinHorizontal(
 		lipgloss.Left,
@@ -31,7 +31,16 @@ func ErrorMessage(msg string, err error) string {
 
 	return lipgloss.JoinHorizontal(
 		lipgloss.Left,
-		statusBarStyle.Background(lipgloss.AdaptiveColor{Light: "#FF5F87", Dark: "#FF5F87"}).
+		styleErrorStatusBar.
 			PaddingRight(3).
 			Render("ERROR"), msg)
+}
+
+func WarningMessage(msg string) string {
+	return lipgloss.JoinHorizontal(
+		lipgloss.Left,
+		styleWarningStatusBar.
+			Padding(0, 2).
+			MarginRight(1).
+			Render("WARNING"), msg)
 }
