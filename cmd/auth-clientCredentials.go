@@ -19,14 +19,15 @@ var (
 )
 
 func auth_clientCredentials(cmd *cobra.Command, args []string) {
+	var err error
+
 	flagHelper := cli.NewFlagHelper(cmd)
+	host := flagHelper.GetRequiredString("host")
+	tlsNoVerify := flagHelper.GetOptionalBool("tls-no-verify")
 	clientID := flagHelper.GetOptionalString("client-id")
 	clientSecret := flagHelper.GetOptionalString("client-secret")
 
-	var err error
-
-	tlsNoVerify, _ := cmd.Flags().GetBool("tls-no-verify")
-
+	slog.Debug("Checking for client credentials file", slog.String("client-creds-file", clientCredsFile))
 	if clientCredsFile != "" {
 		creds, err := handlers.GetClientCredsFromFile(clientCredsFile)
 		if err != nil {
@@ -35,10 +36,11 @@ func auth_clientCredentials(cmd *cobra.Command, args []string) {
 		clientID = creds.ClientID
 		clientSecret = creds.ClientSecret
 	}
+
 	// if not provided by flag, check keyring cache for clientID
 	if clientID == "" {
 		slog.Debug("No client-id provided. Attempting to retrieve the default from keyring.")
-		clientID, err = handlers.GetClientIDFromCache()
+		clientID, err = handlers.GetClientIDFromCache(host)
 		if err != nil || clientID == "" {
 			cli.ExitWithError("Please provide required flag: (client-id)", errors.New("no client-id found"))
 		} else {
@@ -48,7 +50,7 @@ func auth_clientCredentials(cmd *cobra.Command, args []string) {
 
 	// check if we have a clientSecret in the keyring, if a null value is passed in
 	if clientSecret == "" {
-		clientSecret, err = handlers.GetClientSecretFromCache(clientID)
+		clientSecret, err = handlers.GetClientSecretFromCache(host, clientID)
 		if err == nil || clientSecret == "" {
 			cli.ExitWithError("Please provide required flag: (client-secret)", errors.New("no client-secret found"))
 		} else {
@@ -56,16 +58,12 @@ func auth_clientCredentials(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	tok, err := handlers.GetTokenWithClientCreds(cmd.Context(), clientID, clientSecret, handlers.TOKEN_URL, noCacheCreds, tlsNoVerify)
-	if err != nil {
+	slog.Debug("Attempting to login with client credentials", slog.String("client-id", clientID))
+	if err := handlers.GetTokenWithClientCreds(cmd.Context(), host, clientID, clientSecret, tlsNoVerify); err != nil {
 		cli.ExitWithError("An error occurred during login. Please check your credentials and try again", err)
 	}
 
-	if !noCacheCreds {
-		fmt.Println(cli.SuccessMessage("Successfully logged in with client ID and secret"))
-	} else {
-		fmt.Print(tok.AccessToken)
-	}
+	fmt.Println(cli.SuccessMessage("Successfully logged in with client ID and secret"))
 }
 
 func init() {
