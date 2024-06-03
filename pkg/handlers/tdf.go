@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 
 	"github.com/opentdf/platform/sdk"
@@ -16,7 +15,7 @@ func (h Handler) EncryptBytes(b []byte, values []string) (*bytes.Buffer, error) 
 	_, err := h.sdk.CreateTDF(enc, bytes.NewReader(b),
 		sdk.WithDataAttributes(values...),
 		sdk.WithKasInformation(sdk.KASInfo{
-			URL:       fmt.Sprintf("http://%s", h.platformEndpoint),
+			URL:       h.platformEndpoint,
 			PublicKey: "",
 		},
 		),
