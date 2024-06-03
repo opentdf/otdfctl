@@ -22,14 +22,14 @@ type Handler struct {
 	platformEndpoint string
 }
 
-// Creates a new handler wrapping the SDK, which is authenticated through the cached client-credentials flow tokens
-func New(platformEndpoint, clientID, clientSecret string, tlsNoVerify bool) (Handler, error) {
-	scopes := []string{"email"}
+func NewWithCredentials(endpoint string, clientId string, clientSecret string, tlsNoVerify bool) (Handler, error) {
+	return New(endpoint, tlsNoVerify, sdk.WithClientCredentials(clientId, clientSecret, []string{"email"}))
+}
 
-	opts := []sdk.Option{
-		sdk.WithClientCredentials(clientID, clientSecret, scopes),
-		sdk.WithTokenEndpoint(TOKEN_URL),
-	}
+// Creates a new handler wrapping the SDK, which is authenticated through the cached client-credentials flow tokens
+func New(platformEndpoint string, tlsNoVerify bool, sdkOpts ...sdk.Option) (Handler, error) {
+	var opts []sdk.Option
+	opts = append(opts, sdkOpts...)
 
 	// Try an parse scheme out of platformEndpoint
 	// If it fails, use the default scheme of https
@@ -70,6 +70,10 @@ func New(platformEndpoint, clientID, clientSecret string, tlsNoVerify bool) (Han
 
 func (h Handler) Close() error {
 	return h.sdk.Close()
+}
+
+func (h Handler) Direct() *sdk.SDK {
+	return h.sdk
 }
 
 // Replace all labels in the metadata

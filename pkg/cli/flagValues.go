@@ -32,7 +32,11 @@ func (f FlagHelper) GetRequiredString(flag string) string {
 }
 
 func (f FlagHelper) GetOptionalString(flag string) string {
-	return f.cmd.Flag(flag).Value.String()
+	p := f.cmd.Flag(flag)
+	if p == nil {
+		return ""
+	}
+	return p.Value.String()
 }
 
 func (f FlagHelper) GetStringSlice(flag string, v []string, opts FlagHelperStringSliceOptions) []string {
@@ -57,6 +61,20 @@ func (f FlagHelper) GetRequiredInt32(flag string) int32 {
 	// 	fmt.Println(ErrorMessage("Flag "+flag+" must be greater than 0", nil))
 	// 	os.Exit(1)
 	// }
+	return v
+}
+
+func (f FlagHelper) GetOptionalBool(flag string) bool {
+	v, _ := f.cmd.Flags().GetBool(flag)
+	return v
+}
+
+func (f FlagHelper) GetRequiredBool(flag string) bool {
+	v, e := f.cmd.Flags().GetBool(flag)
+	if e != nil {
+		fmt.Println(ErrorMessage("Flag "+flag+" is required", nil))
+		os.Exit(1)
+	}
 	return v
 }
 

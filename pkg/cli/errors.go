@@ -22,3 +22,8 @@ func ExitWithNotFoundError(errMsg string, err error) {
 		os.Exit(1)
 	}
 }
+
+func ExitWithWarning(warnMsg string) {
+	fmt.Println(WarningMessage(warnMsg))
+	os.Exit(0)
+}
