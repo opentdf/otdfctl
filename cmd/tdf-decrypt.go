@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"os"
@@ -16,6 +17,10 @@ func dev_tdfDecryptCmd(cmd *cobra.Command, args []string) {
 
 	flagHelper := cli.NewFlagHelper(cmd)
 	output := flagHelper.GetOptionalString("out")
+	tdfType := flagHelper.GetOptionalString("tdf-type")
+	if tdfType == "" {
+		tdfType = TDF3
+	}
 
 	// check for piped input
 	piped := readPipedStdin()
@@ -31,8 +36,15 @@ func dev_tdfDecryptCmd(cmd *cobra.Command, args []string) {
 	} else {
 		cli.ExitWithError("Must provide ONE of the following to decrypt: [file argument, stdin input]", errors.New("no input provided"))
 	}
-
-	decrypted, err := h.DecryptTDF(bytesToDecrypt)
+	var decrypted *bytes.Buffer
+	var err error
+	if tdfType == TDF3 {
+		decrypted, err = h.DecryptTDF(bytesToDecrypt)
+	} else if tdfType == NANO {
+		decrypted, err = h.DecryptNanoTDF(bytesToDecrypt)
+	} else {
+		cli.ExitWithError("Failed to decrypt", fmt.Errorf("unrecognized tdf-type: %s", tdfType))
+	}
 	if err != nil {
 		cli.ExitWithError("Failed to decrypt file", err)
 	}
@@ -63,6 +75,12 @@ func init() {
 		decryptCmd.GetDocFlag("out").Shorthand,
 		decryptCmd.GetDocFlag("out").Default,
 		decryptCmd.GetDocFlag("out").Description,
+	)
+	decryptCmd.Flags().StringP(
+		decryptCmd.GetDocFlag("tdf-type").Name,
+		decryptCmd.GetDocFlag("tdf-type").Shorthand,
+		decryptCmd.GetDocFlag("tdf-type").Default,
+		decryptCmd.GetDocFlag("tdf-type").Description,
 	)
 	decryptCmd.Command.GroupID = "tdf"
 

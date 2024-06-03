@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"os"
@@ -9,6 +10,11 @@ import (
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/spf13/cobra"
+)
+
+const (
+	TDF3 = "tdf3"
+	NANO = "nano"
 )
 
 func dev_tdfEncryptCmd(cmd *cobra.Command, args []string) {
@@ -22,6 +28,10 @@ func dev_tdfEncryptCmd(cmd *cobra.Command, args []string) {
 	}
 	out := flagHelper.GetOptionalString("out")
 	values := flagHelper.GetStringSlice("attr", attrValues, cli.FlagHelperStringSliceOptions{Min: 0})
+	tdfType := flagHelper.GetOptionalString("tdf-type")
+	if tdfType == "" {
+		tdfType = TDF3
+	}
 
 	piped := readPipedStdin()
 
@@ -40,15 +50,23 @@ func dev_tdfEncryptCmd(cmd *cobra.Command, args []string) {
 	}
 
 	// prefer filepath argument over stdin input
-	var bytes []byte
+	var bytesSlice []byte
 	if filePath != "" {
-		bytes = readBytesFromFile(filePath)
+		bytesSlice = readBytesFromFile(filePath)
 	} else {
-		bytes = piped
+		bytesSlice = piped
 	}
 
 	// Do the encryption
-	encrypted, err := h.EncryptBytes(bytes, values)
+	var encrypted *bytes.Buffer
+	var err error
+	if tdfType == TDF3 {
+		encrypted, err = h.EncryptBytes(bytesSlice, values)
+	} else if tdfType == NANO {
+		encrypted, err = h.EncryptNanoBytes(bytesSlice, values)
+	} else {
+		cli.ExitWithError("Failed to encrypt", fmt.Errorf("unrecognized tdf-type: %s", tdfType))
+	}
 	if err != nil {
 		cli.ExitWithError("Failed to encrypt", err)
 	}
@@ -92,6 +110,12 @@ func init() {
 		encryptCmd.GetDocFlag("attr").Shorthand,
 		[]string{},
 		encryptCmd.GetDocFlag("attr").Description,
+	)
+	encryptCmd.Flags().StringP(
+		encryptCmd.GetDocFlag("tdf-type").Name,
+		encryptCmd.GetDocFlag("tdf-type").Shorthand,
+		encryptCmd.GetDocFlag("tdf-type").Default,
+		encryptCmd.GetDocFlag("tdf-type").Description,
 	)
 	encryptCmd.Command.GroupID = "tdf"
 

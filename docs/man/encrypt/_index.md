@@ -10,6 +10,13 @@ command:
     - name: attr
       shorthand: a
       description: Attribute value Fully Qualified Names (FQNs, i.e. 'https://example.com/attr/attr1/value/value1') to apply to the encrypted data.
+    - name: tdf-type
+      shorthand: t
+      description:  The type of tdf to encrypt as
+      enum:
+        - tdf3
+        - nano
+      default: tdf3
 ---
 
 Build a Trusted Data Format (TDF) with encrypted content from a specified file or input from stdin utilizing OpenTDF platform.
