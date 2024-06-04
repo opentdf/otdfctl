@@ -27,7 +27,7 @@ func auth_clientCredentials(cmd *cobra.Command, args []string) {
 	clientID := flagHelper.GetOptionalString("client-id")
 	clientSecret := flagHelper.GetOptionalString("client-secret")
 
-	slog.Debug("Checking for client credentials file", slog.String("client-creds-file", clientCredsFile))
+	slog.Debug("Checking for client credentials file", slog.String("with-client-creds-file", clientCredsFile))
 	if clientCredsFile != "" {
 		creds, err := handlers.GetClientCredsFromFile(clientCredsFile)
 		if err != nil {

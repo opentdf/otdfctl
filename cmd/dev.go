@@ -160,8 +160,8 @@ func NewHandler(cmd *cobra.Command) handlers.Handler {
 	flag := cli.NewFlagHelper(cmd)
 	host := flag.GetRequiredString("host")
 	tlsNoVerify := flag.GetOptionalBool("tls-no-verify")
-	clientCredsFile := flag.GetOptionalString("client-creds-file")
-	clientCredsJSON := flag.GetOptionalString("client-creds-json")
+	clientCredsFile := flag.GetOptionalString("with-client-creds-file")
+	clientCredsJSON := flag.GetOptionalString("with-client-creds")
 
 	creds, err := handlers.GetClientCreds(host, clientCredsFile, []byte(clientCredsJSON))
 	if err != nil {
