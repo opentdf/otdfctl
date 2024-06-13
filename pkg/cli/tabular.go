@@ -41,7 +41,12 @@ func getJsonHelper(command string) string {
 }
 
 func PrintSuccessTable(cmd *cobra.Command, id string, t table.Model) {
-	resource := cmd.Parent().Use
+	parent := cmd.Parent()
+	resource := parent.Use
+	for parent.Parent() != nil {
+		resource = parent.Parent().Use + " " + resource
+		parent = parent.Parent()
+	}
 
 	var msg struct {
 		verb   string
