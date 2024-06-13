@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/evertras/bubble-table/table"
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/spf13/cobra"
@@ -41,7 +42,7 @@ func policy_createResourceMapping(cmd *cobra.Command, args []string) {
 	if mdRows := getMetadataRows(resourceMapping.Metadata); mdRows != nil {
 		rows = append(rows, mdRows...)
 	}
-	t := cli.NewTabular().Rows(rows...)
+	t := cli.NewTabular(rows...)
 	HandleSuccess(cmd, resourceMapping.Id, t, resourceMapping)
 }
 
@@ -65,7 +66,7 @@ func policy_getResourceMapping(cmd *cobra.Command, args []string) {
 	if mdRows := getMetadataRows(resourceMapping.Metadata); mdRows != nil {
 		rows = append(rows, mdRows...)
 	}
-	t := cli.NewTabular().Rows(rows...)
+	t := cli.NewTabular(rows...)
 	HandleSuccess(cmd, resourceMapping.Id, t, resourceMapping)
 }
 
@@ -78,11 +79,27 @@ func policy_listResourceMappings(cmd *cobra.Command, args []string) {
 		cli.ExitWithError("Failed to list resource mappings", err)
 	}
 
-	t := cli.NewTable()
-	t.Headers("Id", "Attribute Value Id", "Attribute Value", "Terms", "Labels", "Created At", "Updated At")
+	t := cli.NewTable(
+		cli.NewUUIDColumn(),
+		table.NewColumn("attr_value_id", "Attribute Value Id", 16),
+		table.NewColumn("attr_value", "Attribute Value", 16),
+		table.NewColumn("terms", "Terms", 16),
+		table.NewColumn("labels", "Labels", 16),
+		table.NewColumn("created_at", "Created At", 16),
+		table.NewColumn("updated_at", "Updated At", 16),
+	)
+	rows := []table.Row{}
 	for _, resourceMapping := range rmList {
 		metadata := cli.ConstructMetadata(resourceMapping.Metadata)
-		t.Row(resourceMapping.Id, resourceMapping.AttributeValue.Id, resourceMapping.AttributeValue.Value, strings.Join(resourceMapping.Terms, ", "), metadata["Labels"], metadata["Created At"], metadata["Updated At"])
+		rows = append(rows, table.NewRow(table.RowData{
+			"id":            resourceMapping.Id,
+			"attr_value_id": resourceMapping.AttributeValue.Id,
+			"attr_value":    resourceMapping.AttributeValue.Value,
+			"terms":         strings.Join(resourceMapping.Terms, ", "),
+			"labels":        metadata["Labels"],
+			"created_at":    metadata["Created At"],
+			"updated_at":    metadata["Updated At"],
+		}))
 	}
 	HandleSuccess(cmd, "", t, rmList)
 }
@@ -110,7 +127,7 @@ func policy_updateResourceMapping(cmd *cobra.Command, args []string) {
 	if mdRows := getMetadataRows(resourceMapping.Metadata); mdRows != nil {
 		rows = append(rows, mdRows...)
 	}
-	t := cli.NewTabular().Rows(rows...)
+	t := cli.NewTabular(rows...)
 	HandleSuccess(cmd, resourceMapping.Id, t, resourceMapping)
 }
 
@@ -133,7 +150,7 @@ func policy_deleteResourceMapping(cmd *cobra.Command, args []string) {
 		{"Attribute Value", resourceMapping.AttributeValue.Value},
 		{"Terms", strings.Join(resourceMapping.Terms, ", ")},
 	}
-	t := cli.NewTabular().Rows(rows...)
+	t := cli.NewTabular(rows...)
 	HandleSuccess(cmd, resourceMapping.Id, t, resourceMapping)
 }
 

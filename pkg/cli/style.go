@@ -326,6 +326,13 @@ var styleTableBorder = lipgloss.CompleteAdaptiveColor{
 	Dark:  colorIndigo.Background.Light,
 }
 
+var styleTable = lipgloss.NewStyle().
+	Foreground(lipgloss.CompleteAdaptiveColor{
+		Light: colorBlack.Foreground.Light,
+		Dark:  colorWhite.Foreground.Dark,
+	}).
+	BorderForeground(styleTableBorder)
+
 // Text
 
 var styleText = lipgloss.NewStyle().

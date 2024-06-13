@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/evertras/bubble-table/table"
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/opentdf/platform/protocol/go/policy"
@@ -63,19 +64,27 @@ func policy_listAttributeValue(cmd *cobra.Command, args []string) {
 	if err != nil {
 		cli.ExitWithError("Failed to list attribute values", err)
 	}
-	t := cli.NewTable()
-	t.Headers("Id", "Fqn", "Members", "Active", "Labels", "Created At", "Updated At")
+	t := cli.NewTable(
+		cli.NewUUIDColumn(),
+		table.NewColumn("fqn", "Fqn", 16),
+		table.NewColumn("members", "Members", 16),
+		table.NewColumn("active", "Active", 16),
+		table.NewColumn("labels", "Labels", 16),
+		table.NewColumn("created_at", "Created At", 16),
+		table.NewColumn("updated_at", "Updated At", 16),
+	)
+	rows := []table.Row{}
 	for _, val := range vals {
 		v := cli.GetSimpleAttributeValue(val)
-		t.Row(
-			v.Id,
-			v.FQN,
-			cli.CommaSeparated(v.Members),
-			v.Active,
-			v.Metadata["Labels"],
-			v.Metadata["Created At"],
-			v.Metadata["Updated At"],
-		)
+		rows = append(rows, table.NewRow(table.RowData{
+			"id":         v.Id,
+			"fqn":        v.FQN,
+			"members":    cli.CommaSeparated(v.Members),
+			"active":     v.Active,
+			"labels":     v.Metadata["Labels"],
+			"created_at": v.Metadata["Created At"],
+			"updated_at": v.Metadata["Updated At"],
+		}))
 	}
 	HandleSuccess(cmd, "", t, vals)
 }
@@ -353,6 +362,6 @@ func handleValueSuccess(cmd *cobra.Command, v *policy.Value) {
 		}
 		rows = append(rows, []string{"Members", cli.CommaSeparated(memberIds)})
 	}
-	t := cli.NewTabular().Rows(rows...)
+	t := cli.NewTabular(rows...)
 	HandleSuccess(cmd, v.Id, t, v)
 }

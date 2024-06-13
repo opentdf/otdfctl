@@ -9,7 +9,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/charmbracelet/lipgloss/table"
+	"github.com/evertras/bubble-table/table"
 	"github.com/opentdf/otdfctl/internal/config"
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/handlers"
@@ -38,11 +38,23 @@ func printDSComponent(title string, component string) {
 }
 
 func renderDSTable() string {
-	tbl := cli.NewTable()
-	tbl.Headers("One", "Two", "Three")
-	tbl.Row("1", "2", "3")
-	tbl.Row("4", "5", "6")
-	return tbl.Render()
+	tbl := cli.NewTable(
+		table.NewColumn("one", "One", 10),
+		table.NewColumn("two", "Two", 10),
+		table.NewColumn("three", "Three", 10),
+	).WithRows([]table.Row{
+		table.NewRow(table.RowData{
+			"one":   "1",
+			"two":   "2",
+			"three": "3",
+		}),
+		table.NewRow(table.RowData{
+			"one":   "4",
+			"two":   "5",
+			"three": "6",
+		}),
+	})
+	return tbl.View()
 }
 
 func renderDSMessages() string {
@@ -99,7 +111,7 @@ func getMetadataUpdateBehavior() common.MetadataUpdateEnum {
 }
 
 // HandleSuccess prints a success message according to the configured format (styled table or JSON)
-func HandleSuccess(command *cobra.Command, id string, t *table.Table, policyObject interface{}) {
+func HandleSuccess(command *cobra.Command, id string, t table.Model, policyObject interface{}) {
 	if OtdfctlCfg.Output.Format == config.OutputJSON || configFlagOverrides.OutputFormatJSON {
 		if output, err := json.MarshalIndent(policyObject, "", "  "); err != nil {
 			cli.ExitWithError("Error marshalling policy object", err)
