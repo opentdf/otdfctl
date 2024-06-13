@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/evertras/bubble-table/table"
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/spf13/cobra"
@@ -32,8 +33,7 @@ func policy_getAttributeNamespace(cmd *cobra.Command, args []string) {
 	if mdRows := getMetadataRows(ns.Metadata); mdRows != nil {
 		rows = append(rows, mdRows...)
 	}
-	t := cli.NewTabular().
-		Rows(rows...)
+	t := cli.NewTabular(rows...)
 	HandleSuccess(cmd, ns.Id, t, ns)
 }
 
@@ -46,19 +46,29 @@ func policy_listAttributeNamespaces(cmd *cobra.Command, args []string) {
 	if err != nil {
 		cli.ExitWithError("Failed to list namespaces", err)
 	}
-	t := cli.NewTable()
-	t.Headers("Id", "Name", "Active", "Labels", "Created At", "Updated At")
+	t := cli.NewTable(
+		cli.NewUUIDColumn(),
+		table.NewColumn("name", "Name", 16),
+		table.NewColumn("active", "Active", 16),
+		table.NewColumn("labels", "Labels", 16),
+		table.NewColumn("created_at", "Created At", 16),
+		table.NewColumn("updated_at", "Updated At", 16),
+	)
+	rows := []table.Row{}
 	for _, ns := range list {
 		metadata := cli.ConstructMetadata(ns.Metadata)
-		t.Row(
-			ns.Id,
-			ns.Name,
-			strconv.FormatBool(ns.Active.GetValue()),
-			metadata["Labels"],
-			metadata["Created At"],
-			metadata["Updated At"],
+		rows = append(rows,
+			table.NewRow(table.RowData{
+				"id":         ns.Id,
+				"name":       ns.Name,
+				"active":     strconv.FormatBool(ns.Active.GetValue()),
+				"labels":     metadata["Labels"],
+				"created_at": metadata["Created At"],
+				"updated_at": metadata["Updated At"],
+			}),
 		)
 	}
+	t = t.WithRows(rows)
 	HandleSuccess(cmd, "", t, list)
 }
 
@@ -82,7 +92,7 @@ func policy_createAttributeNamespace(cmd *cobra.Command, args []string) {
 		rows = append(rows, mdRows...)
 	}
 
-	t := cli.NewTabular().Rows(rows...)
+	t := cli.NewTabular(rows...)
 	HandleSuccess(cmd, created.Id, t, created)
 }
 
@@ -113,8 +123,7 @@ func policy_deactivateAttributeNamespace(cmd *cobra.Command, args []string) {
 	if mdRows := getMetadataRows(d.Metadata); mdRows != nil {
 		rows = append(rows, mdRows...)
 	}
-	t := cli.NewTabular().
-		Rows(rows...)
+	t := cli.NewTabular(rows...)
 	HandleSuccess(cmd, ns.Id, t, d)
 }
 
@@ -142,7 +151,7 @@ func policy_updateAttributeNamespace(cmd *cobra.Command, args []string) {
 		rows = append(rows, mdRows...)
 	}
 
-	t := cli.NewTabular().Rows(rows...)
+	t := cli.NewTabular(rows...)
 	HandleSuccess(cmd, id, t, ns)
 }
 

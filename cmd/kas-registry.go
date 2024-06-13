@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/evertras/bubble-table/table"
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/opentdf/platform/protocol/go/policy"
@@ -31,14 +32,13 @@ func policy_getKeyAccessRegistry(cmd *cobra.Command, args []string) {
 		key = kas.PublicKey.GetRemote()
 	}
 
-	t := cli.NewTabular().
-		Rows([][]string{
-			{"Id", kas.Id},
-			// TODO: render labels [https://github.com/opentdf/otdfctl/issues/73]
-			{"URI", kas.Uri},
-			{"PublicKey Type", keyType},
-			{"PublicKey", key},
-		}...)
+	t := cli.NewTabular(
+		[]string{"Id", kas.Id},
+		// TODO: render labels [https://github.com/opentdf/otdfctl/issues/73]
+		[]string{"URI", kas.Uri},
+		[]string{"PublicKey Type", keyType},
+		[]string{"PublicKey", key},
+	)
 	HandleSuccess(cmd, kas.Id, t, kas)
 }
 
@@ -51,8 +51,13 @@ func policy_listKeyAccessRegistries(cmd *cobra.Command, args []string) {
 		cli.ExitWithError("Failed to list KAS registry entries", err)
 	}
 
-	t := cli.NewTable()
-	t.Headers("Id", "URI", "PublicKey Location", "PublicKey")
+	t := cli.NewTable(
+		cli.NewUUIDColumn(),
+		table.NewColumn("uri", "URI", 16),
+		table.NewColumn("pk_loc", "PublicKey Location", 16),
+		table.NewColumn("pk", "PublicKey", 16),
+	)
+	rows := []table.Row{}
 	for _, kas := range list {
 		keyType := "Local"
 		key := kas.PublicKey.GetLocal()
@@ -61,14 +66,14 @@ func policy_listKeyAccessRegistries(cmd *cobra.Command, args []string) {
 			key = kas.PublicKey.GetRemote()
 		}
 
-		t.Row(
-			kas.Id,
-			kas.Uri,
-			keyType,
-			key,
-			// TODO: render labels [https://github.com/opentdf/otdfctl/issues/73]
-		)
+		rows = append(rows, table.NewRow(table.RowData{
+			"id":     kas.Id,
+			"uri":    kas.Uri,
+			"pk_loc": keyType,
+			"pk":     key,
+		}))
 	}
+	t = t.WithRows(rows)
 	HandleSuccess(cmd, "", t, list)
 }
 
@@ -109,14 +114,13 @@ func policy_createKeyAccessRegistry(cmd *cobra.Command, args []string) {
 		cli.ExitWithError("Failed to create KAS registry entry", err)
 	}
 
-	t := cli.NewTabular().
-		Rows([][]string{
-			{"Id", created.Id},
-			{"URI", created.Uri},
-			{"PublicKey Type", keyType},
-			{"PublicKey", local},
-			// TODO: render labels [https://github.com/opentdf/otdfctl/issues/73]
-		}...)
+	t := cli.NewTabular(
+		[]string{"Id", created.Id},
+		[]string{"URI", created.Uri},
+		[]string{"PublicKey Type", keyType},
+		[]string{"PublicKey", local},
+		// TODO: render labels [https://github.com/opentdf/otdfctl/issues/73]
+	)
 
 	HandleSuccess(cmd, created.Id, t, created)
 }
@@ -158,12 +162,11 @@ func policy_updateKeyAccessRegistry(cmd *cobra.Command, args []string) {
 	if err != nil {
 		cli.ExitWithError(fmt.Sprintf("Failed to update KAS registry entry (%s)", id), err)
 	}
-	t := cli.NewTabular().
-		Rows([][]string{
-			{"Id", id},
-			{"URI", uri},
-			// TODO: render labels [https://github.com/opentdf/otdfctl/issues/73]
-		}...)
+	t := cli.NewTabular(
+		[]string{"Id", id},
+		[]string{"URI", uri},
+		// TODO: render labels [https://github.com/opentdf/otdfctl/issues/73]
+	)
 	HandleSuccess(cmd, id, t, updated)
 }
 
@@ -187,11 +190,10 @@ func policy_deleteKeyAccessRegistry(cmd *cobra.Command, args []string) {
 		cli.ExitWithError(errMsg, err)
 	}
 
-	t := cli.NewTabular().
-		Rows([][]string{
-			{"Id", kas.Id},
-			{"URI", kas.Uri},
-		}...)
+	t := cli.NewTabular(
+		[]string{"Id", "URI"},
+		[]string{kas.Id, kas.Uri},
+	)
 
 	HandleSuccess(cmd, kas.Id, t, kas)
 }

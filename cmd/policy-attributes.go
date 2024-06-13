@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/evertras/bubble-table/table"
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/opentdf/platform/protocol/go/policy"
@@ -52,7 +53,7 @@ func policy_createAttribute(cmd *cobra.Command, args []string) {
 		rows = append(rows, mdRows...)
 	}
 
-	t := cli.NewTabular().Rows(rows...)
+	t := cli.NewTabular(rows...)
 
 	HandleSuccess(cmd, a.Id, t, attr)
 }
@@ -81,8 +82,7 @@ func policy_getAttribute(cmd *cobra.Command, args []string) {
 	if mdRows := getMetadataRows(attr.Metadata); mdRows != nil {
 		rows = append(rows, mdRows...)
 	}
-	t := cli.NewTabular().
-		Rows(rows...)
+	t := cli.NewTabular(rows...)
 	HandleSuccess(cmd, a.Id, t, attr)
 }
 
@@ -96,22 +96,33 @@ func policy_listAttributes(cmd *cobra.Command, args []string) {
 		cli.ExitWithError("Failed to list attributes", err)
 	}
 
-	t := cli.NewTable()
-	t.Headers("Id", "Namespace", "Name", "Rule", "Values", "Active", "Labels", "Created At", "Updated At")
+	t := cli.NewTable(
+		cli.NewUUIDColumn(),
+		table.NewFlexColumn("namespace", "Namespace", 4),
+		table.NewFlexColumn("name", "Name", 3),
+		table.NewFlexColumn("rule", "Rule", 2),
+		table.NewFlexColumn("values", "Values", 2),
+		table.NewFlexColumn("active", "Active", 2),
+		table.NewFlexColumn("labels", "Labels", 1),
+		table.NewFlexColumn("created_at", "Created At", 1),
+		table.NewFlexColumn("updated_at", "Updated At", 1),
+	)
+	rows := []table.Row{}
 	for _, attr := range attrs {
 		a := cli.GetSimpleAttribute(attr)
-		t.Row(
-			a.Id,
-			a.Namespace,
-			a.Name,
-			a.Rule,
-			cli.CommaSeparated(a.Values),
-			a.Active,
-			a.Metadata["Labels"],
-			a.Metadata["Created At"],
-			a.Metadata["Updated At"],
-		)
+		rows = append(rows, table.NewRow(table.RowData{
+			"id":         a.Id,
+			"namespace":  a.Namespace,
+			"name":       a.Name,
+			"rule":       a.Rule,
+			"values":     cli.CommaSeparated(a.Values),
+			"active":     a.Active,
+			"labels":     a.Metadata["Labels"],
+			"created_at": a.Metadata["Created At"],
+			"updated_at": a.Metadata["Updated At"],
+		}))
 	}
+	t = t.WithRows(rows)
 	HandleSuccess(cmd, "", t, attrs)
 }
 
@@ -146,8 +157,7 @@ func policy_deactivateAttribute(cmd *cobra.Command, args []string) {
 	if mdRows := getMetadataRows(attr.Metadata); mdRows != nil {
 		rows = append(rows, mdRows...)
 	}
-	t := cli.NewTabular().
-		Rows(rows...)
+	t := cli.NewTabular(rows...)
 	HandleSuccess(cmd, a.Id, t, a)
 }
 
@@ -169,8 +179,7 @@ func policy_updateAttribute(cmd *cobra.Command, args []string) {
 		if mdRows := getMetadataRows(a.Metadata); mdRows != nil {
 			rows = append(rows, mdRows...)
 		}
-		t := cli.NewTabular().
-			Rows(rows...)
+		t := cli.NewTabular(rows...)
 		HandleSuccess(cmd, id, t, a)
 	}
 }

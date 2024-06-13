@@ -42,11 +42,7 @@ func policy_updateKasGrant(cmd *cobra.Command, args []string) {
 		header = "Value ID"
 	}
 
-	t := cli.NewTabular().
-		Rows([][]string{
-			{header, id},
-			{"KAS ID", kas},
-		}...)
+	t := cli.NewTabular([]string{header, id}, []string{"KAS ID", kas})
 	HandleSuccess(cmd, id, t, res)
 }
 
@@ -87,11 +83,7 @@ func policy_deleteKasGrant(cmd *cobra.Command, args []string) {
 		header = "Value ID"
 	}
 
-	t := cli.NewTabular().
-		Rows([][]string{
-			{header, id},
-			{"KAS ID", kas},
-		}...)
+	t := cli.NewTabular([]string{header, id}, []string{"KAS ID", kas})
 	HandleSuccess(cmd, id, t, res)
 }
 

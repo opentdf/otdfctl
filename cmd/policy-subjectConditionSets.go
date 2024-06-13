@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 
+	"github.com/evertras/bubble-table/table"
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/opentdf/platform/protocol/go/policy"
@@ -72,7 +73,7 @@ func policy_createSubjectConditionSet(cmd *cobra.Command, args []string) {
 		rows = append(rows, mdRows...)
 	}
 
-	t := cli.NewTabular().Rows(rows...)
+	t := cli.NewTabular(rows...)
 	HandleSuccess(cmd, scs.Id, t, scs)
 }
 
@@ -100,7 +101,7 @@ func policy_getSubjectConditionSet(cmd *cobra.Command, args []string) {
 		rows = append(rows, mdRows...)
 	}
 
-	t := cli.NewTabular().Rows(rows...)
+	t := cli.NewTabular(rows...)
 	HandleSuccess(cmd, scs.Id, t, scs)
 }
 
@@ -113,18 +114,29 @@ func policy_listSubjectConditionSets(cmd *cobra.Command, args []string) {
 		cli.ExitWithError("Error listing subject condition sets", err)
 	}
 
-	t := cli.NewTable()
-	t.Headers("Id", "SubjectSets", "Labels", "Created At", "Updated At")
+	t := cli.NewTable(
+		cli.NewUUIDColumn(),
+		table.NewColumn("subject_sets", "SubjectSets", 16),
+		table.NewColumn("labels", "Labels", 16),
+		table.NewColumn("created_at", "Created At", 16),
+		table.NewColumn("updated_at", "Updated At", 16),
+	)
+	rows := []table.Row{}
 	for _, scs := range scsList {
 		var subjectSetsJSON []byte
 		if subjectSetsJSON, err = json.Marshal(scs.SubjectSets); err != nil {
 			cli.ExitWithError("Error marshalling subject condition set", err)
 		}
 		metadata := cli.ConstructMetadata(scs.Metadata)
-		rowCells := []string{scs.Id, string(subjectSetsJSON), metadata["Labels"], metadata["Created At"], metadata["Updated At"]}
-		t.Row(rowCells...)
+		rows = append(rows, table.NewRow(table.RowData{
+			"id":           scs.Id,
+			"subject_sets": string(subjectSetsJSON),
+			"labels":       metadata["Labels"],
+			"created_at":   metadata["Created At"],
+			"updated_at":   metadata["Updated At"],
+		}))
 	}
-
+	t = t.WithRows(rows)
 	HandleSuccess(cmd, "", t, scsList)
 }
 
@@ -168,7 +180,7 @@ func policy_updateSubjectConditionSet(cmd *cobra.Command, args []string) {
 		rows = append(rows, mdRows...)
 	}
 
-	t := cli.NewTabular().Rows(rows...)
+	t := cli.NewTabular(rows...)
 	HandleSuccess(cmd, scs.Id, t, scs)
 }
 
@@ -204,7 +216,7 @@ func policy_deleteSubjectConditionSet(cmd *cobra.Command, args []string) {
 		rows = append(rows, mdRows...)
 	}
 
-	t := cli.NewTabular().Rows(rows...)
+	t := cli.NewTabular(rows...)
 	HandleSuccess(cmd, scs.Id, t, scs)
 }
 

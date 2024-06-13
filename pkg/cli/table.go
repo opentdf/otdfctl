@@ -1,32 +1,24 @@
 package cli
 
 import (
-	"github.com/charmbracelet/lipgloss"
-	"github.com/charmbracelet/lipgloss/table"
+
+	// "github.com/evertras/bubble-table/table"
+	"github.com/evertras/bubble-table/table"
 	"golang.org/x/term"
 )
 
-type Table table.Table
-
 var defaultTableWidth int
 
-func NewTable() *table.Table {
-	t := table.New()
-	return t.Border(lipgloss.NormalBorder()).
-		Width(defaultTableWidth).
-		BorderStyle(lipgloss.NewStyle().Foreground(styleTableBorder)).
-		StyleFunc(func(row, col int) lipgloss.Style {
-			switch {
-			case row == 0:
-				return styleTextBold
-			case row%2 == 0:
-				// odd rows: bright grey text on dark grey background
-				return lipgloss.NewStyle().Inherit(styleText).Background(colorIndigo.Background)
-			default:
-				// bright grey text on default background
-				return styleText
-			}
-		})
+func NewTable(cols ...table.Column) table.Model {
+	return table.New(cols).
+		BorderRounded().
+		WithBaseStyle(styleTable).
+		WithNoPagination().
+		WithTargetWidth(defaultTableWidth)
+}
+
+func NewUUIDColumn() table.Column {
+	return table.NewColumn("id", "ID", 37)
 }
 
 func init() {
@@ -35,11 +27,5 @@ func init() {
 	if err != nil {
 		w = 80
 	}
-	if w > 180 {
-		defaultTableWidth = 180
-	} else if w > 120 {
-		defaultTableWidth = 120
-	} else {
-		defaultTableWidth = 80
-	}
+	defaultTableWidth = w
 }

@@ -4,13 +4,35 @@ import (
 	"fmt"
 
 	"github.com/charmbracelet/lipgloss"
-	"github.com/charmbracelet/lipgloss/table"
+	"github.com/evertras/bubble-table/table"
 	"github.com/spf13/cobra"
 )
 
-func NewTabular() *table.Table {
-	t := NewTable()
-	t.Headers("Property", "Value")
+func NewTabular(rows ...[]string) table.Model {
+	t := NewTable(
+		table.NewColumn("property", "Property", 15),
+		table.NewColumn("value", "Value", 15),
+	)
+
+	tr := []table.Row{}
+	if len(rows) == 0 {
+		tr = append(tr, table.NewRow(table.RowData{
+			"property": "No properties found",
+			"value":    "",
+		}))
+	}
+	for _, r := range rows {
+		p := r[0]
+		v := ""
+		if len(r) > 1 {
+			v = r[1]
+		}
+		tr = append(tr, table.NewRow(table.RowData{
+			"property": p,
+			"value":    v,
+		}))
+	}
+
 	return t
 }
 
@@ -18,7 +40,7 @@ func getJsonHelper(command string) string {
 	return fmt.Sprintf("Use '%s --json' to see all properties", command)
 }
 
-func PrintSuccessTable(cmd *cobra.Command, id string, t *table.Table) {
+func PrintSuccessTable(cmd *cobra.Command, id string, t table.Model) {
 	resource := cmd.Parent().Use
 
 	var msg struct {
@@ -52,10 +74,11 @@ func PrintSuccessTable(cmd *cobra.Command, id string, t *table.Table) {
 	successMessage := SuccessMessage(msg.verb)
 	jsonDirections := FooterMessage(msg.helper)
 
-	if t == nil {
+	ts := t.View()
+	if ts == "" {
 		fmt.Println(lipgloss.JoinVertical(lipgloss.Top, successMessage, jsonDirections))
 		return
 	}
 
-	fmt.Println(lipgloss.JoinVertical(lipgloss.Top, successMessage, t.Render(), jsonDirections))
+	fmt.Println(lipgloss.JoinVertical(lipgloss.Top, successMessage, ts, jsonDirections))
 }
