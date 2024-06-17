@@ -11,8 +11,9 @@ import (
 func init() {
 	cmd := man.Docs.GetCommand("auth",
 		man.WithSubcommands(clientCredentialsCmd),
-		man.WithSubcommands(printAccessToken),
+		man.WithSubcommands(printAccessTokenCmd),
 		man.WithSubcommands(clearCachedCredsCmd),
+		man.WithSubcommands(codeLoginCmd),
 	)
 
 	cmd.PersistentPreRun = func(cmd *cobra.Command, args []string) {
