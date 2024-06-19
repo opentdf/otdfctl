@@ -10,7 +10,7 @@ require (
 	github.com/charmbracelet/huh v0.4.2
 	github.com/charmbracelet/lipgloss v0.11.0
 	github.com/creasty/defaults v1.7.0
-	github.com/evertras/bubble-table v0.16.0
+	github.com/evertras/bubble-table v0.16.1
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/itchyny/gojq v0.12.16
