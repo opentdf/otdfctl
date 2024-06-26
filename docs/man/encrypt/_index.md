@@ -10,6 +10,8 @@ command:
     - name: attr
       shorthand: a
       description: Attribute value Fully Qualified Names (FQNs, i.e. 'https://example.com/attr/attr1/value/value1') to apply to the encrypted data.
+    - name: mime-type
+      description: The MIME type of the input data. If not provided, the MIME type is inferred from the input data.
     - name: tdf-type
       shorthand: t
       description:  The type of tdf to encrypt as
