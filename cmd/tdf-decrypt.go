@@ -26,16 +26,17 @@ func dev_tdfDecryptCmd(cmd *cobra.Command, args []string) {
 	piped := readPipedStdin()
 
 	// Prefer file argument over piped input over default filename
-	var bytesToDecrypt []byte
+	bytesToDecrypt := piped
 	var tdfFile string
 	if len(args) > 0 {
 		tdfFile = args[0]
 		bytesToDecrypt = readBytesFromFile(tdfFile)
-	} else if len(piped) > 0 {
-		bytesToDecrypt = piped
-	} else {
+	}
+
+	if len(bytesToDecrypt) == 0 {
 		cli.ExitWithError("Must provide ONE of the following to decrypt: [file argument, stdin input]", errors.New("no input provided"))
 	}
+
 	var decrypted *bytes.Buffer
 	var err error
 	if tdfType == TDF3 {
