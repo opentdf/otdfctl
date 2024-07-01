@@ -70,7 +70,7 @@ func init() {
 	clientCredentialsCmd := man.Docs.GetCommand("auth/client-credentials",
 		man.WithRun(auth_clientCredentials),
 		// use the individual client-id and client-secret flags here instead of the global with-client-creds flag
-		man.WithHiddenFlags("with-client-creds"),
+		man.WithHiddenFlags("with-client-creds", "with-client-creds-file"),
 	)
 	clientCredentialsCmd.Flags().StringP(
 		clientCredentialsCmd.GetDocFlag("client-id").Name,

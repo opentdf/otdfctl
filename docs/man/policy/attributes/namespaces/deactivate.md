@@ -8,3 +8,12 @@ command:
       description: ID of the attribute namespace
       required: true
 ---
+
+Deactivating an Attribute Namespace will make the namespace name inactive as well as any attribute definitions and values beneath.
+
+Deactivation of a Namespace renders any existing TDFs of those attributes inaccessible.
+
+Deactivation will permanently reserve the Namespace name within a platform. Reactivation and deletion are both considered "unsafe"
+behaviors.
+
+For reactivation, see the `unsafe` command.
