@@ -66,8 +66,8 @@ func (h Handler) DeactivateNamespace(id string) (*policy.Namespace, error) {
 }
 
 // Reactivates and returns the reactivated namespace
-func (h Handler) ReactivateNamespace(id string) (*policy.Namespace, error) {
-	_, err := h.sdk.Unsafe.ReactivateNamespace(h.ctx, &unsafe.ReactivateNamespaceRequest{
+func (h Handler) UnsafeReactivateNamespace(id string) (*policy.Namespace, error) {
+	_, err := h.sdk.Unsafe.UnsafeReactivateNamespace(h.ctx, &unsafe.UnsafeReactivateNamespaceRequest{
 		Id: id,
 	})
 	if err != nil {
@@ -78,21 +78,17 @@ func (h Handler) ReactivateNamespace(id string) (*policy.Namespace, error) {
 }
 
 // Deletes and returns the deleted namespace
-func (h Handler) DeleteNamespace(id string, fqn string) (error) {
-	_, err := h.sdk.Unsafe.DeleteNamespace(h.ctx, &unsafe.DeleteNamespaceRequest{
+func (h Handler) UnsafeDeleteNamespace(id string, fqn string) error {
+	_, err := h.sdk.Unsafe.UnsafeDeleteNamespace(h.ctx, &unsafe.UnsafeDeleteNamespaceRequest{
 		Id:  id,
 		Fqn: fqn,
 	})
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 // Unsafely updates the namespace and returns the renamed namespace
 func (h Handler) UnsafeUpdateNamespace(id, name string) (*policy.Namespace, error) {
-	_, err := h.sdk.Unsafe.UpdateNamespace(h.ctx, &unsafe.UpdateNamespaceRequest{
+	_, err := h.sdk.Unsafe.UnsafeUpdateNamespace(h.ctx, &unsafe.UnsafeUpdateNamespaceRequest{
 		Id:   id,
 		Name: name,
 	})

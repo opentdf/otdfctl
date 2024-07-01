@@ -9,13 +9,14 @@ import (
 
 const (
 	// top level actions
-	ActionGet        = "get"
-	ActionList       = "list"
-	ActionCreate     = "create"
-	ActionUpdate     = "update"
-	ActionDeactivate = "deactivate"
-	ActionReactivate = "reactivate"
-	ActionDelete     = "delete"
+	ActionGet          = "get"
+	ActionList         = "list"
+	ActionCreate       = "create"
+	ActionUpdate       = "update"
+	ActionUpdateUnsafe = "unsafely update"
+	ActionDeactivate   = "deactivate"
+	ActionReactivate   = "reactivate"
+	ActionDelete       = "delete"
 
 	// member actions
 	ActionMemberAdd     = "add members"
@@ -23,7 +24,8 @@ const (
 	ActionMemberReplace = "replace all existing members"
 
 	// text input names
-	InputNameFQN = "fully qualified name (FQN)"
+	InputNameFQN        = "fully qualified name (FQN)"
+	InputNameFQNUpdated = "deprecated fully qualified name (FQN) being altered"
 )
 
 func ConfirmAction(action, resource, id string) {

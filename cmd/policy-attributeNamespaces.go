@@ -176,7 +176,7 @@ func policy_unsafeDeleteAttributeNamespace(cmd *cobra.Command, args []string) {
 		cli.ConfirmTextInput(cli.ActionDelete, "namespace", cli.InputNameFQN, ns.GetFqn())
 	}
 
-	if err := h.DeleteNamespace(id, ns.GetFqn()); err != nil {
+	if err := h.UnsafeDeleteNamespace(id, ns.GetFqn()); err != nil {
 		errMsg := fmt.Sprintf("Failed to delete namespace (%s)", id)
 		cli.ExitWithError(errMsg, err)
 	}
@@ -209,7 +209,42 @@ func policy_unsafeReactivateAttributeNamespace(cmd *cobra.Command, args []string
 		cli.ConfirmTextInput(cli.ActionReactivate, "namespace", cli.InputNameFQN, ns.GetFqn())
 	}
 
-	ns, err = h.ReactivateNamespace(id)
+	ns, err = h.UnsafeReactivateNamespace(id)
+	if err != nil {
+		errMsg := fmt.Sprintf("Failed to reactivate namespace (%s)", id)
+		cli.ExitWithError(errMsg, err)
+	}
+
+	rows := [][]string{
+		{"Id", ns.GetId()},
+		{"Name", ns.GetName()},
+	}
+	if mdRows := getMetadataRows(ns.GetMetadata()); mdRows != nil {
+		rows = append(rows, mdRows...)
+	}
+	t := cli.NewTabular(rows...)
+	HandleSuccess(cmd, ns.Id, t, ns)
+}
+
+func policy_unsafeUpdateAttributeNamespace(cmd *cobra.Command, args []string) {
+	h := NewHandler(cmd)
+	defer h.Close()
+
+	flagHelper := cli.NewFlagHelper(cmd)
+	id := flagHelper.GetRequiredString("id")
+	name := flagHelper.GetRequiredString("name")
+
+	ns, err := h.GetNamespace(id)
+	if err != nil {
+		errMsg := fmt.Sprintf("Failed to find namespace (%s)", id)
+		cli.ExitWithError(errMsg, err)
+	}
+
+	if !forceUnsafe {
+		cli.ConfirmTextInput(cli.ActionUpdateUnsafe, "namespace", cli.InputNameFQNUpdated, ns.GetFqn())
+	}
+
+	ns, err = h.UnsafeUpdateNamespace(id, name)
 	if err != nil {
 		errMsg := fmt.Sprintf("Failed to reactivate namespace (%s)", id)
 		cli.ExitWithError(errMsg, err)
@@ -305,7 +340,22 @@ func init() {
 		deactivateCmd.GetDocFlag("id").Default,
 		deactivateCmd.GetDocFlag("id").Description,
 	)
-	unsafeCmd.AddSubcommands(deleteCmd, reactivateCmd)
+	unsafeUpdateCmd := man.Docs.GetCommand("policy/attributes/namespaces/unsafe/update",
+		man.WithRun(policy_unsafeUpdateAttributeNamespace),
+	)
+	unsafeUpdateCmd.Flags().StringP(
+		deactivateCmd.GetDocFlag("id").Name,
+		deactivateCmd.GetDocFlag("id").Shorthand,
+		deactivateCmd.GetDocFlag("id").Default,
+		deactivateCmd.GetDocFlag("id").Description,
+	)
+	unsafeUpdateCmd.Flags().StringP(
+		unsafeUpdateCmd.GetDocFlag("name").Name,
+		unsafeUpdateCmd.GetDocFlag("name").Shorthand,
+		unsafeUpdateCmd.GetDocFlag("name").Default,
+		unsafeUpdateCmd.GetDocFlag("name").Description,
+	)
+	unsafeCmd.AddSubcommands(deleteCmd, reactivateCmd, unsafeUpdateCmd)
 
 	policy_attributeNamespacesCmd.AddSubcommands(getCmd, listCmd, createDoc, updateCmd, deactivateCmd, unsafeCmd)
 	policy_attributesCmd.AddCommand(&policy_attributeNamespacesCmd.Command)

@@ -9,7 +9,7 @@ command:
       required: true
     - name: name
       shorthand: n
-      description: Name of the attribute namespace
+      description: Name of the attribute namespace (new)
       required: true
 ---
 
