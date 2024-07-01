@@ -12,7 +12,11 @@ import (
 
 // TODO: add metadata to outputs once [https://github.com/opentdf/otdfctl/issues/73] is addressed
 
-var policy_attributeNamespacesCmd = man.Docs.GetCommand("policy/attributes/namespaces")
+var (
+	policy_attributeNamespacesCmd = man.Docs.GetCommand("policy/attributes/namespaces")
+
+	forceUnsafe bool
+)
 
 func policy_getAttributeNamespace(cmd *cobra.Command, args []string) {
 	h := NewHandler(cmd)
@@ -155,6 +159,39 @@ func policy_updateAttributeNamespace(cmd *cobra.Command, args []string) {
 	HandleSuccess(cmd, id, t, ns)
 }
 
+func policy_unsafeDeleteAttributeNamespace(cmd *cobra.Command, args []string) {
+	h := NewHandler(cmd)
+	defer h.Close()
+
+	flagHelper := cli.NewFlagHelper(cmd)
+	id := flagHelper.GetRequiredString("id")
+
+	ns, err := h.GetNamespace(id)
+	if err != nil {
+		errMsg := fmt.Sprintf("Failed to find namespace (%s)", id)
+		cli.ExitWithError(errMsg, err)
+	}
+
+	if !forceUnsafe {
+		cli.ConfirmTextInput(cli.ActionDelete, "namespace", cli.InputNameFQN, ns.GetFqn())
+	}
+
+	if err := h.DeleteNamespace(id, ns.GetFqn()); err != nil {
+		errMsg := fmt.Sprintf("Failed to delete namespace (%s)", id)
+		cli.ExitWithError(errMsg, err)
+	}
+
+	rows := [][]string{
+		{"Id", ns.GetId()},
+		{"Name", ns.GetName()},
+	}
+	if mdRows := getMetadataRows(ns.GetMetadata()); mdRows != nil {
+		rows = append(rows, mdRows...)
+	}
+	t := cli.NewTabular(rows...)
+	HandleSuccess(cmd, ns.Id, t, ns)
+}
+
 func init() {
 	getCmd := man.Docs.GetCommand("policy/attributes/namespaces/get",
 		man.WithRun(policy_getAttributeNamespace),
@@ -208,6 +245,25 @@ func init() {
 		deactivateCmd.GetDocFlag("id").Description,
 	)
 
-	policy_attributeNamespacesCmd.AddSubcommands(getCmd, listCmd, createDoc, updateCmd, deactivateCmd)
+	// unsafe
+	unsafeCmd := man.Docs.GetCommand("policy/attributes/namespaces/unsafe")
+	unsafeCmd.PersistentFlags().BoolVar(
+		&forceUnsafe,
+		unsafeCmd.GetDocFlag("force").Name,
+		false,
+		unsafeCmd.GetDocFlag("force").Description,
+	)
+	deleteCmd := man.Docs.GetCommand("policy/attributes/namespaces/unsafe/delete",
+		man.WithRun(policy_unsafeDeleteAttributeNamespace),
+	)
+	deleteCmd.Flags().StringP(
+		deactivateCmd.GetDocFlag("id").Name,
+		deactivateCmd.GetDocFlag("id").Shorthand,
+		deactivateCmd.GetDocFlag("id").Default,
+		deactivateCmd.GetDocFlag("id").Description,
+	)
+	unsafeCmd.AddSubcommands(deleteCmd)
+
+	policy_attributeNamespacesCmd.AddSubcommands(getCmd, listCmd, createDoc, updateCmd, deactivateCmd, unsafeCmd)
 	policy_attributesCmd.AddCommand(&policy_attributeNamespacesCmd.Command)
 }

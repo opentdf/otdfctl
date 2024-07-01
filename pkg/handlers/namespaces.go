@@ -4,6 +4,7 @@ import (
 	"github.com/opentdf/platform/protocol/go/common"
 	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/opentdf/platform/protocol/go/policy/namespaces"
+	"github.com/opentdf/platform/protocol/go/policy/unsafe"
 )
 
 func (h Handler) GetNamespace(id string) (*policy.Namespace, error) {
@@ -56,6 +57,44 @@ func (h Handler) UpdateNamespace(id string, metadata *common.MetadataMutable, be
 func (h Handler) DeactivateNamespace(id string) (*policy.Namespace, error) {
 	_, err := h.sdk.Namespaces.DeactivateNamespace(h.ctx, &namespaces.DeactivateNamespaceRequest{
 		Id: id,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return h.GetNamespace(id)
+}
+
+// Reactivates and returns the reactivated namespace
+func (h Handler) ReactivateNamespace(id string) (*policy.Namespace, error) {
+	_, err := h.sdk.Unsafe.ReactivateNamespace(h.ctx, &unsafe.ReactivateNamespaceRequest{
+		Id: id,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return h.GetNamespace(id)
+}
+
+// Deletes and returns the deleted namespace
+func (h Handler) DeleteNamespace(id string, fqn string) (error) {
+	_, err := h.sdk.Unsafe.DeleteNamespace(h.ctx, &unsafe.DeleteNamespaceRequest{
+		Id:  id,
+		Fqn: fqn,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Unsafely updates the namespace and returns the renamed namespace
+func (h Handler) UnsafeUpdateNamespace(id, name string) (*policy.Namespace, error) {
+	_, err := h.sdk.Unsafe.UpdateNamespace(h.ctx, &unsafe.UpdateNamespaceRequest{
+		Id:   id,
+		Name: name,
 	})
 	if err != nil {
 		return nil, err
