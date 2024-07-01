@@ -192,6 +192,40 @@ func policy_unsafeDeleteAttributeNamespace(cmd *cobra.Command, args []string) {
 	HandleSuccess(cmd, ns.Id, t, ns)
 }
 
+func policy_unsafeReactivateAttributeNamespace(cmd *cobra.Command, args []string) {
+	h := NewHandler(cmd)
+	defer h.Close()
+
+	flagHelper := cli.NewFlagHelper(cmd)
+	id := flagHelper.GetRequiredString("id")
+
+	ns, err := h.GetNamespace(id)
+	if err != nil {
+		errMsg := fmt.Sprintf("Failed to find namespace (%s)", id)
+		cli.ExitWithError(errMsg, err)
+	}
+
+	if !forceUnsafe {
+		cli.ConfirmTextInput(cli.ActionReactivate, "namespace", cli.InputNameFQN, ns.GetFqn())
+	}
+
+	ns, err = h.ReactivateNamespace(id)
+	if err != nil {
+		errMsg := fmt.Sprintf("Failed to reactivate namespace (%s)", id)
+		cli.ExitWithError(errMsg, err)
+	}
+
+	rows := [][]string{
+		{"Id", ns.GetId()},
+		{"Name", ns.GetName()},
+	}
+	if mdRows := getMetadataRows(ns.GetMetadata()); mdRows != nil {
+		rows = append(rows, mdRows...)
+	}
+	t := cli.NewTabular(rows...)
+	HandleSuccess(cmd, ns.Id, t, ns)
+}
+
 func init() {
 	getCmd := man.Docs.GetCommand("policy/attributes/namespaces/get",
 		man.WithRun(policy_getAttributeNamespace),
@@ -262,7 +296,16 @@ func init() {
 		deactivateCmd.GetDocFlag("id").Default,
 		deactivateCmd.GetDocFlag("id").Description,
 	)
-	unsafeCmd.AddSubcommands(deleteCmd)
+	reactivateCmd := man.Docs.GetCommand("policy/attributes/namespaces/unsafe/reactivate",
+		man.WithRun(policy_unsafeReactivateAttributeNamespace),
+	)
+	reactivateCmd.Flags().StringP(
+		deactivateCmd.GetDocFlag("id").Name,
+		deactivateCmd.GetDocFlag("id").Shorthand,
+		deactivateCmd.GetDocFlag("id").Default,
+		deactivateCmd.GetDocFlag("id").Description,
+	)
+	unsafeCmd.AddSubcommands(deleteCmd, reactivateCmd)
 
 	policy_attributeNamespacesCmd.AddSubcommands(getCmd, listCmd, createDoc, updateCmd, deactivateCmd, unsafeCmd)
 	policy_attributesCmd.AddCommand(&policy_attributeNamespacesCmd.Command)
