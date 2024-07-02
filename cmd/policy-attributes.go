@@ -208,6 +208,37 @@ func policy_unsafeReactivateAttribute(cmd *cobra.Command, args []string) {
 	}
 }
 
+func policy_unsafeDeleteAttribute(cmd *cobra.Command, args []string) {
+	h := NewHandler(cmd)
+	defer h.Close()
+
+	flagHelper := cli.NewFlagHelper(cmd)
+	id := flagHelper.GetRequiredString("id")
+
+	a, err := h.GetAttribute(id)
+	if err != nil {
+		errMsg := fmt.Sprintf("Failed to get attribute (%s)", id)
+		cli.ExitWithError(errMsg, err)
+	}
+
+	// TODO: confirm action here!
+
+	if err := h.UnsafeDeleteAttribute(id, a.GetFqn()); err != nil {
+		cli.ExitWithError(fmt.Sprintf("Failed to delete attribute (%s)", id), err)
+	} else {
+		rows := [][]string{
+			{"Deleted", "true"},
+			{"Id", a.Id},
+			{"Name", a.Name},
+		}
+		if mdRows := getMetadataRows(a.Metadata); mdRows != nil {
+			rows = append(rows, mdRows...)
+		}
+		t := cli.NewTabular(rows...)
+		HandleSuccess(cmd, id, t, a)
+	}
+}
+
 func init() {
 	// Create an attribute
 	createDoc := man.Docs.GetCommand("policy/attributes/create",
@@ -302,8 +333,17 @@ func init() {
 		reactivateCmd.GetDocFlag("id").Default,
 		reactivateCmd.GetDocFlag("id").Description,
 	)
+	deleteCmd := man.Docs.GetCommand("policy/attributes/unsafe/delete",
+		man.WithRun(policy_unsafeDeleteAttribute),
+	)
+	deleteCmd.Flags().StringP(
+		deleteCmd.GetDocFlag("id").Name,
+		deleteCmd.GetDocFlag("id").Shorthand,
+		deleteCmd.GetDocFlag("id").Default,
+		deleteCmd.GetDocFlag("id").Description,
+	)
 
-	unsafeCmd.AddSubcommands(reactivateCmd)
+	unsafeCmd.AddSubcommands(reactivateCmd, deleteCmd)
 	policy_attributesCmd.AddSubcommands(createDoc, getDoc, listDoc, updateDoc, deactivateDoc, unsafeCmd)
 	policyCmd.AddCommand(&policy_attributesCmd.Command)
 }

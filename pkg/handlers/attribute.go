@@ -112,6 +112,15 @@ func (h Handler) UnsafeReactivateAttribute(id string) (*policy.Attribute, error)
 	return h.GetAttribute(id)
 }
 
+// Deletes and returns error if deletion failed
+func (h Handler) UnsafeDeleteAttribute(id, fqn string) error {
+	_, err := h.sdk.Unsafe.UnsafeDeleteAttribute(h.ctx, &unsafe.UnsafeDeleteAttributeRequest{
+		Id:  id,
+		Fqn: fqn,
+	})
+	return err
+}
+
 func GetAttributeFqn(namespace string, name string) string {
 	return fmt.Sprintf("https://%s/attr/%s", namespace, name)
 }
