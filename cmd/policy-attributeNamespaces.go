@@ -12,7 +12,11 @@ import (
 
 // TODO: add metadata to outputs once [https://github.com/opentdf/otdfctl/issues/73] is addressed
 
-var policy_attributeNamespacesCmd = man.Docs.GetCommand("policy/attributes/namespaces")
+var (
+	policy_attributeNamespacesCmd = man.Docs.GetCommand("policy/attributes/namespaces")
+
+	forceUnsafe bool
+)
 
 func policy_getAttributeNamespace(cmd *cobra.Command, args []string) {
 	h := NewHandler(cmd)

@@ -5,6 +5,7 @@ import (
 
 	"github.com/evertras/bubble-table/table"
 	"github.com/opentdf/otdfctl/pkg/cli"
+	"github.com/opentdf/otdfctl/pkg/handlers"
 	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/spf13/cobra"
@@ -184,6 +185,105 @@ func policy_updateAttribute(cmd *cobra.Command, args []string) {
 	}
 }
 
+func policy_unsafeReactivateAttribute(cmd *cobra.Command, args []string) {
+	h := NewHandler(cmd)
+	defer h.Close()
+
+	flagHelper := cli.NewFlagHelper(cmd)
+	id := flagHelper.GetRequiredString("id")
+
+	// TODO: confirm action here!
+
+	if a, err := h.UnsafeReactivateAttribute(id); err != nil {
+		cli.ExitWithError(fmt.Sprintf("Failed to reactivate attribute (%s)", id), err)
+	} else {
+		rows := [][]string{
+			{"Id", a.Id},
+			{"Name", a.Name},
+		}
+		if mdRows := getMetadataRows(a.Metadata); mdRows != nil {
+			rows = append(rows, mdRows...)
+		}
+		t := cli.NewTabular(rows...)
+		HandleSuccess(cmd, id, t, a)
+	}
+}
+
+func policy_unsafeUpdateAttribute(cmd *cobra.Command, args []string) {
+	h := NewHandler(cmd)
+	defer h.Close()
+
+	flagHelper := cli.NewFlagHelper(cmd)
+	id := flagHelper.GetRequiredString("id")
+	name := flagHelper.GetOptionalString("name")
+	rule := flagHelper.GetOptionalString("rule")
+	valuesOrder := flagHelper.GetStringSlice("values-order", attrValues, cli.FlagHelperStringSliceOptions{})
+
+	a, err := h.GetAttribute(id)
+	if err != nil {
+		errMsg := fmt.Sprintf("Failed to get attribute (%s)", id)
+		cli.ExitWithError(errMsg, err)
+	}
+
+	// TODO: confirm action here!
+
+	if err := h.UnsafeUpdateAttribute(id, name, rule, valuesOrder); err != nil {
+		cli.ExitWithError(fmt.Sprintf("Failed to delete attribute (%s)", id), err)
+	} else {
+		var (
+			values   []string
+			valueIDs []string
+		)
+		for _, v := range a.GetValues() {
+			values = append(values, v.GetValue())
+			valueIDs = append(valueIDs, v.GetId())
+		}
+		rows := [][]string{
+			{"Id", a.Id},
+			{"Name", a.GetName()},
+			{"Rule", handlers.GetAttributeRuleFromAttributeType(a.GetRule())},
+			{"Values", cli.CommaSeparated(values)},
+			{"Value IDs", cli.CommaSeparated(valueIDs)},
+		}
+		if mdRows := getMetadataRows(a.Metadata); mdRows != nil {
+			rows = append(rows, mdRows...)
+		}
+		t := cli.NewTabular(rows...)
+		HandleSuccess(cmd, id, t, a)
+	}
+}
+
+func policy_unsafeDeleteAttribute(cmd *cobra.Command, args []string) {
+	h := NewHandler(cmd)
+	defer h.Close()
+
+	flagHelper := cli.NewFlagHelper(cmd)
+	id := flagHelper.GetRequiredString("id")
+
+	a, err := h.GetAttribute(id)
+	if err != nil {
+		errMsg := fmt.Sprintf("Failed to get attribute (%s)", id)
+		cli.ExitWithError(errMsg, err)
+	}
+
+	// TODO: confirm action here!
+
+	if err := h.UnsafeDeleteAttribute(id, a.GetFqn()); err != nil {
+		cli.ExitWithError(fmt.Sprintf("Failed to delete attribute (%s)", id), err)
+	} else {
+		rows := [][]string{
+			{"Deleted", "true"},
+			{"Id", a.Id},
+			{"Name", a.Name},
+		}
+		if mdRows := getMetadataRows(a.Metadata); mdRows != nil {
+			rows = append(rows, mdRows...)
+		}
+		t := cli.NewTabular(rows...)
+		HandleSuccess(cmd, id, t, a)
+	}
+}
+
 func init() {
 	// Create an attribute
 	createDoc := man.Docs.GetCommand("policy/attributes/create",
@@ -261,6 +361,43 @@ func init() {
 		deactivateDoc.GetDocFlag("id").Description,
 	)
 
-	policy_attributesCmd.AddSubcommands(createDoc, getDoc, listDoc, updateDoc, deactivateDoc)
+	// unsafe actions on attributes
+	unsafeCmd := man.Docs.GetCommand("policy/attributes/unsafe")
+	unsafeCmd.PersistentFlags().BoolVar(&forceUnsafe,
+		unsafeCmd.GetDocFlag("force").Name,
+		false,
+		unsafeCmd.GetDocFlag("force").Description,
+	)
+
+	reactivateCmd := man.Docs.GetCommand("policy/attributes/unsafe/reactivate",
+		man.WithRun(policy_unsafeReactivateAttribute),
+	)
+	reactivateCmd.Flags().StringP(
+		reactivateCmd.GetDocFlag("id").Name,
+		reactivateCmd.GetDocFlag("id").Shorthand,
+		reactivateCmd.GetDocFlag("id").Default,
+		reactivateCmd.GetDocFlag("id").Description,
+	)
+	deleteCmd := man.Docs.GetCommand("policy/attributes/unsafe/delete",
+		man.WithRun(policy_unsafeDeleteAttribute),
+	)
+	deleteCmd.Flags().StringP(
+		deleteCmd.GetDocFlag("id").Name,
+		deleteCmd.GetDocFlag("id").Shorthand,
+		deleteCmd.GetDocFlag("id").Default,
+		deleteCmd.GetDocFlag("id").Description,
+	)
+	unsafeUpdateCmd := man.Docs.GetCommand("policy/attributes/unsafe/update",
+		man.WithRun(policy_unsafeDeleteAttribute),
+	)
+	unsafeUpdateCmd.Flags().StringP(
+		unsafeUpdateCmd.GetDocFlag("id").Name,
+		unsafeUpdateCmd.GetDocFlag("id").Shorthand,
+		unsafeUpdateCmd.GetDocFlag("id").Default,
+		unsafeUpdateCmd.GetDocFlag("id").Description,
+	)
+
+	unsafeCmd.AddSubcommands(reactivateCmd, deleteCmd, unsafeUpdateCmd)
+	policy_attributesCmd.AddSubcommands(createDoc, getDoc, listDoc, updateDoc, deactivateDoc, unsafeCmd)
 	policyCmd.AddCommand(&policy_attributesCmd.Command)
 }
