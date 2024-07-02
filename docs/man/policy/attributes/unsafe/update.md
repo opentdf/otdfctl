@@ -9,16 +9,17 @@ command:
       required: true
     - name: name
       shorthand: n
-      description: Name of the attribute definition (new)
-      required: false
+      description: Name of the attribute definition
     - name: rule
       shorthand: r
-      description: Rule of the attribute definition (new)
-      required: false
+      description: Rule of the attribute definition
+      enum:
+        - ANY_OF
+        - ALL_OF
+        - HIERARCHY
     - name: values-order
       shorthand: o
-      description: Order of the attribute values (new)
-      required: false
+      description: Order of the attribute values (IDs)
 ---
 
 # Unsafe Update Warning
@@ -40,5 +41,8 @@ entirely different meanings and access evaluations.
 
 In the case of a `hierarchy` Attribute Definition Rule, the order of Values on the attribute has significant impact on data access.
 Changing this order (complete, destructive replacement of the existing order) will impact access to data.
+
+To remove Values from an Attribute Definition, delete them separately via the `values unsafe` commands. To add, utilize safe
+`values create` commands.
 
 Make sure you know what you are doing.

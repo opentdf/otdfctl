@@ -121,6 +121,28 @@ func (h Handler) UnsafeDeleteAttribute(id, fqn string) error {
 	return err
 }
 
+// Deletes and returns error if deletion failed
+func (h Handler) UnsafeUpdateAttribute(id, name, rule string, values_order []string) error {
+	req := &unsafe.UnsafeUpdateAttributeRequest{
+		Id:   id,
+		Name: name,
+	}
+
+	if rule != "" {
+		r, err := GetAttributeRuleFromReadableString(rule)
+		if err != nil {
+			return fmt.Errorf("invalid attribute rule: %s", rule)
+		}
+		req.Rule = r
+	}
+	if len(values_order) > 0 {
+		req.ValuesOrder = values_order
+	}
+
+	_, err := h.sdk.Unsafe.UnsafeUpdateAttribute(h.ctx, req)
+	return err
+}
+
 func GetAttributeFqn(namespace string, name string) string {
 	return fmt.Sprintf("https://%s/attr/%s", namespace, name)
 }
@@ -133,6 +155,7 @@ func GetAttributeRuleOptions() []string {
 	}
 }
 
+// Provides the un-prefixed human-readable attribute rule
 func GetAttributeRuleFromAttributeType(rule policy.AttributeRuleTypeEnum) string {
 	switch rule {
 	case policy.AttributeRuleTypeEnum_ATTRIBUTE_RULE_TYPE_ENUM_ALL_OF:
