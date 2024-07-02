@@ -6,6 +6,7 @@ import (
 	"github.com/opentdf/platform/protocol/go/common"
 	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/opentdf/platform/protocol/go/policy/attributes"
+	"github.com/opentdf/platform/protocol/go/policy/unsafe"
 )
 
 // TODO: Might be useful to map out the attribute rule definitions for help text in the CLI and TUI
@@ -92,6 +93,17 @@ func (h *Handler) UpdateAttribute(
 // Deactivates and returns deactivated attribute
 func (h Handler) DeactivateAttribute(id string) (*policy.Attribute, error) {
 	_, err := h.sdk.Attributes.DeactivateAttribute(h.ctx, &attributes.DeactivateAttributeRequest{
+		Id: id,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return h.GetAttribute(id)
+}
+
+// Reactivates and returns reactivated attribute
+func (h Handler) UnsafeReactivateAttribute(id string) (*policy.Attribute, error) {
+	_, err := h.sdk.Unsafe.UnsafeReactivateAttribute(h.ctx, &unsafe.UnsafeReactivateAttributeRequest{
 		Id: id,
 	})
 	if err != nil {

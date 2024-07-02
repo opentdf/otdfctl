@@ -184,6 +184,30 @@ func policy_updateAttribute(cmd *cobra.Command, args []string) {
 	}
 }
 
+func policy_unsafeReactivateAttribute(cmd *cobra.Command, args []string) {
+	h := NewHandler(cmd)
+	defer h.Close()
+
+	flagHelper := cli.NewFlagHelper(cmd)
+	id := flagHelper.GetRequiredString("id")
+
+	// TODO: confirm action here!
+
+	if a, err := h.UnsafeReactivateAttribute(id); err != nil {
+		cli.ExitWithError(fmt.Sprintf("Failed to reactivate attribute (%s)", id), err)
+	} else {
+		rows := [][]string{
+			{"Id", a.Id},
+			{"Name", a.Name},
+		}
+		if mdRows := getMetadataRows(a.Metadata); mdRows != nil {
+			rows = append(rows, mdRows...)
+		}
+		t := cli.NewTabular(rows...)
+		HandleSuccess(cmd, id, t, a)
+	}
+}
+
 func init() {
 	// Create an attribute
 	createDoc := man.Docs.GetCommand("policy/attributes/create",
@@ -261,6 +285,25 @@ func init() {
 		deactivateDoc.GetDocFlag("id").Description,
 	)
 
-	policy_attributesCmd.AddSubcommands(createDoc, getDoc, listDoc, updateDoc, deactivateDoc)
+	// unsafe actions on attributes
+	unsafeCmd := man.Docs.GetCommand("policy/attributes/unsafe")
+	unsafeCmd.PersistentFlags().BoolVar(&forceUnsafe,
+		unsafeCmd.GetDocFlag("force").Name,
+		false,
+		unsafeCmd.GetDocFlag("force").Description,
+	)
+
+	reactivateCmd := man.Docs.GetCommand("policy/attributes/unsafe/reactivate",
+		man.WithRun(policy_unsafeReactivateAttribute),
+	)
+	reactivateCmd.Flags().StringP(
+		reactivateCmd.GetDocFlag("id").Name,
+		reactivateCmd.GetDocFlag("id").Shorthand,
+		reactivateCmd.GetDocFlag("id").Default,
+		reactivateCmd.GetDocFlag("id").Description,
+	)
+
+	unsafeCmd.AddSubcommands(reactivateCmd)
+	policy_attributesCmd.AddSubcommands(createDoc, getDoc, listDoc, updateDoc, deactivateDoc, unsafeCmd)
 	policyCmd.AddCommand(&policy_attributesCmd.Command)
 }
