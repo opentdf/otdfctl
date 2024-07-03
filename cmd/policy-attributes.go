@@ -228,7 +228,7 @@ func policy_unsafeUpdateAttribute(cmd *cobra.Command, args []string) {
 	// TODO: confirm action here!
 
 	if err := h.UnsafeUpdateAttribute(id, name, rule, valuesOrder); err != nil {
-		cli.ExitWithError(fmt.Sprintf("Failed to delete attribute (%s)", id), err)
+		cli.ExitWithError(fmt.Sprintf("Failed to update attribute (%s)", id), err)
 	} else {
 		var (
 			values   []string
@@ -388,13 +388,32 @@ func init() {
 		deleteCmd.GetDocFlag("id").Description,
 	)
 	unsafeUpdateCmd := man.Docs.GetCommand("policy/attributes/unsafe/update",
-		man.WithRun(policy_unsafeDeleteAttribute),
+		man.WithRun(policy_unsafeUpdateAttribute),
 	)
 	unsafeUpdateCmd.Flags().StringP(
 		unsafeUpdateCmd.GetDocFlag("id").Name,
 		unsafeUpdateCmd.GetDocFlag("id").Shorthand,
 		unsafeUpdateCmd.GetDocFlag("id").Default,
 		unsafeUpdateCmd.GetDocFlag("id").Description,
+	)
+	unsafeUpdateCmd.Flags().StringP(
+		unsafeUpdateCmd.GetDocFlag("name").Name,
+		unsafeUpdateCmd.GetDocFlag("name").Shorthand,
+		unsafeUpdateCmd.GetDocFlag("name").Default,
+		unsafeUpdateCmd.GetDocFlag("name").Description,
+	)
+	unsafeUpdateCmd.Flags().StringP(
+		unsafeUpdateCmd.GetDocFlag("rule").Name,
+		unsafeUpdateCmd.GetDocFlag("rule").Shorthand,
+		unsafeUpdateCmd.GetDocFlag("rule").Default,
+		unsafeUpdateCmd.GetDocFlag("rule").Description,
+	)
+	unsafeUpdateCmd.Flags().StringSliceVarP(
+		&attrValues,
+		unsafeUpdateCmd.GetDocFlag("values-order").Name,
+		unsafeUpdateCmd.GetDocFlag("values-order").Shorthand,
+		[]string{},
+		unsafeUpdateCmd.GetDocFlag("values-order").Description,
 	)
 
 	unsafeCmd.AddSubcommands(reactivateCmd, deleteCmd, unsafeUpdateCmd)
