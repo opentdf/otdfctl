@@ -4,6 +4,7 @@ import (
 	"github.com/opentdf/platform/protocol/go/common"
 	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/opentdf/platform/protocol/go/policy/attributes"
+	"github.com/opentdf/platform/protocol/go/policy/unsafe"
 )
 
 func (h *Handler) ListAttributeValues(attributeId string, state common.ActiveStateEnum) ([]*policy.Value, error) {
@@ -63,4 +64,35 @@ func (h *Handler) DeactivateAttributeValue(id string) (*policy.Value, error) {
 		return nil, err
 	}
 	return h.GetAttributeValue(id)
+}
+
+// Reactivates and returns reactivated attribute
+func (h Handler) UnsafeReactivateAttributeValue(id string) (*policy.Value, error) {
+	_, err := h.sdk.Unsafe.UnsafeReactivateAttributeValue(h.ctx, &unsafe.UnsafeReactivateAttributeValueRequest{
+		Id: id,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return h.GetAttributeValue(id)
+}
+
+// Deletes and returns error if deletion failed
+func (h Handler) UnsafeDeleteAttributeValue(id, fqn string) error {
+	_, err := h.sdk.Unsafe.UnsafeDeleteAttributeValue(h.ctx, &unsafe.UnsafeDeleteAttributeValueRequest{
+		Id:  id,
+		Fqn: fqn,
+	})
+	return err
+}
+
+// Deletes and returns error if deletion failed
+func (h Handler) UnsafeUpdateAttributeValue(id, value string) error {
+	req := &unsafe.UnsafeUpdateAttributeValueRequest{
+		Id:    id,
+		Value: value,
+	}
+
+	_, err := h.sdk.Unsafe.UnsafeUpdateAttributeValue(h.ctx, req)
+	return err
 }

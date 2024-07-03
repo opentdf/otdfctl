@@ -138,13 +138,16 @@ func policy_unsafeReactivateAttributeValue(cmd *cobra.Command, args []string) {
 	id := flagHelper.GetRequiredString("id")
 
 	// TODO: confirm action here!
+	if !forceUnsafe {
+		fmt.Println("todo: confirmation here")
+	}
 
 	if v, err := h.UnsafeReactivateAttributeValue(id); err != nil {
 		cli.ExitWithError(fmt.Sprintf("Failed to reactivate attribute value (%s)", id), err)
 	} else {
 		rows := [][]string{
 			{"Id", v.GetId()},
-			{"Name", v.GetName()},
+			{"Value", v.GetValue()},
 		}
 		if mdRows := getMetadataRows(v.GetMetadata()); mdRows != nil {
 			rows = append(rows, mdRows...)
@@ -169,6 +172,9 @@ func policy_unsafeUpdateAttributeValue(cmd *cobra.Command, args []string) {
 	}
 
 	// TODO: confirm action here!
+	if !forceUnsafe {
+		fmt.Println("todo: confirmation here")
+	}
 
 	if err := h.UnsafeUpdateAttributeValue(id, value); err != nil {
 		cli.ExitWithError(fmt.Sprintf("Failed to update attribute value (%s)", id), err)
@@ -199,8 +205,11 @@ func policy_unsafeDeleteAttributeValue(cmd *cobra.Command, args []string) {
 	}
 
 	// TODO: confirm action here!
+	if !forceUnsafe {
+		fmt.Println("todo: confirmation here")
+	}
 
-	if err := h.UnsafeDeleteAttributeValue(id); err != nil {
+	if err := h.UnsafeDeleteAttributeValue(id, v.GetFqn()); err != nil {
 		cli.ExitWithError(fmt.Sprintf("Failed to delete attribute (%s)", id), err)
 	} else {
 		rows := [][]string{
