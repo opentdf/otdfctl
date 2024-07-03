@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
@@ -9,6 +10,10 @@ import (
 )
 
 func ExitWithError(errMsg string, err error) {
+	if err == nil {
+		// ensure message and exit are satisfied even if nil error passed
+		err = errors.New("")
+	}
 	ExitWithNotFoundError(errMsg, err)
 	if err != nil {
 		fmt.Println(ErrorMessage(errMsg, err))
