@@ -12,9 +12,7 @@ import (
 
 // TODO: add metadata to outputs once [https://github.com/opentdf/otdfctl/issues/73] is addressed
 
-var (
-	policy_attributeValuesCmd *cobra.Command
-)
+var policy_attributeValuesCmd *cobra.Command
 
 func policy_createAttributeValue(cmd *cobra.Command, args []string) {
 	flagHelper := cli.NewFlagHelper(cmd)
@@ -66,7 +64,7 @@ func policy_listAttributeValue(cmd *cobra.Command, args []string) {
 	}
 	t := cli.NewTable(
 		cli.NewUUIDColumn(),
-		table.NewColumn("fqn", "Fqn", 16),
+		table.NewColumn("fqn", "Fqn", 37),
 		table.NewColumn("members", "Members", 16),
 		table.NewColumn("active", "Active", 16),
 		table.NewColumn("labels", "Labels", 16),
@@ -86,6 +84,7 @@ func policy_listAttributeValue(cmd *cobra.Command, args []string) {
 			"updated_at": v.Metadata["Updated At"],
 		}))
 	}
+	t = t.WithRows(rows)
 	HandleSuccess(cmd, "", t, vals)
 }
 
