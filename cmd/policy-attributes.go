@@ -192,7 +192,15 @@ func policy_unsafeReactivateAttribute(cmd *cobra.Command, args []string) {
 	flagHelper := cli.NewFlagHelper(cmd)
 	id := flagHelper.GetRequiredString("id")
 
-	// TODO: confirm action here!
+	a, err := h.GetAttribute(id)
+	if err != nil {
+		errMsg := fmt.Sprintf("Failed to get attribute (%s)", id)
+		cli.ExitWithError(errMsg, err)
+	}
+
+	if !forceUnsafe {
+		cli.ConfirmTextInput(cli.ActionReactivate, "attribute", cli.InputNameFQN, a.GetFqn())
+	}
 
 	if a, err := h.UnsafeReactivateAttribute(id); err != nil {
 		cli.ExitWithError(fmt.Sprintf("Failed to reactivate attribute (%s)", id), err)
@@ -225,7 +233,9 @@ func policy_unsafeUpdateAttribute(cmd *cobra.Command, args []string) {
 		cli.ExitWithError(errMsg, err)
 	}
 
-	// TODO: confirm action here!
+	if !forceUnsafe {
+		cli.ConfirmTextInput(cli.ActionUpdateUnsafe, "attribute", cli.InputNameFQN, a.GetFqn())
+	}
 
 	if err := h.UnsafeUpdateAttribute(id, name, rule, valuesOrder); err != nil {
 		cli.ExitWithError(fmt.Sprintf("Failed to update attribute (%s)", id), err)
@@ -266,7 +276,9 @@ func policy_unsafeDeleteAttribute(cmd *cobra.Command, args []string) {
 		cli.ExitWithError(errMsg, err)
 	}
 
-	// TODO: confirm action here!
+	if !forceUnsafe {
+		cli.ConfirmTextInput(cli.ActionDelete, "attribute", cli.InputNameFQN, a.GetFqn())
+	}
 
 	if err := h.UnsafeDeleteAttribute(id, a.GetFqn()); err != nil {
 		cli.ExitWithError(fmt.Sprintf("Failed to delete attribute (%s)", id), err)
