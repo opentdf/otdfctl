@@ -66,12 +66,12 @@ func GetSimpleAttribute(a *policy.Attribute) SimpleAttribute {
 
 func GetSimpleAttributeValue(v *policy.Value) SimpleAttributeValue {
 	memberIds := []string{}
-	for _, m := range v.Members {
-		memberIds = append(memberIds, m.Id)
+	for _, m := range v.GetMembers() {
+		memberIds = append(memberIds, m.GetId())
 	}
 	return SimpleAttributeValue{
-		Id:       v.Id,
-		FQN:      v.Fqn,
+		Id:       v.GetId(),
+		FQN:      v.GetFqn(),
 		Members:  memberIds,
 		Active:   strconv.FormatBool(v.Active.GetValue()),
 		Metadata: ConstructMetadata(v.GetMetadata()),

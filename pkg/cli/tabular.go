@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/evertras/bubble-table/table"
@@ -68,7 +69,8 @@ func PrintSuccessTable(cmd *cobra.Command, id string, t table.Model) {
 		msg.helper = getJsonHelper(resource + " get --id=" + id)
 	case ActionDelete:
 		msg.verb = fmt.Sprintf("Deleted %s: %s", resourceShort, id)
-		msg.helper = getJsonHelper(resource + " list")
+		// strip off unsafe subcommand if found to get proper path to the list command
+		msg.helper = getJsonHelper(strings.ReplaceAll(resource, " unsafe", "") + " list")
 	case ActionDeactivate:
 		msg.verb = fmt.Sprintf("Deactivated %s: %s", resourceShort, id)
 		msg.helper = getJsonHelper(resource + " list") // TODO: make sure the filters are provided here to get ACTIVE/INACTIVE/ANY
