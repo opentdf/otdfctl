@@ -39,6 +39,7 @@ func dev_tdfEncryptCmd(cmd *cobra.Command, args []string) {
 	if tdfType == "" {
 		tdfType = TDF3
 	}
+	kasURLPath := flagHelper.GetOptionalString("kas-url-path")
 
 	piped := readPipedStdin()
 
@@ -89,9 +90,9 @@ func dev_tdfEncryptCmd(cmd *cobra.Command, args []string) {
 	var encrypted *bytes.Buffer
 	var err error
 	if tdfType == TDF3 {
-		encrypted, err = h.EncryptBytes(bytesSlice, values, fileMimeType)
+		encrypted, err = h.EncryptBytes(bytesSlice, values, fileMimeType, kasURLPath)
 	} else if tdfType == NANO {
-		encrypted, err = h.EncryptNanoBytes(bytesSlice, values)
+		encrypted, err = h.EncryptNanoBytes(bytesSlice, values, kasURLPath)
 	} else {
 		cli.ExitWithError("Failed to encrypt", fmt.Errorf("unrecognized tdf-type: %s", tdfType))
 	}
@@ -151,6 +152,11 @@ func init() {
 		encryptCmd.GetDocFlag("tdf-type").Description,
 	)
 	encryptCmd.Command.GroupID = "tdf"
+	encryptCmd.Flags().String(
+		encryptCmd.GetDocFlag("kas-url-path").Name,
+		encryptCmd.GetDocFlag("kas-url-path").Default,
+		encryptCmd.GetDocFlag("kas-url-path").Description,
+	)
 
 	RootCmd.AddCommand(&encryptCmd.Command)
 }
