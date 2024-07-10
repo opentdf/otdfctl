@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"bufio"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -138,14 +137,8 @@ func readPipedStdin() []byte {
 		cli.ExitWithError("Failed to read stat from stdin", err)
 	}
 	if (stat.Mode() & os.ModeCharDevice) == 0 {
-		var buf []byte
-		scanner := bufio.NewScanner(os.Stdin)
-
-		for scanner.Scan() {
-			buf = append(buf, scanner.Bytes()...)
-		}
-
-		if err := scanner.Err(); err != nil {
+		buf, err := io.ReadAll(os.Stdin)
+		if err != nil {
 			cli.ExitWithError("failed to scan bytes from stdin", err)
 		}
 		return buf
