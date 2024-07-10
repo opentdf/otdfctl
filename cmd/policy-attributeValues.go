@@ -131,6 +131,101 @@ func policy_deactivateAttributeValue(cmd *cobra.Command, args []string) {
 	handleValueSuccess(cmd, deactivated)
 }
 
+func policy_unsafeReactivateAttributeValue(cmd *cobra.Command, args []string) {
+	h := NewHandler(cmd)
+	defer h.Close()
+
+	flagHelper := cli.NewFlagHelper(cmd)
+	id := flagHelper.GetRequiredString("id")
+
+	v, err := h.GetAttributeValue(id)
+	if err != nil {
+		cli.ExitWithError(fmt.Sprintf("Failed to get attribute value (%s)", id), err)
+	}
+
+	if !forceUnsafe {
+		cli.ConfirmTextInput(cli.ActionReactivate, "attribute value", cli.InputNameFQN, v.GetFqn())
+	}
+
+	if v, err := h.UnsafeReactivateAttributeValue(id); err != nil {
+		cli.ExitWithError(fmt.Sprintf("Failed to reactivate attribute value (%s)", id), err)
+	} else {
+		rows := [][]string{
+			{"Id", v.GetId()},
+			{"Value", v.GetValue()},
+		}
+		if mdRows := getMetadataRows(v.GetMetadata()); mdRows != nil {
+			rows = append(rows, mdRows...)
+		}
+		t := cli.NewTabular(rows...)
+		HandleSuccess(cmd, id, t, v)
+	}
+}
+
+func policy_unsafeUpdateAttributeValue(cmd *cobra.Command, args []string) {
+	h := NewHandler(cmd)
+	defer h.Close()
+
+	flagHelper := cli.NewFlagHelper(cmd)
+	id := flagHelper.GetRequiredString("id")
+	value := flagHelper.GetOptionalString("value")
+
+	v, err := h.GetAttributeValue(id)
+	if err != nil {
+		cli.ExitWithError(fmt.Sprintf("Failed to get attribute value (%s)", id), err)
+	}
+
+	if !forceUnsafe {
+		cli.ConfirmTextInput(cli.ActionUpdateUnsafe, "attribute value", cli.InputNameFQN, v.GetFqn())
+	}
+
+	if err := h.UnsafeUpdateAttributeValue(id, value); err != nil {
+		cli.ExitWithError(fmt.Sprintf("Failed to update attribute value (%s)", id), err)
+	} else {
+		rows := [][]string{
+			{"Id", v.GetId()},
+			{"Value", value},
+		}
+		if mdRows := getMetadataRows(v.GetMetadata()); mdRows != nil {
+			rows = append(rows, mdRows...)
+		}
+		t := cli.NewTabular(rows...)
+		HandleSuccess(cmd, id, t, v)
+	}
+}
+
+func policy_unsafeDeleteAttributeValue(cmd *cobra.Command, args []string) {
+	h := NewHandler(cmd)
+	defer h.Close()
+
+	flagHelper := cli.NewFlagHelper(cmd)
+	id := flagHelper.GetRequiredString("id")
+
+	v, err := h.GetAttributeValue(id)
+	if err != nil {
+		cli.ExitWithError(fmt.Sprintf("Failed to get attribute value (%s)", id), err)
+	}
+
+	if !forceUnsafe {
+		cli.ConfirmTextInput(cli.ActionDelete, "attribute value", cli.InputNameFQN, v.GetFqn())
+	}
+
+	if err := h.UnsafeDeleteAttributeValue(id, v.GetFqn()); err != nil {
+		cli.ExitWithError(fmt.Sprintf("Failed to delete attribute (%s)", id), err)
+	} else {
+		rows := [][]string{
+			{"Id", v.GetId()},
+			{"Value", v.GetValue()},
+			{"Deleted", "true"},
+		}
+		if mdRows := getMetadataRows(v.GetMetadata()); mdRows != nil {
+			rows = append(rows, mdRows...)
+		}
+		t := cli.NewTabular(rows...)
+		HandleSuccess(cmd, id, t, v)
+	}
+}
+
 // TODO: uncomment when update with members is enabled in the platform [https://github.com/opentdf/platform/issues/476]
 ///
 /// Attribute Value Members
@@ -320,6 +415,42 @@ func init() {
 		deactivateCmd.GetDocFlag("id").Default,
 		deactivateCmd.GetDocFlag("id").Description,
 	)
+	// unsafe
+	unsafeReactivateCmd := man.Docs.GetCommand("policy/attributes/values/unsafe/reactivate",
+		man.WithRun(policy_unsafeReactivateAttributeValue),
+	)
+	unsafeReactivateCmd.Flags().StringP(
+		unsafeReactivateCmd.GetDocFlag("id").Name,
+		unsafeReactivateCmd.GetDocFlag("id").Shorthand,
+		unsafeReactivateCmd.GetDocFlag("id").Default,
+		unsafeReactivateCmd.GetDocFlag("id").Description,
+	)
+
+	unsafeDeleteCmd := man.Docs.GetCommand("policy/attributes/values/unsafe/delete",
+		man.WithRun(policy_unsafeDeleteAttributeValue),
+	)
+	unsafeDeleteCmd.Flags().StringP(
+		unsafeDeleteCmd.GetDocFlag("id").Name,
+		unsafeDeleteCmd.GetDocFlag("id").Shorthand,
+		unsafeDeleteCmd.GetDocFlag("id").Default,
+		unsafeDeleteCmd.GetDocFlag("id").Description,
+	)
+
+	unsafeUpdateCmd := man.Docs.GetCommand("policy/attributes/values/unsafe/update",
+		man.WithRun(policy_unsafeUpdateAttributeValue),
+	)
+	unsafeUpdateCmd.Flags().StringP(
+		unsafeUpdateCmd.GetDocFlag("id").Name,
+		unsafeUpdateCmd.GetDocFlag("id").Shorthand,
+		unsafeUpdateCmd.GetDocFlag("id").Default,
+		unsafeUpdateCmd.GetDocFlag("id").Description,
+	)
+	unsafeUpdateCmd.Flags().StringP(
+		unsafeUpdateCmd.GetDocFlag("value").Name,
+		unsafeUpdateCmd.GetDocFlag("value").Shorthand,
+		unsafeUpdateCmd.GetDocFlag("value").Default,
+		unsafeUpdateCmd.GetDocFlag("value").Description,
+	)
 
 	// Attribute value members
 	// policy_attributeValuesCmd.AddCommand(policy_attributeValueMembersCmd)
@@ -337,8 +468,16 @@ func init() {
 	// policy_attributeValueMembersReplaceCmd.Flags().StringP("id", "i", "", "Attribute value id")
 	// policy_attributeValueMembersReplaceCmd.Flags().StringSliceVar(&attrValueMembers, "member", []string{}, "Each member id that should exist after replacement")
 
+	unsafeCmd := man.Docs.GetCommand("policy/attributes/values/unsafe")
+	unsafeCmd.PersistentFlags().BoolVar(&forceUnsafe,
+		unsafeCmd.GetDocFlag("force").Name,
+		false,
+		unsafeCmd.GetDocFlag("force").Description,
+	)
+
+	unsafeCmd.AddSubcommands(unsafeReactivateCmd, unsafeDeleteCmd, unsafeUpdateCmd)
 	doc := man.Docs.GetCommand("policy/attributes/values",
-		man.WithSubcommands(createCmd, getCmd, listCmd, updateCmd, deactivateCmd),
+		man.WithSubcommands(createCmd, getCmd, listCmd, updateCmd, deactivateCmd, unsafeCmd),
 	)
 	policy_attributeValuesCmd = &doc.Command
 	policy_attributesCmd.AddCommand(policy_attributeValuesCmd)
@@ -346,9 +485,9 @@ func init() {
 
 func handleValueSuccess(cmd *cobra.Command, v *policy.Value) {
 	rows := [][]string{
-		{"Id", v.Id},
-		{"FQN", v.Fqn},
-		{"Value", v.Value},
+		{"Id", v.GetId()},
+		{"FQN", v.GetFqn()},
+		{"Value", v.GetValue()},
 	}
 	if mdRows := getMetadataRows(v.Metadata); mdRows != nil {
 		rows = append(rows, mdRows...)
