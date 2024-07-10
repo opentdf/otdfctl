@@ -7,7 +7,7 @@ import (
 	"github.com/opentdf/platform/sdk"
 )
 
-func (h Handler) EncryptBytes(b []byte, values []string, mimeType string) (*bytes.Buffer, error) {
+func (h Handler) EncryptBytes(b []byte, values []string, mimeType string, kasUrlPath string) (*bytes.Buffer, error) {
 	var encrypted []byte
 	enc := bytes.NewBuffer(encrypted)
 
@@ -15,7 +15,7 @@ func (h Handler) EncryptBytes(b []byte, values []string, mimeType string) (*byte
 	_, err := h.sdk.CreateTDF(enc, bytes.NewReader(b),
 		sdk.WithDataAttributes(values...),
 		sdk.WithKasInformation(sdk.KASInfo{
-			URL: h.platformEndpoint,
+			URL: h.platformEndpoint + kasUrlPath,
 		}),
 		sdk.WithMimeType(mimeType),
 	)
