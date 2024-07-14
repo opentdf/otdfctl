@@ -12,10 +12,9 @@ func policy_updateKasGrant(cmd *cobra.Command, args []string) {
 
 	flagHelper := cli.NewFlagHelper(cmd)
 
-	attr := flagHelper.GetOptionalString("attribute")
-	val := flagHelper.GetOptionalString("value")
-	kas := flagHelper.GetRequiredString("kas")
-
+	attr := flagHelper.GetOptionalString("attribute-id")
+	val := flagHelper.GetOptionalString("value-id")
+	kas := flagHelper.GetRequiredString("kas-id")
 	if attr == "" && val == "" {
 		cli.ExitWithError("Must specify and Attribute Definition id or Value id to update.", nil)
 	}
@@ -51,9 +50,9 @@ func policy_deleteKasGrant(cmd *cobra.Command, args []string) {
 	defer h.Close()
 
 	flagHelper := cli.NewFlagHelper(cmd)
-	attr := flagHelper.GetOptionalString("attribute")
-	val := flagHelper.GetOptionalString("value")
-	kas := flagHelper.GetRequiredString("kas")
+	attr := flagHelper.GetOptionalString("attribute-id")
+	val := flagHelper.GetOptionalString("value-id")
+	kas := flagHelper.GetRequiredString("kas-id")
 
 	if attr == "" && val == "" {
 		cli.ExitWithError("Must specify and Attribute Definition id or Value id to delete.", nil)
