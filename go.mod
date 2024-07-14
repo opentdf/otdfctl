@@ -25,10 +25,6 @@ require (
 	google.golang.org/grpc v1.65.0
 )
 
-replace (
-	github.com/opentdf/platform/sdk => ../platform/sdk
-)
-
 require (
 	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.34.2-20240508200655-46a4cf4ba109.2 // indirect
 	github.com/BurntSushi/toml v0.3.1 // indirect
