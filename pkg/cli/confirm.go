@@ -18,11 +18,6 @@ const (
 	ActionReactivate   = "reactivate"
 	ActionDelete       = "delete"
 
-	// member actions
-	ActionMemberAdd     = "add members"
-	ActionMemberRemove  = "remove members"
-	ActionMemberReplace = "replace all existing members"
-
 	// text input names
 	InputNameFQN        = "fully qualified name (FQN)"
 	InputNameFQNUpdated = "deprecated fully qualified name (FQN) being altered"

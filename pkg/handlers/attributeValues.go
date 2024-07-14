@@ -41,10 +41,9 @@ func (h *Handler) GetAttributeValue(id string) (*policy.Value, error) {
 }
 
 // Updates and returns updated value
-func (h *Handler) UpdateAttributeValue(id string, memberIds []string, metadata *common.MetadataMutable, behavior common.MetadataUpdateEnum) (*policy.Value, error) {
+func (h *Handler) UpdateAttributeValue(id string, metadata *common.MetadataMutable, behavior common.MetadataUpdateEnum) (*policy.Value, error) {
 	resp, err := h.sdk.Attributes.UpdateAttributeValue(h.ctx, &attributes.UpdateAttributeValueRequest{
 		Id:                     id,
-		Members:                memberIds,
 		Metadata:               metadata,
 		MetadataUpdateBehavior: behavior,
 	})
