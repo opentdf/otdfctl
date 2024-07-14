@@ -22,7 +22,6 @@ type SimpleAttribute struct {
 type SimpleAttributeValue struct {
 	Id       string
 	FQN      string
-	Members  []string
 	Active   string
 	Metadata map[string]string
 }
@@ -65,14 +64,9 @@ func GetSimpleAttribute(a *policy.Attribute) SimpleAttribute {
 }
 
 func GetSimpleAttributeValue(v *policy.Value) SimpleAttributeValue {
-	memberIds := []string{}
-	for _, m := range v.GetMembers() {
-		memberIds = append(memberIds, m.GetId())
-	}
 	return SimpleAttributeValue{
 		Id:       v.GetId(),
 		FQN:      v.GetFqn(),
-		Members:  memberIds,
 		Active:   strconv.FormatBool(v.Active.GetValue()),
 		Metadata: ConstructMetadata(v.GetMetadata()),
 	}
