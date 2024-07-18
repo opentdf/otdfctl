@@ -8,6 +8,10 @@ setup() {
   export HOST=http://localhost:8080/kas
 }
 
+teardown() {
+    rm -f result.yaml sensitive.yaml.tdf
+}
+
 @test "roundtrip TDF3" {
   ./otdfctl encrypt -o sensitive.yaml.tdf --host $HOST --tls-no-verify --log-level debug $WITH_CREDS --tdf-type tdf3 otdfctl.yaml
   ./otdfctl decrypt -o result.yaml --host $HOST --tls-no-verify --log-level debug $WITH_CREDS --tdf-type tdf3 sensitive.yaml.tdf
