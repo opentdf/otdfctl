@@ -89,8 +89,7 @@ jobs:
         run: go build .
       - name: set up the config
         run: cp otdfctl-example.yaml otdfctl.yaml
-      - name: run encrypt -> decrypt
-        run: |-
-          ./otdfctl encrypt -o sensitive.txt.tdf --host http://localhost:8080/kas --tls-no-verify --log-level debug --with-client-creds '{"clientId":"opentdf","clientSecret":"secret"}' --tdf-type tdf3 otdfctl.yaml
-          ./otdfctl decrypt -o result.yaml --host http://localhost:8080/kas --tls-no-verify --log-level debug --with-client-creds '{"clientId":"opentdf","clientSecret":"secret"}' --tdf-type tdf3 sensitive.txt.tdf
-          diff otdfctl.yaml result.yaml
+      - name: Setup Bats and bats libs
+        uses: bats-core/bats-action@2.0.0
+      - run: tests/encrypt-decrypt.bats
+
