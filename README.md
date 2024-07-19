@@ -51,3 +51,33 @@ The TUI will be used to create an interactive experience for the user.
 
 Documentation drives the CLI in this project. This can be found in `/docs/man` and is used in the
 CLI via the `man.Docs.GetDoc()` function.
+
+## Testing
+
+The [tests](./tests) directory contains e2e Bash Automated Test System (bats) tests for all of the cli functionality.
+
+To install bats on MacOS:
+```
+$ brew install bats-core
+```
+Or with NPM on any OS:
+```
+# To install globally:
+$ npm install -g bats
+
+# To install into your project and save it as one of the "devDependencies" in
+# your package.json:
+$ npm install --save-dev bats
+```
+
+These tests require the platform to be running and provisioned with basic keycloak clients/users. Before running, clone https://github.com/opentdf/platform and follow [the quickstart](https://github.com/opentdf/platform?tab=readme-ov-file#quick-start) to spin it up.
+
+Build the cli:
+```
+$ go build .
+```
+
+Run the bats with:
+```
+$ bats tests/*.bats
+```

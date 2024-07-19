@@ -49,7 +49,6 @@ jobs:
           check-latest: false
           cache-dependency-path: |
             platform/service/go.sum
-            platform/examples/go.sum
             platform/protocol/go/go.sum
             platform/sdk/go.sum
       - run: |
@@ -66,8 +65,6 @@ jobs:
       - run: docker compose up -d --wait --wait-timeout 240
         working-directory: platform
       - run: go run ./service provision keycloak
-        working-directory: platform
-      - run: go run ./service provision fixtures
         working-directory: platform
       - uses: JarvusInnovations/background-action@2428e7b970a846423095c79d43f759abf979a635
         name: start server in background
