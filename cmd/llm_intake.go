@@ -27,26 +27,6 @@ func init() {
 	RootCmd.AddCommand(chatCmd)
 }
 
-// // Function to handle LLM input
-// func handleLLMInput() {
-// 	for input := range llmInputChan {
-// 		// Process the LLM input
-// 		fmt.Println("Processing LLM input:", input)
-// 		response, err := queryOllama(modelFilePath, input, true)
-// 		if err != nil {
-// 			log.Fatalf("Failed to query Ollama: %v", err)
-// 		}
-// 		fmt.Println("Ollama response:", response)
-// 	}
-// }
-
-// // Non-blocking function to send LLM input
-// func sendLLMInput(input string) {
-// 	go func() {
-// 		llmInputChan <- input
-// 	}()
-// }
-
 func queryOllama(model, prompt string, stream bool) (string, error) {
 	payload := map[string]interface{}{
 		"model":  model,
