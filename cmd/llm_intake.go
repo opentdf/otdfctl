@@ -12,79 +12,102 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// Channel for LLM input
-var modelName string // Renamed from modelFilePath to modelName
-
-// New variable for the API URL
+var modelName string
 var apiURL = "http://localhost:11434/api/generate"
 
 func init() {
-	chatCmd.PersistentFlags().StringVar(
-		&modelName,
-		"model",
-		"llama3",
-		"Model name for Ollama",
-	)
+	configureChatCommand()
+}
+
+func configureChatCommand() {
+	chatCmd.PersistentFlags().StringVar(&modelName, "model", "llama3", "Model name for Ollama")
 	RootCmd.AddCommand(chatCmd)
 }
 
-// Define the chat command
 var chatCmd = &cobra.Command{
 	Use:   "chat",
 	Short: "Start a chat session with the model",
 	Long:  `This command starts an interactive chat session with the model.`,
+	Run:   runChatSession,
+}
 
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Starting chat session. Type 'exit' to end.")
-		scanner := bufio.NewScanner(os.Stdin)
-		for {
-			fmt.Print("> ")
-			scanned := scanner.Scan()
-			if !scanned {
-				return
-			}
+func runChatSession(cmd *cobra.Command, args []string) {
+	fmt.Println("Starting chat session. Type 'exit' to end.")
+	userInputLoop()
+}
 
-			line := scanner.Text()
-			if strings.TrimSpace(line) == "exit" {
-				fmt.Println("Ending chat session.")
-				break
-			}
-
-			requestBody, err := json.Marshal(map[string]interface{}{
-				"model":  modelName,
-				"prompt": line,
-				"stream": true,
-			})
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "Error creating request: %v\n", err)
-				continue
-			}
-
-			resp, err := http.Post(apiURL, "application/json", bytes.NewBuffer(requestBody))
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "Error during chat: %v\n", err)
-				continue
-			}
-			defer resp.Body.Close()
-
-			// New: Process each line of the response as it arrives
-			responseScanner := bufio.NewScanner(resp.Body)
-			for responseScanner.Scan() {
-				var result map[string]interface{}
-				if err := json.Unmarshal(responseScanner.Bytes(), &result); err != nil {
-					fmt.Fprintf(os.Stderr, "Error decoding response: %v\n", err)
-					continue
-				}
-
-				// Assuming the response is correctly formatted
-				if response, ok := result["response"]; ok {
-					fmt.Print(response) // Print without newline to continue the sentence
-				}
-				if done, ok := result["done"]; ok && done.(bool) {
-					fmt.Println() // Print a newline when done
-					break
-				}
-			}
+func userInputLoop() {
+	scanner := bufio.NewScanner(os.Stdin)
+	for {
+		fmt.Print("> ")
+		if !scanner.Scan() {
+			return
 		}
-	},
+
+		line := scanner.Text()
+		if strings.TrimSpace(line) == "exit" {
+			fmt.Println("Ending chat session.")
+			break
+		}
+
+		handleUserInput(line)
+	}
+}
+
+func handleUserInput(input string) {
+	requestBody, err := createRequestBody(input)
+	if err != nil {
+		reportError("creating request", err)
+		return
+	}
+
+	resp, err := sendRequest(requestBody)
+	if err != nil {
+		reportError("during chat", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	processResponse(resp)
+}
+
+func createRequestBody(input string) ([]byte, error) {
+	return json.Marshal(map[string]interface{}{
+		"model":  modelName,
+		"prompt": input,
+		"stream": true,
+	})
+}
+
+func sendRequest(body []byte) (*http.Response, error) {
+	return http.Post(apiURL, "application/json", bytes.NewBuffer(body))
+}
+
+func processResponse(resp *http.Response) {
+	responseScanner := bufio.NewScanner(resp.Body)
+	for responseScanner.Scan() {
+		result, err := decodeResponse(responseScanner.Bytes())
+		if err != nil {
+			reportError("decoding response", err)
+			continue
+		}
+
+		if response, ok := result["response"]; ok {
+			fmt.Print(response)
+		}
+		if done, ok := result["done"].(bool); ok && done {
+			fmt.Println()
+			break
+		}
+	}
+}
+
+func decodeResponse(data []byte) (map[string]interface{}, error) {
+	var result map[string]interface{}
+	err := json.Unmarshal(data, &result)
+	return result, err
+}
+
+func reportError(action string, err error) {
+	fmt.Fprintf(os.Stderr, "Error %s: %v\n", action, err)
 }
