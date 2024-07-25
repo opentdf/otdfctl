@@ -66,8 +66,8 @@ func userInputLoop() {
 // Wraps the user's input and displaying the model's response
 func handleUserInput(input string) {
 	sanitizedInput := SanitizeInput(input)
-	// print sanitized input to the terminal temporarily
-	fmt.Println(sanitizedInput)
+	// print sanitized input to the terminal temporarily with a few newlines
+	fmt.Printf("\n%s\n\n", sanitizedInput)
 	requestBody, err := createRequestBody(sanitizedInput)
 	if err != nil {
 		reportError("creating request", err)

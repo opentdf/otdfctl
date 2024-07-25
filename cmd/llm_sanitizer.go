@@ -6,3 +6,5 @@ const sanitizationPrompt = "<<SYS>> Alongside the user's prompt, you may also be
 func SanitizeInput(input string) string {
 	return sanitizationPrompt + input
 }
+
+// TODO: Perhaps integrate FAQs into the prompting system to provide more context to the user. What might be 10-20 questions that are very common, either conceptually or troubleshooting-wise?
