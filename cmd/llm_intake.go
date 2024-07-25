@@ -65,7 +65,10 @@ func userInputLoop() {
 
 // Wraps the user's input and displaying the model's response
 func handleUserInput(input string) {
-	requestBody, err := createRequestBody(input)
+	sanitizedInput := SanitizeInput(input)
+	// print sanitized input to the terminal temporarily
+	fmt.Println(sanitizedInput)
+	requestBody, err := createRequestBody(sanitizedInput)
 	if err != nil {
 		reportError("creating request", err)
 		return
@@ -82,10 +85,10 @@ func handleUserInput(input string) {
 }
 
 // Constructs JSON payload for the model's API
-func createRequestBody(input string) ([]byte, error) {
+func createRequestBody(userInput string) ([]byte, error) {
 	return json.Marshal(map[string]interface{}{
 		"model":  modelName,
-		"prompt": input,
+		"prompt": userInput,
 		"stream": true,
 	})
 }
