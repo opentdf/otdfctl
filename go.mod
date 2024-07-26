@@ -11,7 +11,7 @@ require (
 	github.com/charmbracelet/lipgloss v0.11.0
 	github.com/creasty/defaults v1.7.0
 	github.com/evertras/bubble-table v0.16.1
-	github.com/gabriel-vasile/mimetype v1.4.4
+	github.com/gabriel-vasile/mimetype v1.4.5
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/itchyny/gojq v0.12.16
