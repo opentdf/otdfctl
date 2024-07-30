@@ -2,7 +2,7 @@ bin/.DS_Store
 .DS_Store
 target/
 .vscode/launch.json
-chat_config.json
+# chat_config.json
 otdfctl.yaml
 
 # Ignore the tructl binary

@@ -1,0 +1,5 @@
+{
+    "model": "llama3",
+    "verbose": true,
+    "apiURL": "http://localhost:11434/api/generate"
+  }
