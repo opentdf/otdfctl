@@ -66,7 +66,6 @@ func userInputLoop() {
 // Wraps the user's input and displaying the model's response
 func handleUserInput(input string) {
 	sanitizedInput := SanitizeInput(input)
-	// print sanitized input to the terminal temporarily with a few newlines
 	fmt.Printf("\n%s\n\n", sanitizedInput)
 	requestBody, err := createRequestBody(sanitizedInput)
 	if err != nil {
@@ -74,12 +73,20 @@ func handleUserInput(input string) {
 		return
 	}
 
+	// Start loading animation
+	done := make(chan bool)
+	go loadingAnimation(done)
+
 	resp, err := sendRequest(requestBody)
 	if err != nil {
 		reportError("during chat", err)
+		done <- true
 		return
 	}
 	defer resp.Body.Close()
+
+	// Stop loading animation
+	done <- true
 
 	processResponse(resp)
 }
@@ -143,4 +150,20 @@ func decodeResponse(data []byte) (map[string]interface{}, error) {
 
 func reportError(action string, err error) {
 	fmt.Fprintf(os.Stderr, "Error %s: %v\n", action, err)
+}
+
+func loadingAnimation(done chan bool) {
+	chars := []rune{'|', '/', '-', '\\'}
+	for {
+		select {
+		case <-done:
+			fmt.Print("\r") // Clear the loading animation
+			return
+		default:
+			for _, char := range chars {
+				fmt.Printf("\r%c", char)
+				time.Sleep(100 * time.Millisecond)
+			}
+		}
+	}
 }
