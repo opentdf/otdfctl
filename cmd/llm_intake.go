@@ -13,22 +13,21 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var modelName string
-
-// Endpoint for generating responses from the model
-var apiURL = "http://localhost:11434/api/generate"
-
-// Global variables to track stats
 var responseTime time.Duration
 var totalTokens int
 
 func init() {
+	err := LoadConfig("chat_config.json")
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error loading chat_config: %v\n", err)
+		os.Exit(1)
+	}
 	configureChatCommand()
 }
 
 func configureChatCommand() {
 	// TODO: Make more configurable without losing dynamic selection, keeping it accessible via command line flag.
-	chatCmd.PersistentFlags().StringVar(&modelName, "model", "llama3", "Model name for Ollama")
+	chatCmd.PersistentFlags().StringVar(&chat_config.Model, "model", chat_config.Model, "Model name for Ollama")
 	RootCmd.AddCommand(chatCmd)
 }
 
@@ -73,7 +72,6 @@ func handleUserInput(input string) {
 		return
 	}
 
-	// Start loading animation
 	done := make(chan bool)
 	go loadingAnimation(done)
 
@@ -85,7 +83,6 @@ func handleUserInput(input string) {
 	}
 	defer resp.Body.Close()
 
-	// Stop loading animation
 	done <- true
 
 	processResponse(resp)
@@ -94,16 +91,16 @@ func handleUserInput(input string) {
 // Constructs JSON payload for the model's API
 func createRequestBody(userInput string) ([]byte, error) {
 	return json.Marshal(map[string]interface{}{
-		"model":  modelName,
+		"model":  chat_config.Model,
 		"prompt": userInput,
 		"stream": true,
 	})
 }
 
-// sendRequest sends the constructed request to the model's API.
 func sendRequest(body []byte) (*http.Response, error) {
-	return http.Post(apiURL, "application/json", bytes.NewBuffer(body))
+	return http.Post(chat_config.ApiURL, "application/json", bytes.NewBuffer(body))
 }
+
 func trackStats(response []byte) {
 	responseTokens := len(strings.Fields(string(response)))
 	totalTokens += responseTokens
@@ -141,7 +138,7 @@ func processResponse(resp *http.Response) {
 	printAndResetStats(startTime)
 }
 
-// Decodes a single JSON response from the model's API, could be used to gather statistics too
+// Decodes a single JSON response from the model's API,
 func decodeResponse(data []byte) (map[string]interface{}, error) {
 	var result map[string]interface{}
 	err := json.Unmarshal(data, &result)
