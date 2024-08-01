@@ -5,5 +5,5 @@ output:
 chat:
   model: "llama3"
   apiUrl: "http://localhost:11434/api/generate"
-  logLength: 100
+  logLength: 20
   verbose: true
