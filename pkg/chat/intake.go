@@ -7,7 +7,9 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 	"time"
 )
 
@@ -18,22 +20,30 @@ var totalTokens int
 
 // TODO add timing/performance metrics for _before_ the model begins responding not just when the first response comes back
 
-// TODO: Make additional 'exit criteria' for the chat session, CTRL+C, etc.
 func userInputLoop(logger *Logger) {
 	scanner := bufio.NewScanner(os.Stdin)
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
+
 	for {
 		fmt.Print("> ")
-		if !scanner.Scan() {
+		select {
+		case <-sigChan:
+			fmt.Println("\nReceived interrupt signal. Ending chat session.")
 			return
-		}
+		default:
+			if !scanner.Scan() {
+				return
+			}
 
-		line := scanner.Text()
-		if strings.TrimSpace(line) == "exit" {
-			fmt.Println("Ending chat session.")
-			break
-		}
+			line := scanner.Text()
+			if strings.TrimSpace(line) == "exit" || strings.TrimSpace(line) == "quit" {
+				fmt.Println("Ending chat session.")
+				return
+			}
 
-		handleUserInput(line, logger)
+			handleUserInput(line, logger)
+		}
 	}
 }
 

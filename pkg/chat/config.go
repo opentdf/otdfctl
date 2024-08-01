@@ -58,7 +58,7 @@ func runChatSession(cmd *cobra.Command, args []string) {
 	}
 	defer logger.Close()
 
-	fmt.Println("Starting chat session. Type 'exit' to end.")
+	fmt.Println("Starting chat session. Type 'exit' or 'quit' to end.")
 	userInputLoop(logger)
 }
 
