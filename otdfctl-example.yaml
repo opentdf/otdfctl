@@ -1,3 +1,9 @@
 output:
   # acceptable formats: json or styled
   format: styled
+
+chat:
+  model: "llama3"
+  apiUrl: "http://localhost:11434/api/generate"
+  logLength: 100
+  verbose: true

@@ -14,8 +14,12 @@ import (
 var responseTime time.Duration
 var totalTokens int
 
+// TODO: Handle gracefully a token limit, configure that in settings along with verbosity?
+
+// TODO add timing/performance metrics for _before_ the model begins responding not just when the first response comes back
+
 // TODO: Make additional 'exit criteria' for the chat session, CTRL+C, etc.
-func userInputLoop() {
+func userInputLoop(logger *Logger) {
 	scanner := bufio.NewScanner(os.Stdin)
 	for {
 		fmt.Print("> ")
@@ -29,14 +33,17 @@ func userInputLoop() {
 			break
 		}
 
-		handleUserInput(line)
+		handleUserInput(line, logger)
 	}
 }
 
 // Wraps the user's input and displaying the model's response
-func handleUserInput(input string) {
+func handleUserInput(input string, logger *Logger) {
 	sanitizedInput := SanitizeInput(input)
 	fmt.Printf("\n%s\n\n", sanitizedInput)
+	logger.Log(fmt.Sprintf("User: %s", input))
+	logger.Log(fmt.Sprintf("Sanitized: %s", sanitizedInput))
+
 	requestBody, err := createRequestBody(sanitizedInput)
 	if err != nil {
 		reportError("creating request", err)
@@ -56,20 +63,20 @@ func handleUserInput(input string) {
 
 	done <- true
 
-	processResponse(resp)
+	processResponse(resp, logger)
 }
 
 // Constructs JSON payload for the model's API
 func createRequestBody(userInput string) ([]byte, error) {
 	return json.Marshal(map[string]interface{}{
-		"model":  chatConfig.Model,
+		"model":  chatConfig.Chat.Model,
 		"prompt": userInput,
 		"stream": true,
 	})
 }
 
 func sendRequest(body []byte) (*http.Response, error) {
-	return http.Post(chatConfig.ApiURL, "application/json", bytes.NewBuffer(body))
+	return http.Post(chatConfig.Chat.ApiURL, "application/json", bytes.NewBuffer(body))
 }
 
 func trackStats(response []byte) {
@@ -87,9 +94,13 @@ func printAndResetStats(startTime time.Time) {
 	totalTokens = 0
 }
 
-func processResponse(resp *http.Response) {
+func processResponse(resp *http.Response, logger *Logger) {
 	responseScanner := bufio.NewScanner(resp.Body)
 	startTime := time.Now()
+	var responseBuffer bytes.Buffer
+	var tokenBuffer []string
+	tokenCount := 0
+
 	for responseScanner.Scan() {
 		result, err := decodeResponse(responseScanner.Bytes())
 		if err != nil {
@@ -99,14 +110,37 @@ func processResponse(resp *http.Response) {
 
 		if response, ok := result["response"]; ok {
 			fmt.Print(response)
+			responseBuffer.WriteString(fmt.Sprintf("%s", response))
+			tokenBuffer = append(tokenBuffer, fmt.Sprintf("%s", response))
+			tokenCount++
 		}
 		if done, ok := result["done"].(bool); ok && done {
 			fmt.Println()
 			break
 		}
 		trackStats(responseScanner.Bytes())
+
+		// Log every logLength tokens
+		if tokenCount >= chatConfig.Chat.LogLength {
+			logWithTimestamp(logger, strings.Join(tokenBuffer, ""))
+			tokenBuffer = tokenBuffer[:0] // Reset the buffer
+			tokenCount = 0
+		}
 	}
+
+	// Log any remaining tokens
+	if tokenCount > 0 {
+		logWithTimestamp(logger, strings.Join(tokenBuffer, ""))
+	}
+
 	printAndResetStats(startTime)
+}
+
+func logWithTimestamp(logger *Logger, message string) {
+	// Remove newline characters from the message
+	cleanedMessage := strings.ReplaceAll(message, "\n", "")
+	timestamp := time.Now().Format(time.RFC3339)
+	logger.Log(fmt.Sprintf("%s: %s", timestamp, cleanedMessage))
 }
 
 // Decodes a single JSON response from the model's API,

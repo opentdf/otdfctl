@@ -8,7 +8,8 @@ import (
 )
 
 func init() {
-	err := chat.LoadConfig("chat_config.json")
+	// Load in configs from YAML file
+	err := chat.LoadConfig("otdfctl.yaml")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error loading chat_config: %v\n", err)
 		os.Exit(1)
