@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 
-	// "github.com/opentdf/otdfctl/cmd"
 	"github.com/spf13/cobra"
 )
 
@@ -33,10 +32,9 @@ func LoadConfig(filename string) error {
 	return nil
 }
 
-func configureChatCommand() {
+func ConfigureChatCommand() {
 	// TODO: Make more configurable without losing dynamic selection, keeping it accessible via command line flag.
 	chatCmd.PersistentFlags().StringVar(&chatConfig.Model, "model", chatConfig.Model, "Model name for Ollama")
-	// cmd.RootCmd.AddCommand(chatCmd)
 }
 
 var chatCmd = &cobra.Command{
@@ -52,15 +50,16 @@ func runChatSession(cmd *cobra.Command, args []string) {
 	fmt.Println("Starting chat session. Type 'exit' to end.")
 	userInputLoop()
 }
-func init() {
-	err := LoadConfig("chat_config.json")
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error loading chat_config: %v\n", err)
-		os.Exit(1)
-	}
-	configureChatCommand()
-}
 
 func GetChatCommand() *cobra.Command {
 	return chatCmd
 }
+
+// func init() {
+// 	err := LoadConfig("chat_config.json")
+// 	if err != nil {
+// 		fmt.Fprintf(os.Stderr, "Error loading chat_config: %v\n", err)
+// 		os.Exit(1)
+// 	}
+// 	configureChatCommand()
+// }
