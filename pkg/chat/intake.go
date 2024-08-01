@@ -9,39 +9,10 @@ import (
 	"os"
 	"strings"
 	"time"
-
-	"github.com/spf13/cobra"
 )
 
 var responseTime time.Duration
 var totalTokens int
-
-func init() {
-	err := LoadConfig("chat_config.json")
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error loading chat_config: %v\n", err)
-		os.Exit(1)
-	}
-	configureChatCommand()
-}
-
-func configureChatCommand() {
-	// TODO: Make more configurable without losing dynamic selection, keeping it accessible via command line flag.
-	chatCmd.PersistentFlags().StringVar(&chat_config.Model, "model", chat_config.Model, "Model name for Ollama")
-	RootCmd.AddCommand(chatCmd)
-}
-
-var chatCmd = &cobra.Command{
-	Use:   "chat",
-	Short: "Start a chat session with a LLM helper aid",
-	Long:  `This command starts an interactive chat session with a local LLM to help with setup, debugging, or generic troubleshooting`,
-	Run:   runChatSession,
-}
-
-func runChatSession(cmd *cobra.Command, args []string) {
-	fmt.Println("Starting chat session. Type 'exit' to end.")
-	userInputLoop()
-}
 
 // TODO: Make additional 'exit criteria' for the chat session, CTRL+C, etc.
 func userInputLoop() {
@@ -91,14 +62,14 @@ func handleUserInput(input string) {
 // Constructs JSON payload for the model's API
 func createRequestBody(userInput string) ([]byte, error) {
 	return json.Marshal(map[string]interface{}{
-		"model":  chat_config.Model,
+		"model":  chatConfig.Model,
 		"prompt": userInput,
 		"stream": true,
 	})
 }
 
 func sendRequest(body []byte) (*http.Response, error) {
-	return http.Post(chat_config.ApiURL, "application/json", bytes.NewBuffer(body))
+	return http.Post(chatConfig.ApiURL, "application/json", bytes.NewBuffer(body))
 }
 
 func trackStats(response []byte) {
