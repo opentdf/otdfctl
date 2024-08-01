@@ -3,7 +3,7 @@ output:
   format: styled
 
 chat:
-  model: "llama3"
+  model: "llama3.1:8b-instruct-q5_K_S"
   apiUrl: "http://localhost:11434/api/generate"
   logLength: 20
   verbose: true

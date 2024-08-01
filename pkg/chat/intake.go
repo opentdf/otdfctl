@@ -20,6 +20,8 @@ var totalTokens int
 
 // TODO add timing/performance metrics for _before_ the model begins responding not just when the first response comes back
 
+// TODO: use verbosity flag to toggle on/off setup/takedown and statistics
+
 func userInputLoop(logger *Logger) {
 	scanner := bufio.NewScanner(os.Stdin)
 	sigChan := make(chan os.Signal, 1)

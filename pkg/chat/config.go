@@ -51,6 +51,13 @@ func ConfigureChatCommand() {
 // TODO: add a 'one-off' --ask flag to allow for a single question to be asked and answered, DRYing existing chat code
 
 func runChatSession(cmd *cobra.Command, args []string) {
+	// Call the Setup function before starting the chat session
+	configFile := "otdfctl.yaml"
+	err := Setup(configFile)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Setup failed: %v\n", err)
+		return
+	}
 	logger, err := NewLogger()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error initializing logger: %v\n", err)
