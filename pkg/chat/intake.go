@@ -13,10 +13,6 @@ import (
 	"time"
 )
 
-var responseTime time.Duration
-var totalTokens int
-var timeBeforeFirstToken time.Duration
-
 // What are other invocation methods for the chat model? --ask? --file? --batch? --interactive?
 
 // TODO add timing/performance metrics for _before_ the model begins responding not just when the first response comes back
@@ -90,25 +86,6 @@ func createRequestBody(userInput string) ([]byte, error) {
 
 func sendRequest(body []byte) (*http.Response, error) {
 	return http.Post(chatConfig.Chat.ApiURL, "application/json", bytes.NewBuffer(body))
-}
-
-func trackStats(response []byte) {
-	responseTokens := len(strings.Fields(string(response)))
-	totalTokens += responseTokens
-}
-
-func printAndResetStats(startTime time.Time) {
-	responseTime = time.Since(startTime)
-	if chatConfig.Chat.Verbose {
-		fmt.Printf("\nTotal Response Time: %v\n", responseTime)
-		fmt.Printf("Time Before First Token: %v\n", timeBeforeFirstToken)
-		fmt.Printf("Total Tokens: %d\n", totalTokens)
-	}
-
-	// Reset stats
-	responseTime = 0
-	totalTokens = 0
-	timeBeforeFirstToken = 0
 }
 
 func processResponse(resp *http.Response, logger *Logger, startTime time.Time) {
