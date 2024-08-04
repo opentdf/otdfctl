@@ -15,6 +15,7 @@ import (
 
 var responseTime time.Duration
 var totalTokens int
+var timeBeforeFirstToken time.Duration
 
 // What are other invocation methods for the chat model? --ask? --file? --batch? --interactive?
 
@@ -64,6 +65,7 @@ func handleUserInput(input string, logger *Logger) {
 	done := make(chan bool)
 	go loadingAnimation(done)
 
+	startTime := time.Now() // Start timing before sending the request
 	resp, err := sendRequest(requestBody)
 	if err != nil {
 		reportError("during chat", err)
@@ -74,7 +76,7 @@ func handleUserInput(input string, logger *Logger) {
 
 	done <- true
 
-	processResponse(resp, logger)
+	processResponse(resp, logger, startTime)
 }
 
 func createRequestBody(userInput string) ([]byte, error) {
@@ -99,22 +101,29 @@ func printAndResetStats(startTime time.Time) {
 	responseTime = time.Since(startTime)
 	if chatConfig.Chat.Verbose {
 		fmt.Printf("\nTotal Response Time: %v\n", responseTime)
+		fmt.Printf("Time Before First Token: %v\n", timeBeforeFirstToken)
 		fmt.Printf("Total Tokens: %d\n", totalTokens)
 	}
 
 	// Reset stats
 	responseTime = 0
 	totalTokens = 0
+	timeBeforeFirstToken = 0
 }
 
-func processResponse(resp *http.Response, logger *Logger) {
+func processResponse(resp *http.Response, logger *Logger, startTime time.Time) {
 	responseScanner := bufio.NewScanner(resp.Body)
-	startTime := time.Now()
 	var responseBuffer bytes.Buffer
 	var tokenBuffer []string
 	tokenCount := 0
+	firstTokenReceived := false
 
 	for responseScanner.Scan() {
+		if !firstTokenReceived {
+			timeBeforeFirstToken = time.Since(startTime)
+			firstTokenReceived = true
+		}
+
 		result, err := decodeResponse(responseScanner.Bytes())
 		if err != nil {
 			reportError("decoding response", err)
