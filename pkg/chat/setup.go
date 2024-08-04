@@ -31,7 +31,7 @@ func CheckConfigFile(filename string) error {
 	return nil
 }
 
-// CheckModelRunning tests if the local model is running.
+// CheckModelRunning tests if the local model is running
 func CheckModelRunning(apiURL string) error {
 	fmt.Print("Testing if local model is running... ")
 	//remove the /api/generate from the URL so
@@ -47,16 +47,18 @@ func CheckModelRunning(apiURL string) error {
 
 // DisplayConfigSettings prints the current configuration settings in a table format.
 func DisplayConfigSettings(config Config) {
-	fmt.Println("Current configuration settings:")
-	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-	fmt.Fprintln(w, "Setting\tValue")
-	fmt.Fprintln(w, "-------\t-----")
-	fmt.Fprintf(w, "Model\t%s\n", config.Chat.Model)
-	fmt.Fprintf(w, "API URL\t%s\n", config.Chat.ApiURL)
-	fmt.Fprintf(w, "Log Length\t%d\n", config.Chat.LogLength)
-	fmt.Fprintf(w, "Verbose\t%t\n", config.Chat.Verbose)
-	fmt.Fprintf(w, "Token Limit\t%d\n", config.Chat.TokenLimit)
-	w.Flush()
+	if chatConfig.Chat.Verbose {
+		fmt.Println("Current configuration settings:")
+		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+		fmt.Fprintln(w, "Setting\tValue")
+		fmt.Fprintln(w, "-------\t-----")
+		fmt.Fprintf(w, "Model\t%s\n", config.Chat.Model)
+		fmt.Fprintf(w, "API URL\t%s\n", config.Chat.ApiURL)
+		fmt.Fprintf(w, "Log Length\t%d\n", config.Chat.LogLength)
+		fmt.Fprintf(w, "Verbose\t%t\n", config.Chat.Verbose)
+		fmt.Fprintf(w, "Token Limit\t%d\n", config.Chat.TokenLimit)
+		w.Flush()
+	}
 }
 
 // Setup initializes the chat model by checking the configuration file and model status.

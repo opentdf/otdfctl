@@ -16,13 +16,9 @@ import (
 var responseTime time.Duration
 var totalTokens int
 
-// TODO: Handle gracefully a token limit, configure that in settings along with verbosity?
-
 // What are other invocation methods for the chat model? --ask? --file? --batch? --interactive?
 
 // TODO add timing/performance metrics for _before_ the model begins responding not just when the first response comes back
-
-// TODO: use verbosity flag to toggle on/off setup/takedown and statistics
 
 // TODO: add a 'one-off' --ask flag to allow for a single question to be asked and answered, DRYing existing chat code
 
@@ -53,7 +49,6 @@ func userInputLoop(logger *Logger) {
 	}
 }
 
-// Wraps the user's input and displaying the model's response
 func handleUserInput(input string, logger *Logger) {
 	sanitizedInput := SanitizeInput(input)
 	fmt.Printf("\n%s\n\n", sanitizedInput)
@@ -82,7 +77,6 @@ func handleUserInput(input string, logger *Logger) {
 	processResponse(resp, logger)
 }
 
-// Constructs JSON payload for the model's API
 func createRequestBody(userInput string) ([]byte, error) {
 	return json.Marshal(map[string]interface{}{
 		"model":      chatConfig.Chat.Model,
@@ -103,8 +97,10 @@ func trackStats(response []byte) {
 
 func printAndResetStats(startTime time.Time) {
 	responseTime = time.Since(startTime)
-	fmt.Printf("\nTotal Response Time: %v\n", responseTime)
-	fmt.Printf("Total Tokens: %d\n", totalTokens)
+	if chatConfig.Chat.Verbose {
+		fmt.Printf("\nTotal Response Time: %v\n", responseTime)
+		fmt.Printf("Total Tokens: %d\n", totalTokens)
+	}
 
 	// Reset stats
 	responseTime = 0
@@ -160,7 +156,6 @@ func logWithTimestamp(logger *Logger, message string) {
 	logger.Log(fmt.Sprintf("%s: %s", timestamp, cleanedMessage))
 }
 
-// Decodes a single JSON response from the model's API,
 func decodeResponse(data []byte) (map[string]interface{}, error) {
 	var result map[string]interface{}
 	err := json.Unmarshal(data, &result)
