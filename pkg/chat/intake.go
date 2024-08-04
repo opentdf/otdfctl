@@ -13,8 +13,6 @@ import (
 	"time"
 )
 
-// TODO: What are other invocation methods for the chat model? --ask?
-
 func userInputLoop(logger *Logger) {
 	scanner := bufio.NewScanner(os.Stdin)
 	sigChan := make(chan os.Signal, 1)

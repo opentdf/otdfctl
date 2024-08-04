@@ -34,7 +34,7 @@ func CheckConfigFile(filename string) error {
 // CheckModelRunning tests if the local model is running
 func CheckModelRunning(apiURL string) error {
 	fmt.Print("Testing if local model is running... ")
-	//remove the /api/generate from the URL so
+	//remove the /api/generate from the URL to check if the model is running
 	apiURL = apiURL[:len(apiURL)-12]
 	resp, err := http.Get(apiURL)
 	if err != nil || resp.StatusCode != 200 {
