@@ -10,10 +10,11 @@ import (
 
 // Configs are loaded from a otdfctl.yaml file in home directory where defaults are provided
 type ChatConfig struct {
-	Model     string `yaml:"model" default:"llama3"`
-	ApiURL    string `yaml:"apiUrl" default:"http://localhost:11434/api/generate"`
-	LogLength int    `yaml:"logLength" default:"100"`
-	Verbose   bool   `yaml:"verbose" default:"true"`
+	Model      string `yaml:"model" default:"llama3"`
+	ApiURL     string `yaml:"apiUrl" default:"http://localhost:11434/api/generate"`
+	LogLength  int    `yaml:"logLength" default:"100"`
+	Verbose    bool   `yaml:"verbose" default:"true"`
+	TokenLimit int    `yaml:"tokenLimit" default:"1000"`
 }
 
 type Output struct {
@@ -47,8 +48,6 @@ func ConfigureChatCommand() {
 	// TODO: Make more configurable without losing dynamic selection, keeping it accessible via command line flag.
 	chatCmd.PersistentFlags().StringVar(&chatConfig.Chat.Model, "model", chatConfig.Chat.Model, "Model name for Ollama")
 }
-
-// TODO: add a 'one-off' --ask flag to allow for a single question to be asked and answered, DRYing existing chat code
 
 func runChatSession(cmd *cobra.Command, args []string) {
 	// Call the Setup function before starting the chat session

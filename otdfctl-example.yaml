@@ -7,3 +7,4 @@ chat:
   apiUrl: "http://localhost:11434/api/generate"
   logLength: 20
   verbose: true
+  tokenLimit: 1000

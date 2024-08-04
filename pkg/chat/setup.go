@@ -55,6 +55,7 @@ func DisplayConfigSettings(config Config) {
 	fmt.Fprintf(w, "API URL\t%s\n", config.Chat.ApiURL)
 	fmt.Fprintf(w, "Log Length\t%d\n", config.Chat.LogLength)
 	fmt.Fprintf(w, "Verbose\t%t\n", config.Chat.Verbose)
+	fmt.Fprintf(w, "Token Limit\t%d\n", config.Chat.TokenLimit)
 	w.Flush()
 }
 
