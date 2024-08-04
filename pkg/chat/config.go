@@ -27,6 +27,7 @@ type Config struct {
 }
 
 var chatConfig Config
+var ask string
 
 func LoadConfig(filename string) error {
 	file, err := os.Open(filename)
@@ -45,8 +46,8 @@ func LoadConfig(filename string) error {
 }
 
 func ConfigureChatCommand() {
-	// TODO: Make more configurable without losing dynamic selection, keeping it accessible via command line flag.
 	chatCmd.PersistentFlags().StringVar(&chatConfig.Chat.Model, "model", chatConfig.Chat.Model, "Model name for Ollama")
+	chatCmd.PersistentFlags().StringVar(&ask, "ask", "", "Ask a one-off question without entering the chat session") // --ask invocation: ./otdfctl chat --ask "[$question_here]"
 }
 
 func runChatSession(cmd *cobra.Command, args []string) {
@@ -63,6 +64,11 @@ func runChatSession(cmd *cobra.Command, args []string) {
 		return
 	}
 	defer logger.Close()
+
+	if ask != "" {
+		handleUserInput(ask, logger)
+		return
+	}
 
 	fmt.Println("Starting chat session. Type 'exit' or 'quit' to end.")
 	userInputLoop(logger)

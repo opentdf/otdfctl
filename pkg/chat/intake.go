@@ -13,11 +13,7 @@ import (
 	"time"
 )
 
-// What are other invocation methods for the chat model? --ask? --file? --batch? --interactive?
-
-// TODO add timing/performance metrics for _before_ the model begins responding not just when the first response comes back
-
-// TODO: add a 'one-off' --ask flag to allow for a single question to be asked and answered, DRYing existing chat code
+// TODO: What are other invocation methods for the chat model? --ask?
 
 func userInputLoop(logger *Logger) {
 	scanner := bufio.NewScanner(os.Stdin)
