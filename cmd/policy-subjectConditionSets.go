@@ -287,8 +287,9 @@ func init() {
 		getDoc.GetDocFlag("id").Description,
 	)
 
-	listDoc := man.Docs.GetDoc("policy/subject-condition-sets/list")
-	listDoc.Run = policy_listSubjectConditionSets
+	listDoc := man.Docs.GetCommand("policy/subject-condition-sets/list",
+		man.WithRun(policy_listSubjectConditionSets),
+	)
 
 	updateDoc := man.Docs.GetCommand("policy/subject-condition-sets/update",
 		man.WithRun(policy_updateSubjectConditionSet),
@@ -322,6 +323,7 @@ func init() {
 		man.WithSubcommands(
 			createDoc,
 			getDoc,
+			listDoc,
 			updateDoc,
 			deleteDoc,
 		),
