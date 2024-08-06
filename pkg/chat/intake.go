@@ -54,7 +54,6 @@ func HandleUserInput(input string, logger *Logger) {
 	keywordChan := make(chan []string)
 	apiResponseChan := make(chan *http.Response)
 	errorChan := make(chan error)
-	clearChan := make(chan bool)
 	// Start keyword extraction in a goroutine
 	go func() {
 		keywords, err := ExtractKeywordsFromLLM(sanitizedInput)
@@ -93,18 +92,19 @@ func HandleUserInput(input string, logger *Logger) {
 		select {
 		case kw := <-keywordChan:
 			keywords = kw
-			done <- true // Stop the loading animation
-			<-clearChan  // Wait for the animation to clear
+			// done <- true // Stop the loading animation
+			done <- true                       // Stop the loading animation
+			time.Sleep(100 * time.Millisecond) // Small delay to ensure the line is cleared
 			fmt.Println()
 			fmt.Printf("\rKeywords: [%s]\n", strings.Join(keywords, ", "))
 			fmt.Println()
+			// done <- true // Stop the loading animation
 			logger.Log(fmt.Sprintf("Keywords: [%s]", strings.Join(keywords, ", ")))
 		case r := <-apiResponseChan:
 			resp = r
 		case err := <-errorChan:
 			ReportError("during chat", err)
 			done <- true
-			<-clearChan
 			return
 		}
 	}
@@ -198,7 +198,8 @@ func LoadingAnimation(done chan bool) {
 	for {
 		select {
 		case <-done:
-			fmt.Print("\r") // Clear the loading animation
+			fmt.Print("\r \r")                 // Clear the loading animation
+			time.Sleep(100 * time.Millisecond) // Small delay to ensure the line is cleared
 			return
 		default:
 			for _, char := range chars {
