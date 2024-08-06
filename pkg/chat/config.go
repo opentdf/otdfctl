@@ -54,6 +54,9 @@ func ConfigureChatCommand() {
 func RunChatSession(cmd *cobra.Command, args []string) {
 	// Call the Setup function before starting the chat session
 	configFile := "otdfctl.yaml"
+	if _, err := os.Stat(configFile); os.IsNotExist(err) {
+		configFile = "otdfctl-example.yaml"
+	}
 	err := Setup(configFile)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Setup failed: %v\n", err)

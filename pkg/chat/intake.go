@@ -54,7 +54,7 @@ func HandleUserInput(input string, logger *Logger) {
 	keywordChan := make(chan []string)
 	apiResponseChan := make(chan *http.Response)
 	errorChan := make(chan error)
-
+	clearChan := make(chan bool)
 	// Start keyword extraction in a goroutine
 	go func() {
 		keywords, err := ExtractKeywordsFromLLM(sanitizedInput)
@@ -94,6 +94,7 @@ func HandleUserInput(input string, logger *Logger) {
 		case kw := <-keywordChan:
 			keywords = kw
 			done <- true // Stop the loading animation
+			<-clearChan  // Wait for the animation to clear
 			fmt.Println()
 			fmt.Printf("\rKeywords: [%s]\n", strings.Join(keywords, ", "))
 			fmt.Println()
@@ -103,6 +104,7 @@ func HandleUserInput(input string, logger *Logger) {
 		case err := <-errorChan:
 			ReportError("during chat", err)
 			done <- true
+			<-clearChan
 			return
 		}
 	}
