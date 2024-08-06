@@ -74,7 +74,7 @@ func DisplayConfigSettings(config Config) {
 		fmt.Fprintf(w, "Log Length\t%d\n", config.Chat.LogLength)
 		fmt.Fprintf(w, "Verbose\t%t\n", config.Chat.Verbose)
 		fmt.Fprintf(w, "Token Limit\t%d\n", config.Chat.TokenLimit)
-		fmt.Fprintf(w, "Use GPU\t%t\n", config.Chat.UseGPU)
+		fmt.Fprintf(w, "Use GPU\t%d\n", config.Chat.NumGPU)
 		w.Flush()
 	}
 }

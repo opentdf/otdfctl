@@ -8,4 +8,4 @@ chat:
   logLength: 20
   verbose: true
   tokenLimit: 1000
-  useGPU: true
+  numGPU: 1
