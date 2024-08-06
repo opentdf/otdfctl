@@ -1,5 +1,5 @@
 ---
-title: Subject mapping condition sets
+title: Subject condition sets
 command:
   name: subject-condition-sets
 ---
