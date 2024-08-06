@@ -11,10 +11,15 @@ import (
 
 // CheckConfigFile checks if the YAML configuration file is present and valid.
 func CheckConfigFile(filename string) error {
-	fmt.Print("Checking YAML configuration file... ")
+	if chatConfig.Chat.Verbose {
+		fmt.Println("Checking YAML configuration file...")
+	}
+
 	file, err := os.Open(filename)
 	if err != nil {
-		fmt.Println("FAILED")
+		if chatConfig.Chat.Verbose {
+			fmt.Println("FAILED")
+		}
 		return fmt.Errorf("could not open config file: %v", err)
 	}
 	defer file.Close()
@@ -23,25 +28,37 @@ func CheckConfigFile(filename string) error {
 	var config Config
 	err = decoder.Decode(&config)
 	if err != nil {
-		fmt.Println("FAILED")
+		if chatConfig.Chat.Verbose {
+			fmt.Println("FAILED")
+		}
 		return fmt.Errorf("could not decode config YAML: %v", err)
 	}
 
-	fmt.Println("PASSED")
+	if chatConfig.Chat.Verbose {
+		fmt.Println("PASSED")
+	}
 	return nil
 }
 
 // CheckModelRunning tests if the local model is running
 func CheckModelRunning(apiURL string) error {
-	fmt.Print("Testing if local model is running... ")
-	//remove the /api/generate from the URL to check if the model is running
+	if chatConfig.Chat.Verbose {
+		fmt.Println("Testing if local model is running...")
+	}
+
+	// Remove the /api/generate from the URL to check if the model is running
 	apiURL = apiURL[:len(apiURL)-12]
 	resp, err := http.Get(apiURL)
 	if err != nil || resp.StatusCode != 200 {
-		fmt.Println("FAILED")
+		if chatConfig.Chat.Verbose {
+			fmt.Println("FAILED")
+		}
 		return fmt.Errorf("local model is not running or reachable at %s", apiURL)
 	}
-	fmt.Println("PASSED")
+
+	if chatConfig.Chat.Verbose {
+		fmt.Println("PASSED")
+	}
 	return nil
 }
 

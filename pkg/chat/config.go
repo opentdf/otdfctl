@@ -51,7 +51,7 @@ func ConfigureChatCommand() {
 	chatCmd.PersistentFlags().StringVar(&ask, "ask", "", "Ask a one-off question without entering the chat session") // --ask invocation: ./otdfctl chat --ask "[$question_here]"
 }
 
-func runChatSession(cmd *cobra.Command, args []string) {
+func RunChatSession(cmd *cobra.Command, args []string) {
 	// Call the Setup function before starting the chat session
 	configFile := "otdfctl.yaml"
 	err := Setup(configFile)
@@ -67,19 +67,19 @@ func runChatSession(cmd *cobra.Command, args []string) {
 	defer logger.Close()
 
 	if ask != "" {
-		handleUserInput(ask, logger)
+		HandleUserInput(ask, logger)
 		return
 	}
 
 	fmt.Println("Starting chat session. Type 'exit' or 'quit' to end.")
-	userInputLoop(logger)
+	UserInputLoop(logger)
 }
 
 var chatCmd = &cobra.Command{
 	Use:   "chat",
 	Short: "Start a chat session with a LLM helper aid",
 	Long:  `This command starts an interactive chat session with a local LLM to help with setup, debugging, or generic troubleshooting`,
-	Run:   runChatSession,
+	Run:   RunChatSession,
 }
 
 func GetChatCommand() *cobra.Command {

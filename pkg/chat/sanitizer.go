@@ -11,13 +11,13 @@ import (
 // const sanitizationPrompt = "<<SYS>> Alongside the user's prompt, you may also be provided snippets of our documentation to help guide your response. The included documentation is not exhaustive, but will be helpful in contextualizing the needs of the user to the nuances of the codebase and platform.  You are a helpful, respectful and honest assistant for a data security company called Virtru. Your goal is to help users of all kinds use our products and understand how to get the most out of our products via explaining concepts and troubleshooting potential solutions. Always answer as helpfully as possible, while being safe. Your answers should not include any harmful, unethical, racist, sexist, toxic, dangerous, or illegal content. Please ensure that your responses are socially unbiased and positive in nature. If a question does not make any sense, or is not factually coherent, explain why instead of answering something not correct. If you don't know the answer to a question, please don't share false information. The User input is as follows: <</SYS>>"
 const sanitizationPrompt = "Be as brief as possible with your response to the following query from the user: "
 
-// SanitizeInput appends the sanitization prompt to the user's input.
+// sanitizeInput appends the sanitization prompt to the user's input.
 func SanitizeInput(input string) string {
 	return sanitizationPrompt + input
 }
 
-// extractKeywordsFromLLM makes the API call to the LLM and parses the response.
-func extractKeywordsFromLLM(input string) ([]string, error) {
+// ExtractKeywordsFromLLM makes the API call to the LLM and parses the response.
+func ExtractKeywordsFromLLM(input string) ([]string, error) {
 	requestBody, err := json.Marshal(map[string]interface{}{
 		"model":  chatConfig.Chat.Model,
 		"prompt": fmt.Sprintf("From the following prompt, extract between 1 and 8 keywords/acronyms that are most relevant to the list of keywords provided: %v. Prompt: %s", keywords, input),
@@ -57,12 +57,12 @@ func extractKeywordsFromLLM(input string) ([]string, error) {
 		return nil, fmt.Errorf("no keywords found in response")
 	}
 	//format keywords and return
-	cleanedKeywords := formatKeywords(keywords)
+	cleanedKeywords := FormatKeywords(keywords)
 	return strings.Split(cleanedKeywords, ", "), nil
 }
 
-// formatKeywords formats the keywords as specified
-func formatKeywords(keywords []string) string {
+// FormatKeywords formats the keywords as specified
+func FormatKeywords(keywords []string) string {
 	var formatted []string
 	for _, keyword := range keywords {
 		keyword = strings.ReplaceAll(keyword, "**", "")
@@ -72,14 +72,14 @@ func formatKeywords(keywords []string) string {
 	return strings.Join(formatted, ", ")
 }
 
-// extractKeywords is a wrapper around extractKeywordsFromLLM to handle errors gracefully.
-func extractKeywords(input string) string {
-	keywords, err := extractKeywordsFromLLM(input)
+// extractKeywords is a wrapper around ExtractKeywordsFromLLM to handle errors gracefully.
+func ExtractKeywords(input string) string {
+	keywords, err := ExtractKeywordsFromLLM(input)
 	if err != nil {
 		// Fallback to dummy implementation in case of error
 		return "OpenTDF, otdfctl, troubleshooting"
 	}
-	return formatKeywords(keywords)
+	return FormatKeywords(keywords)
 }
 
 // Keywords to pull from
