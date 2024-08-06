@@ -46,26 +46,62 @@ func handleUserInput(input string, logger *Logger) {
 	logger.Log(fmt.Sprintf("User: %s", input))
 	logger.Log(fmt.Sprintf("Sanitized: %s", sanitizedInput))
 
-	requestBody, err := createRequestBody(sanitizedInput)
-	if err != nil {
-		reportError("creating request", err)
-		return
-	}
+	// Channels to receive results
+	keywordChan := make(chan []string)
+	apiResponseChan := make(chan *http.Response)
+	errorChan := make(chan error)
+
+	// Start keyword extraction in a goroutine
+	go func() {
+		keywords, err := extractKeywordsFromLLM(sanitizedInput)
+		if err != nil {
+			errorChan <- err
+			return
+		}
+		keywordChan <- keywords
+	}()
+
+	// Start main API call in a goroutine
+	go func() {
+		requestBody, err := createRequestBody(sanitizedInput)
+		if err != nil {
+			errorChan <- err
+			return
+		}
+
+		resp, err := sendRequest(requestBody)
+		if err != nil {
+			errorChan <- err
+			return
+		}
+		apiResponseChan <- resp
+	}()
 
 	done := make(chan bool)
 	go loadingAnimation(done)
 
 	startTime := time.Now() // Start timing before sending the request
-	resp, err := sendRequest(requestBody)
-	if err != nil {
-		reportError("during chat", err)
-		done <- true
-		return
+
+	// Wait for both results
+	var keywords []string
+	var resp *http.Response
+	for i := 0; i < 2; i++ {
+		select {
+		case kw := <-keywordChan:
+			keywords = kw
+			done <- true // Stop the loading animation
+			fmt.Printf("\rKeywords: [%s]\n", strings.Join(keywords, ", "))
+			logger.Log(fmt.Sprintf("Keywords: [%s]", strings.Join(keywords, ", ")))
+		case r := <-apiResponseChan:
+			resp = r
+		case err := <-errorChan:
+			reportError("during chat", err)
+			done <- true
+			return
+		}
 	}
+
 	defer resp.Body.Close()
-
-	done <- true
-
 	processResponse(resp, logger, startTime)
 }
 
