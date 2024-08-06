@@ -4,6 +4,7 @@ target/
 .vscode/launch.json
 otdfctl.yaml
 pkg/chat/log/*
+pkg/chat/log/temp/*
 
 # Ignore the tructl binary
 otdfctl
