@@ -277,7 +277,7 @@ func init() {
 	)
 
 	doc := man.Docs.GetCommand("policy/kas-registry",
-		man.WithSubcommands(getDoc, listDoc, createDoc, updateDoc, deleteDoc),
+		man.WithSubcommands(createDoc, getDoc, listDoc, updateDoc, deleteDoc),
 	)
 	policy_kasRegistryCmd = &doc.Command
 	policyCmd.AddCommand(policy_kasRegistryCmd)
