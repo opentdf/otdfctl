@@ -75,6 +75,9 @@ func createRequestBody(userInput string) ([]byte, error) {
 		"prompt":     userInput,
 		"stream":     true,
 		"tokenLimit": chatConfig.Chat.TokenLimit,
+		"options": map[string]interface{}{
+			"useGpu": true,
+		},
 	})
 }
 

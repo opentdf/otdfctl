@@ -15,6 +15,7 @@ type ChatConfig struct {
 	LogLength  int    `yaml:"logLength" default:"100"`
 	Verbose    bool   `yaml:"verbose" default:"true"`
 	TokenLimit int    `yaml:"tokenLimit" default:"1000"`
+	UseGPU     bool   `yaml:"useGPU" default:"true"`
 }
 
 type Output struct {
