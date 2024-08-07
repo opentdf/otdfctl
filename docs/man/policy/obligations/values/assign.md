@@ -1,5 +1,5 @@
 ---
-title: Assign an obligation to an attribute value
+title: Assign an obligation value to an attribute value
 command:
   name: assign
   flags:

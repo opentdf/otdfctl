@@ -1,11 +1,11 @@
 ---
-title: Delete an obligation
+title: Delete an obligation value
 command:
   name: delete
   flags:
     - name: id
       shorthand: i
-      description: ID of the obligation
+      description: ID of the obligation value
       required: true
 ---
 

@@ -47,3 +47,10 @@ Alice can create the obligation without associating it to an attribute value:
 `policy obligations create --name drm --value watermarking`
 
 Without the derived assocation, the obligation can be added on TDF encrypt as any other attribute FQN. There is nothing stopping a PEP or admin from utilizing obligations in both manners in tandem as appropriate.
+
+**Evaluation**
+
+In either scenario above, resolution of obligation satisfaction is similar to an `anyOf` rule on an attribute definition. If the obligation for `drm` contains
+several values, and only one of them is `watermark`, a PEP or environmental entity that successfully meets the admin-defined obligation conditions
+for specifically that obligation or any of the other child values of the `drm` obligation parent for the data (derived via attributes or on the TDF)
+would result in a permitted access decision.

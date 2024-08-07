@@ -1,5 +1,5 @@
 ---
-title: Unassign an obligation from an attribute value
+title: Unassign an obligation value from an attribute value
 command:
   name: unassign
   flags:

@@ -1,5 +1,5 @@
 ---
-title: Create an obligation
+title: Create an obligation value
 command:
   name: create
   flags:

@@ -1,11 +1,11 @@
 ---
-title: Update an attribute
+title: Update an obligation value
 command:
   name: update
   flags:
     - name: id
       shorthand: i
-      description: ID of the attribute
+      description: ID of the obligation value
       required: true
     - name: label
       description: "Optional metadata 'labels' in the format: key=value"
