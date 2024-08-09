@@ -3,6 +3,12 @@ title: Update a grant
 
 command:
   name: update
+  aliases:
+    - u
+    - create
+    - add
+    - new
+    - upsert
   description: Update a grant
   flags:
     - name: attribute-id

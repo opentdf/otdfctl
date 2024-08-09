@@ -2,6 +2,10 @@
 title: Create an attribute namespace
 command:
   name: create
+  aliases:
+    - c
+    - add
+    - new
   flags:
     - name: name
       shorthand: n

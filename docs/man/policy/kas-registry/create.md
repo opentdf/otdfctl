@@ -2,6 +2,10 @@
 title: Create a Key Access Server registration
 command:
   name: create
+  aliases:
+    - c
+    - add
+    - new
   flags:
     - name: uri
       shorthand: u

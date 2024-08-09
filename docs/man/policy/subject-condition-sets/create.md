@@ -3,6 +3,10 @@ title: Create a Subject Condition Set
 
 command:
   name: create
+  aliases:
+    - c
+    - add
+    - new
   flags:
     - name: subject-sets
       description: A JSON array of subject sets, containing a list of condition groups, each with one or more conditions
