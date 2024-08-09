@@ -4,6 +4,7 @@ command:
   name: resource-mappings
   aliases:
     - resm
+    - remap
     - resource-mapping
 ---
 
