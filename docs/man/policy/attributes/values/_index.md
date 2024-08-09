@@ -3,6 +3,7 @@ title: Manage attribute values
 command:
   name: values
   aliases:
+    - val
     - value
 ---
 

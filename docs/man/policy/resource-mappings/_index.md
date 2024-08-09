@@ -2,6 +2,9 @@
 title: Manage resource mappings
 command:
   name: resource-mappings
+  aliases:
+    - resm
+    - resource-mapping
 ---
 
 # Manage Resource Mappings

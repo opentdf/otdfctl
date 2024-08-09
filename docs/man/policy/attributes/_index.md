@@ -2,6 +2,9 @@
 title: Manage attributes
 command:
   name: attributes
+  aliases:
+    - attr
+    - attribute
 ---
 
 Commands to manage attributes within the platform.
