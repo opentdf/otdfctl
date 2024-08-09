@@ -27,6 +27,11 @@ func policy_assignKasGrant(cmd *cobra.Command, args []string) {
 		err    error
 	)
 
+	kas, err := h.GetKasRegistryEntry(kasID)
+	if err != nil || kas == nil {
+		cli.ExitWithError("Failed to get registered KAS", err)
+	}
+
 	if attrID != "" {
 		res, err = h.UpdateKasGrantForAttribute(attrID, kasID)
 		if err != nil {
@@ -43,7 +48,7 @@ func policy_assignKasGrant(cmd *cobra.Command, args []string) {
 		header = "Value ID"
 	}
 
-	t := cli.NewTabular([]string{header, id}, []string{"KAS ID", kasID})
+	t := cli.NewTabular([]string{header, id}, []string{"KAS ID", kasID}, []string{"Granted KAS URI", kas.GetUri()})
 	HandleSuccess(cmd, id, t, res)
 }
 
@@ -104,7 +109,7 @@ func policy_removeKasGrant(cmd *cobra.Command, args []string) {
 
 	t := cli.NewTabular(rowID, rowFQN,
 		[]string{"KAS ID", kasID},
-		[]string{"Removed Grant for KAS URI", kasURI},
+		[]string{"Removed Granted KAS URI", kasURI},
 	)
 	HandleSuccess(cmd, "", t, res)
 }
