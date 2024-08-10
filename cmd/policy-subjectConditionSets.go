@@ -181,16 +181,36 @@ func policy_updateSubjectConditionSet(cmd *cobra.Command, args []string) {
 	id := flagHelper.GetRequiredString("id")
 	metadataLabels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
 	ssFlagJSON := flagHelper.GetOptionalString("subject-sets")
+	ssFileJSON := flagHelper.GetOptionalString("subject-sets-file-json")
 
-	var (
-		ss  []*policy.SubjectSet
-		err error
-	)
-	if ssFlagJSON != "" {
-		ss, err = unmarshalSubjectSetsProto([]byte(ssFlagJSON))
+	var ssBytes []byte
+	// validate no flag conflicts
+	if ssFileJSON == "" && ssFlagJSON == "" {
+		cli.ExitWithError("At least one subject set must be provided ('--subject-sets', '--subject-sets-file-json')", nil)
+	} else if ssFileJSON != "" && ssFlagJSON != "" {
+		cli.ExitWithError("Only one of '--subject-sets' or '--subject-sets-file-json' can be provided", nil)
+	}
+
+	// read subject sets into bytes from either the flagged json file or json string
+	if ssFileJSON != "" {
+		jsonFile, err := os.Open(ssFileJSON)
 		if err != nil {
-			cli.ExitWithError("Error unmarshalling subject sets", err)
+			cli.ExitWithError(fmt.Sprintf("Failed to open file at path: %s", ssFileJSON), err)
 		}
+		defer jsonFile.Close()
+
+		bytes, err := io.ReadAll(jsonFile)
+		if err != nil {
+			cli.ExitWithError(fmt.Sprintf("Failed to read bytes from file at path: %s", ssFileJSON), err)
+		}
+		ssBytes = bytes
+	} else {
+		ssBytes = []byte(ssFlagJSON)
+	}
+
+	ss, err := unmarshalSubjectSetsProto(ssBytes)
+	if err != nil {
+		cli.ExitWithError("Error unmarshalling subject sets", err)
 	}
 
 	_, err = h.UpdateSubjectConditionSet(id, ss, getMetadataMutable(metadataLabels), getMetadataUpdateBehavior())
@@ -306,6 +326,12 @@ func init() {
 		updateDoc.GetDocFlag("subject-sets").Shorthand,
 		updateDoc.GetDocFlag("subject-sets").Default,
 		updateDoc.GetDocFlag("subject-sets").Description,
+	)
+	updateDoc.Flags().StringP(
+		createDoc.GetDocFlag("subject-sets-file-json").Name,
+		createDoc.GetDocFlag("subject-sets-file-json").Shorthand,
+		createDoc.GetDocFlag("subject-sets-file-json").Default,
+		createDoc.GetDocFlag("subject-sets-file-json").Description,
 	)
 
 	deleteDoc := man.Docs.GetCommand(
