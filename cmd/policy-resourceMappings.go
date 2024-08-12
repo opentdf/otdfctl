@@ -101,6 +101,7 @@ func policy_listResourceMappings(cmd *cobra.Command, args []string) {
 			"updated_at":    metadata["Updated At"],
 		}))
 	}
+	t.WithRows(rows)
 	HandleSuccess(cmd, "", t, rmList)
 }
 
