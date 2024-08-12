@@ -6,9 +6,9 @@ import (
 	"os"
 )
 
-func ReadFromFileOrPipe(file string, pipe *os.File) []byte {
-	if file != "" {
-		return ReadFromFile(file)
+func ReadFromArgsOrPipe(args []string, pipe *os.File) []byte {
+	if len(args) > 0 {
+		return ReadFromFile(args[0])
 	} else {
 		if pipe == nil {
 			pipe = os.Stdin
@@ -35,7 +35,7 @@ func ReadFromPipe(in *os.File) []byte {
 func ReadFromFile(filePath string) []byte {
 	fileToEncrypt, err := os.Open(filePath)
 	if err != nil {
-		ExitWithError(fmt.Sprintf("Failed to open file at path: %s", filePath), err)
+		ExitWithError(fmt.Sprintf("Failed to git open file at path: %s", filePath), err)
 	}
 	defer fileToEncrypt.Close()
 

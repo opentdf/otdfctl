@@ -35,7 +35,7 @@ func tdf_InspectCmd(cmd *cobra.Command, args []string) {
 	h := NewHandler(cmd)
 	defer h.Close()
 
-	data := cli.ReadFromFileOrPipe(args[0], nil)
+	data := cli.ReadFromArgsOrPipe(args, nil)
 	if len(data) == 0 {
 		cli.ExitWithError("Must provide ONE of the following: [file argument, stdin input]", errors.New("no input provided"))
 	}
