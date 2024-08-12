@@ -3,7 +3,6 @@ title: otdfctl - OpenTDF Control Tool
 
 command:
   name: otdfctl
-  aliases: []
   flags:
     - name: host
       description: Hostname of the platform (i.e. https://localhost)

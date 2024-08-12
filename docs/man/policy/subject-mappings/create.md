@@ -2,6 +2,10 @@
 title: Create a new subject mapping 
 command:
   name: create
+  aliases:
+    - new
+    - add
+    - c
   flags:
     - name: attribute-value-id
       description: The ID of the attribute value to map to a subject set

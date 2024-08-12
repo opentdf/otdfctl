@@ -2,6 +2,8 @@
 title: Update an attribute
 command:
   name: update
+  aliases:
+    - u
   flags:
     - name: id
       shorthand: i

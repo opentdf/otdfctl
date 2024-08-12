@@ -3,8 +3,8 @@ title: Manage KAS registrations
 command:
   name: kas-registry
   aliases:
-    - kasRegistry
-    - key-access-registry
+    - kasr
+    - kas-registries
 ---
 
 The Key Access Server (KAS) registry is a record of servers granting and maintaining public keys.

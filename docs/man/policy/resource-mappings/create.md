@@ -2,6 +2,10 @@
 title: Create a resource mapping
 command:
   name: create
+  aliases:
+    - add
+    - new
+    - c
   flags:
     - name: attribute-value-id
       description: The ID of the attribute value to map to the resource.

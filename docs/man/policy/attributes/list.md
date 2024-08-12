@@ -2,6 +2,8 @@
 title: List attributes
 command:
   name: list
+  aliases:
+    - l
   flags:
     - name: state
       shorthand: s

@@ -3,6 +3,8 @@ title: Update a Subject Condition Set
 
 command:
   name: update
+  aliases:
+    - u
   flags:
     - name: id
       description: The ID of the subject condition set to update

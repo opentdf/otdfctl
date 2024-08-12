@@ -2,6 +2,10 @@
 title: Create an attribute
 command:
   name: create
+  aliases:
+    - new
+    - add
+    - c
   flags:
     - name: name
       shorthand: n

@@ -2,9 +2,13 @@
 title: Assign a grant
 
 command:
-  name: assign
+  name: update
   aliases:
-    - update
+    - u
+    - create
+    - add
+    - new
+    - upsert
   description: Assign a grant of a KAS to an Attribute Definition or Value
   flags:
     - name: attribute-id

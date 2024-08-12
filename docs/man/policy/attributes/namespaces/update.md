@@ -2,6 +2,8 @@
 title: Update a attribute namespace
 command:
   name: update
+  aliases:
+    - u
   flags:
     - name: id
       shorthand: i
