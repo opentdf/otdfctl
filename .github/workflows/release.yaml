@@ -7,7 +7,7 @@ permissions:
   issues: write
 
 on:
-  push:
+  pull_request:
     branches:
       - main
 
@@ -15,6 +15,13 @@ jobs:
   release-please:
     runs-on: ubuntu-latest
     steps:
+      - name: Generate a token
+        id: generate_token
+        uses: actions/create-github-app-token@31c86eb3b33c9b601a1f60f98dcbfd1d70f379b4 # v1.10.3
+        with:
+          token: "${{ steps.generate_token.outputs.token }}"
+          app-id: "${{ secrets.APP_ID }}"
+          private-key: "${{ secrets.AUTOMATION_KEY }}"
       - uses: googleapis/release-please-action@7987652d64b4581673a76e33ad5e98e3dd56832f
         id: release
         with:
