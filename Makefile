@@ -3,7 +3,7 @@
 # first we'll grab the current version from our ENV VAR (added by our CI) - see here: https://github.com/marketplace/actions/version-increment
 BINARY_NAME := otdfctl
 CURR_VERSION := ${SEM_VER}
-COMMIT_SHA := ${GITHUB_SHA}
+COMMIT_SHA := ${COMMIT_SHA}
 BUILD_TIME := $(shell date -u '+%Y-%m-%dT%H:%M:%SZ')
 
 GO_MOD_LINE = $(shell head -n 1 go.mod | cut -c 8-)
