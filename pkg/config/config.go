@@ -11,6 +11,12 @@ import (
 	"github.com/spf13/viper"
 )
 
+var AppName = "otdfctl"
+
+var Version = "0.0.0"
+var BuildTime = "1970-01-01T00:00:00Z"
+var CommitSha = "0000000"
+
 type Output struct {
 	Format string `yaml:"format" default:"styled"`
 }
