@@ -72,7 +72,6 @@ func tdf_InspectCmd(cmd *cobra.Command, args []string) {
 	}
 
 	fmt.Printf("%s\n", string(b))
-	return
 }
 
 func init() {

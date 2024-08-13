@@ -1,14 +1,11 @@
 package cli
 
 import (
-	"encoding/json"
 	"fmt"
-	"sort"
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/evertras/bubble-table/table"
-	"github.com/jeremywohl/flatten"
 	"github.com/spf13/cobra"
 )
 
@@ -43,40 +40,6 @@ func NewTabular(rows ...[]string) table.Model {
 
 	t = t.WithRows(tr)
 	return t
-}
-
-func NewTabularFromStruct(s interface{}) (table.Model, error) {
-	b, err := json.Marshal(s)
-	if err != nil {
-		return table.Model{}, err
-	}
-
-	return NewTabularFromJson(b)
-}
-
-func NewTabularFromJson(jsonData []byte) (table.Model, error) {
-	var result map[string]interface{}
-	err := json.Unmarshal(jsonData, &result)
-	if err != nil {
-		return table.Model{}, err
-	}
-
-	v, err := flatten.Flatten(result, "", flatten.DotStyle)
-	if err != nil {
-		return table.Model{}, err
-	}
-
-	var rows [][]string
-	for k, v := range v {
-		rows = append(rows, []string{k, fmt.Sprintf("%v", v)})
-	}
-
-	// Sort rows by key
-	sort.Slice(rows, func(i, j int) bool {
-		return rows[i][0] < rows[j][0]
-	})
-
-	return NewTabular(rows...), nil
 }
 
 func getJsonHelper(command string) string {
