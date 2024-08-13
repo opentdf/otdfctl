@@ -14,5 +14,5 @@ func NewTable(cols ...table.Column) table.Model {
 }
 
 func NewUUIDColumn() table.Column {
-	return table.NewColumn("id", "ID", 37)
+	return table.NewFlexColumn("id", "ID", 5)
 }

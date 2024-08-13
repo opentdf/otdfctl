@@ -68,14 +68,14 @@ func policy_listSubjectMappings(cmd *cobra.Command, args []string) {
 	}
 	t := cli.NewTable(
 		cli.NewUUIDColumn(),
-		table.NewColumn("subject_attrval_id", "Subject AttrVal: Id", 16),
-		table.NewColumn("subject_attrval_value", "Subject AttrVal: Value", 16),
-		table.NewColumn("actions", "Actions", 16),
-		table.NewColumn("subject_condition_set_id", "Subject Condition Set: Id", 16),
-		table.NewColumn("subject_condition_set", "Subject Condition Set", 16),
-		table.NewColumn("labels", "Labels", 16),
-		table.NewColumn("created_at", "Created At", 16),
-		table.NewColumn("updated_at", "Updated At", 16),
+		table.NewFlexColumn("subject_attrval_id", "Subject AttrVal: Id", 4),
+		table.NewFlexColumn("subject_attrval_value", "Subject AttrVal: Value", 3),
+		table.NewFlexColumn("actions", "Actions", 2),
+		table.NewFlexColumn("subject_condition_set_id", "Subject Condition Set: Id", 4),
+		table.NewFlexColumn("subject_condition_set", "Subject Condition Set", 3),
+		table.NewFlexColumn("labels", "Labels", 1),
+		table.NewFlexColumn("created_at", "Created At", 1),
+		table.NewFlexColumn("updated_at", "Updated At", 1),
 	)
 	rows := []table.Row{}
 	for _, sm := range list {
