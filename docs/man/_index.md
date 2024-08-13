@@ -4,6 +4,9 @@ title: otdfctl - OpenTDF Control Tool
 command:
   name: otdfctl
   flags:
+    - name: version
+      description: show version
+      default: false
     - name: host
       description: Hostname of the platform (i.e. https://localhost)
       default:
