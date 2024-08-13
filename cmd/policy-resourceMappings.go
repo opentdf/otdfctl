@@ -81,12 +81,12 @@ func policy_listResourceMappings(cmd *cobra.Command, args []string) {
 
 	t := cli.NewTable(
 		cli.NewUUIDColumn(),
-		table.NewColumn("attr_value_id", "Attribute Value Id", 16),
-		table.NewColumn("attr_value", "Attribute Value", 16),
-		table.NewColumn("terms", "Terms", 16),
-		table.NewColumn("labels", "Labels", 16),
-		table.NewColumn("created_at", "Created At", 16),
-		table.NewColumn("updated_at", "Updated At", 16),
+		table.NewFlexColumn("attr_value_id", "Attribute Value Id", 4),
+		table.NewFlexColumn("attr_value", "Attribute Value", 4),
+		table.NewFlexColumn("terms", "Terms", 3),
+		table.NewFlexColumn("labels", "Labels", 1),
+		table.NewFlexColumn("created_at", "Created At", 1),
+		table.NewFlexColumn("updated_at", "Updated At", 1),
 	)
 	rows := []table.Row{}
 	for _, resourceMapping := range rmList {
@@ -101,6 +101,7 @@ func policy_listResourceMappings(cmd *cobra.Command, args []string) {
 			"updated_at":    metadata["Updated At"],
 		}))
 	}
+	t.WithRows(rows)
 	HandleSuccess(cmd, "", t, rmList)
 }
 

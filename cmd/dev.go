@@ -38,9 +38,9 @@ func printDSComponent(title string, component string) {
 
 func renderDSTable() string {
 	tbl := cli.NewTable(
-		table.NewColumn("one", "One", 10),
-		table.NewColumn("two", "Two", 10),
-		table.NewColumn("three", "Three", 10),
+		table.NewFlexColumn("one", "One", 1),
+		table.NewFlexColumn("two", "Two", 1),
+		table.NewFlexColumn("three", "Three", 1),
 	).WithRows([]table.Row{
 		table.NewRow(table.RowData{
 			"one":   "1",

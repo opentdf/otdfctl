@@ -63,11 +63,11 @@ func policy_listAttributeValue(cmd *cobra.Command, args []string) {
 	}
 	t := cli.NewTable(
 		cli.NewUUIDColumn(),
-		table.NewColumn("fqn", "Fqn", 37),
-		table.NewColumn("active", "Active", 16),
-		table.NewColumn("labels", "Labels", 16),
-		table.NewColumn("created_at", "Created At", 16),
-		table.NewColumn("updated_at", "Updated At", 16),
+		table.NewFlexColumn("fqn", "Fqn", 4),
+		table.NewFlexColumn("active", "Active", 3),
+		table.NewFlexColumn("labels", "Labels", 1),
+		table.NewFlexColumn("created_at", "Created At", 1),
+		table.NewFlexColumn("updated_at", "Updated At", 1),
 	)
 	rows := []table.Row{}
 	for _, val := range vals {

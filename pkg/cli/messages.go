@@ -16,7 +16,7 @@ func FooterMessage(msg string) string {
 	}
 	w := lipgloss.Width
 	note := footerLabelStyle.Render("NOTE")
-	footer := footerTextStyle.Copy().Width(defaultTableWidth - w(note)).Render(msg)
+	footer := footerTextStyle.Width(TermWidth() - w(note)).Render(msg)
 	return lipgloss.JoinHorizontal(
 		lipgloss.Left,
 		note,

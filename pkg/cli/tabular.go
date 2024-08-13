@@ -13,8 +13,8 @@ func NewTabular(rows ...[]string) table.Model {
 	columnKeyProperty := "Property"
 	columnKeyValue := "Value"
 	t := NewTable(
-		table.NewColumn(columnKeyProperty, columnKeyProperty, 37),
-		table.NewColumn(columnKeyValue, columnKeyValue, 37),
+		table.NewFlexColumn(columnKeyProperty, columnKeyProperty, 1),
+		table.NewFlexColumn(columnKeyValue, columnKeyValue, 2),
 	)
 
 	tr := []table.Row{}
@@ -35,6 +35,8 @@ func NewTabular(rows ...[]string) table.Model {
 			columnKeyValue:    v,
 		}))
 	}
+
+	t = t.WithTargetWidth(TermWidth())
 
 	t = t.WithRows(tr)
 	return t
