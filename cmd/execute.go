@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/opentdf/otdfctl/internal/config"
+	"github.com/opentdf/otdfctl/pkg/config"
 	"github.com/spf13/cobra"
 )
 

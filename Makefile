@@ -8,7 +8,7 @@ BUILD_TIME := $(shell date -u '+%Y-%m-%dT%H:%M:%SZ')
 
 GO_MOD_LINE = $(shell head -n 1 go.mod | cut -c 8-)
 GO_MOD_NAME = $(word 1,$(subst /, ,$(GO_MOD_LINE)))
-APP_CFG = $(GO_MOD_LINE)/internal/config
+APP_CFG = $(GO_MOD_LINE)/pkg/config
 
 GO_BUILD_FLAGS=-ldflags "-X $(APP_CFG).Version=${CURR_VERSION} -X $(APP_CFG).CommitSha=${COMMIT_SHA} -X $(APP_CFG).BuildTime=${BUILD_TIME}"
 GO_BUILD_PREFIX=$(TARGET_DIR)/$(BINARY_NAME)-${CURR_VERSION}
