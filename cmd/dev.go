@@ -21,8 +21,7 @@ import (
 var devCmd = man.Docs.GetCommand("dev")
 
 func dev_designSystem(cmd *cobra.Command, args []string) {
-	fmt.Printf("Design system\n")
-	fmt.Printf("=============\n\n")
+	fmt.Printf("Design system\n=============\n\n")
 
 	printDSComponent("Table", renderDSTable())
 
