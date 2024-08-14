@@ -52,7 +52,7 @@ func policy_assignKasGrant(cmd *cobra.Command, args []string) {
 	HandleSuccess(cmd, id, t, res)
 }
 
-func policy_removeKasGrant(cmd *cobra.Command, args []string) {
+func policy_unassignKasGrant(cmd *cobra.Command, args []string) {
 	h := NewHandler(cmd)
 	defer h.Close()
 
@@ -62,7 +62,7 @@ func policy_removeKasGrant(cmd *cobra.Command, args []string) {
 	kasID := flagHelper.GetRequiredString("kas-id")
 
 	if attrID == "" && valID == "" {
-		cli.ExitWithError("Must specify an Attribute Definition ID or Value ID to remove.", nil)
+		cli.ExitWithError("Must specify an Attribute Definition ID or Value ID to unassign.", nil)
 	}
 	var (
 		res     interface{}
@@ -109,7 +109,7 @@ func policy_removeKasGrant(cmd *cobra.Command, args []string) {
 
 	t := cli.NewTabular(rowID, rowFQN,
 		[]string{"KAS ID", kasID},
-		[]string{"Removed Granted KAS URI", kasURI},
+		[]string{"Unassigned Granted KAS URI", kasURI},
 	)
 	HandleSuccess(cmd, "", t, res)
 }
@@ -138,30 +138,30 @@ func init() {
 	)
 	injectLabelFlags(&assignCmd.Command, true)
 
-	removeCmd := man.Docs.GetCommand("policy/kas-grants/remove",
-		man.WithRun(policy_removeKasGrant),
+	unassignCmd := man.Docs.GetCommand("policy/kas-grants/unassign",
+		man.WithRun(policy_unassignKasGrant),
 	)
-	removeCmd.Flags().StringP(
-		removeCmd.GetDocFlag("attribute-id").Name,
-		removeCmd.GetDocFlag("attribute-id").Shorthand,
-		removeCmd.GetDocFlag("attribute-id").Default,
-		removeCmd.GetDocFlag("attribute-id").Description,
+	unassignCmd.Flags().StringP(
+		unassignCmd.GetDocFlag("attribute-id").Name,
+		unassignCmd.GetDocFlag("attribute-id").Shorthand,
+		unassignCmd.GetDocFlag("attribute-id").Default,
+		unassignCmd.GetDocFlag("attribute-id").Description,
 	)
-	removeCmd.Flags().StringP(
-		removeCmd.GetDocFlag("value-id").Name,
-		removeCmd.GetDocFlag("value-id").Shorthand,
-		removeCmd.GetDocFlag("value-id").Default,
-		removeCmd.GetDocFlag("value-id").Description,
+	unassignCmd.Flags().StringP(
+		unassignCmd.GetDocFlag("value-id").Name,
+		unassignCmd.GetDocFlag("value-id").Shorthand,
+		unassignCmd.GetDocFlag("value-id").Default,
+		unassignCmd.GetDocFlag("value-id").Description,
 	)
-	removeCmd.Flags().StringP(
-		removeCmd.GetDocFlag("kas-id").Name,
-		removeCmd.GetDocFlag("kas-id").Shorthand,
-		removeCmd.GetDocFlag("kas-id").Default,
-		removeCmd.GetDocFlag("kas-id").Description,
+	unassignCmd.Flags().StringP(
+		unassignCmd.GetDocFlag("kas-id").Name,
+		unassignCmd.GetDocFlag("kas-id").Shorthand,
+		unassignCmd.GetDocFlag("kas-id").Default,
+		unassignCmd.GetDocFlag("kas-id").Description,
 	)
 
 	cmd := man.Docs.GetCommand("policy/kas-grants",
-		man.WithSubcommands(assignCmd, removeCmd),
+		man.WithSubcommands(assignCmd, unassignCmd),
 	)
 	policyCmd.AddCommand(&cmd.Command)
 }

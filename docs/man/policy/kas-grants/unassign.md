@@ -1,11 +1,11 @@
 ---
-title: Remove a grant
+title: Unassign a grant
 
 command:
-  name: remove
+  name: unassign
   aliases:
     - delete
-    - unassign
+    - remove
   description: Remove a grant assignment of a KAS to an Attribute Definition or Value
   flags:
     - name: attribute-id
@@ -21,3 +21,7 @@ command:
       description: The Key Access Server (KAS) ID being unassigned a grant
       required: true
 ---
+
+Unassign a registered Key Access Server (KAS) to an attribute definition or value.
+
+For more information, see `kas-registry` and `kas-grants` manuals.
