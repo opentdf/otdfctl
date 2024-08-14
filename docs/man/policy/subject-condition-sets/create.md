@@ -38,12 +38,12 @@ command:
       {
         "conditions": [
           {
-            "operator": "SUBJECT_MAPPING_OPERATOR_ENUM_IN",
+            "operator": 1,
             "subject_external_values": ["CoolTool", "RadService", "ShinyThing"],
             "subject_external_selector_value": ".team.name"
           },
           {
-            "operator": "SUBJECT_MAPPING_OPERATOR_ENUM_IN",
+            "operator": 2,
             "subject_external_values": ["marketing"],
             "subject_external_selector_value": ".org.name"
           }
@@ -74,9 +74,9 @@ against the list of `subject_external_values`:
 | IN_CONTAINS                   | 3           | contains one of these values |
 
 In the example SCS above, the Subject entity MUST BE represented with a token claim or ERS response
-containing a field at `.team.name` identifying them as team name "CoolTool", "RadService", or "ShinyThing", AND THEY MUST ALSO have a field `org.name` of "marketing".
+containing a field at `.team.name` identifying them as team name "CoolTool", "RadService", or "ShinyThing", AND THEY MUST ALSO have a field `org.name` that is NOT "marketing".
 
-This structure if their team name was "CoolTool" might look like:
+This structure if their team name was "CoolTool" and they were entitled might look like:
 
 ```json
 {
@@ -84,10 +84,11 @@ This structure if their team name was "CoolTool" might look like:
     "name": "CoolTool" // could alternatively be RadService or ShinyThing
   },
   "org": {
-    "name": "marketing"
+    "name": "sales"
   }
 }
 ```
 
-If the `.org.name` were `sales` instead, the condition set would not be met, and the Subject would
-not be found to be entitled to the Attribute Value applicable to this Subject Condition Set via Subject Mapping between.
+If any condition in the group is not met (such as if `.org.name` were `marketing` instead),
+the condition set would not resolve to true, and the Subject would not be found to be entitled
+to the Attribute Value applicable to this Subject Condition Set via Subject Mapping between.
