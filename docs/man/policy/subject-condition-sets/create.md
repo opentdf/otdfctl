@@ -57,7 +57,7 @@ command:
 
 ConditionGroup `boolean_operator` is driven through the API `CONDITION_BOOLEAN_TYPE_ENUM` definition:
 
-| CONDITION_BOOLEAN_TYPE_ENUM | index value | meaning               |
+| CONDITION_BOOLEAN_TYPE_ENUM | index value | comparison            |
 | --------------------------- | ----------- | --------------------- |
 | AND                         | 1           | all conditions met    |
 | OR                          | 2           | any one condition met |
@@ -67,11 +67,11 @@ and is evaluated by applying the `subject_external_selector_value` to the Subjec
 representation (token or Entity Resolution Service response) and comparing the logical operator
 against the list of `subject_external_values`:
 
-| SUBJECT_MAPPING_OPERATOR_ENUM | index value | meaning                      |
-| ----------------------------- | ----------- | ---------------------------- |
-| IN                            | 1           | any of the values found      |
-| NOT_IN                        | 2           | none of the values found     |
-| IN_CONTAINS                   | 3           | contains one of these values |
+| SUBJECT_MAPPING_OPERATOR_ENUM | index value | subject value at selector MUST |
+| ----------------------------- | ----------- | ------------------------------ |
+| IN                            | 1           | be any of the values           |
+| NOT_IN                        | 2           | not be any of the values       |
+| IN_CONTAINS                   | 3           | contain one of the values      |
 
 In the example SCS above, the Subject entity MUST BE represented with a token claim or ERS response
 containing a field at `.team.name` identifying them as team name "CoolTool", "RadService", or "ShinyThing", AND THEY MUST ALSO have a field `org.name` that is NOT "marketing".
