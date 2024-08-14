@@ -2,9 +2,10 @@
 title: Assign a grant
 
 command:
-  name: update
+  name: assign
   aliases:
     - u
+    - update
     - create
     - add
     - new
@@ -31,3 +32,7 @@ command:
       description: Destructively replace entire set of existing metadata 'labels' with any provided to this command
       default: false
 ---
+
+Assign a registered Key Access Server (KAS) to an attribute definition or value.
+
+For more information, see `kas-registry` and `kas-grants` manuals.

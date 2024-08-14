@@ -21,3 +21,7 @@ command:
       description: The Key Access Server (KAS) ID being unassigned a grant
       required: true
 ---
+
+Assign a registered Key Access Server (KAS) to an attribute definition or value.
+
+For more information, see `kas-registry` and `kas-grants` manuals.
