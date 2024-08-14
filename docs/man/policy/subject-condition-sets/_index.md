@@ -17,4 +17,5 @@ Resolution Service (ERS).
 They are applied to Attribute Values via Subject Mappings to determine a Subject's entitlement to
 any given attribute on TDF'd data.
 
-For example structure and logical resolution, see `create` subcommand. For 
+For example structure and logical resolution, see `create` subcommand. For information about Subject
+Mappings, see the `subject-mappings` command.
