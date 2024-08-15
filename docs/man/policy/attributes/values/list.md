@@ -2,6 +2,9 @@
 title: List attribute values
 command:
   name: list
+  aliases:
+    - ls
+    - l
   flags:
     - name: attribute-id
       shorthand: a

@@ -2,6 +2,8 @@
 title: Update a subject mapping 
 command:
   name: update
+  aliases:
+    - u
   flags:
     - name: id
       description: The ID of the subject mapping to update

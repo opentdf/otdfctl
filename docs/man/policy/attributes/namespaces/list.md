@@ -2,6 +2,9 @@
 title: List attribute namespaces
 command:
   name: list
+  aliases:
+    - ls
+    - l
   flags:
     - name: state
       shorthand: s

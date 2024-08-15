@@ -3,11 +3,16 @@ title: otdfctl - OpenTDF Control Tool
 
 command:
   name: otdfctl
-  aliases: []
   flags:
+    - name: version
+      description: show version
+      default: false
     - name: host
-      description: host:port of the OpenTDF Platform gRPC server
-      default: localhost:8080
+      description: Hostname of the platform (i.e. https://localhost)
+      default:
+    - name: tls-no-verify
+      description: disable verification of the server's TLS certificate
+      default: false
     - name: log-level
       description: log level
       enum:

@@ -3,22 +3,55 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 
+	"github.com/evertras/bubble-table/table"
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/spf13/cobra"
+	"google.golang.org/protobuf/encoding/protojson"
 )
+
+// Helper to unmarshal SubjectSets from JSON (stored as JSONB in the database column)
+func unmarshalSubjectSetsProto(conditionJSON []byte) ([]*policy.SubjectSet, error) {
+	var (
+		raw []json.RawMessage
+		ss  []*policy.SubjectSet
+	)
+	if err := json.Unmarshal(conditionJSON, &raw); err != nil {
+		return nil, err
+	}
+
+	for _, r := range raw {
+		s := policy.SubjectSet{}
+		if err := protojson.Unmarshal(r, &s); err != nil {
+			return nil, err
+		}
+		ss = append(ss, &s)
+	}
+
+	return ss, nil
+}
+
+// Helper to marshal SubjectSets into JSON (stored as JSONB in the database column)
+func marshalSubjectSetsProto(subjectSet []*policy.SubjectSet) ([]byte, error) {
+	var raw []json.RawMessage
+	for _, ss := range subjectSet {
+		b, err := protojson.Marshal(ss)
+		if err != nil {
+			return nil, err
+		}
+		raw = append(raw, b)
+	}
+	return json.Marshal(raw)
+}
 
 func policy_createSubjectConditionSet(cmd *cobra.Command, args []string) {
 	h := NewHandler(cmd)
 	defer h.Close()
-	var (
-		ss      []*policy.SubjectSet
-		ssBytes []byte
-	)
+	var ssBytes []byte
 
 	flagHelper := cli.NewFlagHelper(cmd)
 	ssFlagJSON := flagHelper.GetOptionalString("subject-sets")
@@ -40,7 +73,7 @@ func policy_createSubjectConditionSet(cmd *cobra.Command, args []string) {
 		}
 		defer jsonFile.Close()
 
-		bytes, err := ioutil.ReadAll(jsonFile)
+		bytes, err := io.ReadAll(jsonFile)
 		if err != nil {
 			cli.ExitWithError(fmt.Sprintf("Failed to read bytes from file at path: %s", ssFileJSON), err)
 		}
@@ -49,7 +82,8 @@ func policy_createSubjectConditionSet(cmd *cobra.Command, args []string) {
 		ssBytes = []byte(ssFlagJSON)
 	}
 
-	if err := json.Unmarshal(ssBytes, &ss); err != nil {
+	ss, err := unmarshalSubjectSetsProto(ssBytes)
+	if err != nil {
 		cli.ExitWithError("Error unmarshalling subject sets", err)
 	}
 
@@ -58,8 +92,8 @@ func policy_createSubjectConditionSet(cmd *cobra.Command, args []string) {
 		cli.ExitWithError("Error creating subject condition set", err)
 	}
 
-	var subjectSetsJSON []byte
-	if subjectSetsJSON, err = json.Marshal(scs.SubjectSets); err != nil {
+	subjectSetsJSON, err := marshalSubjectSetsProto(scs.SubjectSets)
+	if err != nil {
 		cli.ExitWithError("Error marshalling subject condition set", err)
 	}
 
@@ -72,7 +106,7 @@ func policy_createSubjectConditionSet(cmd *cobra.Command, args []string) {
 		rows = append(rows, mdRows...)
 	}
 
-	t := cli.NewTabular().Rows(rows...)
+	t := cli.NewTabular(rows...)
 	HandleSuccess(cmd, scs.Id, t, scs)
 }
 
@@ -87,8 +121,8 @@ func policy_getSubjectConditionSet(cmd *cobra.Command, args []string) {
 	if err != nil {
 		cli.ExitWithError(fmt.Sprintf("Subject Condition Set with id %s not found", id), err)
 	}
-	var subjectSetsJSON []byte
-	if subjectSetsJSON, err = json.Marshal(scs.SubjectSets); err != nil {
+	subjectSetsJSON, err := marshalSubjectSetsProto(scs.SubjectSets)
+	if err != nil {
 		cli.ExitWithError("Error marshalling subject condition set", err)
 	}
 
@@ -100,7 +134,7 @@ func policy_getSubjectConditionSet(cmd *cobra.Command, args []string) {
 		rows = append(rows, mdRows...)
 	}
 
-	t := cli.NewTabular().Rows(rows...)
+	t := cli.NewTabular(rows...)
 	HandleSuccess(cmd, scs.Id, t, scs)
 }
 
@@ -113,18 +147,29 @@ func policy_listSubjectConditionSets(cmd *cobra.Command, args []string) {
 		cli.ExitWithError("Error listing subject condition sets", err)
 	}
 
-	t := cli.NewTable()
-	t.Headers("Id", "SubjectSets", "Labels", "Created At", "Updated At")
+	t := cli.NewTable(
+		cli.NewUUIDColumn(),
+		table.NewFlexColumn("subject_sets", "SubjectSets", 4),
+		table.NewFlexColumn("labels", "Labels", 1),
+		table.NewFlexColumn("created_at", "Created At", 1),
+		table.NewFlexColumn("updated_at", "Updated At", 1),
+	)
+	rows := []table.Row{}
 	for _, scs := range scsList {
-		var subjectSetsJSON []byte
-		if subjectSetsJSON, err = json.Marshal(scs.SubjectSets); err != nil {
+		subjectSetsJSON, err := marshalSubjectSetsProto(scs.SubjectSets)
+		if err != nil {
 			cli.ExitWithError("Error marshalling subject condition set", err)
 		}
 		metadata := cli.ConstructMetadata(scs.Metadata)
-		rowCells := []string{scs.Id, string(subjectSetsJSON), metadata["Labels"], metadata["Created At"], metadata["Updated At"]}
-		t.Row(rowCells...)
+		rows = append(rows, table.NewRow(table.RowData{
+			"id":           scs.Id,
+			"subject_sets": string(subjectSetsJSON),
+			"labels":       metadata["Labels"],
+			"created_at":   metadata["Created At"],
+			"updated_at":   metadata["Updated At"],
+		}))
 	}
-
+	t = t.WithRows(rows)
 	HandleSuccess(cmd, "", t, scsList)
 }
 
@@ -136,15 +181,39 @@ func policy_updateSubjectConditionSet(cmd *cobra.Command, args []string) {
 	id := flagHelper.GetRequiredString("id")
 	metadataLabels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
 	ssFlagJSON := flagHelper.GetOptionalString("subject-sets")
+	ssFileJSON := flagHelper.GetOptionalString("subject-sets-file-json")
 
-	var ss []*policy.SubjectSet
-	if ssFlagJSON != "" {
-		if err := json.Unmarshal([]byte(ssFlagJSON), &ss); err != nil {
-			cli.ExitWithError("Error unmarshalling subject sets", err)
-		}
+	var ssBytes []byte
+	// validate no flag conflicts
+	if ssFileJSON == "" && ssFlagJSON == "" {
+		cli.ExitWithError("At least one subject set must be provided ('--subject-sets', '--subject-sets-file-json')", nil)
+	} else if ssFileJSON != "" && ssFlagJSON != "" {
+		cli.ExitWithError("Only one of '--subject-sets' or '--subject-sets-file-json' can be provided", nil)
 	}
 
-	_, err := h.UpdateSubjectConditionSet(id, ss, getMetadataMutable(metadataLabels), getMetadataUpdateBehavior())
+	// read subject sets into bytes from either the flagged json file or json string
+	if ssFileJSON != "" {
+		jsonFile, err := os.Open(ssFileJSON)
+		if err != nil {
+			cli.ExitWithError(fmt.Sprintf("Failed to open file at path: %s", ssFileJSON), err)
+		}
+		defer jsonFile.Close()
+
+		bytes, err := io.ReadAll(jsonFile)
+		if err != nil {
+			cli.ExitWithError(fmt.Sprintf("Failed to read bytes from file at path: %s", ssFileJSON), err)
+		}
+		ssBytes = bytes
+	} else {
+		ssBytes = []byte(ssFlagJSON)
+	}
+
+	ss, err := unmarshalSubjectSetsProto(ssBytes)
+	if err != nil {
+		cli.ExitWithError("Error unmarshalling subject sets", err)
+	}
+
+	_, err = h.UpdateSubjectConditionSet(id, ss, getMetadataMutable(metadataLabels), getMetadataUpdateBehavior())
 	if err != nil {
 		cli.ExitWithError("Error updating subject condition set", err)
 	}
@@ -154,8 +223,8 @@ func policy_updateSubjectConditionSet(cmd *cobra.Command, args []string) {
 		cli.ExitWithError("Error getting subject condition set", err)
 	}
 
-	var subjectSetsJSON []byte
-	if subjectSetsJSON, err = json.Marshal(scs.SubjectSets); err != nil {
+	subjectSetsJSON, err := marshalSubjectSetsProto(scs.SubjectSets)
+	if err != nil {
 		cli.ExitWithError("Error marshalling subject condition set", err)
 	}
 
@@ -168,7 +237,7 @@ func policy_updateSubjectConditionSet(cmd *cobra.Command, args []string) {
 		rows = append(rows, mdRows...)
 	}
 
-	t := cli.NewTabular().Rows(rows...)
+	t := cli.NewTabular(rows...)
 	HandleSuccess(cmd, scs.Id, t, scs)
 }
 
@@ -190,8 +259,8 @@ func policy_deleteSubjectConditionSet(cmd *cobra.Command, args []string) {
 		cli.ExitWithError(fmt.Sprintf("Subject Condition Set with id %s not found", id), err)
 	}
 
-	var subjectSetsJSON []byte
-	if subjectSetsJSON, err = json.Marshal(scs.SubjectSets); err != nil {
+	subjectSetsJSON, err := marshalSubjectSetsProto(scs.SubjectSets)
+	if err != nil {
 		cli.ExitWithError("Error marshalling subject condition set", err)
 	}
 
@@ -204,7 +273,7 @@ func policy_deleteSubjectConditionSet(cmd *cobra.Command, args []string) {
 		rows = append(rows, mdRows...)
 	}
 
-	t := cli.NewTabular().Rows(rows...)
+	t := cli.NewTabular(rows...)
 	HandleSuccess(cmd, scs.Id, t, scs)
 }
 
@@ -238,8 +307,9 @@ func init() {
 		getDoc.GetDocFlag("id").Description,
 	)
 
-	listDoc := man.Docs.GetDoc("policy/subject-condition-sets/list")
-	listDoc.Run = policy_listSubjectConditionSets
+	listDoc := man.Docs.GetCommand("policy/subject-condition-sets/list",
+		man.WithRun(policy_listSubjectConditionSets),
+	)
 
 	updateDoc := man.Docs.GetCommand("policy/subject-condition-sets/update",
 		man.WithRun(policy_updateSubjectConditionSet),
@@ -257,6 +327,12 @@ func init() {
 		updateDoc.GetDocFlag("subject-sets").Default,
 		updateDoc.GetDocFlag("subject-sets").Description,
 	)
+	updateDoc.Flags().StringP(
+		createDoc.GetDocFlag("subject-sets-file-json").Name,
+		createDoc.GetDocFlag("subject-sets-file-json").Shorthand,
+		createDoc.GetDocFlag("subject-sets-file-json").Default,
+		createDoc.GetDocFlag("subject-sets-file-json").Description,
+	)
 
 	deleteDoc := man.Docs.GetCommand(
 		"policy/subject-condition-sets/delete",
@@ -273,42 +349,11 @@ func init() {
 		man.WithSubcommands(
 			createDoc,
 			getDoc,
+			listDoc,
 			updateDoc,
 			deleteDoc,
 		),
 	)
 	policy_subjectConditionSetsCmd = &doc.Command
-	policyCmd.AddCommand(&doc.Command)
-}
-
-func getSubjectConditionSetOperatorFromChoice(choice string) (policy.SubjectMappingOperatorEnum, error) {
-	switch choice {
-	case "IN":
-		return policy.SubjectMappingOperatorEnum_SUBJECT_MAPPING_OPERATOR_ENUM_IN, nil
-	case "NOT_IN":
-		return policy.SubjectMappingOperatorEnum_SUBJECT_MAPPING_OPERATOR_ENUM_NOT_IN, nil
-	default:
-		return policy.SubjectMappingOperatorEnum_SUBJECT_MAPPING_OPERATOR_ENUM_UNSPECIFIED, fmt.Errorf("Unknown operator must be specified ['IN', 'NOT_IN']: %s", choice)
-	}
-}
-
-func getSubjectConditionSetBooleanTypeFromChoice(choice string) (policy.ConditionBooleanTypeEnum, error) {
-	switch choice {
-	case "AND":
-		return policy.ConditionBooleanTypeEnum_CONDITION_BOOLEAN_TYPE_ENUM_AND, nil
-	case "OR":
-		return policy.ConditionBooleanTypeEnum_CONDITION_BOOLEAN_TYPE_ENUM_OR, nil
-	default:
-		return policy.ConditionBooleanTypeEnum_CONDITION_BOOLEAN_TYPE_ENUM_UNSPECIFIED, fmt.Errorf("Unknown boolean type must be specified ['AND', 'OR']: %s", choice)
-	}
-}
-
-func getMarshaledSubjectSets(subjectSets string) ([]*policy.SubjectSet, error) {
-	var ss []*policy.SubjectSet
-
-	if err := json.Unmarshal([]byte(subjectSets), &ss); err != nil {
-		return nil, err
-	}
-
-	return ss, nil
+	policyCmd.AddCommand(policy_subjectConditionSetsCmd)
 }

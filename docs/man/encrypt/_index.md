@@ -10,6 +10,18 @@ command:
     - name: attr
       shorthand: a
       description: Attribute value Fully Qualified Names (FQNs, i.e. 'https://example.com/attr/attr1/value/value1') to apply to the encrypted data.
+    - name: mime-type
+      description: The MIME type of the input data. If not provided, the MIME type is inferred from the input data.
+    - name: tdf-type
+      shorthand: t
+      description: The type of tdf to encrypt as. TDF3 supports structured manifests and larger payloads. Nano has a smaller footprint and more performant, but does not support structured manifests or large payloads.
+      enum:
+        - tdf3
+        - nano
+      default: tdf3
+    - name: kas-url-path
+      description: URL path to the KAS service at the platform endpoint domain. Leading slash is required if needed.
+      default: /kas
 ---
 
 Build a Trusted Data Format (TDF) with encrypted content from a specified file or input from stdin utilizing OpenTDF platform.

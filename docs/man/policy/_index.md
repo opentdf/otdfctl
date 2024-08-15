@@ -3,7 +3,9 @@ title: Manage policy
 
 command:
   name: policy
-  aliases: []
+  aliases:
+    - pol
+    - policies
   flags:
     - name: json
       description: output single command in JSON (overrides configured output format)

@@ -1,14 +1,23 @@
 package cmd
 
 import (
+	"bytes"
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
+	"path/filepath"
 	"strings"
 
+	"github.com/gabriel-vasile/mimetype"
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/spf13/cobra"
+)
+
+const (
+	TDF3 = "tdf3"
+	NANO = "nano"
 )
 
 func dev_tdfEncryptCmd(cmd *cobra.Command, args []string) {
@@ -17,11 +26,20 @@ func dev_tdfEncryptCmd(cmd *cobra.Command, args []string) {
 
 	flagHelper := cli.NewFlagHelper(cmd)
 	var filePath string
+	var fileExt string
 	if len(args) > 0 {
 		filePath = args[0]
+		fileExt = strings.ToLower(strings.TrimPrefix(filepath.Ext(filePath), "."))
 	}
+
 	out := flagHelper.GetOptionalString("out")
+	fileMimeType := flagHelper.GetOptionalString("mime-type")
 	values := flagHelper.GetStringSlice("attr", attrValues, cli.FlagHelperStringSliceOptions{Min: 0})
+	tdfType := flagHelper.GetOptionalString("tdf-type")
+	if tdfType == "" {
+		tdfType = TDF3
+	}
+	kasURLPath := flagHelper.GetOptionalString("kas-url-path")
 
 	piped := readPipedStdin()
 
@@ -33,22 +51,51 @@ func dev_tdfEncryptCmd(cmd *cobra.Command, args []string) {
 		inputCount++
 	}
 
+	cliExit := func(s string) {
+		cli.ExitWithError("Must provide "+s+" of the following to encrypt: [file argument, stdin input]", nil)
+	}
 	if inputCount == 0 {
-		cli.ExitWithError("Must provide ONE of the following to encrypt: [file argument, stdin input]", nil)
+		cliExit("ONE")
 	} else if inputCount > 1 {
-		cli.ExitWithError("Must provide ONLY ONE of the following to encrypt: [file argument, stdin input]", nil)
+		cliExit("ONLY ONE")
 	}
 
 	// prefer filepath argument over stdin input
-	var bytes []byte
+	bytesSlice := piped
 	if filePath != "" {
-		bytes = readBytesFromFile(filePath)
-	} else {
-		bytes = piped
+		bytesSlice = readBytesFromFile(filePath)
 	}
 
+	// auto-detect mime type if not provided
+	if fileMimeType == "" {
+		slog.Debug("Detecting mime type of file")
+		// get the mime type of the file
+		mimetype.SetLimit(1024 * 1024) // limit to 1MB
+		m := mimetype.Detect(bytesSlice)
+		// default to application/octet-stream if no mime type is detected
+		fileMimeType = m.String()
+
+		if fileMimeType == "application/octet-stream" {
+			if fileExt != "" {
+				fileMimeType = mimetype.Lookup(fileExt).String()
+			}
+		}
+	}
+	slog.Debug("Encrypting file",
+		slog.Int("file-len", len(bytesSlice)),
+		slog.String("mime-type", fileMimeType),
+	)
+
 	// Do the encryption
-	encrypted, err := h.EncryptBytes(bytes, values)
+	var encrypted *bytes.Buffer
+	var err error
+	if tdfType == TDF3 {
+		encrypted, err = h.EncryptBytes(bytesSlice, values, fileMimeType, kasURLPath)
+	} else if tdfType == NANO {
+		encrypted, err = h.EncryptNanoBytes(bytesSlice, values, kasURLPath)
+	} else {
+		cli.ExitWithError("Failed to encrypt", fmt.Errorf("unrecognized tdf-type: %s", tdfType))
+	}
 	if err != nil {
 		cli.ExitWithError("Failed to encrypt", err)
 	}
@@ -93,7 +140,23 @@ func init() {
 		[]string{},
 		encryptCmd.GetDocFlag("attr").Description,
 	)
+	encryptCmd.Flags().String(
+		encryptCmd.GetDocFlag("mime-type").Name,
+		encryptCmd.GetDocFlag("mime-type").Default,
+		encryptCmd.GetDocFlag("mime-type").Description,
+	)
+	encryptCmd.Flags().StringP(
+		encryptCmd.GetDocFlag("tdf-type").Name,
+		encryptCmd.GetDocFlag("tdf-type").Shorthand,
+		encryptCmd.GetDocFlag("tdf-type").Default,
+		encryptCmd.GetDocFlag("tdf-type").Description,
+	)
 	encryptCmd.Command.GroupID = "tdf"
+	encryptCmd.Flags().String(
+		encryptCmd.GetDocFlag("kas-url-path").Name,
+		encryptCmd.GetDocFlag("kas-url-path").Default,
+		encryptCmd.GetDocFlag("kas-url-path").Description,
+	)
 
 	RootCmd.AddCommand(&encryptCmd.Command)
 }

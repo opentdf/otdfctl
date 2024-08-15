@@ -57,7 +57,7 @@ func dev_selectorsGen(cmd *cobra.Command, args []string) {
 		rows = append(rows, []string{r.ExternalSelectorValue, r.ExternalValue})
 	}
 
-	t := cli.NewTabular().Rows(rows...)
+	t := cli.NewTabular(rows...)
 	cli.PrintSuccessTable(cmd, "", t)
 }
 
@@ -100,7 +100,7 @@ func dev_selectorsTest(cmd *cobra.Command, args []string) {
 		rows = append(rows, []string{r.ExternalSelectorValue, r.ExternalValue})
 	}
 
-	t := cli.NewTabular().Rows(rows...)
+	t := cli.NewTabular(rows...)
 	cli.PrintSuccessTable(cmd, "", t)
 }
 
@@ -144,10 +144,13 @@ func init() {
 		testCmd.GetDocFlag("selector").Description,
 	)
 
-	doc := man.Docs.GetCommand("dev/selectors",
-		man.WithSubcommands(genCmd, testCmd),
-	)
+	// TODO: put back dev selectors command once the flattening lib is provided by platform
+	// issue: https://github.com/opentdf/otdfctl/issues/125
 
-	dev_selectorsCmd = &doc.Command
-	devCmd.AddCommand(dev_selectorsCmd)
+	// doc := man.Docs.GetCommand("dev/selectors",
+	// 	man.WithSubcommands(genCmd, testCmd),
+	// )
+
+	// dev_selectorsCmd = &doc.Command
+	// devCmd.AddCommand(dev_selectorsCmd)
 }

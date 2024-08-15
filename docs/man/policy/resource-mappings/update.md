@@ -2,6 +2,8 @@
 title: Update a resource mapping
 command:
   name: update
+  aliases:
+    - u
   flags:
     - name: id
       description: The ID of the resource mapping to update.

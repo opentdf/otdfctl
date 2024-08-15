@@ -3,6 +3,8 @@ title: Update attribute value
 
 command:
   name: update
+  aliases:
+    - u
   flags:
     - name: id
       shorthand: i

@@ -14,7 +14,10 @@ var printAccessTokenCmd = man.Docs.GetCommand("auth/print-access-token",
 )
 
 func auth_printAccessToken(cmd *cobra.Command, args []string) {
-	tok, err := handlers.GetOIDCTokenFromCache()
+	flagHelper := cli.NewFlagHelper(cmd)
+	host := flagHelper.GetRequiredString("host")
+
+	tok, err := handlers.GetOIDCTokenFromCache(host)
 	if err != nil {
 		cli.ExitWithError("Failed to get OIDC token from cache", err)
 	}

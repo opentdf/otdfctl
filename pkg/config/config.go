@@ -11,6 +11,12 @@ import (
 	"github.com/spf13/viper"
 )
 
+var AppName = "otdfctl"
+
+var Version = "0.0.0"
+var BuildTime = "1970-01-01T00:00:00Z"
+var CommitSha = "0000000"
+
 type Output struct {
 	Format string `yaml:"format" default:"styled"`
 }
@@ -38,6 +44,8 @@ const (
 )
 
 // Load config with viper.
+// TODO force creation of the config in the `~/.config/otdfctl` directory
+// TODO the config file in gh is config.yaml -- might want to emulate this
 func LoadConfig(file string, key string) (*Config, error) {
 	// default the config values if not passed in
 	if file == "" && key == "" {

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/evertras/bubble-table/table"
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/opentdf/platform/protocol/go/policy"
@@ -53,7 +54,7 @@ func policy_getSubjectMapping(cmd *cobra.Command, args []string) {
 		rows = append(rows, mdRows...)
 	}
 
-	t := cli.NewTabular().Rows(rows...)
+	t := cli.NewTabular(rows...)
 	HandleSuccess(cmd, mapping.Id, t, mapping)
 }
 
@@ -65,8 +66,18 @@ func policy_listSubjectMappings(cmd *cobra.Command, args []string) {
 	if err != nil {
 		cli.ExitWithError("Failed to get subject mappings", err)
 	}
-	t := cli.NewTable().Width(180)
-	t.Headers("Id", "Subject AttrVal: Id", "Subject AttrVal: Value", "Actions", "Subject Condition Set: Id", "Subject Condition Set", "Labels", "Created At", "Updated At")
+	t := cli.NewTable(
+		cli.NewUUIDColumn(),
+		table.NewFlexColumn("subject_attrval_id", "Subject AttrVal: Id", 4),
+		table.NewFlexColumn("subject_attrval_value", "Subject AttrVal: Value", 3),
+		table.NewFlexColumn("actions", "Actions", 2),
+		table.NewFlexColumn("subject_condition_set_id", "Subject Condition Set: Id", 4),
+		table.NewFlexColumn("subject_condition_set", "Subject Condition Set", 3),
+		table.NewFlexColumn("labels", "Labels", 1),
+		table.NewFlexColumn("created_at", "Created At", 1),
+		table.NewFlexColumn("updated_at", "Updated At", 1),
+	)
+	rows := []table.Row{}
 	for _, sm := range list {
 		var actionsJSON []byte
 		if actionsJSON, err = json.Marshal(sm.Actions); err != nil {
@@ -79,19 +90,19 @@ func policy_listSubjectMappings(cmd *cobra.Command, args []string) {
 		}
 		metadata := cli.ConstructMetadata(sm.Metadata)
 
-		rowCells := []string{
-			sm.Id,
-			sm.AttributeValue.Id,
-			sm.AttributeValue.Value,
-			string(actionsJSON),
-			sm.SubjectConditionSet.Id,
-			string(subjectSetsJSON),
-			metadata["Labels"],
-			metadata["Created At"],
-			metadata["Updated At"],
-		}
-		t.Row(rowCells...)
+		rows = append(rows, table.NewRow(table.RowData{
+			"id":                       sm.Id,
+			"subject_attrval_id":       sm.AttributeValue.Id,
+			"subject_attrval_value":    sm.AttributeValue.Value,
+			"actions":                  string(actionsJSON),
+			"subject_condition_set_id": sm.SubjectConditionSet.Id,
+			"subject_condition_set":    string(subjectSetsJSON),
+			"labels":                   metadata["Labels"],
+			"created_at":               metadata["Created At"],
+			"updated_at":               metadata["Updated At"],
+		}))
 	}
+	t = t.WithRows(rows)
 	HandleSuccess(cmd, "", t, list)
 }
 
@@ -164,7 +175,7 @@ func policy_createSubjectMapping(cmd *cobra.Command, args []string) {
 		rows = append(rows, mdRows...)
 	}
 
-	t := cli.NewTabular().Rows(rows...)
+	t := cli.NewTabular(rows...)
 	HandleSuccess(cmd, mapping.Id, t, mapping)
 }
 
@@ -192,7 +203,7 @@ func policy_deleteSubjectMapping(cmd *cobra.Command, args []string) {
 	if mdRows := getMetadataRows(deleted.Metadata); mdRows != nil {
 		rows = append(rows, mdRows...)
 	}
-	t := cli.NewTabular().Rows(rows...)
+	t := cli.NewTabular(rows...)
 	HandleSuccess(cmd, id, t, deleted)
 }
 
@@ -231,7 +242,7 @@ func policy_updateSubjectMapping(cmd *cobra.Command, args []string) {
 	if mdRows := getMetadataRows(updated.Metadata); mdRows != nil {
 		rows = append(rows, mdRows...)
 	}
-	t := cli.NewTabular().Rows(rows...)
+	t := cli.NewTabular(rows...)
 
 	HandleSuccess(cmd, id, t, updated)
 }

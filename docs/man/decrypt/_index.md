@@ -7,6 +7,13 @@ command:
       shorthand: o
       description: 'The file destination for decrypted content to be written instead of stdout.'
       default: ''
+    - name: tdf-type
+      shorthand: t
+      description:  The type of tdf to decrypt as
+      enum:
+        - tdf3
+        - nano
+      default: tdf3
 ---
 
 Decrypt a Trusted Data Format (TDF) file and output the contents to stdout or a file in the current working directory.

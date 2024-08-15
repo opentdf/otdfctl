@@ -17,8 +17,3 @@ updates:
       interval: daily
     commit-message:
       prefix: 'chore(dependabot)'
-    ignore:
-      # The platform and SDK are not yet following semver, so we do not want a bump for every
-      # new commit. We will handle these updates manually while breaking change likelihood is high.
-      - dependency-name: github.com/opentdf/platform/protocol/go
-      - dependency-name: github.com/opentdf/platform/sdk

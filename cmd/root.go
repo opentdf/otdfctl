@@ -5,9 +5,9 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 
-	"github.com/opentdf/otdfctl/internal/config"
+	"github.com/opentdf/otdfctl/pkg/cli"
+	"github.com/opentdf/otdfctl/pkg/config"
 	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/spf13/cobra"
 )
@@ -27,51 +27,51 @@ var (
 )
 
 func init() {
-	doc := man.Docs.GetDoc("<root>")
-	RootCmd = &doc.Command
+	rootCmd := man.Docs.GetCommand("<root>", man.WithRun(func(cmd *cobra.Command, args []string) {
+		flaghelper := cli.NewFlagHelper(cmd)
+
+		if flaghelper.GetOptionalBool("version") {
+			fmt.Println(config.AppName + " version " + config.Version + " (" + config.BuildTime + ") " + config.CommitSha)
+			return
+		}
+
+		cmd.Help()
+	}))
+
+	RootCmd = &rootCmd.Command
+
+	RootCmd.Flags().Bool(
+		rootCmd.GetDocFlag("version").Name,
+		rootCmd.GetDocFlag("version").DefaultAsBool(),
+		rootCmd.GetDocFlag("version").Description,
+	)
+
 	RootCmd.PersistentFlags().String(
-		doc.GetDocFlag("host").Name,
-		doc.GetDocFlag("host").Default,
-		doc.GetDocFlag("host").Description,
+		rootCmd.GetDocFlag("host").Name,
+		rootCmd.GetDocFlag("host").Default,
+		rootCmd.GetDocFlag("host").Description,
+	)
+	RootCmd.PersistentFlags().Bool(
+		rootCmd.GetDocFlag("tls-no-verify").Name,
+		rootCmd.GetDocFlag("tls-no-verify").DefaultAsBool(),
+		rootCmd.GetDocFlag("tls-no-verify").Description,
 	)
 	RootCmd.PersistentFlags().String(
-		doc.GetDocFlag("log-level").Name,
-		doc.GetDocFlag("log-level").Default,
-		doc.GetDocFlag("log-level").Description,
+		rootCmd.GetDocFlag("log-level").Name,
+		rootCmd.GetDocFlag("log-level").Default,
+		rootCmd.GetDocFlag("log-level").Description,
 	)
 	RootCmd.PersistentFlags().StringVar(
 		&clientCredsFile,
-		doc.GetDocFlag("with-client-creds-file").Name,
-		doc.GetDocFlag("with-client-creds-file").Default,
-		doc.GetDocFlag("with-client-creds-file").Description,
+		rootCmd.GetDocFlag("with-client-creds-file").Name,
+		rootCmd.GetDocFlag("with-client-creds-file").Default,
+		rootCmd.GetDocFlag("with-client-creds-file").Description,
 	)
 	RootCmd.PersistentFlags().StringVar(
 		&clientCredsJSON,
-		doc.GetDocFlag("with-client-creds").Name,
-		doc.GetDocFlag("with-client-creds").Default,
-		doc.GetDocFlag("with-client-creds").Description,
+		rootCmd.GetDocFlag("with-client-creds").Name,
+		rootCmd.GetDocFlag("with-client-creds").Default,
+		rootCmd.GetDocFlag("with-client-creds").Description,
 	)
 	RootCmd.AddGroup(&cobra.Group{ID: "tdf"})
-}
-
-// Execute adds all child commands to the root command and sets flags appropriately.
-// The config file and key are defaulted to otdfctl.yaml.
-func Execute() {
-	ExecuteWithBootstrap("", "")
-}
-
-// Execute adds all child commands to the root command and sets flags appropriately.
-// It also allows the config file & key to be bootstrapped for wrapping the CLI.
-func ExecuteWithBootstrap(configFile, configKey string) {
-	cfgKey = configKey
-	cfg, err := config.LoadConfig(configFile, configKey)
-	if err != nil {
-		fmt.Println("Error loading config:", err)
-		os.Exit(1)
-	}
-	OtdfctlCfg = *cfg
-	err = RootCmd.Execute()
-	if err != nil {
-		os.Exit(1)
-	}
 }

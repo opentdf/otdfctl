@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"bufio"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -9,9 +8,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/charmbracelet/lipgloss/table"
-	"github.com/opentdf/otdfctl/internal/config"
+	"github.com/evertras/bubble-table/table"
 	"github.com/opentdf/otdfctl/pkg/cli"
+	"github.com/opentdf/otdfctl/pkg/config"
 	"github.com/opentdf/otdfctl/pkg/handlers"
 	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/opentdf/platform/protocol/go/common"
@@ -22,8 +21,7 @@ import (
 var devCmd = man.Docs.GetCommand("dev")
 
 func dev_designSystem(cmd *cobra.Command, args []string) {
-	fmt.Printf("Design system\n")
-	fmt.Printf("=============\n\n")
+	fmt.Printf("Design system\n=============\n\n")
 
 	printDSComponent("Table", renderDSTable())
 
@@ -38,11 +36,23 @@ func printDSComponent(title string, component string) {
 }
 
 func renderDSTable() string {
-	tbl := cli.NewTable()
-	tbl.Headers("One", "Two", "Three")
-	tbl.Row("1", "2", "3")
-	tbl.Row("4", "5", "6")
-	return tbl.Render()
+	tbl := cli.NewTable(
+		table.NewFlexColumn("one", "One", 1),
+		table.NewFlexColumn("two", "Two", 1),
+		table.NewFlexColumn("three", "Three", 1),
+	).WithRows([]table.Row{
+		table.NewRow(table.RowData{
+			"one":   "1",
+			"two":   "2",
+			"three": "3",
+		}),
+		table.NewRow(table.RowData{
+			"one":   "4",
+			"two":   "5",
+			"three": "6",
+		}),
+	})
+	return tbl.View()
 }
 
 func renderDSMessages() string {
@@ -99,7 +109,7 @@ func getMetadataUpdateBehavior() common.MetadataUpdateEnum {
 }
 
 // HandleSuccess prints a success message according to the configured format (styled table or JSON)
-func HandleSuccess(command *cobra.Command, id string, t *table.Table, policyObject interface{}) {
+func HandleSuccess(command *cobra.Command, id string, t table.Model, policyObject interface{}) {
 	if OtdfctlCfg.Output.Format == config.OutputJSON || configFlagOverrides.OutputFormatJSON {
 		if output, err := json.MarshalIndent(policyObject, "", "  "); err != nil {
 			cli.ExitWithError("Error marshalling policy object", err)
@@ -126,14 +136,8 @@ func readPipedStdin() []byte {
 		cli.ExitWithError("Failed to read stat from stdin", err)
 	}
 	if (stat.Mode() & os.ModeCharDevice) == 0 {
-		var buf []byte
-		scanner := bufio.NewScanner(os.Stdin)
-
-		for scanner.Scan() {
-			buf = append(buf, scanner.Bytes()...)
-		}
-
-		if err := scanner.Err(); err != nil {
+		buf, err := io.ReadAll(os.Stdin)
+		if err != nil {
 			cli.ExitWithError("failed to scan bytes from stdin", err)
 		}
 		return buf
@@ -157,14 +161,18 @@ func readBytesFromFile(filePath string) []byte {
 
 // instantiates a new handler with authentication via client credentials
 func NewHandler(cmd *cobra.Command) handlers.Handler {
-	platformEndpoint := cmd.Flag("host").Value.String()
+	flag := cli.NewFlagHelper(cmd)
+	host := flag.GetRequiredString("host")
+	tlsNoVerify := flag.GetOptionalBool("tls-no-verify")
+	clientCredsFile := flag.GetOptionalString("with-client-creds-file")
+	clientCredsJSON := flag.GetOptionalString("with-client-creds")
 
-	// load client credentials from file, JSON, or OS keyring
-	creds, err := handlers.GetClientCreds(clientCredsFile, []byte(clientCredsJSON))
+	creds, err := handlers.GetClientCreds(host, clientCredsFile, []byte(clientCredsJSON))
 	if err != nil {
 		cli.ExitWithError("Failed to get client credentials", err)
 	}
-	h, err := handlers.New(platformEndpoint, creds.ClientID, creds.ClientSecret)
+
+	h, err := handlers.NewWithCredentials(host, creds.ClientID, creds.ClientSecret, tlsNoVerify)
 	if err != nil {
 		if errors.Is(err, handlers.ErrUnauthenticated) {
 			cli.ExitWithError(fmt.Sprintf("Not logged in. Please authenticate via CLI auth flow(s) before using command (%s %s)", cmd.Parent().Use, cmd.Use), err)

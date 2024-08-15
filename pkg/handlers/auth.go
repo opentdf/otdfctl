@@ -10,17 +10,12 @@ import (
 
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/zalando/go-keyring"
-	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/clientcredentials"
 )
 
 const (
 	OTDFCTL_CLIENT_ID_CACHE_KEY = "OTDFCTL_DEFAULT_CLIENT_ID"
 	OTDFCTL_OIDC_TOKEN_KEY      = "OTDFCTL_OIDC_TOKEN"
 )
-
-// TODO: get this dynamically from the platform via SDK or dialing directly: [https://github.com/opentdf/platform/issues/147]
-const TOKEN_URL = "http://localhost:8888/auth/realms/opentdf/protocol/openid-connect/token"
 
 // CheckTokenExpiration checks if an OIDC token has expired.
 // Returns true if the token is still valid, false otherwise.
@@ -42,19 +37,60 @@ func CheckTokenExpiration(tokenString string) (bool, error) {
 	return false, fmt.Errorf("expiration time (exp) claim is missing or invalid")
 }
 
+func ClearCachedCredentials(endpoint string) error {
+	cachedClientID, err := GetClientIDFromCache(endpoint)
+	if err != nil {
+		if errors.Is(err, keyring.ErrNotFound) {
+			fmt.Println("No client-id found in the cache to clear.")
+		} else {
+			return errors.Join(errors.New("failed to retrieve client id from keyring"), err)
+		}
+	}
+
+	// clear the client ID and secret from the keyring
+	err = keyring.Delete(endpoint, cachedClientID)
+	if err != nil {
+		if errors.Is(err, keyring.ErrNotFound) {
+			fmt.Println("No client secret found in the cache to clear under client-id: ", cachedClientID)
+		} else {
+			return errors.Join(errors.New("failed to clear client secret from keyring"), err)
+		}
+	}
+
+	err = keyring.Delete(endpoint, OTDFCTL_CLIENT_ID_CACHE_KEY)
+	if err != nil {
+		if errors.Is(err, keyring.ErrNotFound) {
+			fmt.Println("No client id found in the cache to clear.")
+		} else {
+			return errors.Join(errors.New("failed to clear client id from keyring"), err)
+		}
+	}
+
+	err = keyring.Delete(endpoint, OTDFCTL_OIDC_TOKEN_KEY)
+	if err != nil {
+		if errors.Is(err, keyring.ErrNotFound) {
+			fmt.Println("No token found in the cache to clear.")
+		} else {
+			return errors.Join(errors.New("failed to clear token from keyring"), err)
+		}
+	}
+
+	return nil
+}
+
 // GetOIDCTokenFromCache retrieves the OIDC token from the keyring.
-func GetOIDCTokenFromCache() (string, error) {
-	return keyring.Get(TOKEN_URL, OTDFCTL_OIDC_TOKEN_KEY)
+func GetOIDCTokenFromCache(endpoint string) (string, error) {
+	return keyring.Get(endpoint, OTDFCTL_OIDC_TOKEN_KEY)
 }
 
 // GetClientIDFromCache retrieves the client ID from the keyring.
-func GetClientIDFromCache() (string, error) {
-	return keyring.Get(TOKEN_URL, OTDFCTL_CLIENT_ID_CACHE_KEY)
+func GetClientIDFromCache(endpoint string) (string, error) {
+	return keyring.Get(endpoint, OTDFCTL_CLIENT_ID_CACHE_KEY)
 }
 
 // GetClientSecretFromCache retrieves the client secret from the keyring.
-func GetClientSecretFromCache(clientID string) (string, error) {
-	return keyring.Get(TOKEN_URL, clientID)
+func GetClientSecretFromCache(endpoint string, clientID string) (string, error) {
+	return keyring.Get(endpoint, clientID)
 }
 
 // Client ID and Secret for use in the client credentials flow.
@@ -90,15 +126,15 @@ func GetClientCredsFromJSON(credsJSON []byte) (ClientCreds, error) {
 }
 
 // Retrieves the client secret from the keyring.
-func GetClientCredsFromCache() (ClientCreds, error) {
+func GetClientCredsFromCache(endpoint string) (ClientCreds, error) {
 	creds := ClientCreds{}
 	// we use the client id to cache the secret, so retrieve it first
-	clientID, err := keyring.Get(TOKEN_URL, OTDFCTL_CLIENT_ID_CACHE_KEY)
+	clientID, err := keyring.Get(endpoint, OTDFCTL_CLIENT_ID_CACHE_KEY)
 	if err != nil || clientID == "" {
 		return creds, errors.Join(errors.New("could not find clientID in OS keyring"), ErrUnauthenticated)
 	}
 
-	clientSecret, err := keyring.Get(TOKEN_URL, clientID)
+	clientSecret, err := keyring.Get(endpoint, clientID)
 	if err != nil {
 		return creds, err
 	}
@@ -108,53 +144,34 @@ func GetClientCredsFromCache() (ClientCreds, error) {
 	}, nil
 }
 
-func GetClientCreds(file string, credsJSON []byte) (ClientCreds, error) {
+func GetClientCreds(endpoint string, file string, credsJSON []byte) (ClientCreds, error) {
 	if file != "" {
 		return GetClientCredsFromFile(file)
 	}
 	if len(credsJSON) > 0 {
 		return GetClientCredsFromJSON(credsJSON)
 	}
-	return GetClientCredsFromCache()
+	return GetClientCredsFromCache(endpoint)
 }
 
 // Uses the OAuth2 client credentials flow to obtain a token.
-func GetTokenWithClientCreds(ctx context.Context, clientID, clientSecret, tokenURL string, noCache bool) (*oauth2.Token, error) {
-	// did the user pass a custom tokenURL?
-	if tokenURL == "" {
-		// use the default hardcoded constant
-		tokenURL = TOKEN_URL
+func GetTokenWithClientCreds(ctx context.Context, endpoint string, clientID string, clientSecret string, tlsNoVerify bool) error {
+	// TODO improve the way we validate the client credentials
+	// sdk, err := NewWithCredentials(endpoint, clientID, clientSecret, tlsNoVerify)
+	// if err != nil {
+	// 	return err
+	// }
+
+	// if _, err := sdk.Direct().Authorization.GetDecisions(ctx, &authorization.GetDecisionsRequest{}); err != nil {
+	// 	return errors.Join(errors.New("failed to get token with client credentials"), err)
+	// }
+
+	if err := keyring.Set(endpoint, clientID, clientSecret); err != nil {
+		return fmt.Errorf("failed to store client secret in key: %v", err)
+	}
+	if err := keyring.Set(endpoint, OTDFCTL_CLIENT_ID_CACHE_KEY, clientID); err != nil {
+		return fmt.Errorf("failed to store client ID in keyring: %v", err)
 	}
 
-	config := clientcredentials.Config{
-		ClientID:     clientID,
-		ClientSecret: clientSecret,
-		TokenURL:     tokenURL,
-	}
-
-	token, err := config.Token(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	// if the users didn't specifically specify not to cache, then we'll cache the clientID, clientSecret, and OIDC_TOKEN in the keyring
-	if !noCache {
-		// lets store our id and secret in the keyring
-		errID := keyring.Set(tokenURL, OTDFCTL_CLIENT_ID_CACHE_KEY, clientID)
-		err := keyring.Set(tokenURL, clientID, clientSecret)
-		// lets also store the oidc token
-		errToken := keyring.Set(tokenURL, OTDFCTL_OIDC_TOKEN_KEY, token.AccessToken)
-		if err != nil {
-			return nil, err
-		}
-
-		if errID != nil {
-			return nil, fmt.Errorf("failed to store client ID in keyring: %v", errID)
-		}
-
-		if errToken != nil {
-			return nil, fmt.Errorf("failed to store OIDC Token in keyring: %v", errToken)
-		}
-	}
-	return token, nil
+	return nil
 }

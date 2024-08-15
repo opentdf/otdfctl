@@ -1,7 +1,27 @@
 # We're going to be using this Makefile as a sort of task runner, for all sorts of operations in this project
 
 # first we'll grab the current version from our ENV VAR (added by our CI) - see here: https://github.com/marketplace/actions/version-increment
+BINARY_NAME := otdfctl
 CURR_VERSION := ${SEM_VER}
+COMMIT_SHA := ${COMMIT_SHA}
+BUILD_TIME := $(shell date -u '+%Y-%m-%dT%H:%M:%SZ')
+
+GO_MOD_LINE = $(shell head -n 1 go.mod | cut -c 8-)
+GO_MOD_NAME = $(word 1,$(subst /, ,$(GO_MOD_LINE)))
+APP_CFG = $(GO_MOD_LINE)/pkg/config
+
+GO_BUILD_FLAGS=-ldflags "-X $(APP_CFG).Version=${CURR_VERSION} -X $(APP_CFG).CommitSha=${COMMIT_SHA} -X $(APP_CFG).BuildTime=${BUILD_TIME}"
+GO_BUILD_PREFIX=$(TARGET_DIR)/$(BINARY_NAME)-${CURR_VERSION}
+
+# If commit sha is not available try git
+ifndef COMMIT_SHA
+	COMMIT_SHA := $(shell git rev-parse HEAD)
+endif
+
+# If current version is not available try git
+ifndef CURR_VERSION
+	CURR_VERSION := $(shell git describe --tags --always)
+endif
 
 # Default target executed when no arguments are given to make.
 # NOTE: .PHONY is used to indicate that the target is not a file (e.g. there is no file called 'build-darwin-amd64', instead the .PHONY directive tells make that the proceeding target is a command to be executed, not a file to be generated)
@@ -9,47 +29,19 @@ CURR_VERSION := ${SEM_VER}
 all: run
 .DEFAULT_GOAL := run
 
-
-
-
-# Binary name: Change this to your actual binary name
-BINARY_NAME=${BIN_NAME}
-
-
 # Target directory for compiled binaries
 TARGET_DIR=target
 
 # Output directory for the zipped artifacts
 OUTPUT_DIR=output
 
-# Targets for building the project for different platforms
-.PHONY: build-darwin-amd64 build-darwin-arm64 build-linux-amd64 build-linux-arm build-linux-arm64 build-windows-amd64 build-windows-arm build-windows-arm64
-build: clean build-darwin-amd64 build-darwin-arm64 build-linux-amd64 build-linux-arm build-linux-arm64 build-windows-amd64 build-windows-arm build-windows-arm64
-
 # Build commands for each platform
-build-darwin-amd64:
-	GOOS=darwin GOARCH=amd64 go build -o $(TARGET_DIR)/$(BINARY_NAME)-${CURR_VERSION}-darwin-amd64 .
+PLATFORMS := darwin-amd64 darwin-arm64 linux-amd64 linux-arm linux-arm64 windows-amd64-.exe windows-arm-.exe windows-arm64-.exe
 
-build-darwin-arm64:
-	GOOS=darwin GOARCH=arm64 go build -o $(TARGET_DIR)/$(BINARY_NAME)-${CURR_VERSION}-darwin-arm64 .
+build: clean $(addprefix build-,$(PLATFORMS))
 
-build-linux-amd64:
-	GOOS=linux GOARCH=amd64 go build -o $(TARGET_DIR)/$(BINARY_NAME)-${CURR_VERSION}-linux-amd64 .
-
-build-linux-arm:
-	GOOS=linux GOARCH=arm go build -o $(TARGET_DIR)/$(BINARY_NAME)-${CURR_VERSION}-linux-arm .
-
-build-linux-arm64:
-	GOOS=linux GOARCH=arm64 go build -o $(TARGET_DIR)/$(BINARY_NAME)-${CURR_VERSION}-linux-arm64 .
-
-build-windows-amd64:
-	GOOS=windows GOARCH=amd64 go build -o $(TARGET_DIR)/$(BINARY_NAME)-${CURR_VERSION}-windows-amd64.exe .
-
-build-windows-arm:
-	GOOS=windows GOARCH=arm go build -o $(TARGET_DIR)/$(BINARY_NAME)-${CURR_VERSION}-windows-arm.exe .
-
-build-windows-arm64:
-	GOOS=windows GOARCH=arm64 go build -o $(TARGET_DIR)/$(BINARY_NAME)-${CURR_VERSION}-windows-arm64.exe .
+build-%:
+	GOOS=$(word 1,$(subst -, ,$*)) GOARCH=$(word 2,$(subst -, ,$*)) go build $(GO_BUILD_FLAGS) -o $(GO_BUILD_PREFIX)-$(word 1,$(subst -, ,$*))-$(word 2,$(subst -, ,$*))$(word 3,$(subst -, ,$*))
 
 # Target for running the project (adjust as necessary for your project)
 .PHONY: run
