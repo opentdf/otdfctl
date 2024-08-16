@@ -167,12 +167,13 @@ func NewHandler(cmd *cobra.Command) handlers.Handler {
 	clientCredsFile := flag.GetOptionalString("with-client-creds-file")
 	clientCredsJSON := flag.GetOptionalString("with-client-creds")
 
+	// Get any credentials we can from the cache or flags
 	creds, err := handlers.GetClientCreds(host, clientCredsFile, []byte(clientCredsJSON))
 	if err != nil {
 		cli.ExitWithError("Failed to get client credentials", err)
 	}
 
-	h, err := handlers.NewWithCredentials(host, creds.ClientID, creds.ClientSecret, tlsNoVerify)
+	h, err := handlers.NewWithCredentials(host, creds, tlsNoVerify)
 	if err != nil {
 		if errors.Is(err, handlers.ErrUnauthenticated) {
 			cli.ExitWithError(fmt.Sprintf("Not logged in. Please authenticate via CLI auth flow(s) before using command (%s %s)", cmd.Parent().Use, cmd.Use), err)

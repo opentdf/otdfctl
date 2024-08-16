@@ -2,14 +2,23 @@ package handlers
 
 import (
 	"context"
+	"crypto/rand"
+	"crypto/sha256"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"os"
+	"os/exec"
+	"os/signal"
+	"runtime"
+	"syscall"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/zalando/go-keyring"
+	"golang.org/x/oauth2"
 )
 
 const (
@@ -157,7 +166,7 @@ func GetClientCreds(endpoint string, file string, credsJSON []byte) (ClientCreds
 // Uses the OAuth2 client credentials flow to obtain a token.
 func GetTokenWithClientCreds(ctx context.Context, endpoint string, clientID string, clientSecret string, tlsNoVerify bool) error {
 	// TODO improve the way we validate the client credentials
-	// sdk, err := NewWithCredentials(endpoint, clientID, clientSecret, tlsNoVerify)
+	// sdk, err := NewWithClientCredentials(endpoint, clientID, clientSecret, tlsNoVerify)
 	// if err != nil {
 	// 	return err
 	// }
@@ -174,4 +183,188 @@ func GetTokenWithClientCreds(ctx context.Context, endpoint string, clientID stri
 	}
 
 	return nil
+}
+
+type AuthorizationCodePKCE struct {
+	Oauth2Config *oauth2.Config
+	Token        *oauth2.Token
+}
+
+type OpenTdfTokenSource struct {
+	OpenTdfToken *oauth2.Token
+}
+
+const (
+	opentdfPublicClientID = "opentdf-public"
+	authCodeFlowPort      = "9000"
+)
+
+func (acp *AuthorizationCodePKCE) Login(platformEndpoint, tokenURL, authURL string, noPrint bool) (*oauth2.Token, error) {
+	var (
+		token *oauth2.Token
+		err   error
+	)
+
+	// if a login is initiated, clear any existing token from the keyring proactively
+	keyring.Delete(platformEndpoint, OTDFCTL_OIDC_TOKEN_KEY)
+
+	conf := &oauth2.Config{
+		ClientID:    opentdfPublicClientID,
+		Scopes:      []string{"openid", "profile", "email"},
+		RedirectURL: fmt.Sprintf("http://localhost:%s/callback", authCodeFlowPort),
+		Endpoint: oauth2.Endpoint{
+			AuthURL:  authURL,
+			TokenURL: tokenURL,
+		},
+	}
+	acp.Oauth2Config = conf
+
+	// Create a HTTP server to handle the callback ":9000"
+	srv := &http.Server{Addr: ":9000"}
+	stop := make(chan os.Signal, 1)
+
+	// Generate a code verifier and code challenge.
+	verifier, err := generateCodeVerifier()
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate code verifier: %v", err)
+	}
+	challenge := generateCodeChallenge(verifier)
+
+	// Start a web server to handle the OAuth2 callback.
+	http.HandleFunc("/callback", func(w http.ResponseWriter, r *http.Request) {
+		// Get the authorization code from the query parameters.
+		code := r.URL.Query().Get("code")
+		if code == "" {
+			http.Error(w, "Missing authorization code", http.StatusBadRequest)
+			return
+		}
+
+		// Exchange the authorization code for an access token.
+		token, err = conf.Exchange(context.Background(), code, oauth2.SetAuthURLParam("code_verifier", verifier))
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Failed to exchange authorization code: %v", err), http.StatusInternalServerError)
+			return
+		}
+
+		// Let the user know the flow was successful.
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode("Return to the CLI to continue. You may close this tab.")
+
+		// Send a value to the stop channel to simulate the SIGINT signal.
+		stop <- syscall.SIGINT
+	})
+	url := conf.AuthCodeURL("state", oauth2.AccessTypeOffline, oauth2.SetAuthURLParam("code_challenge", challenge), oauth2.SetAuthURLParam("code_challenge_method", "S256"), oauth2.SetAuthURLParam("audience", "http://localhost:8080"))
+
+	// avoid printing the help directions if not caching the token to avoid breaking scripts
+	if !noPrint {
+		fmt.Print("Open the following URL in a browser if it did not automatically open for you: ", url)
+	}
+	openBrowser(url)
+
+	// Start the HTTP server in a separate goroutine.
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			panic(fmt.Errorf("failed to start HTTP server: %w", err))
+		}
+	}()
+
+	// Wait for a SIGINT or SIGTERM signal to shutdown the server.
+	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
+	<-stop
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := srv.Shutdown(ctx); err != nil {
+		fmt.Printf("Failed to shutdown HTTP server gracefully: %v", err)
+		return nil, err
+	}
+	acp.Token = token
+	return token, nil
+}
+
+func (acp *AuthorizationCodePKCE) Client() (*http.Client, error) {
+	token, err := acp.Oauth2Config.TokenSource(context.Background(), acp.Token).Token()
+	if err != nil {
+		return nil, err
+	}
+	return acp.Oauth2Config.Client(context.Background(), token), nil
+}
+
+func openBrowser(url string) error {
+	var err error
+
+	switch runtime.GOOS {
+	case "linux":
+		err = exec.Command("xdg-open", url).Start()
+	case "darwin":
+		err = exec.Command("open", url).Start()
+	case "windows":
+		err = exec.Command("rundll32", "url.dll,FileProtocolHandler", url).Start()
+	default:
+		err = fmt.Errorf("unsupported platform")
+	}
+
+	if err != nil {
+		return fmt.Errorf("failed to open browser: %v", err)
+	}
+
+	return nil
+}
+
+func generateCodeVerifier() (string, error) {
+	const codeVerifierLength = 32 // You can adjust the length of the code verifier as needed
+	randomBytes := make([]byte, codeVerifierLength)
+	_, err := rand.Read(randomBytes)
+	if err != nil {
+		return "", fmt.Errorf("failed to generate code verifier: %v", err)
+	}
+	return base64.RawURLEncoding.EncodeToString(randomBytes), nil
+}
+
+func generateCodeChallenge(verifier string) string {
+	hash := sha256.Sum256([]byte(verifier))
+	return base64.RawURLEncoding.EncodeToString(hash[:])
+}
+
+func (ots *OpenTdfTokenSource) Token() (*oauth2.Token, error) {
+	return ots.OpenTdfToken, nil
+}
+
+func LoginWithPKCE(host string, tlsNoVerify bool, noCache bool) (*oauth2.Token, error) {
+	h, err := New(host, tlsNoVerify)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create handler: %w", err)
+	}
+	tokenURL, err := h.Direct().PlatformTokenEndpoint()
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve well-known token endpoint: %w", err)
+	}
+	authURL, err := h.Direct().PlatformAuthzEndpoint()
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve well-known authz endpoint: %w", err)
+	}
+
+	acp := new(AuthorizationCodePKCE)
+
+	tok, err := acp.Login(h.platformEndpoint, tokenURL, authURL, noCache)
+	if err != nil {
+		return nil, fmt.Errorf("failed to login: %w", err)
+	}
+
+	if !noCache {
+		if err := keyring.Set(h.platformEndpoint, OTDFCTL_OIDC_TOKEN_KEY, tok.AccessToken); err != nil {
+			return nil, fmt.Errorf("failed to store token in keyring: %w", err)
+		}
+	}
+	return tok, nil
+}
+
+func buildTokenSource(token string) oauth2.TokenSource {
+	return &OpenTdfTokenSource{
+		OpenTdfToken: &oauth2.Token{
+			AccessToken: token,
+		},
+	}
 }
