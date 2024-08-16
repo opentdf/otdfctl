@@ -56,3 +56,28 @@ func ConfirmTextInput(action, resource, inputName, shouldMatchValue string) {
 		ExitWithError("Confirmation prompt failed", err)
 	}
 }
+
+func AskForInput(message string) string {
+	var input string
+	err := huh.NewInput().
+		Value(&input).
+		Title(message).
+		Run()
+	if err != nil {
+		ExitWithError("Prompt for input failed", err)
+	}
+	return input
+}
+
+func AskForSecret(message string) string {
+	var secret string
+	err := huh.NewInput().
+		Value(&secret).
+		Title(message).
+		EchoMode(huh.EchoModePassword).
+		Run()
+	if err != nil {
+		ExitWithError("Prompt for secret failed", err)
+	}
+	return secret
+}

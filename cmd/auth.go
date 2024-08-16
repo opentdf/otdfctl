@@ -8,14 +8,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func init() {
-	cmd := man.Docs.GetCommand("auth",
-		man.WithSubcommands(clientCredentialsCmd),
-		man.WithSubcommands(printAccessToken),
-		man.WithSubcommands(clearCachedCredsCmd),
-	)
+var authCmd = man.Docs.GetCommand("auth", man.WithHiddenFlags(
+	"with-client-creds",
+	"with-client-creds-file",
+))
 
-	cmd.PersistentPreRun = func(cmd *cobra.Command, args []string) {
+func init() {
+	RootCmd.AddCommand(&authCmd.Command)
+
+	authCmd.PersistentPreRun = func(cmd *cobra.Command, args []string) {
 		// not supported on linux
 		if runtime.GOOS == "linux" {
 			cli.ExitWithWarning(
@@ -24,6 +25,4 @@ func init() {
 			)
 		}
 	}
-
-	RootCmd.AddCommand(&cmd.Command)
 }
