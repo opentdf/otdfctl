@@ -14,9 +14,10 @@ var noCacheCreds bool
 func auth_codeLogin(cmd *cobra.Command, args []string) {
 	flagHelper := cli.NewFlagHelper(cmd)
 	host := flagHelper.GetRequiredString("host")
+	clientID := flagHelper.GetOptionalString("client-id")
 	tlsNoVerify := flagHelper.GetOptionalBool("tls-no-verify")
 
-	tok, err := handlers.LoginWithPKCE(host, tlsNoVerify, noCacheCreds)
+	tok, err := handlers.LoginWithPKCE(host, clientID, tlsNoVerify, noCacheCreds)
 	if err != nil {
 		cli.ExitWithError("could not authenticate", err)
 	}

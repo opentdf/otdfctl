@@ -5,10 +5,9 @@ command:
   name: code-login
   flags:
     - name: client-id
-      description: A clientId for use in auth code flow
+      description: A clientId for use in auth code flow (default = platform well-known public_client_id)
       shorthand: i
-      default: opentdf-public
-      required: true
+      required: false
     - name: no-cache
       description: Do not cache credentials on the native OS (print access token to stdout)
       default: false

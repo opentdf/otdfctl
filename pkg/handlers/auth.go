@@ -138,7 +138,7 @@ func Login(platformEndpoint, tokenURL, authURL, publicClientID string, noPrint b
 }
 
 // Logs in using the auth code PKCE flow driven by the platform well-known idP OIDC configuration.
-func LoginWithPKCE(host string, tlsNoVerify bool, noCache bool) (*oauth2.Token, error) {
+func LoginWithPKCE(host, publicClientID string, tlsNoVerify bool, noCache bool) (*oauth2.Token, error) {
 	// retrieve idP well-known configuration values via unauthenticated SDK
 	h, err := New(host, tlsNoVerify)
 	if err != nil {
@@ -153,9 +153,11 @@ func LoginWithPKCE(host string, tlsNoVerify bool, noCache bool) (*oauth2.Token, 
 	if err != nil || authURL == "" {
 		return nil, fmt.Errorf("failed to retrieve well-known authz endpoint: %w", err)
 	}
-	publicClientID, err := h.Direct().PlatformConfiguration.PublicClientID()
-	if err != nil || publicClientID == "" {
-		return nil, fmt.Errorf("failed to retrieve well-known public client ID: %w", err)
+	if publicClientID == "" {
+		publicClientID, err = h.Direct().PlatformConfiguration.PublicClientID()
+		if err != nil || publicClientID == "" {
+			return nil, fmt.Errorf("failed to retrieve well-known public client ID: %w", err)
+		}
 	}
 
 	tok, err := Login(h.platformEndpoint, tokenURL, authURL, publicClientID, noCache)
