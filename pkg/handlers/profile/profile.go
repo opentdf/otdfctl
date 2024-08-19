@@ -26,6 +26,8 @@ import (
 // - linux support
 // - global logout
 
+// TODO - need set default
+
 const (
 	STORE_NAMESPACE   = "otdfctl"
 	STORE_KEY_PROFILE = "profile"
@@ -61,6 +63,10 @@ func New() (*Profile, error) {
 	return p, nil
 }
 
+func (p *Profile) GetGlobalConfig() *GlobalStore {
+	return p.globalStore
+}
+
 func (p *Profile) AddProfile(profileName string, endpoint string, setDefault bool) error {
 	var err error
 
@@ -90,6 +96,26 @@ func (p *Profile) AddProfile(profileName string, endpoint string, setDefault boo
 	return nil
 }
 
+func (p *Profile) GetCurrentProfile() (*ProfileStore, error) {
+	if p.currentProfileStore == nil {
+		return nil, errors.New("no current profile set")
+	}
+
+	return p.currentProfileStore, nil
+}
+
+func (p *Profile) GetProfile(profileName string) (*ProfileStore, error) {
+	if !p.globalStore.ProfileExists(profileName) {
+		return nil, errors.New("profile does not exist")
+	}
+
+	return LoadProfileStore(profileName)
+}
+
+func (p *Profile) ListProfiles() []string {
+	return p.globalStore.ListProfiles()
+}
+
 func (p *Profile) UseProfile(profileName string) error {
 	var err error
 
@@ -101,7 +127,7 @@ func (p *Profile) UseProfile(profileName string) error {
 	}
 
 	// set current profile
-	p.currentProfileStore, err = p.LoadProfile(profileName)
+	p.currentProfileStore, err = p.GetProfile(profileName)
 	return err
 }
 
@@ -114,12 +140,12 @@ func (p *Profile) UseDefaultProfile() error {
 	return p.UseProfile(defaultProfile)
 }
 
-func (p *Profile) LoadProfile(profileName string) (*ProfileStore, error) {
+func (p *Profile) SetDefaultProfile(profileName string) error {
 	if !p.globalStore.ProfileExists(profileName) {
-		return nil, errors.New("profile does not exist")
+		return errors.New("profile does not exist")
 	}
 
-	return LoadProfileStore(profileName)
+	return p.globalStore.SetDefaultProfile(profileName)
 }
 
 func (p *Profile) DeleteProfile(profileName string) error {
@@ -146,16 +172,4 @@ func (p *Profile) DeleteProfile(profileName string) error {
 	}
 
 	return nil
-}
-
-func (p *Profile) GlobalConfig() *GlobalStore {
-	return p.globalStore
-}
-
-func (p *Profile) CurrentProfile() (*ProfileStore, error) {
-	if p.currentProfileStore == nil {
-		return nil, errors.New("no profile loaded")
-	}
-
-	return p.currentProfileStore, nil
 }

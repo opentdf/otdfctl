@@ -44,7 +44,7 @@ func GetClientCredsFromJSON(credsJSON []byte) (ClientCredentials, error) {
 }
 
 func GetClientCredsFromProfile(p *profile.Profile) (ClientCredentials, error) {
-	cp, err := p.CurrentProfile()
+	cp, err := p.GetCurrentProfile()
 	if err != nil {
 		return ClientCredentials{}, err
 	}

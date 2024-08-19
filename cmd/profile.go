@@ -10,7 +10,7 @@ import (
 
 var profileCmd = &cobra.Command{
 	Use:   "profile",
-	Short: "Manage profiles",
+	Short: "Manage profiles (experimental)",
 }
 
 var profileInitCmd = &cobra.Command{
@@ -56,8 +56,8 @@ var profileListCmd = &cobra.Command{
 	Short: "List profiles",
 	Run: func(cmd *cobra.Command, args []string) {
 		print := cli.NewPrinter(true)
-		for _, p := range profileStore.GlobalConfig().ListProfiles() {
-			if p == profileStore.GlobalConfig().GetDefaultProfile() {
+		for _, p := range profileStore.GetGlobalConfig().ListProfiles() {
+			if p == profileStore.GetGlobalConfig().GetDefaultProfile() {
 				print.Printf("* %s\n", p)
 				continue
 			}
@@ -72,7 +72,7 @@ var profileGetCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		profileName := args[0]
-		p, err := profileStore.LoadProfile(profileName)
+		p, err := profileStore.GetProfile(profileName)
 		if err != nil {
 			cli.ExitWithError("Failed to load profile", err)
 		}
@@ -98,6 +98,22 @@ var profileDeleteCmd = &cobra.Command{
 	},
 }
 
+var profileSetDefaultCmd = &cobra.Command{
+	Use:   "set-default <profile>",
+	Short: "Set a profile as default",
+	Args:  cobra.ExactArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		profileName := args[0]
+
+		print := cli.NewPrinter(true)
+		print.Printf("Setting profile %s as default... ", profileName)
+		if err := profileStore.SetDefaultProfile(profileName); err != nil {
+			cli.ExitWithError("Failed to set default profile", err)
+		}
+		print.Println("ok")
+	},
+}
+
 var profileSetEndpointCmd = &cobra.Command{
 	Use:   "set-endpoint <profile> <endpoint>",
 	Short: "Set a profile value",
@@ -106,7 +122,7 @@ var profileSetEndpointCmd = &cobra.Command{
 		profileName := args[0]
 		endpoint := args[1]
 
-		p, err := profileStore.LoadProfile(profileName)
+		p, err := profileStore.GetProfile(profileName)
 		if err != nil {
 			cli.ExitWithError("Failed to load profile", err)
 		}
@@ -132,13 +148,14 @@ func init() {
 
 	RootCmd.AddCommand(profileCmd)
 
-	if profileStore.GlobalConfig().GetDefaultProfile() == "" {
+	if profileStore.GetGlobalConfig().GetDefaultProfile() == "" {
 		profileCmd.AddCommand(profileInitCmd)
 	} else {
 		profileCmd.AddCommand(profileCreateCmd)
 		profileCmd.AddCommand(profileListCmd)
 		profileCmd.AddCommand(profileGetCmd)
 		profileCmd.AddCommand(profileDeleteCmd)
+		profileCmd.AddCommand(profileSetDefaultCmd)
 		profileCmd.AddCommand(profileSetEndpointCmd)
 	}
 }

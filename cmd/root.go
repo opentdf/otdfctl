@@ -45,7 +45,7 @@ func NewHandler(cmd *cobra.Command) handlers.Handler {
 
 	var authCredentials profile.AuthCredentials
 	if profileStore != nil {
-		cp, err := profileStore.CurrentProfile()
+		cp, err := profileStore.GetCurrentProfile()
 		if err != nil {
 			cli.ExitWithError("Failed to get current profile", err)
 		}
