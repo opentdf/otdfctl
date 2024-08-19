@@ -92,6 +92,7 @@ func GetTokenWithClientCreds(ctx context.Context, endpoint string, c ClientCrede
 // Facilitates an auth code PKCE flow to obtain OIDC tokens.
 // Spawns a local server to handle the callback and opens a browser window in each respective OS.
 func Login(platformEndpoint, tokenURL, authURL, publicClientID string, noPrint bool) (*oauth2.Token, error) {
+	// Generate random hash and encryption keys for cookie handling
 	hashKey := make([]byte, 16)
 	encryptKey := make([]byte, 16)
 
@@ -116,11 +117,14 @@ func Login(platformEndpoint, tokenURL, authURL, publicClientID string, noPrint b
 	}
 
 	ctx := context.Background()
-	cookiehandler := httphelper.NewCookieHandler(hashKey, encryptKey, httphelper.WithUnsecure())
+	cookiehandler := httphelper.NewCookieHandler(hashKey, encryptKey)
 
 	relyingParty, err := oidcrp.NewRelyingPartyOAuth(conf,
+		// allow cookie handling for PKCE
 		oidcrp.WithCookieHandler(cookiehandler),
+		// use PKCE
 		oidcrp.WithPKCE(cookiehandler),
+		// allow IAT claim offset of 5 seconds
 		oidcrp.WithVerifierOpts(oidcrp.WithIssuedAtOffset(5*time.Second)),
 	)
 	if err != nil {
@@ -133,13 +137,14 @@ func Login(platformEndpoint, tokenURL, authURL, publicClientID string, noPrint b
 	return tok.Token, nil
 }
 
+// Logs in using the auth code PKCE flow driven by the platform well-known idP OIDC configuration.
 func LoginWithPKCE(host string, tlsNoVerify bool, noCache bool) (*oauth2.Token, error) {
+	// retrieve idP well-known configuration values via unauthenticated SDK
 	h, err := New(host, tlsNoVerify)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create handler: %w", err)
 	}
 
-	// retrieve idP well-known configuration values
 	tokenURL, err := h.Direct().PlatformConfiguration.TokenEndpoint()
 	if err != nil || tokenURL == "" {
 		return nil, fmt.Errorf("failed to retrieve well-known token endpoint: %w", err)

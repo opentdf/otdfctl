@@ -24,6 +24,7 @@ func auth_codeLogin(cmd *cobra.Command, args []string) {
 		fmt.Print(tok.AccessToken)
 		return
 	}
+	// TODO: set to the keyring/profile here
 	fmt.Println(cli.SuccessMessage("Successfully logged in with auth code PKCE flow. Credentials cached on native OS."))
 }
 
@@ -46,4 +47,5 @@ func init() {
 		codeLoginCmd.GetDocFlag("no-cache").DefaultAsBool(),
 		codeLoginCmd.GetDocFlag("no-cache").Description,
 	)
+	authCmd.AddCommand(&codeLoginCmd.Command)
 }
