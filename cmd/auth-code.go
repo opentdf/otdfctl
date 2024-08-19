@@ -17,16 +17,17 @@ func auth_codeLogin(cmd *cobra.Command, args []string) {
 	clientID := flagHelper.GetOptionalString("client-id")
 	tlsNoVerify := flagHelper.GetOptionalBool("tls-no-verify")
 
+	printer := cli.NewPrinter(!noCacheCreds)
+
 	tok, err := handlers.LoginWithPKCE(host, clientID, tlsNoVerify, noCacheCreds)
 	if err != nil {
 		cli.ExitWithError("could not authenticate", err)
 	}
 	if noCacheCreds {
 		fmt.Print(tok.AccessToken)
-		return
 	}
 	// TODO: set to the keyring/profile here
-	fmt.Println(cli.SuccessMessage("Successfully logged in with auth code PKCE flow. Credentials cached on native OS."))
+	printer.Println(cli.SuccessMessage("Successfully logged in with auth code PKCE flow. Credentials cached on native OS."))
 }
 
 var codeLoginCmd *man.Doc
