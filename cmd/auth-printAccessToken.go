@@ -12,7 +12,8 @@ import (
 )
 
 var auth_printAccessTokenCmd = man.Docs.GetCommand("auth/print-access-token",
-	man.WithRun(auth_printAccessToken))
+	man.WithRun(auth_printAccessToken),
+)
 
 func auth_printAccessToken(cmd *cobra.Command, args []string) {
 	flagHelper := cli.NewFlagHelper(cmd)

@@ -167,6 +167,7 @@ func NewHandler(cmd *cobra.Command) handlers.Handler {
 	clientCredsFile := flag.GetOptionalString("with-client-creds-file")
 	clientCredsJSON := flag.GetOptionalString("with-client-creds")
 
+	// Get any credentials we can from the cache or flags
 	creds, err := handlers.GetClientCreds(host, clientCredsFile, []byte(clientCredsJSON))
 	if err != nil {
 		cli.ExitWithError("Failed to get client credentials", err)
