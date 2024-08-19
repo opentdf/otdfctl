@@ -3,27 +3,27 @@ package handlers
 import (
 	"context"
 	"crypto/rand"
-	"crypto/sha256"
-	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/http"
 	"os"
-	"os/exec"
-	"os/signal"
-	"runtime"
-	"syscall"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/google/uuid"
 	"github.com/zalando/go-keyring"
+	oidcrp "github.com/zitadel/oidc/v3/pkg/client/rp"
+	oidcCLI "github.com/zitadel/oidc/v3/pkg/client/rp/cli"
+	httphelper "github.com/zitadel/oidc/v3/pkg/http"
+	"github.com/zitadel/oidc/v3/pkg/oidc"
 	"golang.org/x/oauth2"
 )
 
 const (
 	OTDFCTL_CLIENT_ID_CACHE_KEY = "OTDFCTL_DEFAULT_CLIENT_ID"
 	OTDFCTL_OIDC_TOKEN_KEY      = "OTDFCTL_OIDC_TOKEN"
+	authCallbackPath            = "/callback"
+	authCodeFlowPort            = "9000"
 )
 
 // CheckTokenExpiration checks if an OIDC token has expired.
@@ -185,151 +185,51 @@ func GetTokenWithClientCreds(ctx context.Context, endpoint string, clientID stri
 	return nil
 }
 
-type AuthorizationCodePKCE struct {
-	Oauth2Config *oauth2.Config
-	Token        *oauth2.Token
-}
+// Facilitates an auth code PKCE flow to obtain OIDC tokens.
+// Spawns a local server to handle the callback and opens a browser window in each respective OS.
+func Login(platformEndpoint, tokenURL, authURL, publicClientID string, noPrint bool) (*oauth2.Token, error) {
+	hashKey := make([]byte, 16)
+	encryptKey := make([]byte, 16)
 
-type OpenTdfTokenSource struct {
-	OpenTdfToken *oauth2.Token
-}
+	_, err := rand.Read(hashKey)
+	if err != nil {
+		return nil, err
+	}
 
-const (
-	opentdfPublicClientID = "opentdf-public"
-	authCodeFlowPort      = "9000"
-)
-
-func (acp *AuthorizationCodePKCE) Login(platformEndpoint, tokenURL, authURL string, noPrint bool) (*oauth2.Token, error) {
-	var (
-		token *oauth2.Token
-		err   error
-	)
+	_, err = rand.Read(encryptKey)
+	if err != nil {
+		return nil, err
+	}
 
 	// if a login is initiated, clear any existing token from the keyring proactively
 	keyring.Delete(platformEndpoint, OTDFCTL_OIDC_TOKEN_KEY)
 
 	conf := &oauth2.Config{
-		ClientID:    opentdfPublicClientID,
+		ClientID:    publicClientID,
 		Scopes:      []string{"openid", "profile", "email"},
-		RedirectURL: fmt.Sprintf("http://localhost:%s/callback", authCodeFlowPort),
+		RedirectURL: fmt.Sprintf("http://localhost:%s%s", authCodeFlowPort, authCallbackPath),
 		Endpoint: oauth2.Endpoint{
 			AuthURL:  authURL,
 			TokenURL: tokenURL,
 		},
 	}
-	acp.Oauth2Config = conf
 
-	// Create a HTTP server to handle the callback ":9000"
-	srv := &http.Server{Addr: ":9000"}
-	stop := make(chan os.Signal, 1)
+	ctx := context.Background()
+	cookiehandler := httphelper.NewCookieHandler(hashKey, encryptKey, httphelper.WithUnsecure())
 
-	// Generate a code verifier and code challenge.
-	verifier, err := generateCodeVerifier()
+	relyingParty, err := oidcrp.NewRelyingPartyOAuth(conf,
+		oidcrp.WithCookieHandler(cookiehandler),
+		oidcrp.WithPKCE(cookiehandler),
+		oidcrp.WithVerifierOpts(oidcrp.WithIssuedAtOffset(5*time.Second)),
+	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to generate code verifier: %v", err)
+		return nil, fmt.Errorf("failed to create relying party: %v", err)
 	}
-	challenge := generateCodeChallenge(verifier)
-
-	// Start a web server to handle the OAuth2 callback.
-	http.HandleFunc("/callback", func(w http.ResponseWriter, r *http.Request) {
-		// Get the authorization code from the query parameters.
-		code := r.URL.Query().Get("code")
-		if code == "" {
-			http.Error(w, "Missing authorization code", http.StatusBadRequest)
-			return
-		}
-
-		// Exchange the authorization code for an access token.
-		token, err = conf.Exchange(context.Background(), code, oauth2.SetAuthURLParam("code_verifier", verifier))
-		if err != nil {
-			http.Error(w, fmt.Sprintf("Failed to exchange authorization code: %v", err), http.StatusInternalServerError)
-			return
-		}
-
-		// Let the user know the flow was successful.
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode("Return to the CLI to continue. You may close this tab.")
-
-		// Send a value to the stop channel to simulate the SIGINT signal.
-		stop <- syscall.SIGINT
-	})
-	url := conf.AuthCodeURL("state", oauth2.AccessTypeOffline, oauth2.SetAuthURLParam("code_challenge", challenge), oauth2.SetAuthURLParam("code_challenge_method", "S256"), oauth2.SetAuthURLParam("audience", "http://localhost:8080"))
-
-	// avoid printing the help directions if not caching the token to avoid breaking scripts
-	if !noPrint {
-		fmt.Print("Open the following URL in a browser if it did not automatically open for you: ", url)
+	stateProvider := func() string {
+		return uuid.New().String()
 	}
-	openBrowser(url)
-
-	// Start the HTTP server in a separate goroutine.
-	go func() {
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			panic(fmt.Errorf("failed to start HTTP server: %w", err))
-		}
-	}()
-
-	// Wait for a SIGINT or SIGTERM signal to shutdown the server.
-	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
-	<-stop
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	if err := srv.Shutdown(ctx); err != nil {
-		fmt.Printf("Failed to shutdown HTTP server gracefully: %v", err)
-		return nil, err
-	}
-	acp.Token = token
-	return token, nil
-}
-
-func (acp *AuthorizationCodePKCE) Client() (*http.Client, error) {
-	token, err := acp.Oauth2Config.TokenSource(context.Background(), acp.Token).Token()
-	if err != nil {
-		return nil, err
-	}
-	return acp.Oauth2Config.Client(context.Background(), token), nil
-}
-
-func openBrowser(url string) error {
-	var err error
-
-	switch runtime.GOOS {
-	case "linux":
-		err = exec.Command("xdg-open", url).Start()
-	case "darwin":
-		err = exec.Command("open", url).Start()
-	case "windows":
-		err = exec.Command("rundll32", "url.dll,FileProtocolHandler", url).Start()
-	default:
-		err = fmt.Errorf("unsupported platform")
-	}
-
-	if err != nil {
-		return fmt.Errorf("failed to open browser: %v", err)
-	}
-
-	return nil
-}
-
-func generateCodeVerifier() (string, error) {
-	const codeVerifierLength = 32 // You can adjust the length of the code verifier as needed
-	randomBytes := make([]byte, codeVerifierLength)
-	_, err := rand.Read(randomBytes)
-	if err != nil {
-		return "", fmt.Errorf("failed to generate code verifier: %v", err)
-	}
-	return base64.RawURLEncoding.EncodeToString(randomBytes), nil
-}
-
-func generateCodeChallenge(verifier string) string {
-	hash := sha256.Sum256([]byte(verifier))
-	return base64.RawURLEncoding.EncodeToString(hash[:])
-}
-
-func (ots *OpenTdfTokenSource) Token() (*oauth2.Token, error) {
-	return ots.OpenTdfToken, nil
+	tok := oidcCLI.CodeFlow[*oidc.IDTokenClaims](ctx, relyingParty, authCallbackPath, authCodeFlowPort, stateProvider)
+	return tok.Token, nil
 }
 
 func LoginWithPKCE(host string, tlsNoVerify bool, noCache bool) (*oauth2.Token, error) {
@@ -337,18 +237,22 @@ func LoginWithPKCE(host string, tlsNoVerify bool, noCache bool) (*oauth2.Token, 
 	if err != nil {
 		return nil, fmt.Errorf("failed to create handler: %w", err)
 	}
-	tokenURL, err := h.Direct().PlatformTokenEndpoint()
+
+	// retrieve idP well-known configuration values
+	tokenURL, err := h.Direct().PlatformConfiguration.TokenEndpoint()
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve well-known token endpoint: %w", err)
 	}
-	authURL, err := h.Direct().PlatformAuthzEndpoint()
+	authURL, err := h.Direct().PlatformConfiguration.AuthzEndpoint()
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve well-known authz endpoint: %w", err)
 	}
+	publicClientID, err := h.Direct().PlatformConfiguration.PublicClientID()
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve well-known public client ID: %w", err)
+	}
 
-	acp := new(AuthorizationCodePKCE)
-
-	tok, err := acp.Login(h.platformEndpoint, tokenURL, authURL, noCache)
+	tok, err := Login(h.platformEndpoint, tokenURL, authURL, publicClientID, noCache)
 	if err != nil {
 		return nil, fmt.Errorf("failed to login: %w", err)
 	}
@@ -359,12 +263,4 @@ func LoginWithPKCE(host string, tlsNoVerify bool, noCache bool) (*oauth2.Token, 
 		}
 	}
 	return tok, nil
-}
-
-func buildTokenSource(token string) oauth2.TokenSource {
-	return &OpenTdfTokenSource{
-		OpenTdfToken: &oauth2.Token{
-			AccessToken: token,
-		},
-	}
 }

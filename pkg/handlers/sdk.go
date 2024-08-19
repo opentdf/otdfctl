@@ -25,12 +25,12 @@ type Handler struct {
 func NewWithCredentials(endpoint string, creds ClientCreds, tlsNoVerify bool) (Handler, error) {
 	if creds.ClientID == "" || creds.ClientSecret == "" {
 		// try to get token from cache
-		tok, err := GetOIDCTokenFromCache(endpoint)
-		if err != nil {
-			return Handler{}, err
-		}
-		source := buildTokenSource(tok)
-		return New(endpoint, tlsNoVerify, sdk.WithCustomAccessTokenSource(source))
+		// tok, err := GetOIDCTokenFromCache(endpoint)
+		// if err != nil {
+		// 	return Handler{}, err
+		// }
+		// source := buildTokenSource(tok)
+		return New(endpoint, tlsNoVerify /*sdk.WithCustomAccessTokenSource(source)*/)
 	}
 	return New(endpoint, tlsNoVerify, sdk.WithClientCredentials(creds.ClientID, creds.ClientSecret, []string{"email"}))
 }
