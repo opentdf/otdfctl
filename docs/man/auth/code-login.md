@@ -16,6 +16,6 @@ command:
 Authenticate for use of the OpenTDF Platform through a browser (required).
 
 Provide a specific public 'client-id' known to support the Auth Code PKCE flow and recognized
-by the OpenTDF Platform, or use the default `opentdf-public` client if not specified.
+by the OpenTDF Platform, or use the default public client in the platform well-known configuration if not specified.
 
 The OIDC Access Token will be stored in the OS-specific keychain by default, otherwise printed to `stdout` if `--no-cache` is passed.
