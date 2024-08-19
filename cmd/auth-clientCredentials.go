@@ -45,10 +45,10 @@ func auth_clientCredentials(cmd *cobra.Command, args []string) {
 	p.Println("ok")
 
 	p.Print("Storing client ID and secret in keyring... ")
-	if err := handlers.NewKeyring(host).SetClientCredentials(c); err != nil {
-		fmt.Println("failed")
-		cli.ExitWithError("Failed to cache client credentials", err)
-	}
+	// if err := handlers.NewKeyring(host).SetClientCredentials(c); err != nil {
+	// 	fmt.Println("failed")
+	// 	cli.ExitWithError("Failed to cache client credentials", err)
+	// }
 	p.Println("ok")
 }
 

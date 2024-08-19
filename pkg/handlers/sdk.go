@@ -3,8 +3,8 @@ package handlers
 import (
 	"context"
 	"errors"
-	"net/url"
 
+	"github.com/opentdf/otdfctl/pkg/utils"
 	"github.com/opentdf/platform/protocol/go/common"
 	"github.com/opentdf/platform/sdk"
 )
@@ -31,32 +31,12 @@ func New(platformEndpoint string, tlsNoVerify bool, sdkOpts ...sdk.Option) (Hand
 	var opts []sdk.Option
 	opts = append(opts, sdkOpts...)
 
-	// Try an parse scheme out of platformEndpoint
-	// If it fails, use the default scheme of https
-	// There has to be a better way to do this
-	platformURL, err := url.Parse(platformEndpoint)
+	u, err := utils.NormalizeEndpoint(platformEndpoint)
 	if err != nil {
 		return Handler{}, err
 	}
 
-	switch platformURL.Scheme {
-	case "http":
-		opts = append(opts, sdk.WithInsecurePlaintextConn())
-		if platformURL.Port() == "" {
-			platformURL.Host += ":80"
-		}
-	case "https":
-		if platformURL.Port() == "" {
-			platformURL.Host += ":443"
-		}
-		if tlsNoVerify {
-			opts = append(opts, sdk.WithInsecureSkipVerifyConn())
-		}
-	default:
-		return Handler{}, errors.New("invalid scheme")
-	}
-
-	sdk, err := sdk.New(platformURL.Host, opts...)
+	sdk, err := sdk.New(u.Host, opts...)
 	if err != nil {
 		return Handler{}, err
 	}

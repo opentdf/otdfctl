@@ -7,15 +7,9 @@ import (
 	"net/url"
 	"os"
 
+	"github.com/opentdf/otdfctl/pkg/handlers/profile"
 	oidcrp "github.com/zitadel/oidc/v3/pkg/client/rp"
 	"golang.org/x/oauth2"
-)
-
-const (
-	OTDFCTL_KEYRING_SERVICE            = "otdfctl"
-	OTDFCTL_CLIENT_ID_CACHE_KEY        = "OTDFCTL_DEFAULT_CLIENT_ID"
-	OTDFCTL_KEYRING_CLIENT_CREDENTIALS = "OTDFCTL_CLIENT_CREDENTIALS"
-	OTDFCTL_OIDC_TOKEN_KEY             = "OTDFCTL_OIDC_TOKEN"
 )
 
 type ClientCredentials struct {
@@ -49,6 +43,22 @@ func GetClientCredsFromJSON(credsJSON []byte) (ClientCredentials, error) {
 	return creds, nil
 }
 
+func GetClientCredsFromProfile(p *profile.Profile) (ClientCredentials, error) {
+	cp, err := p.CurrentProfile()
+	if err != nil {
+		return ClientCredentials{}, err
+	}
+	c := cp.GetAuthCredentials()
+	if c.AuthType != profile.PROFILE_AUTH_TYPE_CLIENT_CREDENTIALS {
+		return ClientCredentials{}, errors.New("invalid auth type")
+	}
+
+	return ClientCredentials{
+		ClientId:     c.ClientCredentials.ClientId,
+		ClientSecret: c.ClientCredentials.ClientSecret,
+	}, nil
+}
+
 func GetClientCreds(endpoint string, file string, credsJSON []byte) (ClientCredentials, error) {
 	if file != "" {
 		return GetClientCredsFromFile(file)
@@ -56,7 +66,7 @@ func GetClientCreds(endpoint string, file string, credsJSON []byte) (ClientCrede
 	if len(credsJSON) > 0 {
 		return GetClientCredsFromJSON(credsJSON)
 	}
-	return NewKeyring(endpoint).GetClientCredentials()
+	return ClientCredentials{}, errors.New("no client credentials provided")
 }
 
 func getPlatformIssuer(endpoint string, tlsNoVerify bool) (string, error) {

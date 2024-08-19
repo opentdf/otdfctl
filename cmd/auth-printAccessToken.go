@@ -1,12 +1,7 @@
 package cmd
 
 import (
-	"context"
-	"encoding/json"
-	"fmt"
-
 	"github.com/opentdf/otdfctl/pkg/cli"
-	"github.com/opentdf/otdfctl/pkg/handlers"
 	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/spf13/cobra"
 )
@@ -23,36 +18,36 @@ func auth_printAccessToken(cmd *cobra.Command, args []string) {
 	p := cli.NewPrinter(printEnabled)
 
 	p.Printf("Getting stored client credentials for %s... ", host)
-	clientCredentials, err := handlers.NewKeyring(host).GetClientCredentials()
-	if err != nil {
-		p.Println("failed")
-		cli.ExitWithError("Client credentials not found. Please use `auth client-credentials` to set them", err)
-	}
-	p.Println("ok")
+	// clientCredentials, err := handlers.NewKeyring(host).GetClientCredentials()
+	// if err != nil {
+	// 	p.Println("failed")
+	// 	cli.ExitWithError("Client credentials not found. Please use `auth client-credentials` to set them", err)
+	// }
+	// p.Println("ok")
 
-	p.Printf("Getting access token for %s... ", clientCredentials.ClientId)
-	tok, err := handlers.GetTokenWithClientCreds(
-		context.Background(),
-		host,
-		clientCredentials,
-		flagHelper.GetOptionalBool("tls-no-verify"),
-	)
-	if err != nil {
-		p.Println("failed")
-		cli.ExitWithError("Failed to get token", err)
-	}
-	p.Println("ok")
-	p.Printf("Access Token: %s\n", tok.AccessToken)
+	// p.Printf("Getting access token for %s... ", clientCredentials.ClientId)
+	// tok, err := handlers.GetTokenWithClientCreds(
+	// 	context.Background(),
+	// 	host,
+	// 	clientCredentials,
+	// 	flagHelper.GetOptionalBool("tls-no-verify"),
+	// )
+	// if err != nil {
+	// 	p.Println("failed")
+	// 	cli.ExitWithError("Failed to get token", err)
+	// }
+	// p.Println("ok")
+	// p.Printf("Access Token: %s\n", tok.AccessToken)
 
-	if jsonOut {
-		d, err := json.MarshalIndent(tok, "", "  ")
-		if err != nil {
-			cli.ExitWithError("Failed to marshal token to json", err)
-		}
+	// if jsonOut {
+	// 	d, err := json.MarshalIndent(tok, "", "  ")
+	// 	if err != nil {
+	// 		cli.ExitWithError("Failed to marshal token to json", err)
+	// 	}
 
-		fmt.Println(string(d))
-		return
-	}
+	// 	fmt.Println(string(d))
+	// 	return
+	// }
 }
 
 func init() {

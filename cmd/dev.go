@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -11,7 +10,6 @@ import (
 	"github.com/evertras/bubble-table/table"
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/config"
-	"github.com/opentdf/otdfctl/pkg/handlers"
 	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/opentdf/platform/protocol/go/common"
 	"github.com/spf13/cobra"
@@ -157,29 +155,6 @@ func readBytesFromFile(filePath string) []byte {
 		cli.ExitWithError(fmt.Sprintf("Failed to read bytes from file at path: %s", filePath), err)
 	}
 	return bytes
-}
-
-// instantiates a new handler with authentication via client credentials
-func NewHandler(cmd *cobra.Command) handlers.Handler {
-	flag := cli.NewFlagHelper(cmd)
-	host := flag.GetRequiredString("host")
-	tlsNoVerify := flag.GetOptionalBool("tls-no-verify")
-	clientCredsFile := flag.GetOptionalString("with-client-creds-file")
-	clientCredsJSON := flag.GetOptionalString("with-client-creds")
-
-	creds, err := handlers.GetClientCreds(host, clientCredsFile, []byte(clientCredsJSON))
-	if err != nil {
-		cli.ExitWithError("Failed to get client credentials", err)
-	}
-
-	h, err := handlers.NewWithCredentials(host, creds.ClientId, creds.ClientSecret, tlsNoVerify)
-	if err != nil {
-		if errors.Is(err, handlers.ErrUnauthenticated) {
-			cli.ExitWithError(fmt.Sprintf("Not logged in. Please authenticate via CLI auth flow(s) before using command (%s %s)", cmd.Parent().Use, cmd.Use), err)
-		}
-		cli.ExitWithError("Failed to connect to server", err)
-	}
-	return h
 }
 
 func init() {

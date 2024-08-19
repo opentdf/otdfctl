@@ -4,27 +4,83 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/config"
+	"github.com/opentdf/otdfctl/pkg/handlers"
+	"github.com/opentdf/otdfctl/pkg/handlers/profile"
 	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/spf13/cobra"
 )
 
 var (
-	cfgKey          string
-	OtdfctlCfg      config.Config
-	clientCredsFile string
-	clientCredsJSON string
-
+	cfgKey              string
+	OtdfctlCfg          config.Config
+	clientCredsFile     string
+	clientCredsJSON     string
 	configFlagOverrides = config.ConfigFlagOverrides{}
-)
 
-// RootCmd represents the base command when called without any subcommands.
-var (
+	profileStore *profile.Profile
+
 	RootCmd = &man.Docs.GetDoc("<root>").Command
 )
+
+// instantiates a new handler with authentication via client credentials
+func NewHandler(cmd *cobra.Command) handlers.Handler {
+	flag := cli.NewFlagHelper(cmd)
+	host := flag.GetRequiredString("host")
+	tlsNoVerify := flag.GetOptionalBool("tls-no-verify")
+	clientCredsFile := flag.GetOptionalString("with-client-creds-file")
+	clientCredsJSON := flag.GetOptionalString("with-client-creds")
+	profileName := flag.GetOptionalString("profile")
+
+	// use the profile
+	if profileStore != nil {
+		if err := profileStore.UseProfile(profileName); err != nil {
+			cli.ExitWithError("Failed to load profile", err)
+		}
+	}
+
+	var authCredentials profile.AuthCredentials
+	if profileStore != nil {
+		cp, err := profileStore.CurrentProfile()
+		if err != nil {
+			cli.ExitWithError("Failed to get current profile", err)
+		}
+		authCredentials = cp.GetAuthCredentials()
+	} else {
+		creds, err := handlers.GetClientCreds(host, clientCredsFile, []byte(clientCredsJSON))
+		if err != nil {
+			cli.ExitWithError("Failed to get client credentials", err)
+		}
+
+		authCredentials = profile.AuthCredentials{
+			AuthType: profile.PROFILE_AUTH_TYPE_CLIENT_CREDENTIALS,
+			ClientCredentials: profile.ClientCredentials{
+				ClientId:     creds.ClientId,
+				ClientSecret: creds.ClientSecret,
+			},
+		}
+	}
+
+	h := handlers.Handler{}
+	if authCredentials.AuthType == profile.PROFILE_AUTH_TYPE_CLIENT_CREDENTIALS {
+		var err error
+		clientCredentials := authCredentials.ClientCredentials
+		h, err = handlers.NewWithCredentials(host, clientCredentials.ClientId, clientCredentials.ClientSecret, tlsNoVerify)
+		if err != nil {
+			if errors.Is(err, handlers.ErrUnauthenticated) {
+				cli.ExitWithError(fmt.Sprintf("Not logged in. Please authenticate via CLI auth flow(s) before using command (%s %s)", cmd.Parent().Use, cmd.Use), err)
+			}
+			cli.ExitWithError("Failed to connect to server", err)
+		}
+	} else {
+		cli.ExitWithError("Invalid auth type", errors.New("invalid auth type"))
+	}
+	return h
+}
 
 func init() {
 	rootCmd := man.Docs.GetCommand("<root>", man.WithRun(func(cmd *cobra.Command, args []string) {
