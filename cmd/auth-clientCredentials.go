@@ -1,9 +1,7 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
-	"log/slog"
 
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/handlers"
@@ -11,84 +9,49 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	clientCredentialsCmd = man.Docs.GetCommand("auth/client-credentials",
-		man.WithRun(auth_clientCredentials),
-	)
-	noCacheCreds bool
+var clientCredentialsCmd = man.Docs.GetCommand("auth/client-credentials",
+	man.WithRun(auth_clientCredentials),
+	man.WithHiddenFlags("with-client-creds", "with-client-creds-file"),
 )
 
 func auth_clientCredentials(cmd *cobra.Command, args []string) {
-	var err error
+	var c handlers.ClientCredentials
 
 	flagHelper := cli.NewFlagHelper(cmd)
 	host := flagHelper.GetRequiredString("host")
 	tlsNoVerify := flagHelper.GetOptionalBool("tls-no-verify")
-	clientID := flagHelper.GetOptionalString("client-id")
-	clientSecret := flagHelper.GetOptionalString("client-secret")
 
-	slog.Debug("Checking for client credentials file", slog.String("with-client-creds-file", clientCredsFile))
-	if clientCredsFile != "" {
-		creds, err := handlers.GetClientCredsFromFile(clientCredsFile)
-		if err != nil {
-			cli.ExitWithError("Failed to parse client credentials JSON", err)
-		}
-		clientID = creds.ClientID
-		clientSecret = creds.ClientSecret
+	p := cli.NewPrinter(true)
+
+	if len(args) > 0 {
+		c.ClientId = args[0]
+	}
+	if len(args) > 1 {
+		c.ClientSecret = args[1]
 	}
 
-	// if not provided by flag, check keyring cache for clientID
-	if clientID == "" {
-		slog.Debug("No client-id provided. Attempting to retrieve the default from keyring.")
-		clientID, err = handlers.GetClientIDFromCache(host)
-		if err != nil || clientID == "" {
-			cli.ExitWithError("Please provide required flag: (client-id)", errors.New("no client-id found"))
-		} else {
-			slog.Debug(cli.SuccessMessage("Retrieved stored client-id from keyring"))
-		}
+	if c.ClientId == "" {
+		c.ClientId = cli.AskForInput("Enter client id: ")
+	}
+	if c.ClientSecret == "" {
+		c.ClientSecret = cli.AskForSecret("Enter client secret: ")
 	}
 
-	// check if we have a clientSecret in the keyring, if a null value is passed in
-	if clientSecret == "" {
-		clientSecret, err = handlers.GetClientSecretFromCache(host, clientID)
-		if err == nil || clientSecret == "" {
-			cli.ExitWithError("Please provide required flag: (client-secret)", errors.New("no client-secret found"))
-		} else {
-			slog.Debug("Retrieved stored client-secret from keyring")
-		}
-	}
-
-	slog.Debug("Attempting to login with client credentials", slog.String("client-id", clientID))
-	if err := handlers.GetTokenWithClientCreds(cmd.Context(), host, clientID, clientSecret, tlsNoVerify); err != nil {
+	p.Printf("Logging in with client ID and secret for %s... ", host)
+	if _, err := handlers.GetTokenWithClientCreds(cmd.Context(), host, c, tlsNoVerify); err != nil {
+		fmt.Println("failed")
 		cli.ExitWithError("An error occurred during login. Please check your credentials and try again", err)
 	}
+	p.Println("ok")
 
-	fmt.Println(cli.SuccessMessage("Successfully logged in with client ID and secret"))
+	p.Print("Storing client ID and secret in keyring... ")
+	if err := handlers.NewKeyring(host).SetClientCredentials(c); err != nil {
+		fmt.Println("failed")
+		cli.ExitWithError("Failed to cache client credentials", err)
+	}
+	p.Println("ok")
 }
 
 func init() {
-	clientCredentialsCmd := man.Docs.GetCommand("auth/client-credentials",
-		man.WithRun(auth_clientCredentials),
-		// use the individual client-id and client-secret flags here instead of the global with-client-creds flag
-		man.WithHiddenFlags("with-client-creds", "with-client-creds-file"),
-	)
-	clientCredentialsCmd.Flags().StringP(
-		clientCredentialsCmd.GetDocFlag("client-id").Name,
-		clientCredentialsCmd.GetDocFlag("client-id").Shorthand,
-		clientCredentialsCmd.GetDocFlag("client-id").Default,
-		clientCredentialsCmd.GetDocFlag("client-id").Description,
-	)
-	clientCredentialsCmd.Flags().StringP(
-		clientCredentialsCmd.GetDocFlag("client-secret").Name,
-		clientCredentialsCmd.GetDocFlag("client-secret").Shorthand,
-		clientCredentialsCmd.GetDocFlag("client-secret").Default,
-		clientCredentialsCmd.GetDocFlag("client-secret").Description,
-	)
-	clientCredentialsCmd.Flags().BoolVarP(
-		&noCacheCreds,
-		clientCredentialsCmd.GetDocFlag("no-cache").Name,
-		clientCredentialsCmd.GetDocFlag("no-cache").Shorthand,
-		clientCredentialsCmd.GetDocFlag("no-cache").DefaultAsBool(),
-		clientCredentialsCmd.GetDocFlag("no-cache").Description,
-	)
+	authCmd.AddCommand(&clientCredentialsCmd.Command)
 }
