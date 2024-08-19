@@ -9,6 +9,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var noCacheCreds bool
+
 func auth_codeLogin(cmd *cobra.Command, args []string) {
 	flagHelper := cli.NewFlagHelper(cmd)
 	host := flagHelper.GetRequiredString("host")

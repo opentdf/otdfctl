@@ -69,19 +69,14 @@ func GetClientCreds(endpoint string, file string, credsJSON []byte) (ClientCrede
 	return NewKeyring(endpoint).GetClientCredentials()
 }
 
-func getPlatformIssuer(endpoint string, tlsNoVerify bool) (string, error) {
-	// Create a new handler with the provided endpoint and no credentials (empty strings is required by the SDK)
-	h, err := NewWithCredentials(endpoint, "", "", tlsNoVerify)
-	if err != nil {
-		return "", err
-	}
-
-	return h.sdk.PlatformIssuer(), nil
-}
-
 // Uses the OAuth2 client credentials flow to obtain a token.
 func GetTokenWithClientCreds(ctx context.Context, endpoint string, c ClientCredentials, tlsNoVerify bool) (*oauth2.Token, error) {
-	issuer, err := getPlatformIssuer(endpoint, tlsNoVerify)
+	h, err := New(endpoint, tlsNoVerify)
+	if err != nil {
+		return nil, err
+	}
+
+	issuer, err := h.Direct().PlatformConfiguration.Issuer()
 	if err != nil {
 		return nil, err
 	}
@@ -109,9 +104,6 @@ func Login(platformEndpoint, tokenURL, authURL, publicClientID string, noPrint b
 	if err != nil {
 		return nil, err
 	}
-
-	// if a login is initiated, clear any existing token from the keyring proactively
-	keyring.Delete(platformEndpoint, OTDFCTL_OIDC_TOKEN_KEY)
 
 	conf := &oauth2.Config{
 		ClientID:    publicClientID,
@@ -149,15 +141,15 @@ func LoginWithPKCE(host string, tlsNoVerify bool, noCache bool) (*oauth2.Token, 
 
 	// retrieve idP well-known configuration values
 	tokenURL, err := h.Direct().PlatformConfiguration.TokenEndpoint()
-	if err != nil {
+	if err != nil || tokenURL == "" {
 		return nil, fmt.Errorf("failed to retrieve well-known token endpoint: %w", err)
 	}
 	authURL, err := h.Direct().PlatformConfiguration.AuthzEndpoint()
-	if err != nil {
+	if err != nil || authURL == "" {
 		return nil, fmt.Errorf("failed to retrieve well-known authz endpoint: %w", err)
 	}
 	publicClientID, err := h.Direct().PlatformConfiguration.PublicClientID()
-	if err != nil {
+	if err != nil || publicClientID == "" {
 		return nil, fmt.Errorf("failed to retrieve well-known public client ID: %w", err)
 	}
 
