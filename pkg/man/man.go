@@ -61,7 +61,7 @@ func WithHiddenFlags(flags ...string) CommandOpts {
 			for _, f := range flags {
 				command.Flags().MarkHidden(f)
 			}
-			command.Parent().HelpFunc()(command, strings)
+			d.Parent().HelpFunc()(command, strings)
 		})
 	}
 }
@@ -192,15 +192,17 @@ func init() {
 
 func processDoc(doc string) (*Doc, error) {
 	if len(doc) <= 0 {
-		return nil, fmt.Errorf("Empty document")
+		return nil, fmt.Errorf("empty document")
 	}
 	var matter struct {
 		Title   string `yaml:"title"`
 		Command struct {
-			Name    string    `yaml:"name"`
-			Hidden  bool      `yaml:"hidden"`
-			Aliases []string  `yaml:"aliases"`
-			Flags   []DocFlag `yaml:"flags"`
+			Name          string    `yaml:"name"`
+			Args          []string  `yaml:"arguments"`
+			ArbitraryArgs []string  `yaml:"arbitraryArgs"`
+			Hidden        bool      `yaml:"hidden"`
+			Aliases       []string  `yaml:"aliases"`
+			Flags         []DocFlag `yaml:"flags"`
 		} `yaml:"command"`
 	}
 	rest, err := frontmatter.Parse(strings.NewReader(doc), &matter)
@@ -216,9 +218,18 @@ func processDoc(doc string) (*Doc, error) {
 
 	long := "# " + matter.Title + "\n\n" + strings.TrimSpace(string(rest))
 
+	var args cobra.PositionalArgs
+	if len(c.Args) > 0 {
+		args = cobra.ExactArgs(len(c.Args))
+	}
+	if len(c.ArbitraryArgs) > 0 {
+		args = cobra.ArbitraryArgs
+	}
+
 	d := Doc{
 		cobra.Command{
 			Use:     c.Name,
+			Args:    args,
 			Hidden:  c.Hidden,
 			Aliases: c.Aliases,
 			Short:   matter.Title,

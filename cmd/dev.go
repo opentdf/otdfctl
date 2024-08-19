@@ -172,7 +172,7 @@ func NewHandler(cmd *cobra.Command) handlers.Handler {
 		cli.ExitWithError("Failed to get client credentials", err)
 	}
 
-	h, err := handlers.NewWithCredentials(host, creds.ClientID, creds.ClientSecret, tlsNoVerify)
+	h, err := handlers.NewWithCredentials(host, creds.ClientId, creds.ClientSecret, tlsNoVerify)
 	if err != nil {
 		if errors.Is(err, handlers.ErrUnauthenticated) {
 			cli.ExitWithError(fmt.Sprintf("Not logged in. Please authenticate via CLI auth flow(s) before using command (%s %s)", cmd.Parent().Use, cmd.Use), err)
