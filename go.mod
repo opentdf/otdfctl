@@ -2,8 +2,6 @@ module github.com/opentdf/otdfctl
 
 go 1.22.5
 
-replace github.com/opentdf/platform/sdk => ../platform/sdk
-
 require (
 	github.com/adrg/frontmatter v0.2.0
 	github.com/charmbracelet/bubbles v0.18.0
@@ -18,7 +16,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/itchyny/gojq v0.12.16
 	github.com/opentdf/platform/protocol/go v0.2.13
-	github.com/opentdf/platform/sdk v0.3.5
+	github.com/opentdf/platform/sdk v0.3.8
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.9.0
