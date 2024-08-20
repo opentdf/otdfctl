@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/opentdf/otdfctl/pkg/cli"
@@ -13,13 +14,21 @@ func policy_assignKasGrant(cmd *cobra.Command, args []string) {
 	defer h.Close()
 
 	flagHelper := cli.NewFlagHelper(cmd)
-
+	nsID := flagHelper.GetRequiredString("namespace-id")
 	attrID := flagHelper.GetOptionalString("attribute-id")
 	valID := flagHelper.GetOptionalString("value-id")
 	kasID := flagHelper.GetRequiredString("kas-id")
-	if attrID == "" && valID == "" {
-		cli.ExitWithError("Must specify and Attribute Definition ID or Value ID to assign a KAS Grant.", nil)
+
+	count := 0
+	for _, v := range []string{nsID, attrID, valID} {
+		if v != "" {
+			count++
+		}
 	}
+	if count != 1 {
+		cli.ExitWithError("Must specify exactly one Attribute Namespace ID, Definition ID, or Value ID to unassign.", errors.New("invalid flag values"))
+	}
+
 	var (
 		id     string
 		header string
@@ -32,15 +41,23 @@ func policy_assignKasGrant(cmd *cobra.Command, args []string) {
 		cli.ExitWithError("Failed to get registered KAS", err)
 	}
 
-	if attrID != "" {
-		res, err = h.UpdateKasGrantForAttribute(attrID, kasID)
+	ctx := cmd.Context()
+	if nsID != "" {
+		res, err = h.AssignKasGrantToNamespace(ctx, nsID, kasID)
+		if err != nil {
+			cli.ExitWithError("Failed to assign KAS Grant for Namespace", err)
+		}
+		id = nsID
+		header = "Namespace ID"
+	} else if attrID != "" {
+		res, err = h.AssignKasGrantToAttribute(ctx, attrID, kasID)
 		if err != nil {
 			cli.ExitWithError("Failed to assign KAS Grant for Attribute Definition", err)
 		}
 		id = attrID
 		header = "Attribute ID"
 	} else {
-		res, err = h.UpdateKasGrantForValue(valID, kasID)
+		res, err = h.AssignKasGrantToValue(ctx, valID, kasID)
 		if err != nil {
 			cli.ExitWithError("Failed to assign KAS Grant for Attribute Value", err)
 		}
@@ -57,12 +74,19 @@ func policy_unassignKasGrant(cmd *cobra.Command, args []string) {
 	defer h.Close()
 
 	flagHelper := cli.NewFlagHelper(cmd)
+	nsID := flagHelper.GetRequiredString("namespace-id")
 	attrID := flagHelper.GetOptionalString("attribute-id")
 	valID := flagHelper.GetOptionalString("value-id")
 	kasID := flagHelper.GetRequiredString("kas-id")
 
-	if attrID == "" && valID == "" {
-		cli.ExitWithError("Must specify an Attribute Definition ID or Value ID to unassign.", nil)
+	count := 0
+	for _, v := range []string{nsID, attrID, valID} {
+		if v != "" {
+			count++
+		}
+	}
+	if count != 1 {
+		cli.ExitWithError("Must specify exactly one Attribute Namespace ID, Definition ID, or Value ID to unassign.", errors.New("invalid flag values"))
 	}
 	var (
 		res     interface{}
@@ -78,14 +102,29 @@ func policy_unassignKasGrant(cmd *cobra.Command, args []string) {
 	}
 	kasURI := kas.GetUri()
 
-	if attrID != "" {
+	ctx := cmd.Context()
+	if nsID != "" {
+		ns, err := h.GetNamespace(nsID)
+		if err != nil || ns == nil {
+			cli.ExitWithError("Failed to get namespace definition", err)
+		}
+		confirm = fmt.Sprintf("the grant to namespace FQN (%s) of KAS URI", ns.GetFqn())
+		cli.ConfirmAction(cli.ActionDelete, confirm, kasURI)
+		res, err = h.DeleteKasGrantFromNamespace(ctx, nsID, kasID)
+		if err != nil {
+			cli.ExitWithError("Failed to update KAS grant for namespace", err)
+		}
+
+		rowID = []string{"Namespace ID", nsID}
+		rowFQN = []string{"Namespace FQN", ns.GetFqn()}
+	} else if attrID != "" {
 		attr, err := h.GetAttribute(attrID)
 		if err != nil || attr == nil {
 			cli.ExitWithError("Failed to get attribute definition", err)
 		}
 		confirm = fmt.Sprintf("the grant to attribute FQN (%s) of KAS URI", attr.GetFqn())
 		cli.ConfirmAction(cli.ActionDelete, confirm, kasURI)
-		res, err = h.DeleteKasGrantFromAttribute(attrID, kasID)
+		res, err = h.DeleteKasGrantFromAttribute(ctx, attrID, kasID)
 		if err != nil {
 			cli.ExitWithError("Failed to update KAS grant for attribute", err)
 		}
@@ -99,7 +138,7 @@ func policy_unassignKasGrant(cmd *cobra.Command, args []string) {
 		}
 		confirm = fmt.Sprintf("the grant to attribute value FQN (%s) of KAS URI", val.GetFqn())
 		cli.ConfirmAction(cli.ActionDelete, confirm, kasURI)
-		_, err = h.DeleteKasGrantFromValue(valID, kasID)
+		_, err = h.DeleteKasGrantFromValue(ctx, valID, kasID)
 		if err != nil {
 			cli.ExitWithError("Failed to update KAS grant for attribute value", err)
 		}
@@ -117,6 +156,12 @@ func policy_unassignKasGrant(cmd *cobra.Command, args []string) {
 func init() {
 	assignCmd := man.Docs.GetCommand("policy/kas-grants/assign",
 		man.WithRun(policy_assignKasGrant),
+	)
+	assignCmd.Flags().StringP(
+		assignCmd.GetDocFlag("namespace-id").Name,
+		assignCmd.GetDocFlag("namespace-id").Shorthand,
+		assignCmd.GetDocFlag("namespace-id").Default,
+		assignCmd.GetDocFlag("namespace-id").Description,
 	)
 	assignCmd.Flags().StringP(
 		assignCmd.GetDocFlag("attribute-id").Name,
@@ -140,6 +185,12 @@ func init() {
 
 	unassignCmd := man.Docs.GetCommand("policy/kas-grants/unassign",
 		man.WithRun(policy_unassignKasGrant),
+	)
+	unassignCmd.Flags().StringP(
+		unassignCmd.GetDocFlag("namespace-id").Name,
+		unassignCmd.GetDocFlag("namespace-id").Shorthand,
+		unassignCmd.GetDocFlag("namespace-id").Default,
+		unassignCmd.GetDocFlag("namespace-id").Description,
 	)
 	unassignCmd.Flags().StringP(
 		unassignCmd.GetDocFlag("attribute-id").Name,

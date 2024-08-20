@@ -8,6 +8,9 @@ command:
     - remove
   description: Remove a grant assignment of a KAS to an Attribute Definition or Value
   flags:
+    - name: namespace-id
+      shorthand: n
+      description: The ID of the Namespace being unassigned a KAS Grant
     - name: attribute-id
       shorthand: a
       description: The ID of the Attribute Definition being unassigned the KAS grant
