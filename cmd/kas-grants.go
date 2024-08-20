@@ -14,7 +14,7 @@ func policy_assignKasGrant(cmd *cobra.Command, args []string) {
 	defer h.Close()
 
 	flagHelper := cli.NewFlagHelper(cmd)
-	nsID := flagHelper.GetRequiredString("namespace-id")
+	nsID := flagHelper.GetOptionalString("namespace-id")
 	attrID := flagHelper.GetOptionalString("attribute-id")
 	valID := flagHelper.GetOptionalString("value-id")
 	kasID := flagHelper.GetRequiredString("kas-id")
@@ -26,7 +26,7 @@ func policy_assignKasGrant(cmd *cobra.Command, args []string) {
 		}
 	}
 	if count != 1 {
-		cli.ExitWithError("Must specify exactly one Attribute Namespace ID, Definition ID, or Value ID to unassign.", errors.New("invalid flag values"))
+		cli.ExitWithError("Must specify exactly one Attribute Namespace ID, Definition ID, or Value ID to assign", errors.New("invalid flag values"))
 	}
 
 	var (
@@ -74,7 +74,7 @@ func policy_unassignKasGrant(cmd *cobra.Command, args []string) {
 	defer h.Close()
 
 	flagHelper := cli.NewFlagHelper(cmd)
-	nsID := flagHelper.GetRequiredString("namespace-id")
+	nsID := flagHelper.GetOptionalString("namespace-id")
 	attrID := flagHelper.GetOptionalString("attribute-id")
 	valID := flagHelper.GetOptionalString("value-id")
 	kasID := flagHelper.GetRequiredString("kas-id")
@@ -86,7 +86,7 @@ func policy_unassignKasGrant(cmd *cobra.Command, args []string) {
 		}
 	}
 	if count != 1 {
-		cli.ExitWithError("Must specify exactly one Attribute Namespace ID, Definition ID, or Value ID to unassign.", errors.New("invalid flag values"))
+		cli.ExitWithError("Must specify exactly one Attribute Namespace ID, Definition ID, or Value ID to unassign", errors.New("invalid flag values"))
 	}
 	var (
 		res     interface{}
