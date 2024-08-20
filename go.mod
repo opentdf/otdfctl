@@ -13,14 +13,15 @@ require (
 	github.com/evertras/bubble-table v0.16.1
 	github.com/gabriel-vasile/mimetype v1.4.5
 	github.com/golang-jwt/jwt v3.2.2+incompatible
-	github.com/golang-jwt/jwt/v4 v4.5.0
+	github.com/google/uuid v1.6.0
 	github.com/itchyny/gojq v0.12.16
-	github.com/opentdf/platform/protocol/go v0.2.11
-	github.com/opentdf/platform/sdk v0.3.5
+	github.com/opentdf/platform/protocol/go v0.2.13
+	github.com/opentdf/platform/sdk v0.3.8
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.9.0
 	github.com/zalando/go-keyring v0.2.5
+	github.com/zitadel/oidc/v3 v3.27.0
 	golang.org/x/oauth2 v0.22.0
 	golang.org/x/term v0.22.0
 	google.golang.org/grpc v1.65.0
@@ -53,7 +54,6 @@ require (
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/goccy/go-json v0.10.3 // indirect
 	github.com/godbus/dbus/v5 v5.1.0 // indirect
-	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/css v1.0.0 // indirect
 	github.com/gorilla/securecookie v1.1.2 // indirect
 	github.com/gowebpki/jcs v1.0.1 // indirect
@@ -104,7 +104,6 @@ require (
 	github.com/yuin/goldmark v1.5.4 // indirect
 	github.com/yuin/goldmark-emoji v1.0.2 // indirect
 	github.com/zitadel/logging v0.6.0 // indirect
-	github.com/zitadel/oidc/v3 v3.27.0 // indirect
 	github.com/zitadel/schema v1.3.0 // indirect
 	go.opentelemetry.io/otel v1.28.0 // indirect
 	go.opentelemetry.io/otel/metric v1.28.0 // indirect

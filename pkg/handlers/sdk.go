@@ -22,8 +22,17 @@ type Handler struct {
 	platformEndpoint string
 }
 
-func NewWithCredentials(endpoint string, clientId string, clientSecret string, tlsNoVerify bool) (Handler, error) {
-	return New(endpoint, tlsNoVerify, sdk.WithClientCredentials(clientId, clientSecret, []string{"email"}))
+func NewWithCredentials(endpoint, clientID, clientSecret string, tlsNoVerify bool) (Handler, error) {
+	if clientID == "" || clientSecret == "" {
+		// try to get token from cache
+		// tok, err := GetOIDCTokenFromCache(endpoint)
+		// if err != nil {
+		// 	return Handler{}, err
+		// }
+		// source := buildTokenSource(tok)
+		return New(endpoint, tlsNoVerify /*sdk.WithCustomAccessTokenSource(source)*/)
+	}
+	return New(endpoint, tlsNoVerify, sdk.WithClientCredentials(clientID, clientSecret, []string{"email"}))
 }
 
 // Creates a new handler wrapping the SDK, which is authenticated through the cached client-credentials flow tokens
