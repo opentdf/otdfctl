@@ -11,8 +11,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// TODO: add metadata to outputs once [https://github.com/opentdf/otdfctl/issues/73] is addressed
-
 var (
 	policy_resource_mappingsTerms []string
 	policy_resourceMappingsCmd    *cobra.Command
@@ -39,7 +37,7 @@ func policy_createResourceMapping(cmd *cobra.Command, args []string) {
 		{"Attribute Value", resourceMapping.AttributeValue.Value},
 		{"Terms", strings.Join(resourceMapping.Terms, ", ")},
 	}
-	if mdRows := getMetadataRows(resourceMapping.Metadata); mdRows != nil {
+	if mdRows := getMetadataRows(resourceMapping.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
 	}
 	t := cli.NewTabular(rows...)
@@ -63,7 +61,7 @@ func policy_getResourceMapping(cmd *cobra.Command, args []string) {
 		{"Attribute Value", resourceMapping.AttributeValue.Value},
 		{"Terms", strings.Join(resourceMapping.Terms, ", ")},
 	}
-	if mdRows := getMetadataRows(resourceMapping.Metadata); mdRows != nil {
+	if mdRows := getMetadataRows(resourceMapping.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
 	}
 	t := cli.NewTabular(rows...)
@@ -125,7 +123,7 @@ func policy_updateResourceMapping(cmd *cobra.Command, args []string) {
 		{"Attribute Value", resourceMapping.AttributeValue.Value},
 		{"Terms", strings.Join(resourceMapping.Terms, ", ")},
 	}
-	if mdRows := getMetadataRows(resourceMapping.Metadata); mdRows != nil {
+	if mdRows := getMetadataRows(resourceMapping.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
 	}
 	t := cli.NewTabular(rows...)

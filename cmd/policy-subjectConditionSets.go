@@ -102,7 +102,7 @@ func policy_createSubjectConditionSet(cmd *cobra.Command, args []string) {
 		{"SubjectSets", string(subjectSetsJSON)},
 	}
 
-	if mdRows := getMetadataRows(scs.Metadata); mdRows != nil {
+	if mdRows := getMetadataRows(scs.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
 	}
 
@@ -130,7 +130,7 @@ func policy_getSubjectConditionSet(cmd *cobra.Command, args []string) {
 		{"Id", scs.Id},
 		{"SubjectSets", string(subjectSetsJSON)},
 	}
-	if mdRows := getMetadataRows(scs.Metadata); mdRows != nil {
+	if mdRows := getMetadataRows(scs.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
 	}
 
@@ -233,7 +233,7 @@ func policy_updateSubjectConditionSet(cmd *cobra.Command, args []string) {
 		{"SubjectSets", string(subjectSetsJSON)},
 	}
 
-	if mdRows := getMetadataRows(scs.Metadata); mdRows != nil {
+	if mdRows := getMetadataRows(scs.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
 	}
 
@@ -269,7 +269,7 @@ func policy_deleteSubjectConditionSet(cmd *cobra.Command, args []string) {
 		{"SubjectSets", string(subjectSetsJSON)},
 	}
 
-	if mdRows := getMetadataRows(scs.Metadata); mdRows != nil {
+	if mdRows := getMetadataRows(scs.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
 	}
 

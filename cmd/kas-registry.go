@@ -32,13 +32,17 @@ func policy_getKeyAccessRegistry(cmd *cobra.Command, args []string) {
 		key = kas.PublicKey.GetRemote()
 	}
 
-	t := cli.NewTabular(
-		[]string{"Id", kas.Id},
-		// TODO: render labels [https://github.com/opentdf/otdfctl/issues/73]
-		[]string{"URI", kas.Uri},
-		[]string{"PublicKey Type", keyType},
-		[]string{"PublicKey", key},
-	)
+	rows := [][]string{
+		{"Id", kas.Id},
+		{"URI", kas.Uri},
+		{"PublicKey Type", keyType},
+		{"PublicKey", key},
+	}
+	if mdRows := getMetadataRows(kas.GetMetadata()); mdRows != nil {
+		rows = append(rows, mdRows...)
+	}
+
+	t := cli.NewTabular(rows...)
 	HandleSuccess(cmd, kas.Id, t, kas)
 }
 
@@ -114,13 +118,16 @@ func policy_createKeyAccessRegistry(cmd *cobra.Command, args []string) {
 		cli.ExitWithError("Failed to create KAS registry entry", err)
 	}
 
-	t := cli.NewTabular(
-		[]string{"Id", created.Id},
-		[]string{"URI", created.Uri},
-		[]string{"PublicKey Type", keyType},
-		[]string{"PublicKey", local},
-		// TODO: render labels [https://github.com/opentdf/otdfctl/issues/73]
-	)
+	rows := [][]string{
+		{"Id", created.GetId()},
+		{"URI", created.GetUri()},
+		{"PublicKey Type", keyType},
+		{"PublicKey", local},
+	}
+	if mdRows := getMetadataRows(created.GetMetadata()); mdRows != nil {
+		rows = append(rows, mdRows...)
+	}
+	t := cli.NewTabular(rows...)
 
 	HandleSuccess(cmd, created.Id, t, created)
 }
@@ -144,7 +151,7 @@ func policy_updateKeyAccessRegistry(cmd *cobra.Command, args []string) {
 	// TODO: should update of a type of key be a dangerous mutation or cause a need for confirmation in the CLI?
 	var pubKey *policy.PublicKey
 	if local != "" && remote != "" {
-		e := fmt.Errorf("Only one public key is allowed. Please pass either a local or remote public key but not both")
+		e := fmt.Errorf("only one public key is allowed. Please pass either a local or remote public key but not both")
 		cli.ExitWithError("Issue with update flags 'public-key-local' and 'public-key-remote': ", e)
 	} else if local != "" {
 		pubKey = &policy.PublicKey{PublicKey: &policy.PublicKey_Local{Local: local}}
@@ -162,11 +169,14 @@ func policy_updateKeyAccessRegistry(cmd *cobra.Command, args []string) {
 	if err != nil {
 		cli.ExitWithError(fmt.Sprintf("Failed to update KAS registry entry (%s)", id), err)
 	}
-	t := cli.NewTabular(
-		[]string{"Id", id},
-		[]string{"URI", uri},
-		// TODO: render labels [https://github.com/opentdf/otdfctl/issues/73]
-	)
+	rows := [][]string{
+		{"Id", id},
+		{"URI", uri},
+	}
+	if mdRows := getMetadataRows(updated.GetMetadata()); mdRows != nil {
+		rows = append(rows, mdRows...)
+	}
+	t := cli.NewTabular(rows...)
 	HandleSuccess(cmd, id, t, updated)
 }
 
