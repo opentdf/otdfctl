@@ -26,15 +26,15 @@ func policy_getKeyAccessRegistry(cmd *cobra.Command, args []string) {
 	}
 
 	keyType := "Local"
-	key := kas.PublicKey.GetLocal()
+	key := kas.GetPublicKey().GetLocal()
 	if kas.PublicKey.GetRemote() != "" {
 		keyType = "Remote"
-		key = kas.PublicKey.GetRemote()
+		key = kas.GetPublicKey().GetRemote()
 	}
 
 	rows := [][]string{
-		{"Id", kas.Id},
-		{"URI", kas.Uri},
+		{"Id", kas.GetId()},
+		{"URI", kas.GetUri()},
 		{"PublicKey Type", keyType},
 		{"PublicKey", key},
 	}
@@ -43,7 +43,7 @@ func policy_getKeyAccessRegistry(cmd *cobra.Command, args []string) {
 	}
 
 	t := cli.NewTabular(rows...)
-	HandleSuccess(cmd, kas.Id, t, kas)
+	HandleSuccess(cmd, kas.GetId(), t, kas)
 }
 
 func policy_listKeyAccessRegistries(cmd *cobra.Command, args []string) {
@@ -64,15 +64,15 @@ func policy_listKeyAccessRegistries(cmd *cobra.Command, args []string) {
 	rows := []table.Row{}
 	for _, kas := range list {
 		keyType := "Local"
-		key := kas.PublicKey.GetLocal()
-		if kas.PublicKey.GetRemote() != "" {
+		key := kas.GetPublicKey().GetLocal()
+		if kas.GetPublicKey().GetRemote() != "" {
 			keyType = "Remote"
-			key = kas.PublicKey.GetRemote()
+			key = kas.GetPublicKey().GetRemote()
 		}
 
 		rows = append(rows, table.NewRow(table.RowData{
-			"id":     kas.Id,
-			"uri":    kas.Uri,
+			"id":     kas.GetId(),
+			"uri":    kas.GetUri(),
 			"pk_loc": keyType,
 			"pk":     key,
 		}))
@@ -92,7 +92,7 @@ func policy_createKeyAccessRegistry(cmd *cobra.Command, args []string) {
 	metadataLabels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
 
 	if local == "" && remote == "" {
-		e := fmt.Errorf("A public key is required. Please pass either a local or remote public key")
+		e := fmt.Errorf("a public key is required. Please pass either a local or remote public key")
 		cli.ExitWithError("Issue with create flags 'public-key-local' and 'public-key-remote': ", e)
 	}
 
@@ -100,7 +100,7 @@ func policy_createKeyAccessRegistry(cmd *cobra.Command, args []string) {
 	keyType := "Local"
 	if local != "" {
 		if remote != "" {
-			e := fmt.Errorf("Only one public key is allowed. Please pass either a local or remote public key but not both")
+			e := fmt.Errorf("only one public key is allowed. Please pass either a local or remote public key but not both")
 			cli.ExitWithError("Issue with create flags 'public-key-local' and 'public-key-remote': ", e)
 		}
 		key.PublicKey = &policy.PublicKey_Local{Local: local}
@@ -129,7 +129,7 @@ func policy_createKeyAccessRegistry(cmd *cobra.Command, args []string) {
 	}
 	t := cli.NewTabular(rows...)
 
-	HandleSuccess(cmd, created.Id, t, created)
+	HandleSuccess(cmd, created.GetId(), t, created)
 }
 
 func policy_updateKeyAccessRegistry(cmd *cobra.Command, args []string) {
@@ -201,11 +201,11 @@ func policy_deleteKeyAccessRegistry(cmd *cobra.Command, args []string) {
 	}
 
 	t := cli.NewTabular(
-		[]string{"Id", "URI"},
-		[]string{kas.Id, kas.Uri},
+		[]string{"Id", kas.GetId()},
+		[]string{"URI", kas.GetUri()},
 	)
 
-	HandleSuccess(cmd, kas.Id, t, kas)
+	HandleSuccess(cmd, kas.GetId(), t, kas)
 }
 
 func init() {
