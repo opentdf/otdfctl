@@ -3,6 +3,16 @@
 # Tests for KAS grants
 
 setup() {
+      # Check if BATS_SUPPORT_PATH environment variable exists
+      if [ -z "${BATS_SUPPORT_PATH}" ]; then
+          FINAL_BATS_SUPPORT_PATH="$(brew --prefix)/lib"
+      else
+          FINAL_BATS_SUPPORT_PATH="${BATS_SUPPORT_PATH}"
+      fi
+      echo "FINAL_BATS_SUPPORT_PATH: $FINAL_BATS_SUPPORT_PATH"
+      load "${FINAL_BATS_SUPPORT_PATH}/bats-support/load.bash"
+      load "${FINAL_BATS_SUPPORT_PATH}/bats-assert/load.bash"
+      
       echo -n '{"clientId":"opentdf","clientSecret":"secret"}' > creds.json
       export WITH_CREDS='--with-client-creds-file ./creds.json'
       export HOST='--host http://localhost:8080'
@@ -12,7 +22,6 @@ setup() {
       else 
         export KAS_ID=$(./otdfctl $HOST $WITH_CREDS policy kas-registry list --json | jq -r '.[-1].id')
       fi
-
 
       export KAS_ID_FLAG="--kas-id $KAS_ID"
 }
@@ -36,8 +45,8 @@ setup() {
 }
 
 @test "assign grant to attribute then unassign it" {
-      export ATTR_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes list --json | jq -r '.[0].id')
-      export ATTR_ID_FLAG="--attribute-id $ATTR_ID"
+    export ATTR_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes list --json | jq -r '.[0].id')
+    export ATTR_ID_FLAG="--attribute-id $ATTR_ID"
     ./otdfctl $HOST $WITH_CREDS policy kas-grants assign $ATTR_ID_FLAG $KAS_ID_FLAG
     assert_output --partial 'SUCCESS'
     assert_output --partial 'Attribute ID'
