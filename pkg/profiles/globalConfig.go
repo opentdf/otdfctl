@@ -1,4 +1,4 @@
-package profile
+package profiles
 
 type GlobalStore struct {
 	*Store

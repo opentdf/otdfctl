@@ -1,4 +1,4 @@
-package profile
+package profiles
 
 import "github.com/opentdf/otdfctl/pkg/utils"
 
@@ -11,6 +11,7 @@ type ProfileStore struct {
 type ProfileConfig struct {
 	Name            string          `json:"profile"`
 	Endpoint        string          `json:"endpoint"`
+	tlsNoVerify     bool            `json:"tlsNoVerify"`
 	AuthCredentials AuthCredentials `json:"authCredentials"`
 }
 
@@ -55,10 +56,12 @@ func (p *ProfileStore) Delete() error {
 	return p.Store.Delete()
 }
 
+// Profile Name
 func (p *ProfileStore) GetProfileName() string {
 	return p.config.Name
 }
 
+// Endpoint
 func (p *ProfileStore) GetEndpoint() string {
 	return p.config.Endpoint
 }
@@ -68,5 +71,15 @@ func (p *ProfileStore) SetEndpoint(endpoint string) error {
 		return err
 	}
 	p.config.Endpoint = endpoint
+	return p.Save()
+}
+
+// TLS No Verify
+func (p *ProfileStore) GetTLSNoVerify() bool {
+	return p.config.tlsNoVerify
+}
+
+func (p *ProfileStore) SetTLSNoVerify(tlsNoVerify bool) error {
+	p.config.tlsNoVerify = tlsNoVerify
 	return p.Save()
 }

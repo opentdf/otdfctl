@@ -4,7 +4,7 @@ import (
 	"runtime"
 
 	"github.com/opentdf/otdfctl/pkg/cli"
-	"github.com/opentdf/otdfctl/pkg/handlers/profile"
+	"github.com/opentdf/otdfctl/pkg/profiles"
 	"github.com/spf13/cobra"
 )
 
@@ -23,7 +23,7 @@ var profileInitCmd = &cobra.Command{
 
 		print := cli.NewPrinter(true)
 		print.Println("Initializing profile...")
-		if err := profileStore.AddProfile(profileName, endpoint, true); err != nil {
+		if err := profile.AddProfile(profileName, endpoint, true); err != nil {
 			cli.ExitWithError("Failed to initialize profile", err)
 		}
 		print.Println("ok")
@@ -43,7 +43,7 @@ var profileCreateCmd = &cobra.Command{
 
 		print := cli.NewPrinter(true)
 		print.Printf("Creating profile %s... ", profileName)
-		if err := profileStore.AddProfile(profileName, endpoint, setDefault); err != nil {
+		if err := profile.AddProfile(profileName, endpoint, setDefault); err != nil {
 			print.Println("failed")
 			cli.ExitWithError("Failed to create profile", err)
 		}
@@ -56,8 +56,8 @@ var profileListCmd = &cobra.Command{
 	Short: "List profiles",
 	Run: func(cmd *cobra.Command, args []string) {
 		print := cli.NewPrinter(true)
-		for _, p := range profileStore.GetGlobalConfig().ListProfiles() {
-			if p == profileStore.GetGlobalConfig().GetDefaultProfile() {
+		for _, p := range profile.GetGlobalConfig().ListProfiles() {
+			if p == profile.GetGlobalConfig().GetDefaultProfile() {
 				print.Printf("* %s\n", p)
 				continue
 			}
@@ -72,14 +72,32 @@ var profileGetCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		profileName := args[0]
-		p, err := profileStore.GetProfile(profileName)
+		p, err := profile.GetProfile(profileName)
 		if err != nil {
 			cli.ExitWithError("Failed to load profile", err)
 		}
 
+		isDefault := "false"
+		if p.GetProfileName() == profile.GetGlobalConfig().GetDefaultProfile() {
+			isDefault = "true"
+		}
+
+		var auth string
+		ac := p.GetAuthCredentials()
+		if ac.AuthType == profiles.PROFILE_AUTH_TYPE_CLIENT_CREDENTIALS {
+			maskedSecret := "********"
+			auth = "client-credentials (" + ac.ClientId + ", " + maskedSecret + ")"
+		}
+
+		t := cli.NewTabular(
+			[]string{"Profile", p.GetProfileName()},
+			[]string{"Endpoint", p.GetEndpoint()},
+			[]string{"Is default", isDefault},
+			[]string{"Auth type", auth},
+		)
+
 		print := cli.NewPrinter(true)
-		print.Printf("Profile: %s\n", p.GetProfileName())
-		print.Printf("Endpoint: %s\n", p.GetEndpoint())
+		print.Print(t.View())
 	},
 }
 
@@ -91,7 +109,7 @@ var profileDeleteCmd = &cobra.Command{
 
 		print := cli.NewPrinter(true)
 		print.Printf("Deleting profile %s... ", profileName)
-		if err := profileStore.DeleteProfile(profileName); err != nil {
+		if err := profile.DeleteProfile(profileName); err != nil {
 			cli.ExitWithError("Failed to delete profile", err)
 		}
 		print.Println("ok")
@@ -107,7 +125,7 @@ var profileSetDefaultCmd = &cobra.Command{
 
 		print := cli.NewPrinter(true)
 		print.Printf("Setting profile %s as default... ", profileName)
-		if err := profileStore.SetDefaultProfile(profileName); err != nil {
+		if err := profile.SetDefaultProfile(profileName); err != nil {
 			cli.ExitWithError("Failed to set default profile", err)
 		}
 		print.Println("ok")
@@ -122,7 +140,7 @@ var profileSetEndpointCmd = &cobra.Command{
 		profileName := args[0]
 		endpoint := args[1]
 
-		p, err := profileStore.GetProfile(profileName)
+		p, err := profile.GetProfile(profileName)
 		if err != nil {
 			cli.ExitWithError("Failed to load profile", err)
 		}
@@ -141,14 +159,14 @@ func init() {
 		return
 	}
 	var err error
-	profileStore, err = profile.New()
+	profile, err = profiles.New()
 	if err != nil {
 		cli.ExitWithError("Failed to initialize profile store", err)
 	}
 
 	RootCmd.AddCommand(profileCmd)
 
-	if profileStore.GetGlobalConfig().GetDefaultProfile() == "" {
+	if profile.GetGlobalConfig().GetDefaultProfile() == "" {
 		profileCmd.AddCommand(profileInitCmd)
 	} else {
 		profileCmd.AddCommand(profileCreateCmd)

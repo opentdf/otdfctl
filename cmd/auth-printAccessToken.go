@@ -1,9 +1,15 @@
 package cmd
 
 import (
+	"encoding/json"
+	"fmt"
+
+	"github.com/opentdf/otdfctl/pkg/auth"
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/man"
+	"github.com/opentdf/otdfctl/pkg/profiles"
 	"github.com/spf13/cobra"
+	"golang.org/x/oauth2"
 )
 
 var auth_printAccessTokenCmd = man.Docs.GetCommand("auth/print-access-token",
@@ -11,43 +17,39 @@ var auth_printAccessTokenCmd = man.Docs.GetCommand("auth/print-access-token",
 
 func auth_printAccessToken(cmd *cobra.Command, args []string) {
 	flagHelper := cli.NewFlagHelper(cmd)
-	host := flagHelper.GetRequiredString("host")
 	jsonOut := flagHelper.GetOptionalBool("json")
+
+	cp := InitProfile(cmd)
 
 	printEnabled := !jsonOut
 	p := cli.NewPrinter(printEnabled)
 
-	p.Printf("Getting stored client credentials for %s... ", host)
-	// clientCredentials, err := handlers.NewKeyring(host).GetClientCredentials()
-	// if err != nil {
-	// 	p.Println("failed")
-	// 	cli.ExitWithError("Client credentials not found. Please use `auth client-credentials` to set them", err)
-	// }
-	// p.Println("ok")
+	var tok *oauth2.Token
+	ac := cp.GetAuthCredentials()
+	switch ac.AuthType {
+	case profiles.PROFILE_AUTH_TYPE_CLIENT_CREDENTIALS:
+		var err error
+		p.Printf("Getting access token for %s... ", ac.ClientId)
+		tok, err = auth.GetTokenWithProfile(cmd.Context(), cp)
+		if err != nil {
+			p.Println("failed")
+			cli.ExitWithError("Failed to get token", err)
+		}
+	default:
+		cli.ExitWithError("Invalid auth type", nil)
+	}
+	p.Println("ok")
+	p.Printf("Access Token: %s\n", tok.AccessToken)
 
-	// p.Printf("Getting access token for %s... ", clientCredentials.ClientId)
-	// tok, err := handlers.GetTokenWithClientCreds(
-	// 	context.Background(),
-	// 	host,
-	// 	clientCredentials,
-	// 	flagHelper.GetOptionalBool("tls-no-verify"),
-	// )
-	// if err != nil {
-	// 	p.Println("failed")
-	// 	cli.ExitWithError("Failed to get token", err)
-	// }
-	// p.Println("ok")
-	// p.Printf("Access Token: %s\n", tok.AccessToken)
+	if jsonOut {
+		d, err := json.MarshalIndent(tok, "", "  ")
+		if err != nil {
+			cli.ExitWithError("Failed to marshal token to json", err)
+		}
 
-	// if jsonOut {
-	// 	d, err := json.MarshalIndent(tok, "", "  ")
-	// 	if err != nil {
-	// 		cli.ExitWithError("Failed to marshal token to json", err)
-	// 	}
-
-	// 	fmt.Println(string(d))
-	// 	return
-	// }
+		fmt.Println(string(d))
+		return
+	}
 }
 
 func init() {

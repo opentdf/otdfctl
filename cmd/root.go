@@ -7,11 +7,12 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/opentdf/otdfctl/pkg/auth"
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/config"
 	"github.com/opentdf/otdfctl/pkg/handlers"
-	"github.com/opentdf/otdfctl/pkg/handlers/profile"
 	"github.com/opentdf/otdfctl/pkg/man"
+	"github.com/opentdf/otdfctl/pkg/profiles"
 	"github.com/spf13/cobra"
 )
 
@@ -22,62 +23,54 @@ var (
 	clientCredsJSON     string
 	configFlagOverrides = config.ConfigFlagOverrides{}
 
-	profileStore *profile.Profile
+	profile *profiles.Profile
 
 	RootCmd = &man.Docs.GetDoc("<root>").Command
 )
 
-// instantiates a new handler with authentication via client credentials
-func NewHandler(cmd *cobra.Command) handlers.Handler {
+func InitProfile(cmd *cobra.Command) *profiles.ProfileStore {
 	flag := cli.NewFlagHelper(cmd)
-	host := flag.GetRequiredString("host")
-	tlsNoVerify := flag.GetOptionalBool("tls-no-verify")
-	clientCredsFile := flag.GetOptionalString("with-client-creds-file")
-	clientCredsJSON := flag.GetOptionalString("with-client-creds")
 	profileName := flag.GetOptionalString("profile")
 
-	// use the profile
-	if profileStore != nil {
-		if err := profileStore.UseProfile(profileName); err != nil {
-			cli.ExitWithError("Failed to load profile", err)
-		}
+	if profile == nil {
+		cli.ExitWithError("Profile not loaded", nil)
 	}
 
-	var authCredentials profile.AuthCredentials
-	if profileStore != nil {
-		cp, err := profileStore.GetCurrentProfile()
-		if err != nil {
-			cli.ExitWithError("Failed to get current profile", err)
-		}
-		authCredentials = cp.GetAuthCredentials()
-	} else {
-		creds, err := handlers.GetClientCreds(host, clientCredsFile, []byte(clientCredsJSON))
-		if err != nil {
-			cli.ExitWithError("Failed to get client credentials", err)
-		}
-
-		authCredentials = profile.AuthCredentials{
-			AuthType: profile.PROFILE_AUTH_TYPE_CLIENT_CREDENTIALS,
-			ClientCredentials: profile.ClientCredentials{
-				ClientId:     creds.ClientId,
-				ClientSecret: creds.ClientSecret,
-			},
-		}
+	if profileName == "" {
+		profileName = profile.GetGlobalConfig().GetDefaultProfile()
+	}
+	if err := profile.UseProfile(profileName); err != nil {
+		cli.ExitWithError("Failed to load profile "+profileName, err)
 	}
 
-	h := handlers.Handler{}
-	if authCredentials.AuthType == profile.PROFILE_AUTH_TYPE_CLIENT_CREDENTIALS {
-		var err error
-		clientCredentials := authCredentials.ClientCredentials
-		h, err = handlers.NewWithCredentials(host, clientCredentials.ClientId, clientCredentials.ClientSecret, tlsNoVerify)
-		if err != nil {
-			if errors.Is(err, handlers.ErrUnauthenticated) {
-				cli.ExitWithError(fmt.Sprintf("Not logged in. Please authenticate via CLI auth flow(s) before using command (%s %s)", cmd.Parent().Use, cmd.Use), err)
-			}
-			cli.ExitWithError("Failed to connect to server", err)
+	cp, err := profile.GetCurrentProfile()
+	if err != nil {
+		cli.ExitWithError("Failed to get profile "+profileName, err)
+	}
+
+	return cp
+}
+
+// instantiates a new handler with authentication via client credentials
+// TODO make this a preRun hook
+func NewHandler(cmd *cobra.Command) handlers.Handler {
+	// TODO add support for without profile
+
+	cp := InitProfile(cmd)
+
+	if err := auth.ValidateProfileAuthCredentials(cmd.Context(), cp); err != nil {
+		if errors.Is(err, auth.ErrAccessTokenExpired) {
+			cli.ExitWithWarning("Access token expired. Please login again.")
 		}
-	} else {
-		cli.ExitWithError("Invalid auth type", errors.New("invalid auth type"))
+		if errors.Is(err, auth.ErrAccessTokenNotFound) {
+			cli.ExitWithWarning("No access token found. Please login or add client credentials.")
+		}
+		cli.ExitWithError("Failed to get access token", err)
+	}
+
+	h, err := handlers.New(handlers.WithProfile(cp))
+	if err != nil {
+		cli.ExitWithError("Failed to create handler", err)
 	}
 	return h
 }

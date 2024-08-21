@@ -1,32 +1,12 @@
-package profile
+package profiles
 
 import (
 	"errors"
 )
 
-// instead of using the default as the name we'd have a second entry that woul
-
-// otdfctl - global config
-//   profiles: []string
-//   defaultProfile: string
-
-// otdfctl-<profile> - profile config
-//   endpoint: string
-//   authCredentials: AuthCredentials
-//	 	 authType: string
-//     clientCredentials: ClientCredentials
-
-// otdfctl-jake-profile-dev
-// otdfctl-jake-profile-staging
-// otdfctl-jake-profile-prod
-
-// TODO
-// - export profiles to a file (as TDF :D)
-// - import profiles from a file (as TDF :D)
-// - linux support
-// - global logout
-
-// TODO - need set default
+// TODO:
+// - add a version
+// - add a migration path
 
 const (
 	STORE_NAMESPACE   = "otdfctl"
