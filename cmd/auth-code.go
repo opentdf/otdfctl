@@ -3,8 +3,8 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/opentdf/otdfctl/pkg/auth"
 	"github.com/opentdf/otdfctl/pkg/cli"
-	"github.com/opentdf/otdfctl/pkg/handlers"
 	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/spf13/cobra"
 )
@@ -19,14 +19,14 @@ func auth_codeLogin(cmd *cobra.Command, args []string) {
 
 	printer := cli.NewPrinter(!noCacheCreds)
 
-	tok, err := handlers.LoginWithPKCE(host, clientID, tlsNoVerify, noCacheCreds)
+	tok, err := auth.LoginWithPKCE(host, clientID, tlsNoVerify)
 	if err != nil {
 		cli.ExitWithError("could not authenticate", err)
 	}
 	if noCacheCreds {
 		fmt.Print(tok.AccessToken)
 	}
-	// TODO: set to the keyring/profile here
+
 	printer.Println(cli.SuccessMessage("Successfully logged in with auth code PKCE flow. Credentials cached on native OS."))
 }
 
