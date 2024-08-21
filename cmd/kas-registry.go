@@ -183,7 +183,7 @@ func policy_deleteKeyAccessRegistry(cmd *cobra.Command, args []string) {
 		cli.ExitWithError(errMsg, err)
 	}
 
-	cli.ConfirmAction(cli.ActionDelete, "KAS Registry Entry: ", id)
+	cli.ConfirmAction(cli.ActionDelete, "KAS Registry Entry: ", id, false)
 
 	if _, err := h.DeleteKasRegistryEntry(id); err != nil {
 		errMsg := fmt.Sprintf("Failed to delete KAS registry entry (%s)", id)
