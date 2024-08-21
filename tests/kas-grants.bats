@@ -13,17 +13,13 @@ setup() {
         export KAS_ID=$(./otdfctl $HOST $WITH_CREDS policy kas-registry list --json | jq -r '.[-1].id')
       fi
 
-      export NS_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes namespaces list --json | jq -r '.[0].id')
-      export ATTR_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes list --json | jq -r '.[0].id')
-      export VAL_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes list --json | jq -r '.[0].values[0].id')
 
       export KAS_ID_FLAG="--kas-id $KAS_ID"
-      export NS_ID_FLAG="--namespace-id $NS_ID"
-      export ATTR_ID_FLAG="--attribute-id $ATTR_ID"
-      export VAL_ID_FLAG="--value-id $VAL_ID"
 }
 
 @test "assign grant to namespace then unassign it" {
+    export NS_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes namespaces list --json | jq -r '.[0].id')
+    export NS_ID_FLAG="--namespace-id $NS_ID"
     ./otdfctl $HOST $WITH_CREDS policy kas-grants assign $NS_ID_FLAG $KAS_ID_FLAG
     assert_output --partial 'SUCCESS'
     assert_output --partial 'Namespace ID'
@@ -40,6 +36,8 @@ setup() {
 }
 
 @test "assign grant to attribute then unassign it" {
+      export ATTR_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes list --json | jq -r '.[0].id')
+      export ATTR_ID_FLAG="--attribute-id $ATTR_ID"
     ./otdfctl $HOST $WITH_CREDS policy kas-grants assign $ATTR_ID_FLAG $KAS_ID_FLAG
     assert_output --partial 'SUCCESS'
     assert_output --partial 'Attribute ID'
@@ -56,6 +54,8 @@ setup() {
 }
 
 @test "assign grant to value then unassign it" {
+    export VAL_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes list --json | jq -r '.[0].values[0].id')
+    export VAL_ID_FLAG="--value-id $VAL_ID"
     ./otdfctl $HOST $WITH_CREDS policy kas-grants assign $VAL_ID_FLAG $KAS_ID_FLAG
     assert_output --partial 'SUCCESS'
     assert_output --partial 'Value ID'
@@ -72,6 +72,9 @@ setup() {
 }
 
 @test "assign rejects more than one type of grant at once" {
+    export NS_ID_FLAG='--namespace-id hello'
+    export ATTR_ID_FLAG='--attribute-id world'
+    export VAL_ID_FLAG='--value-id goodnight'
     ./otdfctl $HOST $WITH_CREDS policy kas-grants assign $ATTR_ID_FLAG $VAL_ID_FLAG $KAS_ID_FLAG
     assert_output --partial 'ERROR'
     assert_output --partial 'Must specify exactly one Attribute Namespace ID, Definition ID, or Value ID to assign'
@@ -86,6 +89,9 @@ setup() {
 }
 
 @test "unassign rejects more than one type of grant at once" {
+    export NS_ID_FLAG='--namespace-id hello'
+    export ATTR_ID_FLAG='--attribute-id world'
+    export VAL_ID_FLAG='--value-id goodnight'
     ./otdfctl $HOST $WITH_CREDS policy kas-grants unassign $ATTR_ID_FLAG $VAL_ID_FLAG $KAS_ID_FLAG
     assert_output --partial 'ERROR'
     assert_output --partial 'Must specify exactly one Attribute Namespace ID, Definition ID, or Value ID to assign'
