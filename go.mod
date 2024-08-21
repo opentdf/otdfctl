@@ -8,7 +8,7 @@ require (
 	github.com/charmbracelet/bubbletea v0.26.6
 	github.com/charmbracelet/glamour v0.7.0
 	github.com/charmbracelet/huh v0.5.2
-	github.com/charmbracelet/lipgloss v0.12.1
+	github.com/charmbracelet/lipgloss v0.13.0
 	github.com/creasty/defaults v1.8.0
 	github.com/evertras/bubble-table v0.16.1
 	github.com/gabriel-vasile/mimetype v1.4.5
