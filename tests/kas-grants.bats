@@ -16,7 +16,7 @@ setup() {
       export KAS_ID_FLAG="--kas-id $KAS_ID"
 }
 
-@test "assign grant to namespace then unassign it" {
+@test "namespace: assign grant then unassign it" {
     export NS_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes namespaces list --json | jq -r '.[0].id')
     export NS_ID_FLAG="--namespace-id $NS_ID"
     result="$(./otdfctl $HOST $WITH_CREDS policy kas-grants assign $NS_ID_FLAG $KAS_ID_FLAG)"
@@ -34,7 +34,7 @@ setup() {
     [[ "$result" == *$KAS_ID* ]]
 }
 
-@test "assign grant to attribute then unassign it" {
+@test "attribute: assign grant then unassign it" {
     export ATTR_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes list --json | jq -r '.[0].id')
     export ATTR_ID_FLAG="--attribute-id $ATTR_ID"
     result="$(./otdfctl $HOST $WITH_CREDS policy kas-grants assign $ATTR_ID_FLAG $KAS_ID_FLAG)"
@@ -52,7 +52,7 @@ setup() {
     [[ "$result" == *$KAS_ID* ]]
 }
 
-@test "assign grant to value then unassign it" {
+@test "value: assign grant then unassign it" {
     export VAL_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes list --json | jq -r '.[0].values[0].id')
     export VAL_ID_FLAG="--value-id $VAL_ID"
     result="$(./otdfctl $HOST $WITH_CREDS policy kas-grants assign $VAL_ID_FLAG $KAS_ID_FLAG)"

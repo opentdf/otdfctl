@@ -32,10 +32,10 @@ func policy_assignKasGrant(cmd *cobra.Command, args []string) {
 	}
 
 	var (
-		id     string
-		header string
-		res    interface{}
-		err    error
+		id    string
+		res   interface{}
+		err   error
+		rowID []string
 	)
 
 	kas, err := h.GetKasRegistryEntry(kasID)
@@ -49,25 +49,22 @@ func policy_assignKasGrant(cmd *cobra.Command, args []string) {
 		if err != nil {
 			cli.ExitWithError("Failed to assign KAS Grant for Namespace", err)
 		}
-		id = nsID
-		header = "Namespace ID"
+		rowID = []string{"Namespace ID", nsID}
 	} else if attrID != "" {
 		res, err = h.AssignKasGrantToAttribute(ctx, attrID, kasID)
 		if err != nil {
 			cli.ExitWithError("Failed to assign KAS Grant for Attribute Definition", err)
 		}
-		id = attrID
-		header = "Attribute ID"
+		rowID = []string{"Attribute ID", attrID}
 	} else {
 		res, err = h.AssignKasGrantToValue(ctx, valID, kasID)
 		if err != nil {
 			cli.ExitWithError("Failed to assign KAS Grant for Attribute Value", err)
 		}
-		id = attrID
-		header = "Value ID"
+		rowID = []string{"Value ID", valID}
 	}
 
-	t := cli.NewTabular([]string{header, id}, []string{"KAS ID", kasID}, []string{"Granted KAS URI", kas.GetUri()})
+	t := cli.NewTabular(rowID, []string{"KAS ID", kasID}, []string{"Granted KAS URI", kas.GetUri()})
 	HandleSuccess(cmd, id, t, res)
 }
 
