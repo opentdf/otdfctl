@@ -74,32 +74,48 @@ setup() {
     export NS_ID_FLAG='--namespace-id hello'
     export ATTR_ID_FLAG='--attribute-id world'
     export VAL_ID_FLAG='--value-id goodnight'
-    result="$(./otdfctl $HOST $WITH_CREDS policy kas-grants assign $ATTR_ID_FLAG $VAL_ID_FLAG $KAS_ID_FLAG)"
-    [ "$status" -eq 1 ]
-    [[ "$result" == *"Must specify exactly one Attribute Namespace ID, Definition ID, or Value ID to assign"* ]]
+    
+    result=''
+    {
+      result="$(./otdfctl $HOST $WITH_CREDS policy kas-grants assign $ATTR_ID_FLAG $VAL_ID_FLAG $KAS_ID_FLAG)"
+    } || {
+      [[ "$result" == *"Must specify exactly one Attribute Namespace ID, Definition ID, or Value ID to assign"* ]]
+    }
 
-    result="$(./otdfctl $HOST $WITH_CREDS policy kas-grants assign $NS_ID_FLAG $VAL_ID_FLAG $KAS_ID_FLAG)"
-    [ "$status" -eq 1 ]
-    [[ "$result" == *"Must specify exactly one Attribute Namespace ID, Definition ID, or Value ID to assign"* ]]
+    {
+      result="$(./otdfctl $HOST $WITH_CREDS policy kas-grants assign $NS_ID_FLAG $VAL_ID_FLAG $KAS_ID_FLAG)"
+    } || {
+      [[ "$result" == *"Must specify exactly one Attribute Namespace ID, Definition ID, or Value ID to assign"* ]]
+    }
 
-    result="$(./otdfctl $HOST $WITH_CREDS policy kas-grants assign $ATTR_ID_FLAG $NS_ID_FLAG $KAS_ID_FLAG)"
-    [ "$status" -eq 1 ]
-    [[ "$result" == *"Must specify exactly one Attribute Namespace ID, Definition ID, or Value ID to assign"* ]]
+    {
+      result="$(./otdfctl $HOST $WITH_CREDS policy kas-grants assign $ATTR_ID_FLAG $NS_ID_FLAG $KAS_ID_FLAG)"
+    } || {
+      [[ "$result" == *"Must specify exactly one Attribute Namespace ID, Definition ID, or Value ID to assign"* ]]
+    }
 }
 
 @test "unassign rejects more than one type of grant at once" {
     export NS_ID_FLAG='--namespace-id hello'
     export ATTR_ID_FLAG='--attribute-id world'
     export VAL_ID_FLAG='--value-id goodnight'
-    result="$(./otdfctl $HOST $WITH_CREDS policy kas-grants unassign $ATTR_ID_FLAG $VAL_ID_FLAG $KAS_ID_FLAG)"
-    [ "$status" -eq 1 ]
-    [[ "$result" == *"Must specify exactly one Attribute Namespace ID, Definition ID, or Value ID to assign"* ]]
 
-    result="$(./otdfctl $HOST $WITH_CREDS policy kas-grants unassign $NS_ID_FLAG $VAL_ID_FLAG $KAS_ID_FLAG)"
-    [ "$status" -eq 1 ]
-    [[ "$result" == *"Must specify exactly one Attribute Namespace ID, Definition ID, or Value ID to assign"* ]]
+    result=''
+    {
+      result="$(./otdfctl $HOST $WITH_CREDS policy kas-grants unassign $ATTR_ID_FLAG $VAL_ID_FLAG $KAS_ID_FLAG)"
+    } || {
+      [[ "$result" == *"Must specify exactly one Attribute Namespace ID, Definition ID, or Value ID to assign"* ]]
+    }
 
-    result="$(./otdfctl $HOST $WITH_CREDS policy kas-grants unassign $ATTR_ID_FLAG $NS_ID_FLAG $KAS_ID_FLAG)"
-    [ "$status" -eq 1 ]
-    [[ "$result" == *"Must specify exactly one Attribute Namespace ID, Definition ID, or Value ID to assign"* ]]
+    {
+      result="$(./otdfctl $HOST $WITH_CREDS policy kas-grants unassign $NS_ID_FLAG $VAL_ID_FLAG $KAS_ID_FLAG)"
+    } || {
+      [[ "$result" == *"Must specify exactly one Attribute Namespace ID, Definition ID, or Value ID to assign"* ]]
+    }
+
+    {
+      result="$(./otdfctl $HOST $WITH_CREDS policy kas-grants unassign $ATTR_ID_FLAG $NS_ID_FLAG $KAS_ID_FLAG)"
+    } || {
+      [[ "$result" == *"Must specify exactly one Attribute Namespace ID, Definition ID, or Value ID to assign"* ]]
+    }
 }
