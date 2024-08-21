@@ -3,23 +3,21 @@
 # Tests for KAS grants
 
 setup() {
-  echo -n '{"clientId":"opentdf","clientSecret":"secret"}' > creds.json
-  export WITH_CREDS='--with-client-creds-file ./creds.json'
-  export HOST='--host http://localhost:8080'
+    if [[ "$BATS_TEST_NUMBER" -eq 1]]; then
+      echo -n '{"clientId":"opentdf","clientSecret":"secret"}' > creds.json
+      export WITH_CREDS='--with-client-creds-file ./creds.json'
+      export HOST='--host http://localhost:8080'
 
-  export NS_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes namespaces list --json | jq -r '.[0].id')
-  export ATTR_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes list --json | jq -r '.[0].id')
-  export VAL_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes list --json | jq -r '.[0].values[0].id')
-  export KAS_ID=$(./otdfctl $HOST $WITH_CREDS policy kas-registry create --uri 'https://e2etestkas.com' --public-key-remote 'https://e2etestkas.com/pub_key' --json | jq -r '.id')
+      export NS_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes namespaces list --json | jq -r '.[0].id')
+      export ATTR_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes list --json | jq -r '.[0].id')
+      export VAL_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes list --json | jq -r '.[0].values[0].id')
+      export KAS_ID=$(./otdfctl $HOST $WITH_CREDS policy kas-registry create --uri 'https://e2etestkas.com' --public-key-remote 'https://e2etestkas.com/pub_key' --json | jq -r '.id')
 
-  export KAS_ID_FLAG="--kas-id $KAS_ID"
-  export NS_ID_FLAG="--namespace-id $NS_ID"
-  export ATTR_ID_FLAG="--attribute-id $ATTR_ID"
-  export VAL_ID_FLAG="--value-id $VAL_ID"
-}
-
-teardown(){
-  ./otdfctl $HOST $WITH_CREDS policy kas-registry delete --id $KAS_ID
+      export KAS_ID_FLAG="--kas-id $KAS_ID"
+      export NS_ID_FLAG="--namespace-id $NS_ID"
+      export ATTR_ID_FLAG="--attribute-id $ATTR_ID"
+      export VAL_ID_FLAG="--value-id $VAL_ID"
+    fi
 }
 
 @test "assign grant to namespace then unassign it" {
