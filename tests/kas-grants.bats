@@ -3,7 +3,7 @@
 # Tests for KAS grants
 
 setup() {
-    if [[ "$BATS_TEST_NUMBER" -eq 1]]; then
+    if [[ "$BATS_TEST_NUMBER" -eq 1 ]]; then
       echo -n '{"clientId":"opentdf","clientSecret":"secret"}' > creds.json
       export WITH_CREDS='--with-client-creds-file ./creds.json'
       export HOST='--host http://localhost:8080'
