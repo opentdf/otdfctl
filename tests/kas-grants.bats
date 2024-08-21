@@ -75,15 +75,15 @@ setup() {
     export ATTR_ID_FLAG='--attribute-id world'
     export VAL_ID_FLAG='--value-id goodnight'
     result="$(./otdfctl $HOST $WITH_CREDS policy kas-grants assign $ATTR_ID_FLAG $VAL_ID_FLAG $KAS_ID_FLAG)"
-    [[ "$result" == *"ERROR"* ]]
+    [ "$status" -eq 1 ]
     [[ "$result" == *"Must specify exactly one Attribute Namespace ID, Definition ID, or Value ID to assign"* ]]
 
     result="$(./otdfctl $HOST $WITH_CREDS policy kas-grants assign $NS_ID_FLAG $VAL_ID_FLAG $KAS_ID_FLAG)"
-    [[ "$result" == *"ERROR"* ]]
+    [ "$status" -eq 1 ]
     [[ "$result" == *"Must specify exactly one Attribute Namespace ID, Definition ID, or Value ID to assign"* ]]
 
     result="$(./otdfctl $HOST $WITH_CREDS policy kas-grants assign $ATTR_ID_FLAG $NS_ID_FLAG $KAS_ID_FLAG)"
-    [[ "$result" == *"ERROR"* ]]
+    [ "$status" -eq 1 ]
     [[ "$result" == *"Must specify exactly one Attribute Namespace ID, Definition ID, or Value ID to assign"* ]]
 }
 
@@ -92,14 +92,14 @@ setup() {
     export ATTR_ID_FLAG='--attribute-id world'
     export VAL_ID_FLAG='--value-id goodnight'
     result="$(./otdfctl $HOST $WITH_CREDS policy kas-grants unassign $ATTR_ID_FLAG $VAL_ID_FLAG $KAS_ID_FLAG)"
-    [[ "$result" == *"ERROR"* ]]
+    [ "$status" -eq 1 ]
     [[ "$result" == *"Must specify exactly one Attribute Namespace ID, Definition ID, or Value ID to assign"* ]]
 
     result="$(./otdfctl $HOST $WITH_CREDS policy kas-grants unassign $NS_ID_FLAG $VAL_ID_FLAG $KAS_ID_FLAG)"
-    [[ "$result" == *"ERROR"* ]]
+    [ "$status" -eq 1 ]
     [[ "$result" == *"Must specify exactly one Attribute Namespace ID, Definition ID, or Value ID to assign"* ]]
 
     result="$(./otdfctl $HOST $WITH_CREDS policy kas-grants unassign $ATTR_ID_FLAG $NS_ID_FLAG $KAS_ID_FLAG)"
-    [[ "$result" == *"ERROR"* ]]
+    [ "$status" -eq 1 ]
     [[ "$result" == *"Must specify exactly one Attribute Namespace ID, Definition ID, or Value ID to assign"* ]]
 }
