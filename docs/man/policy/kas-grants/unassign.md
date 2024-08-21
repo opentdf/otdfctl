@@ -23,6 +23,8 @@ command:
       shorthand: k
       description: The Key Access Server (KAS) ID being unassigned a grant
       required: true
+    - name: force
+      description: Force the unassignment with no confirmation
 ---
 
 Unassign a registered Key Access Server (KAS) to an attribute definition or value.

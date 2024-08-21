@@ -253,7 +253,7 @@ func policy_deleteSubjectConditionSet(cmd *cobra.Command, args []string) {
 		cli.ExitWithError(fmt.Sprintf("Subject Condition Set with id %s not found", id), err)
 	}
 
-	cli.ConfirmAction(cli.ActionDelete, "Subject Condition Set", id)
+	cli.ConfirmAction(cli.ActionDelete, "Subject Condition Set", id, false)
 
 	if err := h.DeleteSubjectConditionSet(id); err != nil {
 		cli.ExitWithError(fmt.Sprintf("Subject Condition Set with id %s not found", id), err)

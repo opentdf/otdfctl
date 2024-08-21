@@ -9,6 +9,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var forceFlagValue = false
+
 func policy_assignKasGrant(cmd *cobra.Command, args []string) {
 	h := NewHandler(cmd)
 	defer h.Close()
@@ -78,6 +80,7 @@ func policy_unassignKasGrant(cmd *cobra.Command, args []string) {
 	attrID := flagHelper.GetOptionalString("attribute-id")
 	valID := flagHelper.GetOptionalString("value-id")
 	kasID := flagHelper.GetRequiredString("kas-id")
+	force := flagHelper.GetOptionalBool("force")
 
 	count := 0
 	for _, v := range []string{nsID, attrID, valID} {
@@ -109,7 +112,7 @@ func policy_unassignKasGrant(cmd *cobra.Command, args []string) {
 			cli.ExitWithError("Failed to get namespace definition", err)
 		}
 		confirm = fmt.Sprintf("the grant to namespace FQN (%s) of KAS URI", ns.GetFqn())
-		cli.ConfirmAction(cli.ActionDelete, confirm, kasURI)
+		cli.ConfirmAction(cli.ActionDelete, confirm, kasURI, force)
 		res, err = h.DeleteKasGrantFromNamespace(ctx, nsID, kasID)
 		if err != nil {
 			cli.ExitWithError("Failed to update KAS grant for namespace", err)
@@ -123,7 +126,7 @@ func policy_unassignKasGrant(cmd *cobra.Command, args []string) {
 			cli.ExitWithError("Failed to get attribute definition", err)
 		}
 		confirm = fmt.Sprintf("the grant to attribute FQN (%s) of KAS URI", attr.GetFqn())
-		cli.ConfirmAction(cli.ActionDelete, confirm, kasURI)
+		cli.ConfirmAction(cli.ActionDelete, confirm, kasURI, force)
 		res, err = h.DeleteKasGrantFromAttribute(ctx, attrID, kasID)
 		if err != nil {
 			cli.ExitWithError("Failed to update KAS grant for attribute", err)
@@ -137,7 +140,7 @@ func policy_unassignKasGrant(cmd *cobra.Command, args []string) {
 			cli.ExitWithError("Failed to get attribute value", err)
 		}
 		confirm = fmt.Sprintf("the grant to attribute value FQN (%s) of KAS URI", val.GetFqn())
-		cli.ConfirmAction(cli.ActionDelete, confirm, kasURI)
+		cli.ConfirmAction(cli.ActionDelete, confirm, kasURI, force)
 		_, err = h.DeleteKasGrantFromValue(ctx, valID, kasID)
 		if err != nil {
 			cli.ExitWithError("Failed to update KAS grant for attribute value", err)
@@ -209,6 +212,12 @@ func init() {
 		unassignCmd.GetDocFlag("kas-id").Shorthand,
 		unassignCmd.GetDocFlag("kas-id").Default,
 		unassignCmd.GetDocFlag("kas-id").Description,
+	)
+	unassignCmd.Flags().BoolVar(
+		&forceFlagValue,
+		unassignCmd.GetDocFlag("force").Name,
+		false,
+		unassignCmd.GetDocFlag("force").Description,
 	)
 
 	cmd := man.Docs.GetCommand("policy/kas-grants",

@@ -26,7 +26,7 @@ setup() {
     [[ "$result" == *"KAS ID"* ]]
     [[ "$result" == *$KAS_ID* ]]
 
-    result="$(./otdfctl $HOST $WITH_CREDS policy kas-grants unassign $NS_ID_FLAG $KAS_ID_FLAG)"
+    result="$(./otdfctl $HOST $WITH_CREDS policy kas-grants unassign $NS_ID_FLAG $KAS_ID_FLAG --force)"
     [[ "$result" == *"SUCCESS"* ]]
     [[ "$result" == *"Namespace ID"* ]]
     [[ "$result" == *$NS_ID* ]]
@@ -44,7 +44,7 @@ setup() {
     [[ "$result" == *"KAS ID"* ]]
     [[ "$result" == *$KAS_ID* ]]
 
-    result="$(./otdfctl $HOST $WITH_CREDS policy kas-grants unassign $ATTR_ID_FLAG $KAS_ID_FLAG)"
+    result="$(./otdfctl $HOST $WITH_CREDS policy kas-grants unassign $ATTR_ID_FLAG $KAS_ID_FLAG --force)"
     [[ "$result" == *"SUCCESS"* ]]
     [[ "$result" == *"Attribute ID"* ]]
     [[ "$result" == *$ATTR_ID* ]]
@@ -62,7 +62,7 @@ setup() {
     [[ "$result" == *"KAS ID"* ]]
     [[ "$result" == *$KAS_ID* ]]
 
-    result="$(./otdfctl $HOST $WITH_CREDS policy kas-grants unassign $VAL_ID_FLAG $KAS_ID_FLAG)"
+    result="$(./otdfctl $HOST $WITH_CREDS policy kas-grants unassign $VAL_ID_FLAG $KAS_ID_FLAG --force)"
     [[ "$result" == *"SUCCESS"* ]]
     [[ "$result" == *"Value ID"* ]]
     [[ "$result" == *$VAL_ID* ]]
