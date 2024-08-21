@@ -8,4 +8,4 @@ var ErrClientCredentialsNotFound = errors.New("client credentials not found")
 var ErrInvalidAuthType = errors.New("invalid auth type")
 var ErrUnauthenticated = errors.New("not logged in")
 
-var ErrNoPlatformConfiguration = errors.New("could not get platform configuration")
+var ErrProfileCredentialsNotFound = errors.New("profile missing credentials")

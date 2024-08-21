@@ -1,9 +1,12 @@
 package profiles
 
-import "github.com/opentdf/otdfctl/pkg/utils"
+import (
+	"github.com/opentdf/otdfctl/pkg/config"
+	"github.com/opentdf/otdfctl/pkg/utils"
+)
 
 type ProfileStore struct {
-	*Store
+	store StoreInterface
 
 	config ProfileConfig
 }
@@ -11,11 +14,11 @@ type ProfileStore struct {
 type ProfileConfig struct {
 	Name            string          `json:"profile"`
 	Endpoint        string          `json:"endpoint"`
-	tlsNoVerify     bool            `json:"tlsNoVerify"`
+	TlsNoVerify     bool            `json:"tlsNoVerify"`
 	AuthCredentials AuthCredentials `json:"authCredentials"`
 }
 
-func NewProfileStore(profileName string, endpoint string) (*ProfileStore, error) {
+func NewProfileStore(newStore NewStoreInterface, profileName string, endpoint string, tlsNoVerify bool) (*ProfileStore, error) {
 	if err := validateProfileName(profileName); err != nil {
 		return nil, err
 	}
@@ -24,36 +27,37 @@ func NewProfileStore(profileName string, endpoint string) (*ProfileStore, error)
 	}
 
 	p := &ProfileStore{
-		Store: NewStore(STORE_NAMESPACE, getStoreKey(profileName)),
+		store: newStore(config.AppName, getStoreKey(profileName)),
 		config: ProfileConfig{
-			Name:     profileName,
-			Endpoint: endpoint,
+			Name:        profileName,
+			Endpoint:    endpoint,
+			TlsNoVerify: tlsNoVerify,
 		},
 	}
 	return p, nil
 }
 
-func LoadProfileStore(profileName string) (*ProfileStore, error) {
+func LoadProfileStore(newStore NewStoreInterface, profileName string) (*ProfileStore, error) {
 	if err := validateProfileName(profileName); err != nil {
 		return nil, err
 	}
 
 	p := &ProfileStore{
-		Store: NewStore(STORE_NAMESPACE, getStoreKey(profileName)),
+		store: newStore(config.AppName, getStoreKey(profileName)),
 	}
 	return p, p.Get()
 }
 
 func (p *ProfileStore) Get() error {
-	return p.Store.Get(&p.config)
+	return p.store.Get(&p.config)
 }
 
 func (p *ProfileStore) Save() error {
-	return p.Store.Set(p.config)
+	return p.store.Set(p.config)
 }
 
 func (p *ProfileStore) Delete() error {
-	return p.Store.Delete()
+	return p.store.Delete()
 }
 
 // Profile Name
@@ -76,10 +80,16 @@ func (p *ProfileStore) SetEndpoint(endpoint string) error {
 
 // TLS No Verify
 func (p *ProfileStore) GetTLSNoVerify() bool {
-	return p.config.tlsNoVerify
+	return p.config.TlsNoVerify
 }
 
 func (p *ProfileStore) SetTLSNoVerify(tlsNoVerify bool) error {
-	p.config.tlsNoVerify = tlsNoVerify
+	p.config.TlsNoVerify = tlsNoVerify
 	return p.Save()
+}
+
+// utility functions
+
+func getStoreKey(n string) string {
+	return STORE_KEY_PROFILE + "-" + n
 }

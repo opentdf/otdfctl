@@ -28,24 +28,35 @@ var (
 	RootCmd = &man.Docs.GetDoc("<root>").Command
 )
 
-func InitProfile(cmd *cobra.Command) *profiles.ProfileStore {
+func InitProfile(cmd *cobra.Command, onlyNew bool) *profiles.ProfileStore {
 	flag := cli.NewFlagHelper(cmd)
 	profileName := flag.GetOptionalString("profile")
 
-	if profile == nil {
-		cli.ExitWithError("Profile not loaded", nil)
+	var err error
+	profile, err = profiles.New()
+	if err != nil || profile == nil {
+		cli.ExitWithError("Failed to initialize profile store", err)
 	}
+
+	// short circuit if onlyNew is set to enable creating a new profile
+	if onlyNew {
+		return nil
+	}
+
+	// check if there exists a default profile and warn if not with steps to create one
+	if profile.GetGlobalConfig().GetDefaultProfile() == "" {
+		cli.ExitWithWarning("No default profile set. Use `" + config.AppName + " profile create <profile> <endpoint>` to create a default profile.")
+	}
+	fmt.Printf("Using profile %s\n", profile.GetGlobalConfig().GetDefaultProfile())
 
 	if profileName == "" {
 		profileName = profile.GetGlobalConfig().GetDefaultProfile()
 	}
-	if err := profile.UseProfile(profileName); err != nil {
-		cli.ExitWithError("Failed to load profile "+profileName, err)
-	}
 
-	cp, err := profile.GetCurrentProfile()
+	// load profile
+	cp, err := profile.UseProfile(profileName)
 	if err != nil {
-		cli.ExitWithError("Failed to get profile "+profileName, err)
+		cli.ExitWithError("Failed to load profile "+profileName, err)
 	}
 
 	return cp
@@ -54,11 +65,75 @@ func InitProfile(cmd *cobra.Command) *profiles.ProfileStore {
 // instantiates a new handler with authentication via client credentials
 // TODO make this a preRun hook
 func NewHandler(cmd *cobra.Command) handlers.Handler {
-	// TODO add support for without profile
+	fh := cli.NewFlagHelper(cmd)
+	host := fh.GetOptionalString("host")
+	tlsNoVerify := fh.GetOptionalBool("tls-no-verify")
+	withClientCreds := fh.GetOptionalString("with-client-creds")
+	withClientCredsFile := fh.GetOptionalString("with-client-creds-file")
 
-	cp := InitProfile(cmd)
+	// if global flags are set then validate and create a temporary profile in memory
+	var cp *profiles.ProfileStore
+	if host != "" || withClientCreds != "" || withClientCredsFile != "" {
+		err := errors.New("when using global flags --host, --with-client-creds, or --with-client-creds-file, " +
+			"profiles will not be used and all required flags must be set")
+
+		// host must be set
+		if host == "" {
+			cli.ExitWithError("Host must be set", err)
+		}
+
+		// either with-client-creds or with-client-creds-file must be set
+		if withClientCreds == "" && withClientCredsFile == "" {
+			cli.ExitWithError("Either --with-client-creds or --with-client-creds-file must be set", err)
+		} else if withClientCreds != "" && withClientCredsFile != "" {
+			cli.ExitWithError("Only one of --with-client-creds or --with-client-creds-file can be set", err)
+		}
+
+		var cc auth.ClientCredentials
+		if withClientCreds != "" {
+			cc, err = auth.GetClientCredsFromJSON([]byte(withClientCreds))
+		} else {
+			cc, err = auth.GetClientCredsFromFile(withClientCredsFile)
+		}
+		if err != nil {
+			cli.ExitWithError("Failed to get client credentials", err)
+		}
+
+		profile, err = profiles.New(profiles.WithInMemoryStore())
+		if err != nil || profile == nil {
+			cli.ExitWithError("Failed to initialize a temporary profile", err)
+		}
+
+		if err := profile.AddProfile("temp", host, tlsNoVerify, true); err != nil {
+			cli.ExitWithError("Failed to create temporary profile", err)
+		}
+
+		// add credentials to the temporary profile
+		cp, err = profile.UseProfile("temp")
+		if err != nil {
+			cli.ExitWithError("Failed to load temporary profile", err)
+		}
+
+		// add credentials to the temporary profile
+		if err := cp.SetAuthCredentials(profiles.AuthCredentials{
+			AuthType:     profiles.PROFILE_AUTH_TYPE_CLIENT_CREDENTIALS,
+			ClientId:     cc.ClientId,
+			ClientSecret: cc.ClientSecret,
+		}); err != nil {
+			cli.ExitWithError("Failed to set client credentials", err)
+		}
+		if err := cp.Save(); err != nil {
+			cli.ExitWithError("Failed to save profile", err)
+		}
+	} else {
+		cp = InitProfile(cmd, false)
+	}
 
 	if err := auth.ValidateProfileAuthCredentials(cmd.Context(), cp); err != nil {
+		if errors.Is(err, auth.ErrProfileCredentialsNotFound) {
+			cli.ExitWithWarning("Profile missing credentials. Please login or add client credentials.")
+		}
+
 		if errors.Is(err, auth.ErrAccessTokenExpired) {
 			cli.ExitWithWarning("Access token expired. Please login again.")
 		}

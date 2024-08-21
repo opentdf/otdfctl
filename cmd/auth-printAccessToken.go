@@ -19,7 +19,7 @@ func auth_printAccessToken(cmd *cobra.Command, args []string) {
 	flagHelper := cli.NewFlagHelper(cmd)
 	jsonOut := flagHelper.GetOptionalBool("json")
 
-	cp := InitProfile(cmd)
+	cp := InitProfile(cmd, false)
 
 	printEnabled := !jsonOut
 	p := cli.NewPrinter(printEnabled)

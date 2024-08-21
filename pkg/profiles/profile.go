@@ -9,33 +9,81 @@ import (
 // - add a migration path
 
 const (
-	STORE_NAMESPACE   = "otdfctl"
 	STORE_KEY_PROFILE = "profile"
 	STORE_KEY_GLOBAL  = "global"
 )
 
+type profileConfig struct {
+	driver string
+}
+
 type Profile struct {
+	config profileConfig
+
 	globalStore         *GlobalStore
 	currentProfileStore *ProfileStore
 }
 
 type CurrentProfileStore struct {
-	*Store
+	store StoreInterface
 
 	config ProfileConfig
 }
 
-func getStoreKey(n string) string {
-	return STORE_KEY_PROFILE + "-" + n
+const PROFILE_DRIVER_KEYRING = "keyring"
+const PROFILE_DRIVER_IN_MEMORY = "in-memory"
+const PROFILE_DRIVER_DEFAULT = PROFILE_DRIVER_KEYRING
+
+type profileConfigVariadicFunc func(profileConfig) profileConfig
+
+func WithInMemoryStore() profileConfigVariadicFunc {
+	return func(c profileConfig) profileConfig {
+		c.driver = PROFILE_DRIVER_IN_MEMORY
+		return c
+	}
 }
 
-func New() (*Profile, error) {
+func WithKeyringStore() profileConfigVariadicFunc {
+	return func(c profileConfig) profileConfig {
+		c.driver = PROFILE_DRIVER_KEYRING
+		return c
+	}
+}
+
+func newStoreFactory(driver string) NewStoreInterface {
+	switch driver {
+	case PROFILE_DRIVER_KEYRING:
+		return NewKeyringStore
+	case PROFILE_DRIVER_IN_MEMORY:
+		return NewMemoryStore
+	default:
+		return nil
+	}
+}
+
+// create a new profile and load global config
+func New(opts ...profileConfigVariadicFunc) (*Profile, error) {
 	var err error
 
-	p := &Profile{}
+	config := profileConfig{
+		driver: PROFILE_DRIVER_DEFAULT,
+	}
+	for _, opt := range opts {
+		config = opt(config)
+	}
+
+	// check if the store driver is valid
+	newStore := newStoreFactory(config.driver)
+	if newStore == nil {
+		return nil, errors.New("invalid store driver")
+	}
+
+	p := &Profile{
+		config: config,
+	}
 
 	// load global config
-	p.globalStore, err = LoadGlobalConfig()
+	p.globalStore, err = LoadGlobalConfig(newStore)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +95,7 @@ func (p *Profile) GetGlobalConfig() *GlobalStore {
 	return p.globalStore
 }
 
-func (p *Profile) AddProfile(profileName string, endpoint string, setDefault bool) error {
+func (p *Profile) AddProfile(profileName string, endpoint string, tlsNoVerify bool, setDefault bool) error {
 	var err error
 
 	// check if profile already exists
@@ -56,7 +104,7 @@ func (p *Profile) AddProfile(profileName string, endpoint string, setDefault boo
 	}
 
 	// Create profile store and save
-	p.currentProfileStore, err = NewProfileStore(profileName, endpoint)
+	p.currentProfileStore, err = NewProfileStore(newStoreFactory(p.config.driver), profileName, endpoint, tlsNoVerify)
 	if err != nil {
 		return err
 	}
@@ -69,7 +117,7 @@ func (p *Profile) AddProfile(profileName string, endpoint string, setDefault boo
 		return err
 	}
 
-	if setDefault {
+	if setDefault || p.globalStore.GetDefaultProfile() == "" {
 		p.globalStore.SetDefaultProfile(profileName)
 	}
 
@@ -89,32 +137,32 @@ func (p *Profile) GetProfile(profileName string) (*ProfileStore, error) {
 		return nil, errors.New("profile does not exist")
 	}
 
-	return LoadProfileStore(profileName)
+	return LoadProfileStore(newStoreFactory(p.config.driver), profileName)
 }
 
 func (p *Profile) ListProfiles() []string {
 	return p.globalStore.ListProfiles()
 }
 
-func (p *Profile) UseProfile(profileName string) error {
+func (p *Profile) UseProfile(profileName string) (*ProfileStore, error) {
 	var err error
 
 	// check if current profile is already set
 	if p.currentProfileStore != nil {
 		if p.currentProfileStore.config.Name == profileName {
-			return nil
+			return p.currentProfileStore, nil
 		}
 	}
 
 	// set current profile
 	p.currentProfileStore, err = p.GetProfile(profileName)
-	return err
+	return p.currentProfileStore, err
 }
 
-func (p *Profile) UseDefaultProfile() error {
+func (p *Profile) UseDefaultProfile() (*ProfileStore, error) {
 	defaultProfile := p.globalStore.GetDefaultProfile()
 	if defaultProfile == "" {
-		return errors.New("no default profile set")
+		return nil, errors.New("no default profile set")
 	}
 
 	return p.UseProfile(defaultProfile)
@@ -135,7 +183,7 @@ func (p *Profile) DeleteProfile(profileName string) error {
 	}
 
 	// get profile
-	profile, err := LoadProfileStore(profileName)
+	profile, err := LoadProfileStore(newStoreFactory(p.config.driver), profileName)
 	if err != nil {
 		return err
 	}

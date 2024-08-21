@@ -79,7 +79,7 @@ func getPlatformConfiguration(endpoint string, tlsNoVerify bool) (platformConfig
 
 	e, err := utils.NormalizeEndpoint(endpoint)
 	if err != nil {
-		return c, errors.Join(ErrNoPlatformConfiguration, err)
+		return c, errors.Join(ErrProfileCredentialsNotFound, err)
 	}
 
 	opts := []sdk.Option{}
@@ -93,33 +93,33 @@ func getPlatformConfiguration(endpoint string, tlsNoVerify bool) (platformConfig
 
 	s, err := sdk.New(e.String(), opts...)
 	if err != nil {
-		return c, errors.Join(ErrNoPlatformConfiguration, err)
+		return c, errors.Join(ErrProfileCredentialsNotFound, err)
 	}
 
 	errs := []error{}
 	c.issuer, err = s.PlatformConfiguration.Issuer()
 	if err != nil {
-		errs = append(errs, err)
+		errs = append(errs, errors.Join(err, sdk.ErrPlatformIssuerNotFound))
 	}
 
 	c.authzEndpoint, err = s.PlatformConfiguration.AuthzEndpoint()
 	if err != nil {
-		errs = append(errs, err)
+
+		errs = append(errs, errors.Join(err, sdk.ErrPlatformAuthzEndpointNotFound))
 	}
 
 	c.tokenEndpoint, err = s.PlatformConfiguration.TokenEndpoint()
 	if err != nil {
-		errs = append(errs, err)
+		errs = append(errs, errors.Join(err, sdk.ErrPlatformTokenEndpointNotFound))
 	}
 
-	// TODO fix error
-	// c.publicClientID, err = s.PlatformConfiguration.PublicClientID()
-	// if err != nil {
-	// 	errs = append(errs, err)
-	// }
+	c.publicClientID, err = s.PlatformConfiguration.PublicClientID()
+	if err != nil {
+		errs = append(errs, errors.Join(err, sdk.ErrPlatformPublicClientIDNotFound))
+	}
 
 	if len(errs) > 0 {
-		errs = append([]error{ErrNoPlatformConfiguration}, errs...)
+		errs = append([]error{ErrProfileCredentialsNotFound}, errs...)
 		return c, errors.Join(errs...)
 	}
 
@@ -143,6 +143,8 @@ func GetSDKAuthOptionFromProfile(profile *profiles.ProfileStore) (sdk.Option, er
 func ValidateProfileAuthCredentials(ctx context.Context, profile *profiles.ProfileStore) error {
 	c := profile.GetAuthCredentials()
 	switch c.AuthType {
+	case "":
+		return ErrProfileCredentialsNotFound
 	case profiles.PROFILE_AUTH_TYPE_CLIENT_CREDENTIALS:
 		_, err := GetTokenWithClientCreds(ctx, profile.GetEndpoint(), c.ClientId, c.ClientSecret, profile.GetTLSNoVerify())
 		if err != nil {
@@ -171,7 +173,7 @@ func GetTokenWithProfile(ctx context.Context, profile *profiles.ProfileStore) (*
 // Uses the OAuth2 client credentials flow to obtain a token.
 func GetTokenWithClientCreds(ctx context.Context, endpoint string, clientId string, clientSecret string, tlsNoVerify bool) (*oauth2.Token, error) {
 	pc, err := getPlatformConfiguration(endpoint, tlsNoVerify)
-	if err != nil {
+	if err != nil && !errors.Is(err, sdk.ErrPlatformPublicClientIDNotFound) {
 		return nil, err
 	}
 

@@ -13,41 +13,31 @@ var profileCmd = &cobra.Command{
 	Short: "Manage profiles (experimental)",
 }
 
-var profileInitCmd = &cobra.Command{
-	Use:   "init <profile-name> <endpoint>",
-	Short: "Initialize profile",
-	Args:  cobra.ExactArgs(2),
-	Run: func(cmd *cobra.Command, args []string) {
-		profileName := args[0]
-		endpoint := args[1]
-
-		print := cli.NewPrinter(true)
-		print.Println("Initializing profile...")
-		if err := profile.AddProfile(profileName, endpoint, true); err != nil {
-			cli.ExitWithError("Failed to initialize profile", err)
-		}
-		print.Println("ok")
-	},
-}
-
 var profileCreateCmd = &cobra.Command{
-	Use:   "create <profile> <endpoint>",
-	Short: "Create a new profile",
-	Args:  cobra.ExactArgs(2),
+	Use:     "create <profile> <endpoint>",
+	Aliases: []string{"add"},
+	Short:   "Create a new profile",
+	Args:    cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
+		// ensure profile is initialized
+		InitProfile(cmd, true)
+
 		profileName := args[0]
 		endpoint := args[1]
 
 		fh := cli.NewFlagHelper(cmd)
 		setDefault := fh.GetOptionalBool("set-default")
+		tlsNoVerify := fh.GetOptionalBool("tls-no-verify")
 
 		print := cli.NewPrinter(true)
 		print.Printf("Creating profile %s... ", profileName)
-		if err := profile.AddProfile(profileName, endpoint, setDefault); err != nil {
+		if err := profile.AddProfile(profileName, endpoint, tlsNoVerify, setDefault); err != nil {
 			print.Println("failed")
 			cli.ExitWithError("Failed to create profile", err)
 		}
 		print.Println("ok")
+
+		// suggest the user to set up authentication
 	},
 }
 
@@ -55,6 +45,9 @@ var profileListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List profiles",
 	Run: func(cmd *cobra.Command, args []string) {
+		// ensure profile is initialized
+		InitProfile(cmd, false)
+
 		print := cli.NewPrinter(true)
 		for _, p := range profile.GetGlobalConfig().ListProfiles() {
 			if p == profile.GetGlobalConfig().GetDefaultProfile() {
@@ -71,6 +64,9 @@ var profileGetCmd = &cobra.Command{
 	Short: "Get a profile value",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
+		// ensure profile is initialized
+		InitProfile(cmd, false)
+
 		profileName := args[0]
 		p, err := profile.GetProfile(profileName)
 		if err != nil {
@@ -105,7 +101,13 @@ var profileDeleteCmd = &cobra.Command{
 	Use:   "delete <profile>",
 	Short: "Delete a profile",
 	Run: func(cmd *cobra.Command, args []string) {
+		// ensure profile is initialized
+		InitProfile(cmd, false)
+
 		profileName := args[0]
+
+		// TODO check if the profile is the default and prevent
+		// suggest delete-all command to delete all profiles including default
 
 		print := cli.NewPrinter(true)
 		print.Printf("Deleting profile %s... ", profileName)
@@ -115,6 +117,8 @@ var profileDeleteCmd = &cobra.Command{
 		print.Println("ok")
 	},
 }
+
+// TODO add delete-all command
 
 var profileSetDefaultCmd = &cobra.Command{
 	Use:   "set-default <profile>",
@@ -137,6 +141,9 @@ var profileSetEndpointCmd = &cobra.Command{
 	Short: "Set a profile value",
 	Args:  cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
+		// ensure profile is initialized
+		InitProfile(cmd, false)
+
 		profileName := args[0]
 		endpoint := args[1]
 
@@ -155,25 +162,22 @@ var profileSetEndpointCmd = &cobra.Command{
 }
 
 func init() {
+	// Profiles are not supported on Linux
 	if runtime.GOOS == "linux" {
 		return
 	}
-	var err error
-	profile, err = profiles.New()
-	if err != nil {
-		cli.ExitWithError("Failed to initialize profile store", err)
-	}
+
+	profileCreateCmd.Flags().Bool("set-default", false, "Set the profile as default")
+	profileCreateCmd.Flags().Bool("tls-no-verify", false, "Disable TLS verification")
+
+	profileSetEndpointCmd.Flags().Bool("tls-no-verify", false, "Disable TLS verification")
 
 	RootCmd.AddCommand(profileCmd)
 
-	if profile.GetGlobalConfig().GetDefaultProfile() == "" {
-		profileCmd.AddCommand(profileInitCmd)
-	} else {
-		profileCmd.AddCommand(profileCreateCmd)
-		profileCmd.AddCommand(profileListCmd)
-		profileCmd.AddCommand(profileGetCmd)
-		profileCmd.AddCommand(profileDeleteCmd)
-		profileCmd.AddCommand(profileSetDefaultCmd)
-		profileCmd.AddCommand(profileSetEndpointCmd)
-	}
+	profileCmd.AddCommand(profileCreateCmd)
+	profileCmd.AddCommand(profileListCmd)
+	profileCmd.AddCommand(profileGetCmd)
+	profileCmd.AddCommand(profileDeleteCmd)
+	profileCmd.AddCommand(profileSetDefaultCmd)
+	profileCmd.AddCommand(profileSetEndpointCmd)
 }

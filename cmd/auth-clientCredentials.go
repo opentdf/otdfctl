@@ -16,7 +16,7 @@ var clientCredentialsCmd = man.Docs.GetCommand("auth/client-credentials",
 )
 
 func auth_clientCredentials(cmd *cobra.Command, args []string) {
-	cp := InitProfile(cmd)
+	cp := InitProfile(cmd, false)
 
 	p := cli.NewPrinter(true)
 
