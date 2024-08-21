@@ -55,7 +55,7 @@ func auth_clientCredentials(cmd *cobra.Command, args []string) {
 	// Save the client credentials
 	p.Print("Storing client ID and secret in keyring... ")
 	if err := cp.Save(); err != nil {
-		fmt.Println("failed")
+		p.Println("failed")
 		cli.ExitWithError("An error occurred while storing client credentials", err)
 	}
 	p.Println("ok")

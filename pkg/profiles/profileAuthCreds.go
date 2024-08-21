@@ -1,9 +1,9 @@
 package profiles
 
-import "errors"
-
-const PROFILE_AUTH_TYPE_CLIENT_CREDENTIALS = "client-credentials"
-const PROFILE_AUTH_TYPE_ACCESS_TOKEN = "access-token"
+const (
+	PROFILE_AUTH_TYPE_CLIENT_CREDENTIALS = "client-credentials"
+	PROFILE_AUTH_TYPE_ACCESS_TOKEN       = "access-token"
+)
 
 type AuthCredentials struct {
 	AuthType string `json:"authType"`
@@ -24,11 +24,6 @@ func (p *ProfileStore) GetAuthCredentials() AuthCredentials {
 }
 
 func (p *ProfileStore) SetAuthCredentials(authCredentials AuthCredentials) error {
-	// TODO support accesstoken
-	if authCredentials.AuthType != PROFILE_AUTH_TYPE_CLIENT_CREDENTIALS {
-		return errors.New("invalid auth type")
-	}
-
 	p.config.AuthCredentials = authCredentials
 	return p.Save()
 }

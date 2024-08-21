@@ -9,7 +9,6 @@ import (
 	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/opentdf/otdfctl/pkg/profiles"
 	"github.com/spf13/cobra"
-	"golang.org/x/oauth2"
 )
 
 var auth_printAccessTokenCmd = man.Docs.GetCommand("auth/print-access-token",
@@ -24,19 +23,19 @@ func auth_printAccessToken(cmd *cobra.Command, args []string) {
 	printEnabled := !jsonOut
 	p := cli.NewPrinter(printEnabled)
 
-	var tok *oauth2.Token
 	ac := cp.GetAuthCredentials()
 	switch ac.AuthType {
 	case profiles.PROFILE_AUTH_TYPE_CLIENT_CREDENTIALS:
-		var err error
 		p.Printf("Getting access token for %s... ", ac.ClientId)
-		tok, err = auth.GetTokenWithProfile(cmd.Context(), cp)
-		if err != nil {
-			p.Println("failed")
-			cli.ExitWithError("Failed to get token", err)
-		}
+	case profiles.PROFILE_AUTH_TYPE_ACCESS_TOKEN:
+		p.Printf("Getting profile's stored access token... ")
 	default:
 		cli.ExitWithError("Invalid auth type", nil)
+	}
+	tok, err := auth.GetTokenWithProfile(cmd.Context(), cp)
+	if err != nil {
+		p.Println("failed")
+		cli.ExitWithError("Failed to get token", err)
 	}
 	p.Println("ok")
 	p.Printf("Access Token: %s\n", tok.AccessToken)

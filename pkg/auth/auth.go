@@ -74,7 +74,7 @@ func GetClientCreds(endpoint string, file string, credsJSON []byte) (ClientCrede
 	return ClientCredentials{}, errors.New("no client credentials provided")
 }
 
-func getPlatformConfiguration(endpoint string, tlsNoVerify bool) (platformConfiguration, error) {
+func getPlatformConfiguration(endpoint, publicClientID string, tlsNoVerify bool) (platformConfiguration, error) {
 	c := platformConfiguration{}
 
 	e, err := utils.NormalizeEndpoint(endpoint)
@@ -104,7 +104,6 @@ func getPlatformConfiguration(endpoint string, tlsNoVerify bool) (platformConfig
 
 	c.authzEndpoint, err = s.PlatformConfiguration.AuthzEndpoint()
 	if err != nil {
-
 		errs = append(errs, errors.Join(err, sdk.ErrPlatformAuthzEndpointNotFound))
 	}
 
@@ -113,9 +112,12 @@ func getPlatformConfiguration(endpoint string, tlsNoVerify bool) (platformConfig
 		errs = append(errs, errors.Join(err, sdk.ErrPlatformTokenEndpointNotFound))
 	}
 
-	c.publicClientID, err = s.PlatformConfiguration.PublicClientID()
-	if err != nil {
-		errs = append(errs, errors.Join(err, sdk.ErrPlatformPublicClientIDNotFound))
+	c.publicClientID = publicClientID
+	if c.publicClientID == "" {
+		c.publicClientID, err = s.PlatformConfiguration.PublicClientID()
+		if err != nil {
+			errs = append(errs, errors.Join(err, sdk.ErrPlatformPublicClientIDNotFound))
+		}
 	}
 
 	if len(errs) > 0 {
@@ -126,15 +128,23 @@ func getPlatformConfiguration(endpoint string, tlsNoVerify bool) (platformConfig
 	return c, nil
 }
 
-// func GetAccessTokenFromProfile() {}
+func buildToken(c *profiles.AuthCredentials) *oauth2.Token {
+	return &oauth2.Token{
+		AccessToken:  c.AccessToken.AccessToken,
+		Expiry:       time.Unix(c.AccessToken.Expiration, 0),
+		RefreshToken: c.AccessToken.RefreshToken,
+	}
+}
+
 func GetSDKAuthOptionFromProfile(profile *profiles.ProfileStore) (sdk.Option, error) {
 	c := profile.GetAuthCredentials()
 
 	switch c.AuthType {
 	case profiles.PROFILE_AUTH_TYPE_CLIENT_CREDENTIALS:
 		return sdk.WithClientCredentials(c.ClientId, c.ClientSecret, nil), nil
-	// case profiles.PROFILE_AUTH_TYPE_ACCESS_TOKEN:
-	// 	return sdk.WithOAuthAccessTokenSource(o.authClientCredentials.AccessToken.AccessToken), nil
+	case profiles.PROFILE_AUTH_TYPE_ACCESS_TOKEN:
+		tokenSource := oauth2.StaticTokenSource(buildToken(&c))
+		return sdk.WithOAuthAccessTokenSource(tokenSource), nil
 	default:
 		return nil, ErrInvalidAuthType
 	}
@@ -151,11 +161,14 @@ func ValidateProfileAuthCredentials(ctx context.Context, profile *profiles.Profi
 			return err
 		}
 		return nil
-	// case profiles.PROFILE_AUTH_TYPE_ACCESS_TOKEN:
-	// 	return sdk.WithOAuthAccessTokenSource(o.authClientCredentials.AccessToken.AccessToken), nil
+	case profiles.PROFILE_AUTH_TYPE_ACCESS_TOKEN:
+		if !buildToken(&c).Valid() {
+			return ErrAccessTokenExpired
+		}
 	default:
 		return ErrInvalidAuthType
 	}
+	return nil
 }
 
 func GetTokenWithProfile(ctx context.Context, profile *profiles.ProfileStore) (*oauth2.Token, error) {
@@ -163,8 +176,8 @@ func GetTokenWithProfile(ctx context.Context, profile *profiles.ProfileStore) (*
 	switch c.AuthType {
 	case profiles.PROFILE_AUTH_TYPE_CLIENT_CREDENTIALS:
 		return GetTokenWithClientCreds(ctx, profile.GetEndpoint(), c.ClientId, c.ClientSecret, profile.GetTLSNoVerify())
-	// case profiles.PROFILE_AUTH_TYPE_ACCESS_TOKEN:
-	// 	return sdk.WithOAuthAccessTokenSource(o.authClientCredentials.AccessToken.AccessToken), nil
+	case profiles.PROFILE_AUTH_TYPE_ACCESS_TOKEN:
+		return buildToken(&c), nil
 	default:
 		return nil, ErrInvalidAuthType
 	}
@@ -172,7 +185,7 @@ func GetTokenWithProfile(ctx context.Context, profile *profiles.ProfileStore) (*
 
 // Uses the OAuth2 client credentials flow to obtain a token.
 func GetTokenWithClientCreds(ctx context.Context, endpoint string, clientId string, clientSecret string, tlsNoVerify bool) (*oauth2.Token, error) {
-	pc, err := getPlatformConfiguration(endpoint, tlsNoVerify)
+	pc, err := getPlatformConfiguration(endpoint, "", tlsNoVerify)
 	if err != nil && !errors.Is(err, sdk.ErrPlatformPublicClientIDNotFound) {
 		return nil, err
 	}
@@ -230,12 +243,17 @@ func Login(platformEndpoint, tokenURL, authURL, publicClientID string) (*oauth2.
 		return uuid.New().String()
 	}
 	tok := oidcCLI.CodeFlow[*oidc.IDTokenClaims](ctx, relyingParty, authCallbackPath, authCodeFlowPort, stateProvider)
-	return tok.Token, nil
+	return &oauth2.Token{
+		AccessToken:  tok.Token.AccessToken,
+		TokenType:    tok.Token.TokenType,
+		RefreshToken: tok.Token.RefreshToken,
+		Expiry:       tok.Token.Expiry,
+	}, nil
 }
 
 // Logs in using the auth code PKCE flow driven by the platform well-known idP OIDC configuration.
 func LoginWithPKCE(host, publicClientID string, tlsNoVerify bool) (*oauth2.Token, error) {
-	pc, err := getPlatformConfiguration(host, tlsNoVerify)
+	pc, err := getPlatformConfiguration(host, publicClientID, tlsNoVerify)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get platform configuration: %w", err)
 	}
