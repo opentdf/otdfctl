@@ -11,6 +11,9 @@ import (
 	"github.com/spf13/viper"
 )
 
+// AppName is the name of the application
+// Note: use caution when renaming as it is used in various places within the CLI including for config file naming
+// and in the profile store
 var AppName = "otdfctl"
 
 var Version = "0.0.0"

@@ -16,7 +16,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/itchyny/gojq v0.12.16
 	github.com/opentdf/platform/protocol/go v0.2.14
-	github.com/opentdf/platform/sdk v0.3.9
+	github.com/opentdf/platform/sdk v0.3.10
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.9.0
