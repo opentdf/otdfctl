@@ -80,20 +80,23 @@ setup() {
     {
       result="$(./otdfctl $HOST $WITH_CREDS policy kas-grants assign $ATTR_ID_FLAG $VAL_ID_FLAG $KAS_ID_FLAG)"
     } || {
-      [[ "$result" == *"Must specify exactly one Attribute Namespace ID, Definition ID, or Value ID to assign"* ]]
+      true
     }
+      [[ "$result" == *"Must specify exactly one Attribute Namespace ID, Definition ID, or Value ID to assign"* ]]
 
     {
       result="$(./otdfctl $HOST $WITH_CREDS policy kas-grants assign $NS_ID_FLAG $VAL_ID_FLAG $KAS_ID_FLAG)"
     } || {
-      [[ "$result" == *"Must specify exactly one Attribute Namespace ID, Definition ID, or Value ID to assign"* ]]
+      true
     }
+      [[ "$result" == *"Must specify exactly one Attribute Namespace ID, Definition ID, or Value ID to assign"* ]]
 
     {
       result="$(./otdfctl $HOST $WITH_CREDS policy kas-grants assign $ATTR_ID_FLAG $NS_ID_FLAG $KAS_ID_FLAG)"
     } || {
-      [[ "$result" == *"Must specify exactly one Attribute Namespace ID, Definition ID, or Value ID to assign"* ]]
+      true
     }
+      [[ "$result" == *"Must specify exactly one Attribute Namespace ID, Definition ID, or Value ID to assign"* ]]
 }
 
 @test "unassign rejects more than one type of grant at once" {
@@ -106,18 +109,21 @@ setup() {
     {
       result="$(./otdfctl $HOST $WITH_CREDS policy kas-grants unassign $ATTR_ID_FLAG $VAL_ID_FLAG $KAS_ID_FLAG)"
     } || {
-      [[ "$result" == *"Must specify exactly one Attribute Namespace ID, Definition ID, or Value ID to unassign"* ]]
+      true
     }
+      [[ "$result" == *"Must specify exactly one Attribute Namespace ID, Definition ID, or Value ID to unassign"* ]]
 
     {
       result="$(./otdfctl $HOST $WITH_CREDS policy kas-grants unassign $NS_ID_FLAG $VAL_ID_FLAG $KAS_ID_FLAG)"
     } || {
-      [[ "$result" == *"Must specify exactly one Attribute Namespace ID, Definition ID, or Value ID to unassign"* ]]
+      true
     }
+      [[ "$result" == *"Must specify exactly one Attribute Namespace ID, Definition ID, or Value ID to unassign"* ]]
 
     {
       result="$(./otdfctl $HOST $WITH_CREDS policy kas-grants unassign $ATTR_ID_FLAG $NS_ID_FLAG $KAS_ID_FLAG)"
     } || {
-      [[ "$result" == *"Must specify exactly one Attribute Namespace ID, Definition ID, or Value ID to unassign"* ]]
+      true
     }
+      [[ "$result" == *"Must specify exactly one Attribute Namespace ID, Definition ID, or Value ID to unassign"* ]]
 }
