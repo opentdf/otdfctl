@@ -14,9 +14,10 @@ type AuthCredentials struct {
 }
 
 type AuthCredentialsAccessToken struct {
-	AccessToken  string `json:"accessToken"`
-	RefreshToken string `json:"refreshToken"`
-	Expiration   int64  `json:"expiration"`
+	PublicClientID string `json:"publicClientId"`
+	AccessToken    string `json:"accessToken"`
+	RefreshToken   string `json:"refreshToken"`
+	Expiration     int64  `json:"expiration"`
 }
 
 func (p *ProfileStore) GetAuthCredentials() AuthCredentials {

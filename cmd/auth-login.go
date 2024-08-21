@@ -17,7 +17,7 @@ func auth_codeLogin(cmd *cobra.Command, args []string) {
 	printer := cli.NewPrinter(true)
 
 	printer.Println("Initiating login...")
-	tok, err := auth.LoginWithPKCE(cp.GetEndpoint(), clientID, tlsNoVerify)
+	tok, publicClientID, err := auth.LoginWithPKCE(cp.GetEndpoint(), clientID, tlsNoVerify)
 	if err != nil {
 		cli.ExitWithError("could not authenticate", err)
 	}
@@ -27,6 +27,7 @@ func auth_codeLogin(cmd *cobra.Command, args []string) {
 	if err := cp.SetAuthCredentials(profiles.AuthCredentials{
 		AuthType: profiles.PROFILE_AUTH_TYPE_ACCESS_TOKEN,
 		AccessToken: profiles.AuthCredentialsAccessToken{
+			PublicClientID: publicClientID,
 			AccessToken:  tok.AccessToken,
 			Expiration:   tok.Expiry.Unix(),
 			RefreshToken: tok.RefreshToken,

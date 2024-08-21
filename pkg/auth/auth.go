@@ -252,16 +252,31 @@ func Login(platformEndpoint, tokenURL, authURL, publicClientID string) (*oauth2.
 }
 
 // Logs in using the auth code PKCE flow driven by the platform well-known idP OIDC configuration.
-func LoginWithPKCE(host, publicClientID string, tlsNoVerify bool) (*oauth2.Token, error) {
+func LoginWithPKCE(host, publicClientID string, tlsNoVerify bool) (*oauth2.Token, string, error) {
 	pc, err := getPlatformConfiguration(host, publicClientID, tlsNoVerify)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get platform configuration: %w", err)
+		return nil, "", fmt.Errorf("failed to get platform configuration: %w", err)
 	}
 
 	tok, err := Login(host, pc.tokenEndpoint, pc.authzEndpoint, pc.publicClientID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to login: %w", err)
+		return nil, "", fmt.Errorf("failed to login: %w", err)
 	}
 
-	return tok, nil
+	return tok, pc.publicClientID, nil
+}
+
+// Revokes the access token
+func RevokeAccessToken(endpoint, publicClientID, refreshToken string, tlsNoVerify bool) error {
+	pCfg, err := getPlatformConfiguration(endpoint, publicClientID, tlsNoVerify)
+	if err != nil {
+		return fmt.Errorf("failed to get platform configuration: %w", err)
+	}
+
+	rp, err := oidcrp.NewRelyingPartyOIDC(context.Background(), pCfg.issuer, pCfg.publicClientID, "", "", nil)
+	if err != nil {
+		return err
+	}
+
+	return oidcrp.RevokeToken(context.Background(), rp, refreshToken, "refresh_token")
 }
