@@ -27,9 +27,14 @@ jobs:
           token: ${{ steps.generate_token.outputs.token }}
           release-type: go
 
-      ###
-      # Tag the release
-      - name: tag major and minor versions
+      - uses: actions/checkout@v4
+        if: ${{ steps.release.outputs.release_created }}
+      - uses: actions/setup-go@v5
+        if: ${{ steps.release.outputs.release_created }}
+        with: 
+          go-version-file: go.mod
+
+      - name: Tag semver and push to repo
         if: ${{ steps.release.outputs.release_created }}
         run: |
           git config user.name github-actions[bot]
@@ -44,25 +49,19 @@ jobs:
           git push origin v${{ steps.release.outputs.major }}
           git push origin v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}
 
-      ###
-      # Build the release
-      - uses: actions/checkout@v4
-        if: ${{ steps.release.outputs.release_created }}
-      - uses: actions/setup-go@v5
-        if: ${{ steps.release.outputs.release_created }}
-        with: 
-          go-version-file: go.mod
-      - name: make-targets
+      - name: Build
         if: ${{ steps.release.outputs.release_created }}
         env:
           SEM_VER: ${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}.${{ steps.release.outputs.patch }}
           COMMIT_SHA: ${{ steps.release.outputs.sha }}
         run: make build
+
       - name: Compress the builds and generate checksums
         if: ${{ steps.release.outputs.release_created }}
         env:
           SEM_VER: ${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}.${{ steps.release.outputs.patch }}
         run: make zip-builds
+
       - name: Upload Release Artifact
         if: ${{ steps.release.outputs.release_created }}
         env:
