@@ -51,18 +51,12 @@ jobs:
       #     git push origin v${{ steps.release.outputs.major }}
       #     git push origin v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}
 
-      - name: Build
+      - name: Build, compress, and draft checksums
         if: ${{ steps.release.outputs.release_created }}
         env:
           SEM_VER: ${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}.${{ steps.release.outputs.patch }}
           COMMIT_SHA: ${{ steps.release.outputs.sha }}
-        run: make build
-
-      - name: Compress the builds and generate checksums
-        if: ${{ steps.release.outputs.release_created }}
-        env:
-          SEM_VER: ${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}.${{ steps.release.outputs.patch }}
-        run: make zip-builds
+        run: make build && ls -al
 
       - name: Upload Release Artifact
         if: ${{ steps.release.outputs.release_created }}
