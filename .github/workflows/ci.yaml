@@ -4,8 +4,24 @@ on:
   pull_request:
     branches:
       - main
+    paths-ignore:
+      - '**/*.yaml'
+      - '**/*.md'
+      - LICENSE
+      - CODEOWNERS
+      - '.gitignore'
 
 jobs:
+  govulncheck:
+    runs-on: ubuntu-latest
+    name: Run govulncheck
+    steps:
+      - id: govulncheck
+        uses: golang/govulncheck-action@v1
+        with:
+          go-version-file: go.mod
+          go-package: ./...
+
   golangci:
     name: lint
     runs-on: ubuntu-22.04
