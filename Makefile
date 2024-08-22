@@ -38,32 +38,28 @@ OUTPUT_DIR=output
 # Build commands for each platform
 PLATFORMS := darwin-amd64 darwin-arm64 linux-amd64 linux-arm linux-arm64 windows-amd64-.exe windows-arm-.exe windows-arm64-.exe
 
-build: clean $(addprefix build-,$(PLATFORMS))
+build: test clean $(addprefix build-,$(PLATFORMS)) zip-builds verify-checksums
 
 build-%:
 	GOOS=$(word 1,$(subst -, ,$*)) GOARCH=$(word 2,$(subst -, ,$*)) go build $(GO_BUILD_FLAGS) -o $(GO_BUILD_PREFIX)-$(word 1,$(subst -, ,$*))-$(word 2,$(subst -, ,$*))$(word 3,$(subst -, ,$*))
 
+zip-builds:
+	./.github/scripts/zip-builds.sh $(BINARY_NAME)-$(CURR_VERSION) $(TARGET_DIR) $(OUTPUT_DIR)
+
+verify-checksums:
+	./.github/scripts/verify-checksums.sh $(OUTPUT_DIR) $(BINARY_NAME)-$(CURR_VERSION)_checksums.txt 
+
 # Target for running the project (adjust as necessary for your project)
 .PHONY: run
-run: build
+run:
 	go run .
 
 # Target for testing the project
 .PHONY: test
-test: build
+test:
 	go test -v ./...
 
 # Target for cleaning up the target directory
 .PHONY: clean
 clean:
 	rm -rf $(TARGET_DIR)
-
-# Script for zipping up the compiled binaries
-.PHONY: zip-builds
-zip-builds:
-	./.github/scripts/zip-builds.sh $(BINARY_NAME)-$(CURR_VERSION) $(TARGET_DIR) $(OUTPUT_DIR)
-
-# Script for verifying the checksums
-.PHONY: verify-checksums
-verify-checksums:
-	.github/scripts/verify-checksums.sh $(OUTPUT_DIR) $(BINARY_NAME)-$(CURR_VERSION)_checksums.txt 
