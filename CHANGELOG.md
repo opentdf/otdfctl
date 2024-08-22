@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.11.2](https://github.com/opentdf/otdfctl/compare/v0.11.1...v0.11.2) (2024-08-22)
+
+
+### Bug Fixes
+
+* disable tagging ([#302](https://github.com/opentdf/otdfctl/issues/302)) ([2b5db85](https://github.com/opentdf/otdfctl/commit/2b5db852ed0088e61f1180500135cd1865f9798b))
+
 ## [0.11.1](https://github.com/opentdf/otdfctl/compare/v0.11.0...v0.11.1) (2024-08-22)
 
 
