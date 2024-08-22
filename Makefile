@@ -38,7 +38,7 @@ OUTPUT_DIR=output
 # Build commands for each platform
 PLATFORMS := darwin-amd64 darwin-arm64 linux-amd64 linux-arm linux-arm64 windows-amd64-.exe windows-arm-.exe windows-arm64-.exe
 
-build: test clean $(addprefix build-,$(PLATFORMS)) zip-builds veify-checksums
+build: test clean $(addprefix build-,$(PLATFORMS)) zip-builds verify-checksums
 
 build-%:
 	GOOS=$(word 1,$(subst -, ,$*)) GOARCH=$(word 2,$(subst -, ,$*)) go build $(GO_BUILD_FLAGS) -o $(GO_BUILD_PREFIX)-$(word 1,$(subst -, ,$*))-$(word 2,$(subst -, ,$*))$(word 3,$(subst -, ,$*))
