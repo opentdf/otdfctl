@@ -190,14 +190,14 @@ func (p *Profile) DeleteProfile(profileName string) error {
 		return err
 	}
 
-	// delete profile config
-	err = profile.Delete()
-	if err != nil {
+	// remove profile from global config (will error if profile is default)
+	if err := p.globalStore.RemoveProfile(profileName); err != nil {
 		return err
 	}
 
-	// remove profile from global config
-	if err := p.globalStore.RemoveProfile(profileName); err != nil {
+	// delete profile config
+	err = profile.Delete()
+	if err != nil {
 		return err
 	}
 
