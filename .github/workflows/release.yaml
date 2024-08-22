@@ -56,7 +56,7 @@ jobs:
         env:
           SEM_VER: ${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}.${{ steps.release.outputs.patch }}
           COMMIT_SHA: ${{ steps.release.outputs.sha }}
-        run: make build && ls -al
+        run: make build
 
       - name: Upload Release Artifact
         if: ${{ steps.release.outputs.release_created }}
