@@ -4,6 +4,12 @@ on:
   pull_request:
     branches:
       - main
+    paths-ignore:
+      - '**/*.yaml'
+      - '**/*.md'
+      - LICENSE
+      - CODEOWNERS
+      - '.gitignore'
 
 jobs:
   golangci:
