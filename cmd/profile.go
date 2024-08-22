@@ -106,12 +106,14 @@ var profileDeleteCmd = &cobra.Command{
 
 		profileName := args[0]
 
-		// TODO check if the profile is the default and prevent
-		// suggest delete-all command to delete all profiles including default
+		// TODO: suggest delete-all command to delete all profiles including default
 
 		print := cli.NewPrinter(true)
 		print.Printf("Deleting profile %s... ", profileName)
 		if err := profile.DeleteProfile(profileName); err != nil {
+			if err == profiles.ErrDeletingDefaultProfile {
+				cli.ExitWithWarning("Profile is set as default. Please set another profile as default before deleting.")
+			}
 			cli.ExitWithError("Failed to delete profile", err)
 		}
 		print.Println("ok")

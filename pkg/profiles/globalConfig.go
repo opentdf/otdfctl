@@ -1,6 +1,8 @@
 package profiles
 
-import "github.com/opentdf/otdfctl/pkg/config"
+import (
+	"github.com/opentdf/otdfctl/pkg/config"
+)
 
 // This variable is used to store the version of the profiles. Since the profiles structure might
 // change in the future, this variable is used to keep track of the version of the profiles and will
@@ -75,6 +77,9 @@ func (p *GlobalStore) ListProfiles() []string {
 }
 
 func (p *GlobalStore) RemoveProfile(profileName string) error {
+	if profileName == p.config.DefaultProfile {
+		return ErrDeletingDefaultProfile
+	}
 	for i, profile := range p.config.Profiles {
 		if profile == profileName {
 			p.config.Profiles = append(p.config.Profiles[:i], p.config.Profiles[i+1:]...)
