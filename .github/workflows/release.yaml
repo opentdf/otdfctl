@@ -50,6 +50,8 @@ jobs:
         if: ${{ steps.release.outputs.release_created }}
       - uses: actions/setup-go@v5
         if: ${{ steps.release.outputs.release_created }}
+        with: 
+          go-version-file: go.mod
       - name: make-targets
         if: ${{ steps.release.outputs.release_created }}
         env:
