@@ -2,7 +2,6 @@ package profiles
 
 import (
 	"errors"
-	"fmt"
 )
 
 // TODO:
