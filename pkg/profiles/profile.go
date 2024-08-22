@@ -2,6 +2,7 @@ package profiles
 
 import (
 	"errors"
+	"fmt"
 )
 
 // TODO:
@@ -30,9 +31,11 @@ type CurrentProfileStore struct {
 	config ProfileConfig
 }
 
-const PROFILE_DRIVER_KEYRING = "keyring"
-const PROFILE_DRIVER_IN_MEMORY = "in-memory"
-const PROFILE_DRIVER_DEFAULT = PROFILE_DRIVER_KEYRING
+const (
+	PROFILE_DRIVER_KEYRING   = "keyring"
+	PROFILE_DRIVER_IN_MEMORY = "in-memory"
+	PROFILE_DRIVER_DEFAULT   = PROFILE_DRIVER_KEYRING
+)
 
 type profileConfigVariadicFunc func(profileConfig) profileConfig
 

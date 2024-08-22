@@ -125,6 +125,9 @@ var profileSetDefaultCmd = &cobra.Command{
 	Short: "Set a profile as default",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
+		// ensure profile is initialized
+		InitProfile(cmd, false)
+
 		profileName := args[0]
 
 		print := cli.NewPrinter(true)
