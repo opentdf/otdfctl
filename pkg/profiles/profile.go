@@ -172,7 +172,6 @@ func (p *Profile) UseDefaultProfile() (*ProfileStore, error) {
 }
 
 func (p *Profile) SetDefaultProfile(profileName string) error {
-	fmt.Println(p)
 	if !p.globalStore.ProfileExists(profileName) {
 		return errors.New("profile does not exist")
 	}
