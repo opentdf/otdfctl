@@ -1,9 +1,8 @@
 name: Release
 
 permissions:
-  contents: read
+  contents: write
   pull-requests: write
-  packages: write
   issues: write
 
 on:
