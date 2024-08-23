@@ -7,9 +7,14 @@ setup() {
 
   # Check if BATS_SUPPORT_PATH environment variable exists
   if [ -z "${BATS_SUPPORT_PATH}" ]; then
-      FINAL_BATS_SUPPORT_PATH="$(brew --prefix)/lib"
+    # Check if bats is installed via homebrew
+    if [[ $(which bats) == *"/homebrew/"* ]]; then
+      FINAL_BATS_SUPPORT_PATH=$(brew --prefix)/lib
+    else
+      FINAL_BATS_SUPPORT_PATH=$(dirname $(which bats))/../lib
+    fi
   else
-      FINAL_BATS_SUPPORT_PATH="${BATS_SUPPORT_PATH}"
+    FINAL_BATS_SUPPORT_PATH="${BATS_SUPPORT_PATH}"
   fi
   echo "FINAL_BATS_SUPPORT_PATH: $FINAL_BATS_SUPPORT_PATH"
   load "${FINAL_BATS_SUPPORT_PATH}/bats-support/load.bash"
