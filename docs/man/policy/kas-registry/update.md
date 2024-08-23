@@ -12,9 +12,9 @@ command:
     - name: uri
       shorthand: u
       description: URI of the Key Access Server
-    - name: public-key-cached
+    - name: public-keys
       shorthand: p
-      description: Public key of the Key Access Server
+      description: One or more public keys saved for the KAS
     - name: public-key-remote
       shorthand: r
       description: URI of the public key of the Key Access Server

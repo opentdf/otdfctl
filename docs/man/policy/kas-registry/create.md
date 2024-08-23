@@ -11,9 +11,9 @@ command:
       shorthand: u
       description: URI of the Key Access Server
       required: true
-    - name: public-key-cached
+    - name: public-keys
       shorthand: c
-      description: Cached public keys for the KAS
+      description: One or more public keys saved for the KAS
     - name: public-key-remote
       shorthand: r
       description: Remote URI where the public key can be retrieved for the KAS
@@ -52,7 +52,7 @@ can be retrieved for the registered KAS under the `remote` key, such as `https:/
 }
 ```
 
-The JSON value passed to the `--public-key-cached` flag stores the set of public keys for the KAS.
+The JSON value passed to the `--public-keys` flag stores the set of public keys for the KAS.
 
 The PEM base64 encoding should contain everything `-----BEGIN CERTIFICATE-----\nMIIB...5Q=\n-----END CERTIFICATE-----\n`.
 

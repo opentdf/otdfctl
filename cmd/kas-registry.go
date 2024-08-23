@@ -86,13 +86,13 @@ func policy_createKeyAccessRegistry(cmd *cobra.Command, args []string) {
 
 	flagHelper := cli.NewFlagHelper(cmd)
 	uri := flagHelper.GetRequiredString("uri")
-	cachedJSON := flagHelper.GetOptionalString("public-key-cached")
+	cachedJSON := flagHelper.GetOptionalString("public-keys")
 	remote := flagHelper.GetOptionalString("public-key-remote")
 	metadataLabels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
 
 	if cachedJSON == "" && remote == "" {
 		e := fmt.Errorf("a public key is required. Please pass either a cached or remote public key")
-		cli.ExitWithError("Issue with create flags 'public-key-cached' and 'public-key-remote'", e)
+		cli.ExitWithError("Issue with create flags 'public-keys' and 'public-key-remote'", e)
 	}
 
 	key := &policy.PublicKey{}
@@ -100,7 +100,7 @@ func policy_createKeyAccessRegistry(cmd *cobra.Command, args []string) {
 	if cachedJSON != "" {
 		if remote != "" {
 			e := fmt.Errorf("only one public key is allowed. Please pass either a cached or remote public key but not both")
-			cli.ExitWithError("Issue with create flags 'public-key-cached' and 'public-key-remote'", e)
+			cli.ExitWithError("Issue with create flags 'public-keys' and 'public-key-remote'", e)
 		}
 		cached := new(policy.PublicKey)
 		err := protojson.Unmarshal([]byte(cachedJSON), cached)
@@ -141,18 +141,18 @@ func policy_updateKeyAccessRegistry(cmd *cobra.Command, args []string) {
 
 	id := flagHelper.GetRequiredString("id")
 	uri := flagHelper.GetOptionalString("uri")
-	cachedJSON := flagHelper.GetOptionalString("public-key-cached")
+	cachedJSON := flagHelper.GetOptionalString("public-keys")
 	remote := flagHelper.GetOptionalString("public-key-remote")
 	labels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
 
 	if cachedJSON == "" && remote == "" && len(labels) == 0 && uri == "" {
-		cli.ExitWithError("No values were passed to update. Please pass at least one value to update (E.G. 'uri', 'public-key-cached', 'public-key-remote', 'label')", nil)
+		cli.ExitWithError("No values were passed to update. Please pass at least one value to update (E.G. 'uri', 'public-keys', 'public-key-remote', 'label')", nil)
 	}
 
 	var pubKey *policy.PublicKey
 	if cachedJSON != "" && remote != "" {
 		e := fmt.Errorf("only one public key is allowed. Please pass either a cached or remote public key but not both")
-		cli.ExitWithError("Issue with update flags 'public-key-cached' and 'public-key-remote': ", e)
+		cli.ExitWithError("Issue with update flags 'public-keys' and 'public-key-remote': ", e)
 	} else if cachedJSON != "" {
 		cached := new(policy.PublicKey)
 		err := protojson.Unmarshal([]byte(cachedJSON), cached)
@@ -239,10 +239,10 @@ func init() {
 		createDoc.GetDocFlag("uri").Description,
 	)
 	createDoc.Flags().StringP(
-		createDoc.GetDocFlag("public-key-cached").Name,
-		createDoc.GetDocFlag("public-key-cached").Shorthand,
-		createDoc.GetDocFlag("public-key-cached").Default,
-		createDoc.GetDocFlag("public-key-cached").Description,
+		createDoc.GetDocFlag("public-keys").Name,
+		createDoc.GetDocFlag("public-keys").Shorthand,
+		createDoc.GetDocFlag("public-keys").Default,
+		createDoc.GetDocFlag("public-keys").Description,
 	)
 	createDoc.Flags().StringP(
 		createDoc.GetDocFlag("public-key-remote").Name,
@@ -268,10 +268,10 @@ func init() {
 		updateDoc.GetDocFlag("uri").Description,
 	)
 	updateDoc.Flags().StringP(
-		updateDoc.GetDocFlag("public-key-cached").Name,
-		updateDoc.GetDocFlag("public-key-cached").Shorthand,
-		updateDoc.GetDocFlag("public-key-cached").Default,
-		updateDoc.GetDocFlag("public-key-cached").Description,
+		updateDoc.GetDocFlag("public-keys").Name,
+		updateDoc.GetDocFlag("public-keys").Shorthand,
+		updateDoc.GetDocFlag("public-keys").Default,
+		updateDoc.GetDocFlag("public-keys").Description,
 	)
 	updateDoc.Flags().StringP(
 		updateDoc.GetDocFlag("public-key-remote").Name,
