@@ -11,12 +11,12 @@ command:
       shorthand: u
       description: URI of the Key Access Server
       required: true
-    - name: public-key-local
-      shorthand: p
-      description: Public key of the Key Access Server
+    - name: public-key-cached
+      shorthand: c
+      description: Cached public keys for the KAS
     - name: public-key-remote
       shorthand: r
-      description: URI of the public key of the Key Access Server
+      description: Remote URI where the public key can be retrieved for the KAS
     - name: label
       description: "Optional metadata 'labels' in the format: key=value"
       shorthand: l
@@ -25,10 +25,7 @@ command:
 
 For more information about registration of Key Access Servers, see the manual for `kas-registry`.
 
-> Warning: storage of the public key as `remote` or `local` may soon be deprecated in
-> favor of reaching out to the KAS directly for the public key.
-
-Public keys can be stored as either `remote` or `local` under the following JSON structure.
+Public keys can be stored as either `remote` or `cached` under the following JSON structure.
 
 ### Remote
 
@@ -39,13 +36,30 @@ Public keys can be stored as either `remote` or `local` under the following JSON
 The JSON value passed to the `--public-key-remote` flag puts the location where the public key
 can be accessed for a the registered KAS under the `remote` key.
 
-### Local
+### Cached
 
-```json
-{ "local": "myBase64EncodedCert" }
+```json5
+{
+  "cached": {
+    // One or more known public keys for the KAS
+    "keys":[
+      {
+        // x509 ASN.1 content in PEM envelope, usually
+        "pem": "base64encodedCert",
+        // key identifier 
+        "kid": "<your key id>",
+        // algorithm (either: 1 for rsa:2048, 2 for ec:secp256r1)
+        "alg": 1
+      }
+    ]
+  }
+}
 ```
 
-The JSON value passed to the `--public-key-local` flag puts a base64-encoded key value under
-the `local` key.
+The JSON value passed to the `--public-key-cached` flag stores the set of public keys for the KAS.
 
-The base64 encoding should contain everything `-----BEGIN CERTIFICATE-----\nMIIB...5Q=\n-----END CERTIFICATE-----\n`.
+The PEM base64 encoding should contain everything `-----BEGIN CERTIFICATE-----\nMIIB...5Q=\n-----END CERTIFICATE-----\n`.
+
+### Local
+
+Deprecated.
