@@ -104,3 +104,4 @@ jobs:
         uses: bats-core/bats-action@2.0.0
       - run: tests/encrypt-decrypt.bats
       - run: tests/kas-grants.bats
+      - run: tests/kas-registry.bats
