@@ -98,9 +98,12 @@ jobs:
 
       - name: build the CLI
         run: go build .
+      - name: build the CLI in test mode
+        run: make build-test
       - name: set up the config
         run: cp otdfctl-example.yaml otdfctl.yaml
       - name: Setup Bats and bats libs
         uses: bats-core/bats-action@2.0.0
       - run: tests/encrypt-decrypt.bats
       - run: tests/kas-grants.bats
+      - run: tests/profile.bats

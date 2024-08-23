@@ -54,30 +54,25 @@ CLI via the `man.Docs.GetDoc()` function.
 
 ## Testing
 
-The [tests](./tests) directory contains e2e Bash Automated Test System (bats) tests for all of the cli functionality.
+The CLI is equipped with a test mode that can be enabled by building the CLI with `config.TestMode = true`.
+For convenience, the CLI can be built with `make build-test`. 
 
-To install bats on MacOS:
-```
-$ brew install bats-core
-```
-Or with NPM on any OS:
-```
-# To install globally:
-$ npm install -g bats
+**Test Mode features**:
 
-# To install into your project and save it as one of the "devDependencies" in
-# your package.json:
-$ npm install --save-dev bats
-```
+- Use the in-memory keyring provider for user profiles
+- Enable provisioning profiles for testing via `OTDFCTL_TEST_PROFILE` environment variable
 
-These tests require the platform to be running and provisioned with basic keycloak clients/users. Before running, clone https://github.com/opentdf/platform and follow [the quickstart](https://github.com/opentdf/platform?tab=readme-ov-file#quick-start) to spin it up.
+### BATS
 
-Build the cli:
-```
-$ go build .
-```
+> [!NOTE]
+> Bat Automated Test System (bats) is a TAP-compliant testing framework for Bash. It provides a simple way to verify that the UNIX programs you write behave as expected.
 
-Run the bats with:
-```
-$ bats tests/*.bats
-```
+BATS is used to test the CLI from an end-to-end perspective. To run the tests you will need to ensure the following
+pre-requisites are met:
+
+- bats is installed on your system
+  - MacOS: `brew install bats-core bats-support bats-assert`
+- The platform is running and provisioned with basic keycloak clients/users
+  - See the [platform README](https://github.com/opentdf/platform) for instructions
+
+To run the tests you can either run `make test-bats` or execute specific test suites with `bats tests/<test>.bats`.
