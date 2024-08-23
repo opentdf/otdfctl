@@ -57,6 +57,7 @@ func renderDSMessages() string {
 	return cli.SuccessMessage("Success message") + "\n" + cli.ErrorMessage("Error message", nil)
 }
 
+// Builds rows for timestamps and labels from common.Metadata
 func getMetadataRows(m *common.Metadata) [][]string {
 	if m != nil {
 		metadata := cli.ConstructMetadata(m)
