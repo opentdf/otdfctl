@@ -5,20 +5,25 @@ setup() {
   
   OTDFCTL_BIN=./otdfctl_testbuild
 
-  # Check if BATS_SUPPORT_PATH environment variable exists
-  if [ -z "${BATS_SUPPORT_PATH}" ]; then
-    # Check if bats is installed via homebrew
-    if [[ $(which bats) == *"/homebrew/"* ]]; then
-      FINAL_BATS_SUPPORT_PATH=$(brew --prefix)/lib
-    else
-      FINAL_BATS_SUPPORT_PATH=$(dirname $(which bats))/../lib
+  if [[ $(which bats) == *"homebrew"* ]]; then
+      BATS_LIB_PATH=$(brew --prefix)/lib
     fi
-  else
-    FINAL_BATS_SUPPORT_PATH="${BATS_SUPPORT_PATH}"
+
+  # Check if BATS_LIB_PATH environment variable exists
+  if [ -z "${BATS_LIB_PATH}" ]; then
+    # Check if bats bin has homebrew in path name
+    if [[ $(which bats) == *"homebrew"* ]]; then
+      BATS_LIB_PATH=$(dirname $(which bats))/../lib
+    elif [ -d "/usr/lib/bats-support" ]; then
+      BATS_LIB_PATH="/usr/lib"
+    elif [ -d "/usr/local/lib/bats-support" ]; then
+      # Check if bats-support exists in /usr/local/lib
+      BATS_LIB_PATH="/usr/local/lib"
+    fi
   fi
-  echo "FINAL_BATS_SUPPORT_PATH: $FINAL_BATS_SUPPORT_PATH"
-  load "${FINAL_BATS_SUPPORT_PATH}/bats-support/load.bash"
-  load "${FINAL_BATS_SUPPORT_PATH}/bats-assert/load.bash"
+  echo "BATS_LIB_PATH: $BATS_LIB_PATH"
+  load "${BATS_LIB_PATH}/bats-support/load.bash"
+  load "${BATS_LIB_PATH}/bats-assert/load.bash"
 
   set_test_profile() {
     auth=""
