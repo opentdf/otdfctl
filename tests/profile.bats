@@ -11,7 +11,7 @@ setup() {
     if [[ $(which bats) == *"/homebrew/"* ]]; then
       FINAL_BATS_SUPPORT_PATH=$(brew --prefix)/lib
     else
-      FINAL_BATS_SUPPORT_PATH=$(dirname $(which bats))/../lib
+      FINAL_BATS_SUPPORT_PATH=$(dirname "$(realpath "$(which bats)")")/../lib
     fi
   else
     FINAL_BATS_SUPPORT_PATH="${BATS_SUPPORT_PATH}"
