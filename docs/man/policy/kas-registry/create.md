@@ -29,12 +29,8 @@ Public keys can be stored as either `remote` or `cached` under the following JSO
 
 ### Remote
 
-```json
-{ "remote": "https://mykas.com/public_key" }
-```
-
-The JSON value passed to the `--public-key-remote` flag puts the location where the public key
-can be accessed for a the registered KAS under the `remote` key.
+The value passed to the `--public-key-remote` flag puts the hosted location where the public key
+can be retrieved for the registered KAS under the `remote` key, such as `https://kas.io/public_key`
 
 ### Cached
 

@@ -92,7 +92,7 @@ func policy_createKeyAccessRegistry(cmd *cobra.Command, args []string) {
 
 	if cachedJSON == "" && remote == "" {
 		e := fmt.Errorf("a public key is required. Please pass either a cached or remote public key")
-		cli.ExitWithError("Issue with create flags 'public-key-cached' and 'public-key-remote': ", e)
+		cli.ExitWithError("Issue with create flags 'public-key-cached' and 'public-key-remote'", e)
 	}
 
 	key := &policy.PublicKey{}
@@ -100,7 +100,7 @@ func policy_createKeyAccessRegistry(cmd *cobra.Command, args []string) {
 	if cachedJSON != "" {
 		if remote != "" {
 			e := fmt.Errorf("only one public key is allowed. Please pass either a cached or remote public key but not both")
-			cli.ExitWithError("Issue with create flags 'public-key-cached' and 'public-key-remote': ", e)
+			cli.ExitWithError("Issue with create flags 'public-key-cached' and 'public-key-remote'", e)
 		}
 		cached := new(policy.PublicKey)
 		err := protojson.Unmarshal([]byte(cachedJSON), cached)
@@ -188,6 +188,7 @@ func policy_deleteKeyAccessRegistry(cmd *cobra.Command, args []string) {
 
 	flagHelper := cli.NewFlagHelper(cmd)
 	id := flagHelper.GetRequiredString("id")
+	force := flagHelper.GetOptionalBool("force")
 
 	kas, err := h.GetKasRegistryEntry(id)
 	if err != nil {
@@ -195,7 +196,9 @@ func policy_deleteKeyAccessRegistry(cmd *cobra.Command, args []string) {
 		cli.ExitWithError(errMsg, err)
 	}
 
-	cli.ConfirmAction(cli.ActionDelete, "Registered KAS", id, false)
+	if !force {
+		cli.ConfirmAction(cli.ActionDelete, "Registered KAS", id, false)
+	}
 
 	if _, err := h.DeleteKasRegistryEntry(id); err != nil {
 		errMsg := fmt.Sprintf("Failed to delete Registered KAS entry (%s)", id)
@@ -286,6 +289,11 @@ func init() {
 		deleteDoc.GetDocFlag("id").Shorthand,
 		deleteDoc.GetDocFlag("id").Default,
 		deleteDoc.GetDocFlag("id").Description,
+	)
+	deleteDoc.Flags().Bool(
+		deleteDoc.GetDocFlag("force").Name,
+		false,
+		deleteDoc.GetDocFlag("force").Description,
 	)
 
 	doc := man.Docs.GetCommand("policy/kas-registry",
