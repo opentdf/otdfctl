@@ -18,7 +18,7 @@ setup_file() {
 
 teardown() {
     ID=$(echo "$CREATED" | jq -r '.id')
-    printf "y" | ./otdfctl $HOST $DEBUG_LEVEL $WITH_CREDS policy kas-registry delete --id "$ID" --force
+    ./otdfctl $HOST $DEBUG_LEVEL $WITH_CREDS policy kas-registry delete --id "$ID" --force
 }
 
 @test "create registration of a KAS with remote key" {
