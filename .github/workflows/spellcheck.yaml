@@ -17,6 +17,6 @@ jobs:
       - uses: actions/checkout@v3
       - uses: matheus23/md-spellcheck-action@v4.2.2
         with:
-          files-to-check: '*.md'
+          files-to-check: '**/*.md'
           files-to-exclude: '**/*.go'
           words-to-ignore-file: './.github/spellcheck.ignore'
