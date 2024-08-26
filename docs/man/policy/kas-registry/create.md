@@ -44,7 +44,7 @@ can be retrieved for the registered KAS under the `remote` key, such as `https:/
         "pem": "<your PEM certificate>",
         // key identifier 
         "kid": "<your key id>",
-        // algorithm (either: 1 for rsa:2048, 5 for ec:secp256r1)
+        // key algorithm (see table below)
         "alg": 1
       }
     ]
@@ -54,7 +54,16 @@ can be retrieved for the registered KAS under the `remote` key, such as `https:/
 
 The JSON value passed to the `--public-keys` flag stores the set of public keys for the KAS.
 
-The PEM value should contain everything `-----BEGIN CERTIFICATE-----\nMIIB...5Q=\n-----END CERTIFICATE-----\n`.
+1. The `"pem"` value should contain the entire certificate `-----BEGIN CERTIFICATE-----\nMIIB...5Q=\n-----END CERTIFICATE-----\n`.
+
+2. The `"kid"` value is a named key identifier, which is useful for key rotations.
+
+3. The `"alg"` specifies the key algorithm:
+
+| Key Algorithm  | `alg` Value |
+| -------------- | ----------- |
+| `rsa:2048`     | 1           |
+| `ec:secp256r1` | 5           |
 
 ### Local
 
