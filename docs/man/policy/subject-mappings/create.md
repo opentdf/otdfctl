@@ -1,5 +1,5 @@
 ---
-title: Create a new subject mapping 
+title: Create a new subject mapping
 command:
   name: create
   aliases:
@@ -11,7 +11,7 @@ command:
       description: The ID of the attribute value to map to a subject set
       shorthand: a
       required: true
-      default: ""
+      default: ''
     - name: action-standard
       description: The standard action to map to a subject set
       enum:
@@ -19,22 +19,22 @@ command:
         - TRANSMIT
       shorthand: s
       required: true
-      default: ""
+      default: ''
     - name: action-custom
       description: The custom action to map to a subject set
       shorthand: c
       required: false
-      default: ""
+      default: ''
     - name: subject-condition-set-id
-      description: Known pre-existing Subject Condition Set Id
+      description: Known preexisting Subject Condition Set Id
       required: true
-      default: ""
+      default: ''
     - name: subject-condition-set-new
       description: JSON array of Subject Sets to create a new Subject Condition Set associated with the created Subject Mapping
       required: false
-      default: ""
+      default: ''
     - name: label
       description: "Optional metadata 'labels' in the format: key=value"
       shorthand: l
-      default: ""
+      default: ''
 ---

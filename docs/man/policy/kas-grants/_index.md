@@ -77,7 +77,7 @@ Attribute B: `https://conglomerate.com/attr/organization/value/example_inc`
 
 **Attribute KAS Grant Scenarios**
 
-1. Bob & Alice represent individual KAS Grants to attributes on TDFd data
+1. Bob & Alice represent individual KAS Grants to attributes on TDF'd data
 2. Note that the attributes A and B are of _the same definition and namespace_
 
 | Definition: organization | Value: acmeco | Value: example_inc | Split |
@@ -96,7 +96,7 @@ AllOf logic, meaning that neither partner can decrypt the data with just one of 
 To accomplish this, they each define KAS Grants between their KASes and policy attributes, and TDF data with at least two attributes -
 one assigned a KAS Grant to Bob's KAS and another assigned a KAS Grant to Alice's KAS.
 
-Both KASes will need to permit access and release payload keys for the data TDFd with multiple attributes assigned KAS Grants to be accessible and decrypted.
+Both KASes will need to permit access and release payload keys for the data TDF'd with multiple attributes assigned KAS Grants to be accessible and decrypted.
 
 Attribute A: `https://conglomerate.com/attr/organization/value/acmeco`
 
@@ -109,7 +109,7 @@ Attribute B: `https://conglomerate.com/attr/department/value/sales`
 
 **Attribute KAS Grant Scenarios**
 
-1. Bob & Alice represent individual KAS Grants to attributes on TDFd data
+1. Bob & Alice represent individual KAS Grants to attributes on TDF'd data
 2. Note that the attributes A and B are of _the same namespace but different definitions_
 
 | Definition: A | Value: A | Definition: B | Value: B | Split |
