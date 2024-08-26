@@ -41,7 +41,7 @@ can be retrieved for the registered KAS under the `remote` key, such as `https:/
     "keys":[
       {
         // x509 ASN.1 content in PEM envelope, usually
-        "pem": "base64encodedCert",
+        "pem": "<your PEM certificate>",
         // key identifier 
         "kid": "<your key id>",
         // algorithm (either: 1 for rsa:2048, 2 for ec:secp256r1)
@@ -54,7 +54,7 @@ can be retrieved for the registered KAS under the `remote` key, such as `https:/
 
 The JSON value passed to the `--public-keys` flag stores the set of public keys for the KAS.
 
-The PEM base64 encoding should contain everything `-----BEGIN CERTIFICATE-----\nMIIB...5Q=\n-----END CERTIFICATE-----\n`.
+The PEM value should contain everything `-----BEGIN CERTIFICATE-----\nMIIB...5Q=\n-----END CERTIFICATE-----\n`.
 
 ### Local
 
