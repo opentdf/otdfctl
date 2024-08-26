@@ -8,6 +8,7 @@ on:
       - LICENSE
       - CODEOWNERS
       - '.gitignore'
+      - '**/*.go'
 
 jobs:
   spellcheck:
@@ -17,3 +18,4 @@ jobs:
       - uses: matheus23/md-spellcheck-action@v4.2.2
         with:
           files-to-check: '*.md'
+          words-go-ignore-file: './.github/spellcheck.ignore'
