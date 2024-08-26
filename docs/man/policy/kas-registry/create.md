@@ -44,7 +44,7 @@ can be retrieved for the registered KAS under the `remote` key, such as `https:/
         "pem": "<your PEM certificate>",
         // key identifier 
         "kid": "<your key id>",
-        // algorithm (either: 1 for rsa:2048, 2 for ec:secp256r1)
+        // algorithm (either: 1 for rsa:2048, 5 for ec:secp256r1)
         "alg": 1
       }
     ]
