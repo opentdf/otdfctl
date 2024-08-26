@@ -3,9 +3,11 @@ package auth
 import (
 	"context"
 	"crypto/rand"
+	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"net/url"
 	"os"
 	"time"
@@ -190,7 +192,16 @@ func GetTokenWithClientCreds(ctx context.Context, endpoint string, clientId stri
 		return nil, err
 	}
 
-	rp, err := oidcrp.NewRelyingPartyOIDC(ctx, pc.issuer, clientId, clientSecret, "", []string{"email"})
+	// Create a new HTTP client with the ability to skip TLS verification
+	client := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: tlsNoVerify,
+			},
+		},
+	}
+
+	rp, err := oidcrp.NewRelyingPartyOIDC(ctx, pc.issuer, clientId, clientSecret, "", []string{"email"}, oidcrp.WithHTTPClient(client))
 	if err != nil {
 		return nil, err
 	}
