@@ -38,6 +38,12 @@ type platformConfiguration struct {
 	publicClientID string
 }
 
+type oidcClientCredentials struct {
+	clientID     string
+	clientSecret string
+	isPublic     bool
+}
+
 // Retrieves credentials by reading specified file
 func GetClientCredsFromFile(filepath string) (ClientCredentials, error) {
 	creds := ClientCredentials{}
@@ -185,22 +191,19 @@ func GetTokenWithProfile(ctx context.Context, profile *profiles.ProfileStore) (*
 
 // Uses the OAuth2 client credentials flow to obtain a token.
 func GetTokenWithClientCreds(ctx context.Context, endpoint string, clientId string, clientSecret string, tlsNoVerify bool) (*oauth2.Token, error) {
-	pc, err := getPlatformConfiguration(endpoint, "", tlsNoVerify)
-	if err != nil && !errors.Is(err, sdk.ErrPlatformPublicClientIDNotFound) {
-		return nil, err
-	}
-
-	rp, err := oidcrp.NewRelyingPartyOIDC(ctx, pc.issuer, clientId, clientSecret, "", []string{"email"})
+	rp, err := newOidcRelyingParty(ctx, endpoint, tlsNoVerify, oidcClientCredentials{
+		clientID:     clientId,
+		clientSecret: clientSecret,
+	})
 	if err != nil {
 		return nil, err
 	}
-
 	return oidcrp.ClientCredentials(ctx, rp, url.Values{})
 }
 
 // Facilitates an auth code PKCE flow to obtain OIDC tokens.
 // Spawns a local server to handle the callback and opens a browser window in each respective OS.
-func Login(platformEndpoint, tokenURL, authURL, publicClientID string) (*oauth2.Token, error) {
+func Login(ctx context.Context, platformEndpoint, tokenURL, authURL, publicClientID string) (*oauth2.Token, error) {
 	// Generate random hash and encryption keys for cookie handling
 	hashKey := make([]byte, 16)
 	encryptKey := make([]byte, 16)
@@ -225,7 +228,6 @@ func Login(platformEndpoint, tokenURL, authURL, publicClientID string) (*oauth2.
 		},
 	}
 
-	ctx := context.Background()
 	cookiehandler := httphelper.NewCookieHandler(hashKey, encryptKey)
 
 	relyingParty, err := oidcrp.NewRelyingPartyOAuth(conf,
@@ -252,13 +254,13 @@ func Login(platformEndpoint, tokenURL, authURL, publicClientID string) (*oauth2.
 }
 
 // Logs in using the auth code PKCE flow driven by the platform well-known idP OIDC configuration.
-func LoginWithPKCE(host, publicClientID string, tlsNoVerify bool) (*oauth2.Token, string, error) {
+func LoginWithPKCE(ctx context.Context, host, publicClientID string, tlsNoVerify bool) (*oauth2.Token, string, error) {
 	pc, err := getPlatformConfiguration(host, publicClientID, tlsNoVerify)
 	if err != nil {
 		return nil, "", fmt.Errorf("failed to get platform configuration: %w", err)
 	}
 
-	tok, err := Login(host, pc.tokenEndpoint, pc.authzEndpoint, pc.publicClientID)
+	tok, err := Login(ctx, host, pc.tokenEndpoint, pc.authzEndpoint, pc.publicClientID)
 	if err != nil {
 		return nil, "", fmt.Errorf("failed to login: %w", err)
 	}
@@ -267,16 +269,45 @@ func LoginWithPKCE(host, publicClientID string, tlsNoVerify bool) (*oauth2.Token
 }
 
 // Revokes the access token
-func RevokeAccessToken(endpoint, publicClientID, refreshToken string, tlsNoVerify bool) error {
-	pCfg, err := getPlatformConfiguration(endpoint, publicClientID, tlsNoVerify)
-	if err != nil {
-		return fmt.Errorf("failed to get platform configuration: %w", err)
-	}
-
-	rp, err := oidcrp.NewRelyingPartyOIDC(context.Background(), pCfg.issuer, pCfg.publicClientID, "", "", nil)
+func RevokeAccessToken(ctx context.Context, endpoint, publicClientID, refreshToken string, tlsNoVerify bool) error {
+	rp, err := newOidcRelyingParty(ctx, endpoint, tlsNoVerify, oidcClientCredentials{
+		clientID: publicClientID,
+		isPublic: true,
+	})
 	if err != nil {
 		return err
 	}
+	return oidcrp.RevokeToken(ctx, rp, refreshToken, "refresh_token")
+}
 
-	return oidcrp.RevokeToken(context.Background(), rp, refreshToken, "refresh_token")
+func newOidcRelyingParty(ctx context.Context, endpoint string, tlsNoVerify bool, clientCreds oidcClientCredentials) (oidcrp.RelyingParty, error) {
+	if clientCreds.clientID == "" {
+		return nil, errors.New("client ID is required")
+	}
+	if clientCreds.clientSecret == "" && !clientCreds.isPublic {
+		return nil, errors.New("client secret is required")
+	}
+	if clientCreds.clientSecret != "" && clientCreds.isPublic {
+		return nil, errors.New("client secret must be empty for public clients")
+	}
+
+	var pcClient string
+	if clientCreds.isPublic {
+		pcClient = clientCreds.clientID
+	}
+
+	pc, err := getPlatformConfiguration(endpoint, pcClient, tlsNoVerify)
+	if err != nil {
+		return nil, err
+	}
+
+	return oidcrp.NewRelyingPartyOIDC(
+		ctx,
+		pc.issuer,
+		clientCreds.clientID,
+		clientCreds.clientSecret,
+		"",
+		nil,
+		oidcrp.WithHTTPClient(utils.NewHttpClient(tlsNoVerify)),
+	)
 }
