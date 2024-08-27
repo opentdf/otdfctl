@@ -116,7 +116,7 @@ func policy_deactivateAttributeValue(cmd *cobra.Command, args []string) {
 		cli.ExitWithError(fmt.Sprintf("Failed to get attribute value (%s)", id), err)
 	}
 
-	cli.ConfirmAction(cli.ActionDeactivate, "attribute value", value.Value)
+	cli.ConfirmAction(cli.ActionDeactivate, "attribute value", value.Value, false)
 
 	deactivated, err := h.DeactivateAttributeValue(id)
 	if err != nil {

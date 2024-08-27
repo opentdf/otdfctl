@@ -6,6 +6,10 @@ otdfctl.yaml
 
 # Ignore the tructl binary
 otdfctl
+otdfctl_testbuild
+
+# Misc
+creds.json
 
 # Hugo
 public/

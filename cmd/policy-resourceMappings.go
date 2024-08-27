@@ -137,7 +137,7 @@ func policy_deleteResourceMapping(cmd *cobra.Command, args []string) {
 	flagHelper := cli.NewFlagHelper(cmd)
 	id := flagHelper.GetRequiredString("id")
 
-	cli.ConfirmAction(cli.ActionDelete, "resource-mapping", id)
+	cli.ConfirmAction(cli.ActionDelete, "resource-mapping", id, false)
 
 	resourceMapping, err := h.DeleteResourceMapping(id)
 	if err != nil {

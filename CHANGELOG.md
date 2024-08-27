@@ -1,0 +1,79 @@
+# Changelog
+
+## [0.12.2](https://github.com/opentdf/otdfctl/compare/v0.12.1...v0.12.2) (2024-08-27)
+
+
+### Bug Fixes
+
+* **core:** improve KASR docs and add spellcheck GHA to pipeline ([#323](https://github.com/opentdf/otdfctl/issues/323)) ([a77cf30](https://github.com/opentdf/otdfctl/commit/a77cf30dc8077d034cb4c9df8cc94712b1a17dff)), closes [#335](https://github.com/opentdf/otdfctl/issues/335) [#337](https://github.com/opentdf/otdfctl/issues/337)
+* create new http client to ignore tls verification ([#324](https://github.com/opentdf/otdfctl/issues/324)) ([4d4afb7](https://github.com/opentdf/otdfctl/commit/4d4afb7e5b6411bb08a92bc53181ac5730ca1992))
+
+## [0.12.1](https://github.com/opentdf/otdfctl/compare/v0.12.0...v0.12.1) (2024-08-26)
+
+
+### Bug Fixes
+
+* **core:** remove documentation that cached kas pubkey is base64 ([#320](https://github.com/opentdf/otdfctl/issues/320)) ([fce8f44](https://github.com/opentdf/otdfctl/commit/fce8f44f767f35ccc4863f88d46e7ffcbd80f37a)), closes [#321](https://github.com/opentdf/otdfctl/issues/321)
+
+## [0.12.0](https://github.com/opentdf/otdfctl/compare/v0.11.4...v0.12.0) (2024-08-23)
+
+
+### Features
+
+* **ci:** attr e2e tests with mixed casing ([#315](https://github.com/opentdf/otdfctl/issues/315)) ([50ce712](https://github.com/opentdf/otdfctl/commit/50ce712eab38f6686611e2b306bda5cacd55c28e))
+* **core:** kasr cached keys to deprecate local ([#318](https://github.com/opentdf/otdfctl/issues/318)) ([5419cc3](https://github.com/opentdf/otdfctl/commit/5419cc39e143eb484f836ca1ee671d626d5e2c60)), closes [#317](https://github.com/opentdf/otdfctl/issues/317)
+
+## [0.11.4](https://github.com/opentdf/otdfctl/compare/v0.11.3...v0.11.4) (2024-08-22)
+
+
+### Bug Fixes
+
+* update workflow permissions ([#310](https://github.com/opentdf/otdfctl/issues/310)) ([3979fe8](https://github.com/opentdf/otdfctl/commit/3979fe85c9ab6511376d98b672cbfebddbf9bb84))
+
+## [0.11.3](https://github.com/opentdf/otdfctl/compare/v0.11.2...v0.11.3) (2024-08-22)
+
+
+### Bug Fixes
+
+* **core:** do not import unused fmt ([#306](https://github.com/opentdf/otdfctl/issues/306)) ([0dc552d](https://github.com/opentdf/otdfctl/commit/0dc552d3d6814f910c04d5f8cefa35404b4945f5))
+* **core:** nil panic on set-default ([#304](https://github.com/opentdf/otdfctl/issues/304)) ([92bbfa3](https://github.com/opentdf/otdfctl/commit/92bbfa32ae42b73b68551c2f9d3551d357bc5922))
+* **core:** warn and do now allow deletion of default profile ([#308](https://github.com/opentdf/otdfctl/issues/308)) ([fdd8167](https://github.com/opentdf/otdfctl/commit/fdd8167e8e2b22d652b48d796a756f86398bfd3c))
+* make file not building correctly ([#307](https://github.com/opentdf/otdfctl/issues/307)) ([64eb821](https://github.com/opentdf/otdfctl/commit/64eb82170fdcc50396194271be358bf9c9d43049))
+
+## [0.11.2](https://github.com/opentdf/otdfctl/compare/v0.11.1...v0.11.2) (2024-08-22)
+
+
+### Bug Fixes
+
+* disable tagging ([#302](https://github.com/opentdf/otdfctl/issues/302)) ([2b5db85](https://github.com/opentdf/otdfctl/commit/2b5db852ed0088e61f1180500135cd1865f9798b))
+
+## [0.11.1](https://github.com/opentdf/otdfctl/compare/v0.11.0...v0.11.1) (2024-08-22)
+
+
+### Bug Fixes
+
+* release-please tweak ([#300](https://github.com/opentdf/otdfctl/issues/300)) ([29fc836](https://github.com/opentdf/otdfctl/commit/29fc8360ae0b701aefe70b25d1838f442fd7eb8d))
+
+## [0.11.0](https://github.com/opentdf/otdfctl/compare/v0.10.0...v0.11.0) (2024-08-22)
+
+
+### Features
+
+* move git checkout before tagging ([#298](https://github.com/opentdf/otdfctl/issues/298)) ([1114e25](https://github.com/opentdf/otdfctl/commit/1114e25a90946e85622c8ff7a7befbf18beb4ba1))
+
+## [0.10.0](https://github.com/opentdf/otdfctl/compare/v0.9.4...v0.10.0) (2024-08-22)
+
+
+### Features
+
+* add profile support for cli ([#289](https://github.com/opentdf/otdfctl/issues/289)) ([15700f3](https://github.com/opentdf/otdfctl/commit/15700f3375196595e4a0ea3a7a6dea4da06d8612))
+* **core:** add scaffolding and POC for auth code flow ([#144](https://github.com/opentdf/otdfctl/issues/144)) ([03ecbfb](https://github.com/opentdf/otdfctl/commit/03ecbfb4f689f4a9f161a5a03d80efd50f728780))
+* **core:** support kas grants to namespaces ([#292](https://github.com/opentdf/otdfctl/issues/292)) ([f2c6689](https://github.com/opentdf/otdfctl/commit/f2c6689d2f775b1aed907d553c42d87c8464e6c7)), closes [#269](https://github.com/opentdf/otdfctl/issues/269)
+* improve auth with client credentials ([#286](https://github.com/opentdf/otdfctl/issues/286)) ([9c4968f](https://github.com/opentdf/otdfctl/commit/9c4968f48d1ba23a61ed5c8ad23a109bf141ba56))
+* improve auth with client credentials ([#296](https://github.com/opentdf/otdfctl/issues/296)) ([0f533c7](https://github.com/opentdf/otdfctl/commit/0f533c7278a53ddd90656b3c7efcaee1c5bfd957))
+
+
+### Bug Fixes
+
+* **core:** bump platform deps ([#276](https://github.com/opentdf/otdfctl/issues/276)) ([e4ced99](https://github.com/opentdf/otdfctl/commit/e4ced996ae336b9db6db88906683f6600a2e5bf4))
+* reduce prints ([#277](https://github.com/opentdf/otdfctl/issues/277)) ([8b5734a](https://github.com/opentdf/otdfctl/commit/8b5734a18636071566fd8c4cfc808f3f240a02a5))

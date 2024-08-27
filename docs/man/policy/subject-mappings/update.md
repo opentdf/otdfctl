@@ -1,5 +1,5 @@
 ---
-title: Update a subject mapping 
+title: Update a subject mapping
 command:
   name: update
   aliases:
@@ -16,20 +16,20 @@ command:
         - TRANSMIT
       shorthand: s
       required: true
-      default: ""
+      default: ''
     - name: action-custom
       description: The custom action to map to a subject set
       shorthand: c
       required: false
-      default: ""
+      default: ''
     - name: subject-condition-set-id
-      description: Known pre-existing Subject Condition Set Id
+      description: Known preexisting Subject Condition Set Id
       required: true
-      default: ""
+      default: ''
     - name: label
       description: "Optional metadata 'labels' in the format: key=value"
       shorthand: l
-      default: ""
+      default: ''
     - name: force-replace-labels
       description: Destructively replace entire set of existing metadata 'labels' with any provided to this command
       default: false

@@ -190,7 +190,7 @@ func policy_deleteSubjectMapping(cmd *cobra.Command, args []string) {
 		cli.ExitWithError(errMsg, err)
 	}
 
-	cli.ConfirmAction(cli.ActionDelete, "subject mapping", sm.Id)
+	cli.ConfirmAction(cli.ActionDelete, "subject mapping", sm.Id, false)
 
 	deleted, err := h.DeleteSubjectMapping(id)
 	if err != nil {

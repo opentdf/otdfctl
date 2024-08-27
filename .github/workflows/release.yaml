@@ -1,9 +1,8 @@
 name: Release
 
 permissions:
-  contents: read
+  contents: write
   pull-requests: write
-  packages: write
   issues: write
 
 on:
@@ -15,48 +14,52 @@ jobs:
   release-please:
     runs-on: ubuntu-latest
     steps:
+      - name: Generate a token
+        id: generate_token
+        uses: actions/create-github-app-token@31c86eb3b33c9b601a1f60f98dcbfd1d70f379b4 # v1.10.3
+        with:
+          app-id: "${{ secrets.APP_ID }}"
+          private-key: "${{ secrets.AUTOMATION_KEY }}"
       - uses: googleapis/release-please-action@7987652d64b4581673a76e33ad5e98e3dd56832f
         id: release
         with:
+          token: ${{ steps.generate_token.outputs.token }}
           release-type: go
 
-      ###
-      # Tag the release
-      - name: tag major and minor versions
-        if: ${{ steps.release.outputs.release_created }}
-        run: |
-          git config user.name github-actions[bot]
-          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git remote add gh-token "https://${{ secrets.GITHUB_TOKEN }}@github.com/googleapis/release-please-action.git"
-          git tag -d v${{ steps.release.outputs.major }} || true
-          git tag -d v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }} || true
-          git push origin :v${{ steps.release.outputs.major }} || true
-          git push origin :v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }} || true
-          git tag -a v${{ steps.release.outputs.major }} -m "Release v${{ steps.release.outputs.major }}"
-          git tag -a v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }} -m "Release v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}"
-          git push origin v${{ steps.release.outputs.major }}
-          git push origin v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}
-
-      ###
-      # Build the release
       - uses: actions/checkout@v4
         if: ${{ steps.release.outputs.release_created }}
       - uses: actions/setup-go@v5
         if: ${{ steps.release.outputs.release_created }}
-      - name: make-targets
+        with: 
+          go-version-file: go.mod
+
+      ## TODO get this working again 
+      ## fatal: unable to access 'https://github.com/opentdf/otdfctl/': The requested URL returned error: 403
+      # - name: Tag semver and push to repo
+      #   if: ${{ steps.release.outputs.release_created }}
+      #   run: |
+      #     git config user.name github-actions[bot]
+      #     git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+      #     git remote add gh-token "https://${{ steps.generate_token.outputs.token }}@github.com/googleapis/release-please-action.git"
+      #     git tag -d v${{ steps.release.outputs.major }} || true
+      #     git tag -d v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }} || true
+      #     git push origin :v${{ steps.release.outputs.major }} || true
+      #     git push origin :v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }} || true
+      #     git tag -a v${{ steps.release.outputs.major }} -m "Release v${{ steps.release.outputs.major }}"
+      #     git tag -a v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }} -m "Release v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}"
+      #     git push origin v${{ steps.release.outputs.major }}
+      #     git push origin v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}
+
+      - name: Build, compress, and draft checksums
         if: ${{ steps.release.outputs.release_created }}
         env:
           SEM_VER: ${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}.${{ steps.release.outputs.patch }}
           COMMIT_SHA: ${{ steps.release.outputs.sha }}
         run: make build
-      - name: Compress the builds and generate checksums
-        if: ${{ steps.release.outputs.release_created }}
-        env:
-          SEM_VER: ${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}.${{ steps.release.outputs.patch }}
-        run: make zip-builds
+
       - name: Upload Release Artifact
         if: ${{ steps.release.outputs.release_created }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload ${{ steps.release.outputs.tag_name }} ./output/**/*
+        run: gh release upload ${{ steps.release.outputs.tag_name }} ./output/*
 

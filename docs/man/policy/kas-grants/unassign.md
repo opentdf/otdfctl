@@ -8,6 +8,9 @@ command:
     - remove
   description: Remove a grant assignment of a KAS to an Attribute Definition or Value
   flags:
+    - name: namespace-id
+      shorthand: n
+      description: The ID of the Namespace being unassigned a KAS Grant
     - name: attribute-id
       shorthand: a
       description: The ID of the Attribute Definition being unassigned the KAS grant
@@ -20,6 +23,8 @@ command:
       shorthand: k
       description: The Key Access Server (KAS) ID being unassigned a grant
       required: true
+    - name: force
+      description: Force the unassignment with no confirmation
 ---
 
 Unassign a registered Key Access Server (KAS) to an attribute definition or value.

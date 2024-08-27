@@ -23,7 +23,10 @@ const (
 	InputNameFQNUpdated = "deprecated fully qualified name (FQN) being altered"
 )
 
-func ConfirmAction(action, resource, id string) {
+func ConfirmAction(action, resource, id string, force bool) {
+	if force {
+		return
+	}
 	var confirm bool
 	err := huh.NewConfirm().
 		Title(fmt.Sprintf("Are you sure you want to %s %s:\n\n\t%s", action, resource, id)).

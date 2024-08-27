@@ -138,7 +138,7 @@ func policy_deactivateAttribute(cmd *cobra.Command, args []string) {
 		cli.ExitWithError(errMsg, err)
 	}
 
-	cli.ConfirmAction(cli.ActionDeactivate, "attribute", attr.Name)
+	cli.ConfirmAction(cli.ActionDeactivate, "attribute", attr.Name, false)
 
 	attr, err = h.DeactivateAttribute(id)
 	if err != nil {

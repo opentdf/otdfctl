@@ -4,8 +4,24 @@ on:
   pull_request:
     branches:
       - main
+    paths-ignore:
+      - '**/*.yaml'
+      - '**/*.md'
+      - LICENSE
+      - CODEOWNERS
+      - '.gitignore'
 
 jobs:
+  govulncheck:
+    runs-on: ubuntu-latest
+    name: Run govulncheck
+    steps:
+      - id: govulncheck
+        uses: golang/govulncheck-action@v1
+        with:
+          go-version-file: go.mod
+          go-package: ./...
+
   golangci:
     name: lint
     runs-on: ubuntu-22.04
@@ -66,6 +82,8 @@ jobs:
         working-directory: platform
       - run: go run ./service provision keycloak
         working-directory: platform
+      - run: go run ./service provision fixtures
+        working-directory: platform
       - uses: JarvusInnovations/background-action@2428e7b970a846423095c79d43f759abf979a635
         name: start server in background
         with:
@@ -85,4 +103,5 @@ jobs:
       - name: Setup Bats and bats libs
         uses: bats-core/bats-action@2.0.0
       - run: tests/encrypt-decrypt.bats
-
+      - run: tests/kas-grants.bats
+      - run: tests/kas-registry.bats

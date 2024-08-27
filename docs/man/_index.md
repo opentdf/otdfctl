@@ -7,6 +7,9 @@ command:
     - name: version
       description: show version
       default: false
+    - name: profile
+      description: profile to use for interacting with the platform
+      default: 
     - name: host
       description: Hostname of the platform (i.e. https://localhost)
       default:
