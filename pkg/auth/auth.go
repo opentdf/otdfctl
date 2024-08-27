@@ -3,11 +3,9 @@ package auth
 import (
 	"context"
 	"crypto/rand"
-	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/http"
 	"net/url"
 	"os"
 	"time"
@@ -38,6 +36,12 @@ type platformConfiguration struct {
 	authzEndpoint  string
 	tokenEndpoint  string
 	publicClientID string
+}
+
+type oidcClientCredentials struct {
+	clientID     string
+	clientSecret string
+	isPublic     bool
 }
 
 // Retrieves credentials by reading specified file
@@ -187,25 +191,13 @@ func GetTokenWithProfile(ctx context.Context, profile *profiles.ProfileStore) (*
 
 // Uses the OAuth2 client credentials flow to obtain a token.
 func GetTokenWithClientCreds(ctx context.Context, endpoint string, clientId string, clientSecret string, tlsNoVerify bool) (*oauth2.Token, error) {
-	pc, err := getPlatformConfiguration(endpoint, "", tlsNoVerify)
-	if err != nil && !errors.Is(err, sdk.ErrPlatformPublicClientIDNotFound) {
-		return nil, err
-	}
-
-	// Create a new HTTP client with the ability to skip TLS verification
-	client := &http.Client{
-		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: tlsNoVerify,
-			},
-		},
-	}
-
-	rp, err := oidcrp.NewRelyingPartyOIDC(ctx, pc.issuer, clientId, clientSecret, "", []string{"email"}, oidcrp.WithHTTPClient(client))
+	rp, err := newOidcRelyingParty(ctx, endpoint, tlsNoVerify, oidcClientCredentials{
+		clientID:     clientId,
+		clientSecret: clientSecret,
+	})
 	if err != nil {
 		return nil, err
 	}
-
 	return oidcrp.ClientCredentials(ctx, rp, url.Values{})
 }
 
@@ -279,15 +271,44 @@ func LoginWithPKCE(host, publicClientID string, tlsNoVerify bool) (*oauth2.Token
 
 // Revokes the access token
 func RevokeAccessToken(endpoint, publicClientID, refreshToken string, tlsNoVerify bool) error {
-	pCfg, err := getPlatformConfiguration(endpoint, publicClientID, tlsNoVerify)
-	if err != nil {
-		return fmt.Errorf("failed to get platform configuration: %w", err)
-	}
-
-	rp, err := oidcrp.NewRelyingPartyOIDC(context.Background(), pCfg.issuer, pCfg.publicClientID, "", "", nil)
+	rp, err := newOidcRelyingParty(context.Background(), endpoint, tlsNoVerify, oidcClientCredentials{
+		clientID: publicClientID,
+		isPublic: true,
+	})
 	if err != nil {
 		return err
 	}
-
 	return oidcrp.RevokeToken(context.Background(), rp, refreshToken, "refresh_token")
+}
+
+func newOidcRelyingParty(ctx context.Context, endpoint string, tlsNoVerify bool, clientCreds oidcClientCredentials) (oidcrp.RelyingParty, error) {
+	if clientCreds.clientID == "" {
+		return nil, errors.New("client ID is required")
+	}
+	if clientCreds.clientSecret == "" && !clientCreds.isPublic {
+		return nil, errors.New("client secret is required")
+	}
+	if clientCreds.clientSecret != "" && clientCreds.isPublic {
+		return nil, errors.New("client secret must be empty for public clients")
+	}
+
+	var pcClient string
+	if clientCreds.isPublic {
+		pcClient = clientCreds.clientID
+	}
+
+	pc, err := getPlatformConfiguration(endpoint, pcClient, tlsNoVerify)
+	if err != nil {
+		return nil, err
+	}
+
+	return oidcrp.NewRelyingPartyOIDC(
+		ctx,
+		pc.issuer,
+		clientCreds.clientID,
+		clientCreds.clientSecret,
+		"",
+		nil,
+		oidcrp.WithHTTPClient(utils.NewHttpClient(tlsNoVerify)),
+	)
 }
