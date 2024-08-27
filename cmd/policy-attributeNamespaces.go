@@ -10,8 +10,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// TODO: add metadata to outputs once [https://github.com/opentdf/otdfctl/issues/73] is addressed
-
 var (
 	policy_attributeNamespacesCmd = man.Docs.GetCommand("policy/attributes/namespaces")
 
@@ -34,7 +32,7 @@ func policy_getAttributeNamespace(cmd *cobra.Command, args []string) {
 		{"Id", ns.Id},
 		{"Name", ns.Name},
 	}
-	if mdRows := getMetadataRows(ns.Metadata); mdRows != nil {
+	if mdRows := getMetadataRows(ns.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
 	}
 	t := cli.NewTabular(rows...)
@@ -92,7 +90,7 @@ func policy_createAttributeNamespace(cmd *cobra.Command, args []string) {
 		{"Name", name},
 		{"Id", created.Id},
 	}
-	if mdRows := getMetadataRows(created.Metadata); mdRows != nil {
+	if mdRows := getMetadataRows(created.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
 	}
 
@@ -124,7 +122,7 @@ func policy_deactivateAttributeNamespace(cmd *cobra.Command, args []string) {
 		{"Id", ns.Id},
 		{"Name", ns.Name},
 	}
-	if mdRows := getMetadataRows(d.Metadata); mdRows != nil {
+	if mdRows := getMetadataRows(d.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
 	}
 	t := cli.NewTabular(rows...)
@@ -151,7 +149,7 @@ func policy_updateAttributeNamespace(cmd *cobra.Command, args []string) {
 		{"Id", ns.Id},
 		{"Name", ns.Name},
 	}
-	if mdRows := getMetadataRows(ns.Metadata); mdRows != nil {
+	if mdRows := getMetadataRows(ns.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
 	}
 

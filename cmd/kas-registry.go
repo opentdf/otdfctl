@@ -33,14 +33,18 @@ func policy_getKeyAccessRegistry(cmd *cobra.Command, args []string) {
 		keyType = "Remote"
 		key.PublicKey = &policy.PublicKey_Remote{Remote: kas.GetPublicKey().GetRemote()}
 	}
+	rows := [][]string{
+		{"Id", kas.GetId()},
+		{"URI", kas.GetUri()},
+		{"PublicKey Type", keyType},
+		{"PublicKey", kas.GetPublicKey().String()},
+	}
 
-	t := cli.NewTabular(
-		[]string{"Id", kas.Id},
-		// TODO: render labels [https://github.com/opentdf/otdfctl/issues/73]
-		[]string{"URI", kas.Uri},
-		[]string{"PublicKey Type", keyType},
-		[]string{"PublicKey", kas.GetPublicKey().String()},
-	)
+	if mdRows := getMetadataRows(kas.GetMetadata()); mdRows != nil {
+		rows = append(rows, mdRows...)
+	}
+	t := cli.NewTabular(rows...)
+
 	HandleSuccess(cmd, kas.Id, t, kas)
 }
 
@@ -122,15 +126,18 @@ func policy_createKeyAccessRegistry(cmd *cobra.Command, args []string) {
 		cli.ExitWithError("Failed to create Registered KAS entry", err)
 	}
 
-	t := cli.NewTabular(
-		[]string{"Id", created.Id},
-		[]string{"URI", created.Uri},
-		[]string{"PublicKey Type", keyType},
-		[]string{"PublicKey", cachedJSON},
-		// TODO: render labels [https://github.com/opentdf/otdfctl/issues/73]
-	)
+	rows := [][]string{
+		{"Id", created.GetId()},
+		{"URI", created.GetUri()},
+		{"PublicKey Type", keyType},
+		{"PublicKey", key.String()},
+	}
+	if mdRows := getMetadataRows(created.GetMetadata()); mdRows != nil {
+		rows = append(rows, mdRows...)
+	}
+	t := cli.NewTabular(rows...)
 
-	HandleSuccess(cmd, created.Id, t, created)
+	HandleSuccess(cmd, created.GetId(), t, created)
 }
 
 func policy_updateKeyAccessRegistry(cmd *cobra.Command, args []string) {
@@ -174,11 +181,14 @@ func policy_updateKeyAccessRegistry(cmd *cobra.Command, args []string) {
 	if err != nil {
 		cli.ExitWithError(fmt.Sprintf("Failed to update Registered KAS entry (%s)", id), err)
 	}
-	t := cli.NewTabular(
-		[]string{"Id", id},
-		[]string{"URI", updated.GetUri()},
-		// TODO: render labels [https://github.com/opentdf/otdfctl/issues/73]
-	)
+	rows := [][]string{
+		{"Id", id},
+		{"URI", updated.GetUri()},
+	}
+	if mdRows := getMetadataRows(updated.GetMetadata()); mdRows != nil {
+		rows = append(rows, mdRows...)
+	}
+	t := cli.NewTabular(rows...)
 	HandleSuccess(cmd, id, t, updated)
 }
 
@@ -206,11 +216,11 @@ func policy_deleteKeyAccessRegistry(cmd *cobra.Command, args []string) {
 	}
 
 	t := cli.NewTabular(
-		[]string{"Id", "URI"},
-		[]string{kas.Id, kas.Uri},
+		[]string{"Id", kas.GetId()},
+		[]string{"URI", kas.GetUri()},
 	)
 
-	HandleSuccess(cmd, kas.Id, t, kas)
+	HandleSuccess(cmd, kas.GetId(), t, kas)
 }
 
 func init() {

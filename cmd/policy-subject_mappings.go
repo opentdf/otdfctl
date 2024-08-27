@@ -13,8 +13,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// TODO: add metadata to outputs once [https://github.com/opentdf/otdfctl/issues/73] is addressed
-
 var (
 	standardActions []string
 	customActions   []string
@@ -50,7 +48,7 @@ func policy_getSubjectMapping(cmd *cobra.Command, args []string) {
 		{"Subject Condition Set: Id", mapping.SubjectConditionSet.Id},
 		{"Subject Condition Set", string(subjectSetsJSON)},
 	}
-	if mdRows := getMetadataRows(mapping.Metadata); mdRows != nil {
+	if mdRows := getMetadataRows(mapping.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
 	}
 
@@ -171,7 +169,7 @@ func policy_createSubjectMapping(cmd *cobra.Command, args []string) {
 		{"Attribute Value Id", mapping.AttributeValue.Id},
 	}
 
-	if mdRows := getMetadataRows(mapping.Metadata); mdRows != nil {
+	if mdRows := getMetadataRows(mapping.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
 	}
 
@@ -200,7 +198,7 @@ func policy_deleteSubjectMapping(cmd *cobra.Command, args []string) {
 		cli.ExitWithError(errMsg, err)
 	}
 	rows := [][]string{{"Id", sm.Id}}
-	if mdRows := getMetadataRows(deleted.Metadata); mdRows != nil {
+	if mdRows := getMetadataRows(deleted.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
 	}
 	t := cli.NewTabular(rows...)
@@ -239,7 +237,7 @@ func policy_updateSubjectMapping(cmd *cobra.Command, args []string) {
 		cli.ExitWithError("Failed to update subject mapping", err)
 	}
 	rows := [][]string{{"Id", id}}
-	if mdRows := getMetadataRows(updated.Metadata); mdRows != nil {
+	if mdRows := getMetadataRows(updated.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
 	}
 	t := cli.NewTabular(rows...)

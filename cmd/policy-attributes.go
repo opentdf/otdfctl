@@ -11,8 +11,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// TODO: add metadata to outputs once [https://github.com/opentdf/otdfctl/issues/73] is addressed
-
 var (
 	attrValues                 []string
 	metadataLabels             []string
@@ -50,7 +48,7 @@ func policy_createAttribute(cmd *cobra.Command, args []string) {
 		{"Values", cli.CommaSeparated(a.Values)},
 		{"Namespace", a.Namespace},
 	}
-	if mdRows := getMetadataRows(attr.Metadata); mdRows != nil {
+	if mdRows := getMetadataRows(attr.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
 	}
 
@@ -80,7 +78,7 @@ func policy_getAttribute(cmd *cobra.Command, args []string) {
 		{"Values", cli.CommaSeparated(a.Values)},
 		{"Namespace", a.Namespace},
 	}
-	if mdRows := getMetadataRows(attr.Metadata); mdRows != nil {
+	if mdRows := getMetadataRows(attr.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
 	}
 	t := cli.NewTabular(rows...)
@@ -155,7 +153,7 @@ func policy_deactivateAttribute(cmd *cobra.Command, args []string) {
 		{"Values", cli.CommaSeparated(a.Values)},
 		{"Namespace", a.Namespace},
 	}
-	if mdRows := getMetadataRows(attr.Metadata); mdRows != nil {
+	if mdRows := getMetadataRows(attr.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
 	}
 	t := cli.NewTabular(rows...)
@@ -177,7 +175,7 @@ func policy_updateAttribute(cmd *cobra.Command, args []string) {
 			{"Id", a.Id},
 			{"Name", a.Name},
 		}
-		if mdRows := getMetadataRows(a.Metadata); mdRows != nil {
+		if mdRows := getMetadataRows(a.GetMetadata()); mdRows != nil {
 			rows = append(rows, mdRows...)
 		}
 		t := cli.NewTabular(rows...)
@@ -209,7 +207,7 @@ func policy_unsafeReactivateAttribute(cmd *cobra.Command, args []string) {
 			{"Id", a.Id},
 			{"Name", a.Name},
 		}
-		if mdRows := getMetadataRows(a.Metadata); mdRows != nil {
+		if mdRows := getMetadataRows(a.GetMetadata()); mdRows != nil {
 			rows = append(rows, mdRows...)
 		}
 		t := cli.NewTabular(rows...)
@@ -255,7 +253,7 @@ func policy_unsafeUpdateAttribute(cmd *cobra.Command, args []string) {
 			{"Values", cli.CommaSeparated(values)},
 			{"Value IDs", cli.CommaSeparated(valueIDs)},
 		}
-		if mdRows := getMetadataRows(a.Metadata); mdRows != nil {
+		if mdRows := getMetadataRows(a.GetMetadata()); mdRows != nil {
 			rows = append(rows, mdRows...)
 		}
 		t := cli.NewTabular(rows...)
@@ -288,7 +286,7 @@ func policy_unsafeDeleteAttribute(cmd *cobra.Command, args []string) {
 			{"Id", a.Id},
 			{"Name", a.Name},
 		}
-		if mdRows := getMetadataRows(a.Metadata); mdRows != nil {
+		if mdRows := getMetadataRows(a.GetMetadata()); mdRows != nil {
 			rows = append(rows, mdRows...)
 		}
 		t := cli.NewTabular(rows...)
