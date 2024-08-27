@@ -19,7 +19,13 @@ func auth_logout(cmd *cobra.Command, args []string) {
 	creds := cp.GetAuthCredentials()
 	if creds.AuthType == profiles.PROFILE_AUTH_TYPE_ACCESS_TOKEN {
 		printer.Println("Revoking access token...")
-		if err := auth.RevokeAccessToken(cp.GetEndpoint(), creds.AccessToken.PublicClientID, creds.AccessToken.RefreshToken, tlsNoVerify); err != nil {
+		if err := auth.RevokeAccessToken(
+			cmd.Context(),
+			cp.GetEndpoint(),
+			creds.AccessToken.PublicClientID,
+			creds.AccessToken.RefreshToken,
+			tlsNoVerify,
+		); err != nil {
 			printer.Println("failed")
 			cli.ExitWithError("An error occurred while revoking the access token", err)
 		}
