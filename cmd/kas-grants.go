@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/evertras/bubble-table/table"
+	"github.com/google/uuid"
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/spf13/cobra"
@@ -153,6 +155,77 @@ func policy_unassignKasGrant(cmd *cobra.Command, args []string) {
 	HandleSuccess(cmd, "", t, res)
 }
 
+func policy_listKasGrants(cmd *cobra.Command, args []string) {
+	h := NewHandler(cmd)
+	defer h.Close()
+	flagHelper := cli.NewFlagHelper(cmd)
+	kasF := flagHelper.GetOptionalString("kas")
+	var (
+		kasID  string
+		kasURI string
+	)
+
+	// if not a UUID, infer flag value passed was a URI
+	if kasF != "" {
+		_, err := uuid.Parse(kasF)
+		if err != nil {
+			kasURI = kasF
+		} else {
+			kasID = kasF
+		}
+	}
+
+	grants, err := h.ListKasGrants(cmd.Context(), kasID, kasURI)
+	if err != nil {
+		cli.ExitWithError("Failed to list assigned KAS Grants", err)
+	}
+
+	rows := []table.Row{}
+	t := cli.NewTable(
+		// columns should be kas id, kas uri, type, id, fqn
+		table.NewFlexColumn("kas_id", "KAS ID", 3),
+		table.NewFlexColumn("kas_uri", "KAS URI", 3),
+		table.NewFlexColumn("grant_type", "Assigned To", 1),
+		table.NewFlexColumn("id", "Granted Object ID", 3),
+		table.NewFlexColumn("fqn", "Granted Object FQN", 3),
+	)
+
+	for _, g := range grants {
+		kasID := g.GetKeyAccessServer().GetId()
+		kasURI := g.GetKeyAccessServer().GetUri()
+		for _, ag := range g.GetAttributeGrants() {
+			rows = append(rows, table.NewRow(table.RowData{
+				"kas_id":     kasID,
+				"kas_uri":    kasURI,
+				"grant_type": "Definition",
+				"id":         ag.GetId(),
+				"fqn":        ag.GetFqn(),
+			}))
+		}
+		for _, vg := range g.GetValueGrants() {
+			rows = append(rows, table.NewRow(table.RowData{
+				"kas_id":     kasID,
+				"kas_uri":    kasURI,
+				"grant_type": "Value",
+				"id":         vg.GetId(),
+				"fqn":        vg.GetFqn(),
+			}))
+		}
+		for _, ng := range g.GetNamespaceGrants() {
+			rows = append(rows, table.NewRow(table.RowData{
+				"kas_id":     kasID,
+				"kas_uri":    kasURI,
+				"grant_type": "Namespace",
+				"id":         ng.GetId(),
+				"fqn":        ng.GetFqn(),
+			}))
+		}
+	}
+	t = t.WithRows(rows)
+
+	HandleSuccess(cmd, "", t, grants)
+}
+
 func init() {
 	assignCmd := man.Docs.GetCommand("policy/kas-grants/assign",
 		man.WithRun(policy_assignKasGrant),
@@ -217,8 +290,17 @@ func init() {
 		unassignCmd.GetDocFlag("force").Description,
 	)
 
+	listCmd := man.Docs.GetCommand("policy/kas-grants/list",
+		man.WithRun(policy_listKasGrants),
+	)
+	listCmd.Flags().StringP(
+		listCmd.GetDocFlag("kas").Name,
+		listCmd.GetDocFlag("kas").Shorthand,
+		listCmd.GetDocFlag("kas").Default,
+		listCmd.GetDocFlag("kas").Description,
+	)
 	cmd := man.Docs.GetCommand("policy/kas-grants",
-		man.WithSubcommands(assignCmd, unassignCmd),
+		man.WithSubcommands(assignCmd, unassignCmd, listCmd),
 	)
 	policyCmd.AddCommand(&cmd.Command)
 }

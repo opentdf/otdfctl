@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/opentdf/platform/protocol/go/policy/attributes"
+	"github.com/opentdf/platform/protocol/go/policy/kasregistry"
 	"github.com/opentdf/platform/protocol/go/policy/namespaces"
 )
 
@@ -95,4 +96,15 @@ func (h Handler) DeleteKasGrantFromNamespace(ctx context.Context, ns_id string, 
 	}
 
 	return resp.GetNamespaceKeyAccessServer(), nil
+}
+
+func (h Handler) ListKasGrants(ctx context.Context, kas_id, kas_uri string) ([]*kasregistry.KeyAccessServerGrants, error) {
+	resp, err := h.sdk.KeyAccessServerRegistry.ListKeyAccessServerGrants(ctx, &kasregistry.ListKeyAccessServerGrantsRequest{
+		KasId:  kas_id,
+		KasUri: kas_uri,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return resp.GetGrants(), nil
 }
