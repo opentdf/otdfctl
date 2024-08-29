@@ -51,6 +51,8 @@ jobs:
   end-to-end:
     name: e2e tests
     runs-on: ubuntu-22.04
+    env:
+      BATS_LIB_PATH: /usr/lib
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
       - name: Check out platform
@@ -98,10 +100,13 @@ jobs:
 
       - name: build the CLI
         run: go build .
+      - name: build the CLI in test mode
+        run: make build-test
       - name: set up the config
         run: cp otdfctl-example.yaml otdfctl.yaml
       - name: Setup Bats and bats libs
         uses: bats-core/bats-action@2.0.0
       - run: tests/encrypt-decrypt.bats
       - run: tests/kas-grants.bats
+      - run: tests/profile.bats
       - run: tests/kas-registry.bats
