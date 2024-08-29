@@ -7,6 +7,8 @@ command:
       shorthand: i
       description: ID of the attribute namespace
       required: true
+    - name: force
+      description: Force deletion without interactive confirmation (dangerous)
 ---
 
 Deactivating an Attribute Namespace will make the namespace name inactive as well as any attribute definitions and values beneath.

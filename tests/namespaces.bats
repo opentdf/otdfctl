@@ -74,38 +74,101 @@ teardown_file() {
   [ "$(echo "$output" | jq -r '.name')" = "$NS_NAME" ]
 }
 
+@test "List namespaces - when active" {
+  run_otdfctl_ns list --json 
+  echo $output | jq --arg id "$NS_ID" '.[] | select(.[]? | type == "object" and .id == $id)'
+
+  run_otdfctl_ns list --state inactive --json
+  echo $output | refute_output --partial "$NS_ID"
+
+  run_otdfctl_ns list --state active
+  echo $output | assert_output --partial "$NS_ID"
+}
+
 @test "Update namespace - Safe" {
   # extend labels
   run_otdfctl_ns update "$NS_ID_FLAG" -l key=value --label test=true
   assert_success
   assert_output --regexp "Id.*$NS_ID"
   assert_output --regexp "Name.*$NS_NAME"
-  assert_output --regexp "Labels.*$key: value, test: true"
+  assert_output --regexp "Labels.*key: value"
+  assert_output --regexp "Labels.*test: true"
 
   # force replace labels
   run_otdfctl_ns update "$NS_ID_FLAG" -l key=other --force-replace-labels
   assert_success
   assert_output --regexp "Id.*$NS_ID"
   assert_output --regexp "Name.*$NS_NAME"
-  assert_output --regexp "Labels.*$key: other"
-  refute_output --regexp "Labels.*$key: value"
-  refute_output --regexp "Labels.*$test: true"
+  assert_output --regexp "Labels.*key: other"
+  refute_output --regexp "Labels.*key: value"
+  refute_output --regexp "Labels.*test: true"
 }
 
 @test "Update namespace - Unsafe" {
   run_otdfctl_ns unsafe update "$NS_ID_FLAG" -n "$NS_NAME_UPDATE" --force
   assert_success
   assert_output --regexp "Id.*$NS_ID"
-  refute_output --regexp "Name.*$NS_NAME"
+  run_otdfctl_ns get "$NS_ID_FLAG"
   assert_output --regexp "Name.*$NS_NAME_UPDATE"
+  refute_output --regexp "Name.*$NS_NAME"
 }
 
-# List namespaces
+@test "Deactivate namespace" {
+  run_otdfctl_ns deactivate "$NS_ID_FLAG" --force
+  assert_success
+  assert_output --regexp "Id.*$NS_ID"
+  assert_output --regexp "Id.*$NS_NAME_UPDATE"
+}
 
-# Deactivate namespace
+@test "List namespaces - when inactive" {
+  run_otdfctl_ns list --json 
+  echo $output | jq --arg id "$NS_ID" '.[] | select(.[]? | type == "object" and .id == $id)'
 
-# Unsafe namespace
+  # json
+    run_otdfctl_ns list --state inactive --json
+    echo $output | assert_output --partial "$NS_ID"
 
-# Unsafe namespace
+    run_otdfctl_ns list --state active --json
+    echo $output | refute_output --partial "$NS_ID"
+  # table
+    run_otdfctl_ns list --state inactive
+    echo $output | assert_output --partial "$NS_ID"
 
-# Cleanup - delete everything
+    run_otdfctl_ns list --state active
+    echo $output | refute_output --partial "$NS_ID"
+}
+
+@test "Unsafe reactivate namespace" {
+  run_otdfctl_ns unsafe reactivate "$NS_ID_FLAG" --force
+  assert_success
+  assert_output --regexp "Id.*$NS_ID"
+}
+
+@test "List namespaces - when reactivated" {
+  run_otdfctl_ns list --json 
+  echo $output | jq --arg id "$NS_ID" '.[] | select(.[]? | type == "object" and .id == $id)'
+
+  run_otdfctl_ns list --state inactive --json
+  echo $output | refute_output --partial "$NS_ID"
+
+  run_otdfctl_ns list --state active
+  echo $output | assert_output --partial "$NS_ID"
+}
+
+@test "Unsafe delete namespace" {
+  run_otdfctl_ns unsafe delete "$NS_ID_FLAG" --force
+  assert_success
+  assert_output --regexp "Id.*$NS_ID"
+  assert_output --regexp "Id.*$NS_NAME_UPDATE"
+}
+
+@test "List namespaces - when deleted" {
+  run_otdfctl_ns list --json 
+  echo $output | refute_output --partial "$NS_ID"
+
+  run_otdfctl_ns list --state inactive --json
+  echo $output | refute_output --partial "$NS_ID"
+
+  run_otdfctl_ns list --state active
+  echo $output | refute_output --partial "$NS_ID"
+}
