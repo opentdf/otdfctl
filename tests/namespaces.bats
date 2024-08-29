@@ -3,30 +3,18 @@
 # Tests for namespaces
 
 setup_file() {
-      echo -n '{"clientId":"opentdf","clientSecret":"secret"}' > creds.json
-      export WITH_CREDS='--with-client-creds-file ./creds.json'
-      export HOST='--host http://localhost:8080'
+    load "setup.bash"
 
-      bats_require_minimum_version 1.5.0
+    echo -n '{"clientId":"opentdf","clientSecret":"secret"}' > creds.json
+    export WITH_CREDS='--with-client-creds-file ./creds.json'
+    export HOST='--host http://localhost:8080'
 
-      if [[ $(which bats) == *"homebrew"* ]]; then
-          BATS_LIB_PATH=$(brew --prefix)/lib
-        fi
+    # Create the namespace to be used by other tests
 
-      # Check if BATS_LIB_PATH environment variable exists
-      if [ -z "${BATS_LIB_PATH}" ]; then
-        # Check if bats bin has homebrew in path name
-        if [[ $(which bats) == *"homebrew"* ]]; then
-          BATS_LIB_PATH=$(dirname $(which bats))/../lib
-        elif [ -d "/usr/lib/bats-support" ]; then
-          BATS_LIB_PATH="/usr/lib"
-        elif [ -d "/usr/local/lib/bats-support" ]; then
-          # Check if bats-support exists in /usr/local/lib
-          BATS_LIB_PATH="/usr/local/lib"
-        fi
-      fi
-      echo "BATS_LIB_PATH: $BATS_LIB_PATH"
-      export BATS_LIB_PATH=$BATS_LIB_PATH
+    export NS_NAME="creating-test-ns.net"
+    export NS_NAME_UPDATE="updated-test-ns.net"
+    export NS_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes namespaces create -n "$NS_NAME" --json | jq -r '.id')
+    export NS_ID_FLAG="--id $NS_ID"
 }
 
 setup() {
@@ -34,8 +22,8 @@ setup() {
     load "${BATS_LIB_PATH}/bats-assert/load.bash"
 
     # invoke binary with credentials
-    run_otdfctl () {
-      run sh -c "./otdfctl $HOST $WITH_CREDS $*"
+    run_otdfctl_ns () {
+      run sh -c "./otdfctl $HOST $WITH_CREDS policy attributes namespaces $*"
     }
 }
 
@@ -45,11 +33,7 @@ teardown_file() {
 }
 
 @test "Create a namespace - Good" {
-  # Create the namespace to be used by other tests
-  export NS_NAME="creating-test-ns.net"
-  export NS_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes namespaces create -n "$NS_NAME" --json | jq -r '.id')
-
-  run_otdfctl policy attributes namespaces create --name throwaway.test
+  run_otdfctl_ns create --name throwaway.test
   assert_output --partial "SUCCESS"
   assert_output --regexp "Name.*throwaway.test"
   assert_output --partial "Id"
@@ -59,22 +43,62 @@ teardown_file() {
 
 @test "Create a namespace - Bad" {
   # bad namespace names
-    run_otdfctl policy attributes namespaces create --name no_domain_extension
+    run_otdfctl_ns create --name no_domain_extension
     assert_failure
-    run_otdfctl policy attributes namespaces create --name -first-char-hyphen.co
+    run_otdfctl_ns create --name -first-char-hyphen.co
     assert_failure
-    run_otdfctl policy attributes namespaces create --name last-char-hyphen-.co
+    run_otdfctl_ns create --name last-char-hyphen-.co
     assert_failure
 
   # missing flag
-    run_otdfctl policy attributes namespaces create
+    run_otdfctl_ns create
     assert_failure
     assert_output --partial "Flag '--name' is required"
+  
+  # conflict
+    run_otdfctl_ns create -n "$NS_NAME"
+    assert_failure
+    assert_output --partial "AlreadyExists"
 }
 
-# Get namesapce
+@test "Get a namespace - Good" {
+  run_otdfctl_ns get "$NS_ID_FLAG"
+  assert_success
+  assert_output --regexp "Id.*$NS_ID"
+  assert_output --regexp "Name.*$NS_NAME"
 
-# Update namespace
+  echo $NS_ID
+  run_otdfctl_ns get "$NS_ID_FLAG" --json
+  assert_success
+  [ "$(echo "$output" | jq -r '.id')" = "$NS_ID" ]
+  [ "$(echo "$output" | jq -r '.name')" = "$NS_NAME" ]
+}
+
+@test "Update namespace - Safe" {
+  # extend labels
+  run_otdfctl_ns update "$NS_ID_FLAG" -l key=value --label test=true
+  assert_success
+  assert_output --regexp "Id.*$NS_ID"
+  assert_output --regexp "Name.*$NS_NAME"
+  assert_output --regexp "Labels.*$key: value, test: true"
+
+  # force replace labels
+  run_otdfctl_ns update "$NS_ID_FLAG" -l key=other --force-replace-labels
+  assert_success
+  assert_output --regexp "Id.*$NS_ID"
+  assert_output --regexp "Name.*$NS_NAME"
+  assert_output --regexp "Labels.*$key: other"
+  refute_output --regexp "Labels.*$key: value"
+  refute_output --regexp "Labels.*$test: true"
+}
+
+@test "Update namespace - Unsafe" {
+  run_otdfctl_ns unsafe update "$NS_ID_FLAG" -n "$NS_NAME_UPDATE" --force
+  assert_success
+  assert_output --regexp "Id.*$NS_ID"
+  refute_output --regexp "Name.*$NS_NAME"
+  assert_output --regexp "Name.*$NS_NAME_UPDATE"
+}
 
 # List namespaces
 
