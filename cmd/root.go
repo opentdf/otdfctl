@@ -5,7 +5,6 @@ package cmd
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/opentdf/otdfctl/pkg/auth"
 	"github.com/opentdf/otdfctl/pkg/cli"
@@ -28,14 +27,20 @@ var (
 	RootCmd = &man.Docs.GetDoc("<root>").Command
 )
 
-func InitProfile(cmd *cobra.Command, onlyNew bool) *profiles.ProfileStore {
-	flag := cli.NewFlagHelper(cmd)
-	profileName := flag.GetOptionalString("profile")
+type version struct {
+	AppName   string `json:"app_name"`
+	Version   string `json:"version"`
+	CommitSha string `json:"commit_sha"`
+	BuildTime string `json:"build_time"`
+}
 
+func InitProfile(c *cli.Cli, onlyNew bool) *profiles.ProfileStore {
 	var err error
+	profileName := c.FlagHelper.GetOptionalString("profile")
+
 	profile, err = profiles.New()
 	if err != nil || profile == nil {
-		cli.ExitWithError("Failed to initialize profile store", err)
+		c.ExitWithError("Failed to initialize profile store", err)
 	}
 
 	// short circuit if onlyNew is set to enable creating a new profile
@@ -45,9 +50,9 @@ func InitProfile(cmd *cobra.Command, onlyNew bool) *profiles.ProfileStore {
 
 	// check if there exists a default profile and warn if not with steps to create one
 	if profile.GetGlobalConfig().GetDefaultProfile() == "" {
-		cli.ExitWithWarning("No default profile set. Use `" + config.AppName + " profile create <profile> <endpoint>` to create a default profile.")
+		c.ExitWithWarning("No default profile set. Use `" + config.AppName + " profile create <profile> <endpoint>` to create a default profile.")
 	}
-	fmt.Printf("Using profile [%s]\n", profile.GetGlobalConfig().GetDefaultProfile())
+	c.Printf("Using profile [%s]\n", profile.GetGlobalConfig().GetDefaultProfile())
 
 	if profileName == "" {
 		profileName = profile.GetGlobalConfig().GetDefaultProfile()
@@ -56,7 +61,7 @@ func InitProfile(cmd *cobra.Command, onlyNew bool) *profiles.ProfileStore {
 	// load profile
 	cp, err := profile.UseProfile(profileName)
 	if err != nil {
-		cli.ExitWithError("Failed to load profile "+profileName, err)
+		c.ExitWithError("Failed to load profile "+profileName, err)
 	}
 
 	return cp
@@ -64,14 +69,12 @@ func InitProfile(cmd *cobra.Command, onlyNew bool) *profiles.ProfileStore {
 
 // instantiates a new handler with authentication via client credentials
 // TODO make this a preRun hook
-func NewHandler(cmd *cobra.Command) handlers.Handler {
-	fh := cli.NewFlagHelper(cmd)
-
+func NewHandler(c *cli.Cli) handlers.Handler {
 	// Non-profile flags
-	host := fh.GetOptionalString("host")
-	tlsNoVerify := fh.GetOptionalBool("tls-no-verify")
-	withClientCreds := fh.GetOptionalString("with-client-creds")
-	withClientCredsFile := fh.GetOptionalString("with-client-creds-file")
+	host := c.FlagHelper.GetOptionalString("host")
+	tlsNoVerify := c.FlagHelper.GetOptionalBool("tls-no-verify")
+	withClientCreds := c.FlagHelper.GetOptionalString("with-client-creds")
+	withClientCredsFile := c.FlagHelper.GetOptionalString("with-client-creds-file")
 
 	// if global flags are set then validate and create a temporary profile in memory
 	var cp *profiles.ProfileStore
@@ -130,10 +133,10 @@ func NewHandler(cmd *cobra.Command) handlers.Handler {
 			cli.ExitWithError("Failed to save profile", err)
 		}
 	} else {
-		cp = InitProfile(cmd, false)
+		cp = InitProfile(c, false)
 	}
 
-	if err := auth.ValidateProfileAuthCredentials(cmd.Context(), cp); err != nil {
+	if err := auth.ValidateProfileAuthCredentials(c.Context(), cp); err != nil {
 		if errors.Is(err, auth.ErrProfileCredentialsNotFound) {
 			cli.ExitWithWarning("Profile missing credentials. Please login or add client credentials.")
 		}
@@ -156,10 +159,18 @@ func NewHandler(cmd *cobra.Command) handlers.Handler {
 
 func init() {
 	rootCmd := man.Docs.GetCommand("<root>", man.WithRun(func(cmd *cobra.Command, args []string) {
-		flaghelper := cli.NewFlagHelper(cmd)
+		c := cli.New(cmd, args)
 
-		if flaghelper.GetOptionalBool("version") {
-			fmt.Println(config.AppName + " version " + config.Version + " (" + config.BuildTime + ") " + config.CommitSha)
+		if c.Flags.GetOptionalBool("version") {
+			v := version{
+				AppName:   config.AppName,
+				Version:   config.Version,
+				CommitSha: config.CommitSha,
+				BuildTime: config.BuildTime,
+			}
+
+			c.Println(config.AppName + " version " + config.Version + " (" + config.BuildTime + ") " + config.CommitSha)
+			c.ExitWithJson(v)
 			return
 		}
 
@@ -172,6 +183,18 @@ func init() {
 		rootCmd.GetDocFlag("version").Name,
 		rootCmd.GetDocFlag("version").DefaultAsBool(),
 		rootCmd.GetDocFlag("version").Description,
+	)
+
+	RootCmd.PersistentFlags().Bool(
+		rootCmd.GetDocFlag("debug").Name,
+		rootCmd.GetDocFlag("debug").DefaultAsBool(),
+		rootCmd.GetDocFlag("debug").Description,
+	)
+
+	RootCmd.PersistentFlags().Bool(
+		rootCmd.GetDocFlag("json").Name,
+		rootCmd.GetDocFlag("json").DefaultAsBool(),
+		rootCmd.GetDocFlag("json").Description,
 	)
 
 	RootCmd.PersistentFlags().String(

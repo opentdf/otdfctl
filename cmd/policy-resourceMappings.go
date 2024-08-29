@@ -17,15 +17,15 @@ var (
 )
 
 func policy_createResourceMapping(cmd *cobra.Command, args []string) {
-	h := NewHandler(cmd)
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
 	defer h.Close()
 
-	flagHelper := cli.NewFlagHelper(cmd)
-	attrId := flagHelper.GetRequiredString("attribute-value-id")
-	terms := flagHelper.GetStringSlice("terms", policy_resource_mappingsTerms, cli.FlagHelperStringSliceOptions{
+	attrId := c.Flags.GetRequiredString("attribute-value-id")
+	terms := c.Flags.GetStringSlice("terms", policy_resource_mappingsTerms, cli.FlagsStringSliceOptions{
 		Min: 1,
 	})
-	metadataLabels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
+	metadataLabels := c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
 	resourceMapping, err := h.CreateResourceMapping(attrId, terms, getMetadataMutable(metadataLabels))
 	if err != nil {
@@ -45,11 +45,11 @@ func policy_createResourceMapping(cmd *cobra.Command, args []string) {
 }
 
 func policy_getResourceMapping(cmd *cobra.Command, args []string) {
-	h := NewHandler(cmd)
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
 	defer h.Close()
 
-	flagHelper := cli.NewFlagHelper(cmd)
-	id := flagHelper.GetRequiredString("id")
+	id := c.Flags.GetRequiredString("id")
 
 	resourceMapping, err := h.GetResourceMapping(id)
 	if err != nil {
@@ -69,7 +69,8 @@ func policy_getResourceMapping(cmd *cobra.Command, args []string) {
 }
 
 func policy_listResourceMappings(cmd *cobra.Command, args []string) {
-	h := NewHandler(cmd)
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
 	defer h.Close()
 
 	rmList, err := h.ListResourceMappings()
@@ -104,14 +105,14 @@ func policy_listResourceMappings(cmd *cobra.Command, args []string) {
 }
 
 func policy_updateResourceMapping(cmd *cobra.Command, args []string) {
-	h := NewHandler(cmd)
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
 	defer h.Close()
 
-	flagHelper := cli.NewFlagHelper(cmd)
-	id := flagHelper.GetRequiredString("id")
-	attrValueId := flagHelper.GetOptionalString("attribute-value-id")
-	terms := flagHelper.GetStringSlice("terms", policy_resource_mappingsTerms, cli.FlagHelperStringSliceOptions{})
-	labels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
+	id := c.Flags.GetRequiredString("id")
+	attrValueId := c.Flags.GetOptionalString("attribute-value-id")
+	terms := c.Flags.GetStringSlice("terms", policy_resource_mappingsTerms, cli.FlagsStringSliceOptions{})
+	labels := c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
 	resourceMapping, err := h.UpdateResourceMapping(id, attrValueId, terms, getMetadataMutable(labels), getMetadataUpdateBehavior())
 	if err != nil {
@@ -131,11 +132,11 @@ func policy_updateResourceMapping(cmd *cobra.Command, args []string) {
 }
 
 func policy_deleteResourceMapping(cmd *cobra.Command, args []string) {
-	h := NewHandler(cmd)
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
 	defer h.Close()
 
-	flagHelper := cli.NewFlagHelper(cmd)
-	id := flagHelper.GetRequiredString("id")
+	id := c.Flags.GetRequiredString("id")
 
 	cli.ConfirmAction(cli.ActionDelete, "resource-mapping", id, false)
 

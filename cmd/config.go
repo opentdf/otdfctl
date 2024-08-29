@@ -10,11 +10,11 @@ import (
 )
 
 func config_updateOutput(cmd *cobra.Command, args []string) {
-	h := NewHandler(cmd)
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
 	defer h.Close()
 
-	flagHelper := cli.NewFlagHelper(cmd)
-	format := flagHelper.GetRequiredString("format")
+	format := c.Flags.GetRequiredString("format")
 
 	config.UpdateOutputFormat(cfgKey, format)
 	fmt.Println(cli.SuccessMessage(fmt.Sprintf("Output format updated to %s", format)))

@@ -21,10 +21,10 @@ const (
 )
 
 func dev_tdfEncryptCmd(cmd *cobra.Command, args []string) {
-	h := NewHandler(cmd)
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
 	defer h.Close()
 
-	flagHelper := cli.NewFlagHelper(cmd)
 	var filePath string
 	var fileExt string
 	if len(args) > 0 {
@@ -32,14 +32,14 @@ func dev_tdfEncryptCmd(cmd *cobra.Command, args []string) {
 		fileExt = strings.ToLower(strings.TrimPrefix(filepath.Ext(filePath), "."))
 	}
 
-	out := flagHelper.GetOptionalString("out")
-	fileMimeType := flagHelper.GetOptionalString("mime-type")
-	values := flagHelper.GetStringSlice("attr", attrValues, cli.FlagHelperStringSliceOptions{Min: 0})
-	tdfType := flagHelper.GetOptionalString("tdf-type")
+	out := c.Flags.GetOptionalString("out")
+	fileMimeType := c.Flags.GetOptionalString("mime-type")
+	values := c.Flags.GetStringSlice("attr", attrValues, cli.FlagsStringSliceOptions{Min: 0})
+	tdfType := c.Flags.GetOptionalString("tdf-type")
 	if tdfType == "" {
 		tdfType = TDF3
 	}
-	kasURLPath := flagHelper.GetOptionalString("kas-url-path")
+	kasURLPath := c.Flags.GetOptionalString("kas-url-path")
 
 	piped := readPipedStdin()
 

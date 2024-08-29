@@ -19,11 +19,11 @@ var (
 )
 
 func policy_getSubjectMapping(cmd *cobra.Command, args []string) {
-	h := NewHandler(cmd)
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
 	defer h.Close()
 
-	flagHelper := cli.NewFlagHelper(cmd)
-	id := flagHelper.GetRequiredString("id")
+	id := c.Flags.GetRequiredString("id")
 
 	mapping, err := h.GetSubjectMapping(id)
 	if err != nil {
@@ -57,7 +57,8 @@ func policy_getSubjectMapping(cmd *cobra.Command, args []string) {
 }
 
 func policy_listSubjectMappings(cmd *cobra.Command, args []string) {
-	h := NewHandler(cmd)
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
 	defer h.Close()
 
 	list, err := h.ListSubjectMappings()
@@ -105,17 +106,17 @@ func policy_listSubjectMappings(cmd *cobra.Command, args []string) {
 }
 
 func policy_createSubjectMapping(cmd *cobra.Command, args []string) {
-	h := NewHandler(cmd)
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
 	defer h.Close()
 
-	flagHelper := cli.NewFlagHelper(cmd)
-	attrValueId := flagHelper.GetRequiredString("attribute-value-id")
-	standardActions := flagHelper.GetStringSlice("action-standard", standardActions, cli.FlagHelperStringSliceOptions{Min: 0})
-	customActions := flagHelper.GetStringSlice("action-custom", customActions, cli.FlagHelperStringSliceOptions{Min: 0})
-	metadataLabels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
-	existingSCSId := flagHelper.GetOptionalString("subject-condition-set-id")
+	attrValueId := c.Flags.GetRequiredString("attribute-value-id")
+	standardActions := c.Flags.GetStringSlice("action-standard", standardActions, cli.FlagsStringSliceOptions{Min: 0})
+	customActions := c.Flags.GetStringSlice("action-custom", customActions, cli.FlagsStringSliceOptions{Min: 0})
+	metadataLabels := c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
+	existingSCSId := c.Flags.GetOptionalString("subject-condition-set-id")
 	// NOTE: labels within a new Subject Condition Set created on a SM creation are not supported
-	newScsJSON := flagHelper.GetOptionalString("subject-condition-set-new")
+	newScsJSON := c.Flags.GetOptionalString("subject-condition-set-new")
 
 	// validations
 	if len(standardActions) == 0 && len(customActions) == 0 {
@@ -178,11 +179,11 @@ func policy_createSubjectMapping(cmd *cobra.Command, args []string) {
 }
 
 func policy_deleteSubjectMapping(cmd *cobra.Command, args []string) {
-	h := NewHandler(cmd)
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
 	defer h.Close()
 
-	flagHelper := cli.NewFlagHelper(cmd)
-	id := flagHelper.GetRequiredString("id")
+	id := c.Flags.GetRequiredString("id")
 
 	sm, err := h.GetSubjectMapping(id)
 	if err != nil {
@@ -206,15 +207,15 @@ func policy_deleteSubjectMapping(cmd *cobra.Command, args []string) {
 }
 
 func policy_updateSubjectMapping(cmd *cobra.Command, args []string) {
-	h := NewHandler(cmd)
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
 	defer h.Close()
 
-	flagHelper := cli.NewFlagHelper(cmd)
-	id := flagHelper.GetRequiredString("id")
-	standardActions := flagHelper.GetStringSlice("action-standard", standardActions, cli.FlagHelperStringSliceOptions{Min: 0})
-	customActions := flagHelper.GetStringSlice("action-custom", customActions, cli.FlagHelperStringSliceOptions{Min: 0})
-	scsId := flagHelper.GetOptionalString("subject-condition-set-id")
-	labels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
+	id := c.Flags.GetRequiredString("id")
+	standardActions := c.Flags.GetStringSlice("action-standard", standardActions, cli.FlagsStringSliceOptions{Min: 0})
+	customActions := c.Flags.GetStringSlice("action-custom", customActions, cli.FlagsStringSliceOptions{Min: 0})
+	scsId := c.Flags.GetOptionalString("subject-condition-set-id")
+	labels := c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
 	if len(standardActions) > 0 {
 		for _, a := range standardActions {

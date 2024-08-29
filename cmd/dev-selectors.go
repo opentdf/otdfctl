@@ -19,12 +19,12 @@ var (
 )
 
 func dev_selectorsGen(cmd *cobra.Command, args []string) {
-	h := NewHandler(cmd)
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
 	defer h.Close()
 
-	flagHelper := cli.NewFlagHelper(cmd)
-	subject := flagHelper.GetRequiredString("subject")
-	contextType := flagHelper.GetRequiredString("type")
+	subject := c.Flags.GetRequiredString("subject")
+	contextType := c.Flags.GetRequiredString("type")
 
 	var value any
 	if contextType == "json" || contextType == "" {
@@ -62,13 +62,13 @@ func dev_selectorsGen(cmd *cobra.Command, args []string) {
 }
 
 func dev_selectorsTest(cmd *cobra.Command, args []string) {
-	h := NewHandler(cmd)
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
 	defer h.Close()
 
-	flagHelper := cli.NewFlagHelper(cmd)
-	subject := flagHelper.GetRequiredString("subject")
-	contextType := flagHelper.GetRequiredString("type")
-	selectors := flagHelper.GetStringSlice("selectors", selectors, cli.FlagHelperStringSliceOptions{Min: 1})
+	subject := c.Flags.GetRequiredString("subject")
+	contextType := c.Flags.GetRequiredString("type")
+	selectors := c.Flags.GetStringSlice("selectors", selectors, cli.FlagsStringSliceOptions{Min: 1})
 
 	var value any
 	if contextType == "json" || contextType == "" {

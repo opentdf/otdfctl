@@ -19,23 +19,21 @@ var profileCreateCmd = &cobra.Command{
 	Short:   "Create a new profile",
 	Args:    cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
-		// ensure profile is initialized
-		InitProfile(cmd, true)
+		c := cli.New(cmd, args)
+		InitProfile(c, true)
 
 		profileName := args[0]
 		endpoint := args[1]
 
-		fh := cli.NewFlagHelper(cmd)
-		setDefault := fh.GetOptionalBool("set-default")
-		tlsNoVerify := fh.GetOptionalBool("tls-no-verify")
+		setDefault := c.FlagHelper.GetOptionalBool("set-default")
+		tlsNoVerify := c.FlagHelper.GetOptionalBool("tls-no-verify")
 
-		print := cli.NewPrinter(true)
-		print.Printf("Creating profile %s... ", profileName)
+		c.Printf("Creating profile %s... ", profileName)
 		if err := profile.AddProfile(profileName, endpoint, tlsNoVerify, setDefault); err != nil {
-			print.Println("failed")
-			cli.ExitWithError("Failed to create profile", err)
+			c.Println("failed")
+			c.ExitWithError("Failed to create profile", err)
 		}
-		print.Println("ok")
+		c.Println("ok")
 
 		// suggest the user to set up authentication
 	},
@@ -45,16 +43,15 @@ var profileListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List profiles",
 	Run: func(cmd *cobra.Command, args []string) {
-		// ensure profile is initialized
-		InitProfile(cmd, false)
+		c := cli.New(cmd, args)
+		InitProfile(c, false)
 
-		print := cli.NewPrinter(true)
 		for _, p := range profile.GetGlobalConfig().ListProfiles() {
 			if p == profile.GetGlobalConfig().GetDefaultProfile() {
-				print.Printf("* %s\n", p)
+				c.Printf("* %s\n", p)
 				continue
 			}
-			print.Printf("  %s\n", p)
+			c.Printf("  %s\n", p)
 		}
 	},
 }
@@ -64,13 +61,13 @@ var profileGetCmd = &cobra.Command{
 	Short: "Get a profile value",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		// ensure profile is initialized
-		InitProfile(cmd, false)
+		c := cli.New(cmd, args)
+		InitProfile(c, false)
 
 		profileName := args[0]
 		p, err := profile.GetProfile(profileName)
 		if err != nil {
-			cli.ExitWithError("Failed to load profile", err)
+			c.ExitWithError("Failed to load profile", err)
 		}
 
 		isDefault := "false"
@@ -92,8 +89,7 @@ var profileGetCmd = &cobra.Command{
 			[]string{"Auth type", auth},
 		)
 
-		print := cli.NewPrinter(true)
-		print.Print(t.View())
+		c.Print(t.View())
 	},
 }
 
@@ -101,22 +97,21 @@ var profileDeleteCmd = &cobra.Command{
 	Use:   "delete <profile>",
 	Short: "Delete a profile",
 	Run: func(cmd *cobra.Command, args []string) {
-		// ensure profile is initialized
-		InitProfile(cmd, false)
+		c := cli.New(cmd, args)
+		InitProfile(c, false)
 
 		profileName := args[0]
 
 		// TODO: suggest delete-all command to delete all profiles including default
 
-		print := cli.NewPrinter(true)
-		print.Printf("Deleting profile %s... ", profileName)
+		c.Printf("Deleting profile %s... ", profileName)
 		if err := profile.DeleteProfile(profileName); err != nil {
 			if err == profiles.ErrDeletingDefaultProfile {
-				cli.ExitWithWarning("Profile is set as default. Please set another profile as default before deleting.")
+				c.ExitWithWarning("Profile is set as default. Please set another profile as default before deleting.")
 			}
-			cli.ExitWithError("Failed to delete profile", err)
+			c.ExitWithError("Failed to delete profile", err)
 		}
-		print.Println("ok")
+		c.Println("ok")
 	},
 }
 
@@ -127,17 +122,16 @@ var profileSetDefaultCmd = &cobra.Command{
 	Short: "Set a profile as default",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		// ensure profile is initialized
-		InitProfile(cmd, false)
+		c := cli.New(cmd, args)
+		InitProfile(c, false)
 
 		profileName := args[0]
 
-		print := cli.NewPrinter(true)
-		print.Printf("Setting profile %s as default... ", profileName)
+		c.Printf("Setting profile %s as default... ", profileName)
 		if err := profile.SetDefaultProfile(profileName); err != nil {
-			cli.ExitWithError("Failed to set default profile", err)
+			c.ExitWithError("Failed to set default profile", err)
 		}
-		print.Println("ok")
+		c.Println("ok")
 	},
 }
 
@@ -146,8 +140,8 @@ var profileSetEndpointCmd = &cobra.Command{
 	Short: "Set a profile value",
 	Args:  cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
-		// ensure profile is initialized
-		InitProfile(cmd, false)
+		c := cli.New(cmd, args)
+		InitProfile(c, false)
 
 		profileName := args[0]
 		endpoint := args[1]
@@ -157,12 +151,11 @@ var profileSetEndpointCmd = &cobra.Command{
 			cli.ExitWithError("Failed to load profile", err)
 		}
 
-		print := cli.NewPrinter(true)
-		print.Printf("Setting endpoint for profile %s... ", profileName)
+		c.Printf("Setting endpoint for profile %s... ", profileName)
 		if err := p.SetEndpoint(endpoint); err != nil {
-			cli.ExitWithError("Failed to set endpoint", err)
+			c.ExitWithError("Failed to set endpoint", err)
 		}
-		print.Println("ok")
+		c.Println("ok")
 	},
 }
 

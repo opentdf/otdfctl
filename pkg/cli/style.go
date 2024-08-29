@@ -288,13 +288,15 @@ var styleSuccessStatusBar = lipgloss.NewStyle().
 	Foreground(colorBlack.Foreground).
 	Background(colorGreen.Background).
 	Padding(0, 2).
-	MarginRight(1)
+	MarginRight(1).
+	MarginBottom(1)
 
 var styleErrorStatusBar = lipgloss.NewStyle().
 	Inherit(statusBarStyle).
 	Foreground(colorBlack.Foreground).
 	Background(colorRed.Background).
 	Padding(0, 3).
+	PaddingRight(3).
 	MarginRight(1)
 
 var styleNoteStatusBar = lipgloss.NewStyle().
@@ -302,10 +304,18 @@ var styleNoteStatusBar = lipgloss.NewStyle().
 	Foreground(colorYellow.Foreground).
 	Background(colorYellow.Background)
 
+var styleDebugStatusBar = lipgloss.NewStyle().
+	Inherit(statusBarStyle).
+	Foreground(colorBlack.Foreground).
+	Background(colorIndigo.Background).
+	PaddingRight(3)
+
 var styleWarningStatusBar = lipgloss.NewStyle().
 	Inherit(statusBarStyle).
 	Foreground(colorOrange.Foreground).
-	Background(colorOrange.Background)
+	Background(colorOrange.Background).
+	Padding(0, 2).
+	MarginRight(1)
 
 var footerLabelStyle = lipgloss.NewStyle().
 	Inherit(statusBarStyle).

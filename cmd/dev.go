@@ -108,12 +108,9 @@ func getMetadataUpdateBehavior() common.MetadataUpdateEnum {
 
 // HandleSuccess prints a success message according to the configured format (styled table or JSON)
 func HandleSuccess(command *cobra.Command, id string, t table.Model, policyObject interface{}) {
+	c := cli.New(command, []string{})
 	if OtdfctlCfg.Output.Format == config.OutputJSON || configFlagOverrides.OutputFormatJSON {
-		if output, err := json.MarshalIndent(policyObject, "", "  "); err != nil {
-			cli.ExitWithError("Error marshalling policy object", err)
-		} else {
-			fmt.Println(string(output))
-		}
+		c.PrintJson(policyObject)
 		return
 	}
 	cli.PrintSuccessTable(command, id, t)
