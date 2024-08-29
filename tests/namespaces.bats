@@ -44,7 +44,33 @@ teardown_file() {
   unset HOST WITH_CREDS NS_NAME NS_FQN NS_ID NS_ID_FLAG
 }
 
-# Create namespace
+@test "Create a namespace - Good" {
+  # Create the namespace to be used by other tests
+  export NS_NAME="creating-test-ns.net"
+  export NS_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes namespaces create -n "$NS_NAME" --json | jq -r '.id')
+
+  run_otdfctl policy attributes namespaces create --name throwaway.test
+  assert_output --partial "SUCCESS"
+  assert_output --regexp "Name.*throwaway.test"
+  assert_output --partial "Id"
+  assert_output --partial "Created At"
+  assert_output --regexp "Updated At"
+}
+
+@test "Create a namespace - Bad" {
+  # bad namespace names
+    run_otdfctl policy attributes namespaces create --name no_domain_extension
+    assert_failure
+    run_otdfctl policy attributes namespaces create --name -first-char-hyphen.co
+    assert_failure
+    run_otdfctl policy attributes namespaces create --name last-char-hyphen-.co
+    assert_failure
+
+  # missing flag
+    run_otdfctl policy attributes namespaces create
+    assert_failure
+    assert_output --partial "Flag '--name' is required"
+}
 
 # Get namesapce
 
