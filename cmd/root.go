@@ -47,7 +47,8 @@ func InitProfile(cmd *cobra.Command, onlyNew bool) *profiles.ProfileStore {
 	if profile.GetGlobalConfig().GetDefaultProfile() == "" {
 		cli.ExitWithWarning("No default profile set. Use `" + config.AppName + " profile create <profile> <endpoint>` to create a default profile.")
 	}
-	fmt.Printf("Using profile [%s]\n", profile.GetGlobalConfig().GetDefaultProfile())
+	// TODO: cleaning up in [https://github.com/opentdf/otdfctl/issues/341]
+	// fmt.Printf("Using profile [%s]\n", profile.GetGlobalConfig().GetDefaultProfile())
 
 	if profileName == "" {
 		profileName = profile.GetGlobalConfig().GetDefaultProfile()
