@@ -55,7 +55,7 @@ CLI via the `man.Docs.GetDoc()` function.
 ## Testing
 
 The CLI is equipped with a test mode that can be enabled by building the CLI with `config.TestMode = true`.
-For convenience, the CLI can be built with `make build-test`. 
+For convenience, the CLI can be built with `make build-test`.
 
 **Test Mode features**:
 
@@ -68,7 +68,7 @@ For convenience, the CLI can be built with `make build-test`.
 > Bat Automated Test System (bats) is a TAP-compliant testing framework for Bash. It provides a simple way to verify that the UNIX programs you write behave as expected.
 
 BATS is used to test the CLI from an end-to-end perspective. To run the tests you will need to ensure the following
-pre-requisites are met:
+prerequisites are met:
 
 - bats is installed on your system
   - MacOS: `brew install bats-core bats-support bats-assert`
