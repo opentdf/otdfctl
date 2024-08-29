@@ -110,8 +110,7 @@ func getMetadataUpdateBehavior() common.MetadataUpdateEnum {
 func HandleSuccess(command *cobra.Command, id string, t table.Model, policyObject interface{}) {
 	c := cli.New(command, []string{})
 	if OtdfctlCfg.Output.Format == config.OutputJSON || configFlagOverrides.OutputFormatJSON {
-		c.PrintJson(policyObject)
-		return
+		c.ExitWithJson(policyObject)
 	}
 	cli.PrintSuccessTable(command, id, t)
 }
