@@ -25,7 +25,7 @@ func NewFlagHelper(cmd *cobra.Command) *FlagHelper {
 func (f FlagHelper) GetRequiredString(flag string) string {
 	v := f.cmd.Flag(flag).Value.String()
 	if v == "" {
-		fmt.Println(ErrorMessage("Flag "+flag+" is required", nil))
+		fmt.Println(ErrorMessage("Flag '--"+flag+"' is required", nil))
 		os.Exit(1)
 	}
 	return v
@@ -41,11 +41,11 @@ func (f FlagHelper) GetOptionalString(flag string) string {
 
 func (f FlagHelper) GetStringSlice(flag string, v []string, opts FlagHelperStringSliceOptions) []string {
 	if len(v) < opts.Min {
-		fmt.Println(ErrorMessage(fmt.Sprintf("Flag %s must have at least %d non-empty values", flag, opts.Min), nil))
+		fmt.Println(ErrorMessage(fmt.Sprintf("Flag '--%s' must have at least %d non-empty values", flag, opts.Min), nil))
 		os.Exit(1)
 	}
 	if opts.Max > 0 && len(v) > opts.Max {
-		fmt.Println(ErrorMessage(fmt.Sprintf("Flag %s must have at most %d non-empty values", flag, opts.Max), nil))
+		fmt.Println(ErrorMessage(fmt.Sprintf("Flag '--%s' must have at most %d non-empty values", flag, opts.Max), nil))
 		os.Exit(1)
 	}
 	return v
@@ -54,7 +54,7 @@ func (f FlagHelper) GetStringSlice(flag string, v []string, opts FlagHelperStrin
 func (f FlagHelper) GetRequiredInt32(flag string) int32 {
 	v, e := f.cmd.Flags().GetInt32(flag)
 	if e != nil {
-		fmt.Println(ErrorMessage("Flag "+flag+" is required", nil))
+		fmt.Println(ErrorMessage("Flag '--"+flag+"' is required", nil))
 		os.Exit(1)
 	}
 	// if v == 0 {
@@ -72,7 +72,7 @@ func (f FlagHelper) GetOptionalBool(flag string) bool {
 func (f FlagHelper) GetRequiredBool(flag string) bool {
 	v, e := f.cmd.Flags().GetBool(flag)
 	if e != nil {
-		fmt.Println(ErrorMessage("Flag "+flag+" is required", nil))
+		fmt.Println(ErrorMessage("Flag '--"+flag+"' is required", nil))
 		os.Exit(1)
 	}
 	return v
