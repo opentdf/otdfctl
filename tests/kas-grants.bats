@@ -34,10 +34,6 @@ setup_file() {
 }
 
 setup() {
-    echo $HOST
-    echo $KAS_ID_FLAG
-    echo $WITH_CREDS
-
     load "${BATS_LIB_PATH}/bats-support/load.bash"
     load "${BATS_LIB_PATH}/bats-assert/load.bash"
 
@@ -54,15 +50,15 @@ teardown_file() {
 
 @test "namespace: assign grant then unassign it" {
     # assign the namespace a grant
-    export NS_ID=$(run_otdfctl policy attributes namespaces list --json | jq -r '.[0].id')
+    export NS_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes namespaces list --json | jq -r '.[0].id')
     export NS_ID_FLAG="--namespace-id $NS_ID"
 
-    run_otdfctl policy kas-grants assign $NS_ID_FLAG $KAS_ID_FLAG
-    assert_output --partial "SUCCESS"
-    assert_output --partial "Namespace ID"
-    assert_output --partial $NS_ID
-    assert_output --partial "KAS ID"
-    assert_output --partial $KAS_ID
+    run_otdfctl policy kas-grants assign "$NS_ID_FLAG" "$KAS_ID_FLAG"
+      assert_output --partial "SUCCESS"
+      assert_output --partial "Namespace ID"
+      assert_output --partial $NS_ID
+      assert_output --partial "KAS ID"
+      assert_output --partial $KAS_ID
 
     # LIST should find the namespace in the grants
       # filtered by KAS
@@ -73,9 +69,9 @@ teardown_file() {
           assert_success
         # table
           run_otdfctl policy kas-grants list --kas $KAS_ID
-          assert_output --regexp "Namespace.*$NS_ID"
+          assert_output --regexp "$KAS_URI.*Namespace.*$NS_ID"
           run_otdfctl policy kas-grants list --kas $KAS_URI
-          assert_output --regexp "Namespace.*$NS_ID"
+          assert_output --regexp "$KAS_URI.*Namespace.*$NS_ID"
 
 
       # unfiltered (all KASes)
@@ -84,15 +80,15 @@ teardown_file() {
           assert_success
         # table
           run_otdfctl policy kas-grants list
-          assert_output --regexp "Namespace.*$NS_ID"
+          assert_output --regexp "$KAS_URI.*Namespace.*$NS_ID"
 
     # unassign the namespace grant
-    result="$(run_otdfctl policy kas-grants unassign $NS_ID_FLAG $KAS_ID_FLAG --force)"
-    assert_output --partial "SUCCESS"
-    assert_output --partial "Namespace ID"
-    assert_output --partial $NS_ID
-    assert_output --partial "KAS ID"
-    assert_output --partial $KAS_ID
+    run_otdfctl policy kas-grants unassign $NS_ID_FLAG $KAS_ID_FLAG --force
+      assert_output --partial "SUCCESS"
+      assert_output --partial "Namespace ID"
+      assert_output --partial $NS_ID
+      assert_output --partial "KAS ID"
+      assert_output --partial $KAS_ID
 
     # LIST should not find the namespace within any grants to namespaces
       # filtered by KAS
@@ -103,25 +99,25 @@ teardown_file() {
           assert_success
         # table
           run_otdfctl policy kas-grants list
-          refute_output --regexp "Namespace.*$NS_ID"
+          refute_output --regexp "$KAS_URI.*Namespace.*$NS_ID"
       # unfiltered
         # json
           run_otdfctl policy kas-grants list --json | jq --arg id "$NS_ID" '.[] | select(.namespace_grants? | type == "array" and all(.[]?; .id != $id))'
           assert_success
         # table
           run_otdfctl policy kas-grants list
-          refute_output --regexp "Namespace.*$NS_ID"
+          refute_output --regexp "$KAS_URI.*Namespace.*$NS_ID"
 }
 
 @test "attribute: assign grant then unassign it" {
-    export ATTR_ID=$(run_otdfctl policy attributes list --json | jq -r '.[0].id')
+    export ATTR_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes list --json | jq -r '.[0].id')
     export ATTR_ID_FLAG="--attribute-id $ATTR_ID"
-    run_otdfctl policy kas-grants assign $ATTR_ID_FLAG $KAS_ID_FLAG
-    assert_output --partial "SUCCESS"
-    assert_output --partial "Attribute ID"
-    assert_output --partial $ATTR_ID
-    assert_output --partial "KAS ID"
-    assert_output --partial $KAS_ID
+    run_otdfctl policy kas-grants assign "$ATTR_ID_FLAG" "$KAS_ID_FLAG"
+      assert_output --partial "SUCCESS"
+      assert_output --partial "Attribute ID"
+      assert_output --partial $ATTR_ID
+      assert_output --partial "KAS ID"
+      assert_output --partial $KAS_ID
 
     # LIST should find the attribute in the grants
       # filtered by KAS
@@ -132,23 +128,23 @@ teardown_file() {
           assert_success
         # table
           run_otdfctl policy kas-grants list --kas $KAS_URI
-          assert_output --regexp "Definition.*$ATTR_ID"
+          assert_output --regexp "$KAS_URI.*Definition.*$ATTR_ID"
           run_otdfctl policy kas-grants list --kas $KAS_ID
-          assert_output --regexp "Definition.*$ATTR_ID"
+          assert_output --regexp "$KAS_URI.*Definition.*$ATTR_ID"
       # unfiltered
         # json
           run_otdfctl policy kas-grants list --json | jq --arg id "$ATTR_ID" '.[] | select(.attribute_grants? | type == "array" and any(.[]?; .id == $id))'
           assert_success
         # table
           run_otdfctl policy kas-grants list
-          assert_output --regexp "Definition.*$ATTR_ID"
+          assert_output --regexp "$KAS_URI.*Definition.*$ATTR_ID"
 
     run_otdfctl policy kas-grants unassign $ATTR_ID_FLAG $KAS_ID_FLAG --force
-    assert_output --partial "SUCCESS"
-    assert_output --partial "Attribute ID"
-    assert_output --partial $ATTR_ID
-    assert_output --partial "KAS ID"
-    assert_output --partial $KAS_ID
+      assert_output --partial "SUCCESS"
+      assert_output --partial "Attribute ID"
+      assert_output --partial $ATTR_ID
+      assert_output --partial "KAS ID"
+      assert_output --partial $KAS_ID
 
     # LIST should not find the attribute within any grants to attributes
       # filtered by KAS
@@ -162,18 +158,18 @@ teardown_file() {
           assert_success
         # table
           run_otdfctl policy kas-grants list
-          refute_output --regexp "Definition.*$ATTR_ID"
+          refute_output --regexp "$KAS_URI.*Definition.*$ATTR_ID"
 }
 
 @test "value: assign grant then unassign it" {
-    export VAL_ID=$(run_otdfctl policy attributes list --json | jq -r '.[0].values[0].id')
+    export VAL_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes list --json | jq -r '.[0].values[0].id')
     export VAL_ID_FLAG="--value-id $VAL_ID"
-    result="$(run_otdfctl policy kas-grants assign $VAL_ID_FLAG $KAS_ID_FLAG)"
-    assert_output --partial "SUCCESS"
-    assert_output --partial "Value ID"
-    assert_output --partial $VAL_ID
-    assert_output --partial "KAS ID"
-    assert_output --partial $KAS_ID
+    run_otdfctl policy kas-grants assign "$VAL_ID_FLAG" "$KAS_ID_FLAG"
+      assert_output --partial "SUCCESS"
+      assert_output --partial "Value ID"
+      assert_output --partial $VAL_ID
+      assert_output --partial "KAS ID"
+      assert_output --partial $KAS_ID
 
     # LIST should find the value in the grants
       # filtered by KAS
@@ -184,9 +180,9 @@ teardown_file() {
           assert_success
         # table
           run_otdfctl policy kas-grants list --kas $KAS_ID
-          assert_output --regexp "Value.*$VAL_ID"
+          assert_output --regexp "$KAS_URI.*Value.*$VAL_ID"
           run_otdfctl policy kas-grants list --kas $KAS_URI
-          assert_output --regexp "Value.*$VAL_ID"
+          assert_output --regexp "$KAS_URI.*Value.*$VAL_ID"
 
       # unfiltered
         # json
@@ -194,14 +190,14 @@ teardown_file() {
           assert_success
         # table
           run_otdfctl policy kas-grants list
-          assert_output --regexp "Value.*$VAL_ID"
+          assert_output --regexp "$KAS_URI.*Value.*$VAL_ID"
 
     run_otdfctl policy kas-grants unassign $VAL_ID_FLAG $KAS_ID_FLAG --force
-    assert_output --partial "SUCCESS"
-    assert_output --partial "Value ID"
-    assert_output --partial $VAL_ID
-    assert_output --partial "KAS ID"
-    assert_output --partial $KAS_ID
+      assert_output --partial "SUCCESS"
+      assert_output --partial "Value ID"
+      assert_output --partial $VAL_ID
+      assert_output --partial "KAS ID"
+      assert_output --partial $KAS_ID
 
     # LIST should not find the value within any grants to values
       # filtered by KAS
@@ -212,16 +208,16 @@ teardown_file() {
           assert_success
         # table
           run_otdfctl policy kas-grants list --kas $KAS_ID
-          refute_output --regexp "Value.*$VAL_ID"
+          refute_output --regexp "$KAS_URI.*Value.*$VAL_ID"
           run_otdfctl policy kas-grants list --kas $KAS_URI
-          refute_output --regexp "Value.*$VAL_ID"
+          refute_output --regexp "$KAS_URI.*Value.*$VAL_ID"
       # unfiltered
         # json
           run_otdfctl policy kas-grants list --json | jq --arg id "$VAL_ID" '.[] | select(.value_grants? | type == "array" and all(.[]?; .id != $id))'
           assert_success
         # table
           run_otdfctl policy kas-grants list
-          refute_output --regexp "Value.*$VAL_ID"
+          refute_output --regexp "$KAS_URI.*Value.*$VAL_ID"
     }
 
 @test "assign rejects more than one type of grant at once" {
@@ -230,16 +226,16 @@ teardown_file() {
     export VAL_ID_FLAG='--value-id goodnight'
     
     run_otdfctl policy kas-grants assign $ATTR_ID_FLAG $VAL_ID_FLAG $KAS_ID_FLAG
-    assert_failure
-    assert_output --partial "Must specify exactly one Attribute Namespace ID, Definition ID, or Value ID to assign"
+      assert_failure
+      assert_output --partial "Must specify exactly one Attribute Namespace ID, Definition ID, or Value ID to assign"
 
     run_otdfctl policy kas-grants assign $NS_ID_FLAG $VAL_ID_FLAG $KAS_ID_FLAG
-    assert_failure
-    assert_output --partial "Must specify exactly one Attribute Namespace ID, Definition ID, or Value ID to assign"
+      assert_failure
+      assert_output --partial "Must specify exactly one Attribute Namespace ID, Definition ID, or Value ID to assign"
 
     run_otdfctl policy kas-grants assign $ATTR_ID_FLAG $NS_ID_FLAG $KAS_ID_FLAG
-    assert_failure
-    assert_output --partial "Must specify exactly one Attribute Namespace ID, Definition ID, or Value ID to assign"
+      assert_failure
+      assert_output --partial "Must specify exactly one Attribute Namespace ID, Definition ID, or Value ID to assign"
 }
 
 @test "unassign rejects more than one type of grant at once" {
@@ -248,14 +244,14 @@ teardown_file() {
     export VAL_ID_FLAG='--value-id goodnight'
 
     run_otdfctl policy kas-grants unassign $ATTR_ID_FLAG $VAL_ID_FLAG $KAS_ID_FLAG
-    assert_failure
-    assert_output --partial "Must specify exactly one Attribute Namespace ID, Definition ID, or Value ID to unassign"
+      assert_failure
+      assert_output --partial "Must specify exactly one Attribute Namespace ID, Definition ID, or Value ID to unassign"
     
     run_otdfctl policy kas-grants unassign $NS_ID_FLAG $VAL_ID_FLAG $KAS_ID_FLAG
-    assert_failure
-    assert_output --partial "Must specify exactly one Attribute Namespace ID, Definition ID, or Value ID to unassign"
+      assert_failure
+      assert_output --partial "Must specify exactly one Attribute Namespace ID, Definition ID, or Value ID to unassign"
     
     run_otdfctl policy kas-grants unassign $ATTR_ID_FLAG $NS_ID_FLAG $KAS_ID_FLAG
-    assert_failure
-    assert_output --partial "Must specify exactly one Attribute Namespace ID, Definition ID, or Value ID to unassign"
+      assert_failure
+      assert_output --partial "Must specify exactly one Attribute Namespace ID, Definition ID, or Value ID to unassign"
 }
