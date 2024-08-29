@@ -223,6 +223,9 @@ func policy_listKasGrants(cmd *cobra.Command, args []string) {
 	}
 	t = t.WithRows(rows)
 
+	// Do not supporting printing the 'get --id=...' helper message as grants are atypical
+	// with no individual ID.
+	cmd.Use = ""
 	HandleSuccess(cmd, "", t, grants)
 }
 
