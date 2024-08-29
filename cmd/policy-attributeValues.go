@@ -10,8 +10,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// TODO: add metadata to outputs once [https://github.com/opentdf/otdfctl/issues/73] is addressed
-
 var policy_attributeValuesCmd *cobra.Command
 
 func policy_createAttributeValue(cmd *cobra.Command, args []string) {
@@ -345,7 +343,7 @@ func handleValueSuccess(cmd *cobra.Command, v *policy.Value) {
 		{"FQN", v.GetFqn()},
 		{"Value", v.GetValue()},
 	}
-	if mdRows := getMetadataRows(v.Metadata); mdRows != nil {
+	if mdRows := getMetadataRows(v.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
 	}
 

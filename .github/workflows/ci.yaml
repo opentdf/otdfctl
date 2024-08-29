@@ -109,3 +109,4 @@ jobs:
       - run: tests/encrypt-decrypt.bats
       - run: tests/kas-grants.bats
       - run: tests/profile.bats
+      - run: tests/kas-registry.bats

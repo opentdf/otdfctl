@@ -8,6 +8,7 @@ import (
 	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/spf13/cobra"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
 var policy_kasRegistryCmd *cobra.Command
@@ -21,24 +22,29 @@ func policy_getKeyAccessRegistry(cmd *cobra.Command, args []string) {
 
 	kas, err := h.GetKasRegistryEntry(id)
 	if err != nil {
-		errMsg := fmt.Sprintf("Failed to get KAS registry entry (%s)", id)
+		errMsg := fmt.Sprintf("Failed to get Registered KAS entry (%s)", id)
 		cli.ExitWithError(errMsg, err)
 	}
 
-	keyType := "Local"
-	key := kas.PublicKey.GetLocal()
+	keyType := "Cached"
+	key := &policy.PublicKey{}
+	key.PublicKey = &policy.PublicKey_Cached{Cached: kas.GetPublicKey().GetCached()}
 	if kas.PublicKey.GetRemote() != "" {
 		keyType = "Remote"
-		key = kas.PublicKey.GetRemote()
+		key.PublicKey = &policy.PublicKey_Remote{Remote: kas.GetPublicKey().GetRemote()}
+	}
+	rows := [][]string{
+		{"Id", kas.GetId()},
+		{"URI", kas.GetUri()},
+		{"PublicKey Type", keyType},
+		{"PublicKey", kas.GetPublicKey().String()},
 	}
 
-	t := cli.NewTabular(
-		[]string{"Id", kas.Id},
-		// TODO: render labels [https://github.com/opentdf/otdfctl/issues/73]
-		[]string{"URI", kas.Uri},
-		[]string{"PublicKey Type", keyType},
-		[]string{"PublicKey", key},
-	)
+	if mdRows := getMetadataRows(kas.GetMetadata()); mdRows != nil {
+		rows = append(rows, mdRows...)
+	}
+	t := cli.NewTabular(rows...)
+
 	HandleSuccess(cmd, kas.Id, t, kas)
 }
 
@@ -48,7 +54,7 @@ func policy_listKeyAccessRegistries(cmd *cobra.Command, args []string) {
 
 	list, err := h.ListKasRegistryEntries()
 	if err != nil {
-		cli.ExitWithError("Failed to list KAS registry entries", err)
+		cli.ExitWithError("Failed to list Registered KAS entries", err)
 	}
 
 	t := cli.NewTable(
@@ -59,18 +65,19 @@ func policy_listKeyAccessRegistries(cmd *cobra.Command, args []string) {
 	)
 	rows := []table.Row{}
 	for _, kas := range list {
-		keyType := "Local"
-		key := kas.PublicKey.GetLocal()
+		keyType := "Cached"
+		key := policy.PublicKey{}
+		key.PublicKey = &policy.PublicKey_Cached{Cached: kas.GetPublicKey().GetCached()}
 		if kas.PublicKey.GetRemote() != "" {
 			keyType = "Remote"
-			key = kas.PublicKey.GetRemote()
+			key.PublicKey = &policy.PublicKey_Remote{Remote: kas.GetPublicKey().GetRemote()}
 		}
 
 		rows = append(rows, table.NewRow(table.RowData{
-			"id":     kas.Id,
-			"uri":    kas.Uri,
+			"id":     kas.GetId(),
+			"uri":    kas.GetUri(),
 			"pk_loc": keyType,
-			"pk":     key,
+			"pk":     kas.GetPublicKey().String(),
 		}))
 	}
 	t = t.WithRows(rows)
@@ -83,23 +90,28 @@ func policy_createKeyAccessRegistry(cmd *cobra.Command, args []string) {
 
 	flagHelper := cli.NewFlagHelper(cmd)
 	uri := flagHelper.GetRequiredString("uri")
-	local := flagHelper.GetOptionalString("public-key-local")
+	cachedJSON := flagHelper.GetOptionalString("public-keys")
 	remote := flagHelper.GetOptionalString("public-key-remote")
 	metadataLabels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
 
-	if local == "" && remote == "" {
-		e := fmt.Errorf("A public key is required. Please pass either a local or remote public key")
-		cli.ExitWithError("Issue with create flags 'public-key-local' and 'public-key-remote': ", e)
+	if cachedJSON == "" && remote == "" {
+		e := fmt.Errorf("a public key is required. Please pass either a cached or remote public key")
+		cli.ExitWithError("Issue with create flags 'public-keys' and 'public-key-remote'", e)
 	}
 
 	key := &policy.PublicKey{}
-	keyType := "Local"
-	if local != "" {
+	keyType := "Cached"
+	if cachedJSON != "" {
 		if remote != "" {
-			e := fmt.Errorf("Only one public key is allowed. Please pass either a local or remote public key but not both")
-			cli.ExitWithError("Issue with create flags 'public-key-local' and 'public-key-remote': ", e)
+			e := fmt.Errorf("only one public key is allowed. Please pass either a cached or remote public key but not both")
+			cli.ExitWithError("Issue with create flags 'public-keys' and 'public-key-remote'", e)
 		}
-		key.PublicKey = &policy.PublicKey_Local{Local: local}
+		cached := new(policy.PublicKey)
+		err := protojson.Unmarshal([]byte(cachedJSON), cached)
+		if err != nil {
+			cli.ExitWithError("Failed to unmarshal cached public key JSON", err)
+		}
+		key = cached
 	} else {
 		keyType = "Remote"
 		key.PublicKey = &policy.PublicKey_Remote{Remote: remote}
@@ -111,18 +123,21 @@ func policy_createKeyAccessRegistry(cmd *cobra.Command, args []string) {
 		getMetadataMutable(metadataLabels),
 	)
 	if err != nil {
-		cli.ExitWithError("Failed to create KAS registry entry", err)
+		cli.ExitWithError("Failed to create Registered KAS entry", err)
 	}
 
-	t := cli.NewTabular(
-		[]string{"Id", created.Id},
-		[]string{"URI", created.Uri},
-		[]string{"PublicKey Type", keyType},
-		[]string{"PublicKey", local},
-		// TODO: render labels [https://github.com/opentdf/otdfctl/issues/73]
-	)
+	rows := [][]string{
+		{"Id", created.GetId()},
+		{"URI", created.GetUri()},
+		{"PublicKey Type", keyType},
+		{"PublicKey", key.String()},
+	}
+	if mdRows := getMetadataRows(created.GetMetadata()); mdRows != nil {
+		rows = append(rows, mdRows...)
+	}
+	t := cli.NewTabular(rows...)
 
-	HandleSuccess(cmd, created.Id, t, created)
+	HandleSuccess(cmd, created.GetId(), t, created)
 }
 
 func policy_updateKeyAccessRegistry(cmd *cobra.Command, args []string) {
@@ -133,21 +148,25 @@ func policy_updateKeyAccessRegistry(cmd *cobra.Command, args []string) {
 
 	id := flagHelper.GetRequiredString("id")
 	uri := flagHelper.GetOptionalString("uri")
-	local := flagHelper.GetOptionalString("public-key-local")
+	cachedJSON := flagHelper.GetOptionalString("public-keys")
 	remote := flagHelper.GetOptionalString("public-key-remote")
 	labels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
 
-	if local == "" && remote == "" && len(labels) == 0 && uri == "" {
-		cli.ExitWithError("No values were passed to update. Please pass at least one value to update (E.G. 'uri', 'public-key-local', 'public-key-remote', 'label')", nil)
+	if cachedJSON == "" && remote == "" && len(labels) == 0 && uri == "" {
+		cli.ExitWithError("No values were passed to update. Please pass at least one value to update (E.G. 'uri', 'public-keys', 'public-key-remote', 'label')", nil)
 	}
 
-	// TODO: should update of a type of key be a dangerous mutation or cause a need for confirmation in the CLI?
 	var pubKey *policy.PublicKey
-	if local != "" && remote != "" {
-		e := fmt.Errorf("Only one public key is allowed. Please pass either a local or remote public key but not both")
-		cli.ExitWithError("Issue with update flags 'public-key-local' and 'public-key-remote': ", e)
-	} else if local != "" {
-		pubKey = &policy.PublicKey{PublicKey: &policy.PublicKey_Local{Local: local}}
+	if cachedJSON != "" && remote != "" {
+		e := fmt.Errorf("only one public key is allowed. Please pass either a cached or remote public key but not both")
+		cli.ExitWithError("Issue with update flags 'public-keys' and 'public-key-remote': ", e)
+	} else if cachedJSON != "" {
+		cached := new(policy.PublicKey)
+		err := protojson.Unmarshal([]byte(cachedJSON), cached)
+		if err != nil {
+			cli.ExitWithError("Failed to unmarshal cached public key JSON", err)
+		}
+		pubKey = cached
 	} else if remote != "" {
 		pubKey = &policy.PublicKey{PublicKey: &policy.PublicKey_Remote{Remote: remote}}
 	}
@@ -160,13 +179,16 @@ func policy_updateKeyAccessRegistry(cmd *cobra.Command, args []string) {
 		getMetadataUpdateBehavior(),
 	)
 	if err != nil {
-		cli.ExitWithError(fmt.Sprintf("Failed to update KAS registry entry (%s)", id), err)
+		cli.ExitWithError(fmt.Sprintf("Failed to update Registered KAS entry (%s)", id), err)
 	}
-	t := cli.NewTabular(
-		[]string{"Id", id},
-		[]string{"URI", uri},
-		// TODO: render labels [https://github.com/opentdf/otdfctl/issues/73]
-	)
+	rows := [][]string{
+		{"Id", id},
+		{"URI", updated.GetUri()},
+	}
+	if mdRows := getMetadataRows(updated.GetMetadata()); mdRows != nil {
+		rows = append(rows, mdRows...)
+	}
+	t := cli.NewTabular(rows...)
 	HandleSuccess(cmd, id, t, updated)
 }
 
@@ -176,26 +198,29 @@ func policy_deleteKeyAccessRegistry(cmd *cobra.Command, args []string) {
 
 	flagHelper := cli.NewFlagHelper(cmd)
 	id := flagHelper.GetRequiredString("id")
+	force := flagHelper.GetOptionalBool("force")
 
 	kas, err := h.GetKasRegistryEntry(id)
 	if err != nil {
-		errMsg := fmt.Sprintf("Failed to get KAS registry entry (%s)", id)
+		errMsg := fmt.Sprintf("Failed to get Registered KAS entry (%s)", id)
 		cli.ExitWithError(errMsg, err)
 	}
 
-	cli.ConfirmAction(cli.ActionDelete, "KAS Registry Entry: ", id, false)
+	if !force {
+		cli.ConfirmAction(cli.ActionDelete, "Registered KAS", id, false)
+	}
 
 	if _, err := h.DeleteKasRegistryEntry(id); err != nil {
-		errMsg := fmt.Sprintf("Failed to delete KAS registry entry (%s)", id)
+		errMsg := fmt.Sprintf("Failed to delete Registered KAS entry (%s)", id)
 		cli.ExitWithError(errMsg, err)
 	}
 
 	t := cli.NewTabular(
-		[]string{"Id", "URI"},
-		[]string{kas.Id, kas.Uri},
+		[]string{"Id", kas.GetId()},
+		[]string{"URI", kas.GetUri()},
 	)
 
-	HandleSuccess(cmd, kas.Id, t, kas)
+	HandleSuccess(cmd, kas.GetId(), t, kas)
 }
 
 func init() {
@@ -224,10 +249,10 @@ func init() {
 		createDoc.GetDocFlag("uri").Description,
 	)
 	createDoc.Flags().StringP(
-		createDoc.GetDocFlag("public-key-local").Name,
-		createDoc.GetDocFlag("public-key-local").Shorthand,
-		createDoc.GetDocFlag("public-key-local").Default,
-		createDoc.GetDocFlag("public-key-local").Description,
+		createDoc.GetDocFlag("public-keys").Name,
+		createDoc.GetDocFlag("public-keys").Shorthand,
+		createDoc.GetDocFlag("public-keys").Default,
+		createDoc.GetDocFlag("public-keys").Description,
 	)
 	createDoc.Flags().StringP(
 		createDoc.GetDocFlag("public-key-remote").Name,
@@ -253,10 +278,10 @@ func init() {
 		updateDoc.GetDocFlag("uri").Description,
 	)
 	updateDoc.Flags().StringP(
-		updateDoc.GetDocFlag("public-key-local").Name,
-		updateDoc.GetDocFlag("public-key-local").Shorthand,
-		updateDoc.GetDocFlag("public-key-local").Default,
-		updateDoc.GetDocFlag("public-key-local").Description,
+		updateDoc.GetDocFlag("public-keys").Name,
+		updateDoc.GetDocFlag("public-keys").Shorthand,
+		updateDoc.GetDocFlag("public-keys").Default,
+		updateDoc.GetDocFlag("public-keys").Description,
 	)
 	updateDoc.Flags().StringP(
 		updateDoc.GetDocFlag("public-key-remote").Name,
@@ -274,6 +299,11 @@ func init() {
 		deleteDoc.GetDocFlag("id").Shorthand,
 		deleteDoc.GetDocFlag("id").Default,
 		deleteDoc.GetDocFlag("id").Description,
+	)
+	deleteDoc.Flags().Bool(
+		deleteDoc.GetDocFlag("force").Name,
+		false,
+		deleteDoc.GetDocFlag("force").Description,
 	)
 
 	doc := man.Docs.GetCommand("policy/kas-registry",

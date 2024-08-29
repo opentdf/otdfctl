@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.12.2](https://github.com/opentdf/otdfctl/compare/v0.12.1...v0.12.2) (2024-08-27)
+
+
+### Bug Fixes
+
+* **core:** improve KASR docs and add spellcheck GHA to pipeline ([#323](https://github.com/opentdf/otdfctl/issues/323)) ([a77cf30](https://github.com/opentdf/otdfctl/commit/a77cf30dc8077d034cb4c9df8cc94712b1a17dff)), closes [#335](https://github.com/opentdf/otdfctl/issues/335) [#337](https://github.com/opentdf/otdfctl/issues/337)
+* create new http client to ignore tls verification ([#324](https://github.com/opentdf/otdfctl/issues/324)) ([4d4afb7](https://github.com/opentdf/otdfctl/commit/4d4afb7e5b6411bb08a92bc53181ac5730ca1992))
+
+## [0.12.1](https://github.com/opentdf/otdfctl/compare/v0.12.0...v0.12.1) (2024-08-26)
+
+
+### Bug Fixes
+
+* **core:** remove documentation that cached kas pubkey is base64 ([#320](https://github.com/opentdf/otdfctl/issues/320)) ([fce8f44](https://github.com/opentdf/otdfctl/commit/fce8f44f767f35ccc4863f88d46e7ffcbd80f37a)), closes [#321](https://github.com/opentdf/otdfctl/issues/321)
+
+## [0.12.0](https://github.com/opentdf/otdfctl/compare/v0.11.4...v0.12.0) (2024-08-23)
+
+
+### Features
+
+* **ci:** attr e2e tests with mixed casing ([#315](https://github.com/opentdf/otdfctl/issues/315)) ([50ce712](https://github.com/opentdf/otdfctl/commit/50ce712eab38f6686611e2b306bda5cacd55c28e))
+* **core:** kasr cached keys to deprecate local ([#318](https://github.com/opentdf/otdfctl/issues/318)) ([5419cc3](https://github.com/opentdf/otdfctl/commit/5419cc39e143eb484f836ca1ee671d626d5e2c60)), closes [#317](https://github.com/opentdf/otdfctl/issues/317)
+
 ## [0.11.4](https://github.com/opentdf/otdfctl/compare/v0.11.3...v0.11.4) (2024-08-22)
 
 
