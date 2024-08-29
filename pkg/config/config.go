@@ -11,14 +11,20 @@ import (
 	"github.com/spf13/viper"
 )
 
-// AppName is the name of the application
-// Note: use caution when renaming as it is used in various places within the CLI including for config file naming
-// and in the profile store
-var AppName = "otdfctl"
+var (
+	// AppName is the name of the application
+	// Note: use caution when renaming as it is used in various places within the CLI including for
+	// config file naming and in the profile store
+	AppName = "otdfctl"
 
-var Version = "0.0.0"
-var BuildTime = "1970-01-01T00:00:00Z"
-var CommitSha = "0000000"
+	Version   = "0.0.0"
+	BuildTime = "1970-01-01T00:00:00Z"
+	CommitSha = "0000000"
+
+	// Test mode is used to determine if the application is running in test mode
+	//   "true" = running in test mode
+	TestMode = ""
+)
 
 type Output struct {
 	Format string `yaml:"format" default:"styled"`

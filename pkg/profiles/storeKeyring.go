@@ -7,8 +7,6 @@ import (
 	"github.com/zalando/go-keyring"
 )
 
-// TODO: update the store to use alternative storage methods besides keyring
-
 type KeyringStore struct {
 	namespace string
 	key       string
