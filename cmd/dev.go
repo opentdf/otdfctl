@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"os"
@@ -72,16 +71,17 @@ func getMetadataRows(m *common.Metadata) [][]string {
 	return nil
 }
 
-func unMarshalMetadata(m string) *common.MetadataMutable {
-	if m != "" {
-		metadata := &common.MetadataMutable{}
-		if err := json.Unmarshal([]byte(m), metadata); err != nil {
-			cli.ExitWithError("Failed to unmarshal metadata", err)
-		}
-		return metadata
-	}
-	return nil
-}
+// TODO can we use it or remove it?
+// func unMarshalMetadata(m string) *common.MetadataMutable {
+// 	if m != "" {
+// 		metadata := &common.MetadataMutable{}
+// 		if err := json.Unmarshal([]byte(m), metadata); err != nil {
+// 			cli.ExitWithError("Failed to unmarshal metadata", err)
+// 		}
+// 		return metadata
+// 	}
+// 	return nil
+// }
 
 func getMetadataMutable(labels []string) *common.MetadataMutable {
 	metadata := common.MetadataMutable{}

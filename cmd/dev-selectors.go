@@ -15,7 +15,7 @@ import (
 var (
 	selectors []string
 
-	dev_selectorsCmd *cobra.Command
+	// dev_selectorsCmd *cobra.Command
 )
 
 func dev_selectorsGen(cmd *cobra.Command, args []string) {
