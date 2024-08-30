@@ -1,9 +1,7 @@
 package cmd
 
 import (
-	"encoding/json"
 	"errors"
-	"fmt"
 
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/handlers"
@@ -32,20 +30,21 @@ type tdfInspectResult struct {
 }
 
 func tdf_InspectCmd(cmd *cobra.Command, args []string) {
-	h := NewHandler(cmd)
+	c := cli.New(cmd, args, cli.WithPrintJson())
+	h := NewHandler(c)
 	defer h.Close()
 
 	data := cli.ReadFromArgsOrPipe(args, nil)
 	if len(data) == 0 {
-		cli.ExitWithError("Must provide ONE of the following: [file argument, stdin input]", errors.New("no input provided"))
+		c.ExitWithError("must provide ONE of the following: [file argument, stdin input]", errors.New("no input provided"))
 	}
 
 	result, errs := h.InspectTDF(data)
 	for _, err := range errs {
 		if errors.Is(err, handlers.ErrTDFInspectFailNotValidTDF) {
-			cli.ExitWithError("Not a valid ZTDF", err)
+			c.ExitWithError("not a valid ZTDF", err)
 		} else if errors.Is(err, handlers.ErrTDFInspectFailNotInspectable) {
-			cli.ExitWithError("Failed to inspect TDF", err)
+			c.ExitWithError("failed to inspect TDF", err)
 		}
 	}
 
@@ -66,12 +65,7 @@ func tdf_InspectCmd(cmd *cobra.Command, args []string) {
 		Attributes: result.Attributes,
 	}
 
-	b, err := json.MarshalIndent(m, "", "  ")
-	if err != nil {
-		cli.ExitWithError("Failed to marshal TDF inspect result", err)
-	}
-
-	fmt.Printf("%s\n", string(b))
+	c.PrintJson(m)
 }
 
 func init() {
@@ -79,6 +73,11 @@ func init() {
 		man.WithRun(tdf_InspectCmd),
 	)
 	tdf_InspectCmd.Command.GroupID = "tdf"
+
+	tdf_InspectCmd.Command.PreRun = func(cmd *cobra.Command, args []string) {
+		// Set the json flag to true since we only support json output
+		cmd.SetArgs(append(args, "--json"))
+	}
 
 	RootCmd.AddCommand(&tdf_InspectCmd.Command)
 }

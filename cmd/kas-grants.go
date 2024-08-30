@@ -14,14 +14,14 @@ import (
 var forceFlagValue = false
 
 func policy_assignKasGrant(cmd *cobra.Command, args []string) {
-	h := NewHandler(cmd)
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
 	defer h.Close()
 
-	flagHelper := cli.NewFlagHelper(cmd)
-	nsID := flagHelper.GetOptionalString("namespace-id")
-	attrID := flagHelper.GetOptionalString("attribute-id")
-	valID := flagHelper.GetOptionalString("value-id")
-	kasID := flagHelper.GetRequiredString("kas-id")
+	nsID := c.Flags.GetOptionalString("namespace-id")
+	attrID := c.Flags.GetOptionalString("attribute-id")
+	valID := c.Flags.GetOptionalString("value-id")
+	kasID := c.Flags.GetRequiredString("kas-id")
 
 	count := 0
 	for _, v := range []string{nsID, attrID, valID} {
@@ -71,15 +71,15 @@ func policy_assignKasGrant(cmd *cobra.Command, args []string) {
 }
 
 func policy_unassignKasGrant(cmd *cobra.Command, args []string) {
-	h := NewHandler(cmd)
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
 	defer h.Close()
 
-	flagHelper := cli.NewFlagHelper(cmd)
-	nsID := flagHelper.GetOptionalString("namespace-id")
-	attrID := flagHelper.GetOptionalString("attribute-id")
-	valID := flagHelper.GetOptionalString("value-id")
-	kasID := flagHelper.GetRequiredString("kas-id")
-	force := flagHelper.GetOptionalBool("force")
+	nsID := c.Flags.GetOptionalString("namespace-id")
+	attrID := c.Flags.GetOptionalString("attribute-id")
+	valID := c.Flags.GetOptionalString("value-id")
+	kasID := c.Flags.GetRequiredString("kas-id")
+	force := c.Flags.GetOptionalBool("force")
 
 	count := 0
 	for _, v := range []string{nsID, attrID, valID} {

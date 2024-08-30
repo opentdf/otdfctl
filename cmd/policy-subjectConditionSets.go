@@ -49,14 +49,14 @@ func marshalSubjectSetsProto(subjectSet []*policy.SubjectSet) ([]byte, error) {
 }
 
 func policy_createSubjectConditionSet(cmd *cobra.Command, args []string) {
-	h := NewHandler(cmd)
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
 	defer h.Close()
 	var ssBytes []byte
 
-	flagHelper := cli.NewFlagHelper(cmd)
-	ssFlagJSON := flagHelper.GetOptionalString("subject-sets")
-	ssFileJSON := flagHelper.GetOptionalString("subject-sets-file-json")
-	metadataLabels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
+	ssFlagJSON := c.Flags.GetOptionalString("subject-sets")
+	ssFileJSON := c.Flags.GetOptionalString("subject-sets-file-json")
+	metadataLabels := c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
 	// validate no flag conflicts
 	if ssFileJSON == "" && ssFlagJSON == "" {
@@ -111,11 +111,11 @@ func policy_createSubjectConditionSet(cmd *cobra.Command, args []string) {
 }
 
 func policy_getSubjectConditionSet(cmd *cobra.Command, args []string) {
-	h := NewHandler(cmd)
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
 	defer h.Close()
 
-	flagHelper := cli.NewFlagHelper(cmd)
-	id := flagHelper.GetRequiredString("id")
+	id := c.Flags.GetRequiredString("id")
 
 	scs, err := h.GetSubjectConditionSet(id)
 	if err != nil {
@@ -139,7 +139,8 @@ func policy_getSubjectConditionSet(cmd *cobra.Command, args []string) {
 }
 
 func policy_listSubjectConditionSets(cmd *cobra.Command, args []string) {
-	h := NewHandler(cmd)
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
 	defer h.Close()
 
 	scsList, err := h.ListSubjectConditionSets()
@@ -174,14 +175,14 @@ func policy_listSubjectConditionSets(cmd *cobra.Command, args []string) {
 }
 
 func policy_updateSubjectConditionSet(cmd *cobra.Command, args []string) {
-	h := NewHandler(cmd)
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
 	defer h.Close()
 
-	flagHelper := cli.NewFlagHelper(cmd)
-	id := flagHelper.GetRequiredString("id")
-	metadataLabels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
-	ssFlagJSON := flagHelper.GetOptionalString("subject-sets")
-	ssFileJSON := flagHelper.GetOptionalString("subject-sets-file-json")
+	id := c.Flags.GetRequiredString("id")
+	metadataLabels := c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
+	ssFlagJSON := c.Flags.GetOptionalString("subject-sets")
+	ssFileJSON := c.Flags.GetOptionalString("subject-sets-file-json")
 
 	var ssBytes []byte
 	// validate no flag conflicts
@@ -242,11 +243,11 @@ func policy_updateSubjectConditionSet(cmd *cobra.Command, args []string) {
 }
 
 func policy_deleteSubjectConditionSet(cmd *cobra.Command, args []string) {
-	h := NewHandler(cmd)
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
 	defer h.Close()
 
-	flagHelper := cli.NewFlagHelper(cmd)
-	id := flagHelper.GetRequiredString("id")
+	id := c.Flags.GetRequiredString("id")
 
 	scs, err := h.GetSubjectConditionSet(id)
 	if err != nil {

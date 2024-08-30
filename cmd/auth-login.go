@@ -9,19 +9,21 @@ import (
 )
 
 func auth_codeLogin(cmd *cobra.Command, args []string) {
-	fh := cli.NewFlagHelper(cmd)
-	clientID := fh.GetOptionalString("client-id")
-	tlsNoVerify := fh.GetOptionalBool("tls-no-verify")
+	c := cli.New(cmd, args)
+	cp := InitProfile(c, false)
 
-	cp := InitProfile(cmd, false)
-	printer := cli.NewPrinter(true)
-
-	printer.Println("Initiating login...")
-	tok, publicClientID, err := auth.LoginWithPKCE(cmd.Context(), cp.GetEndpoint(), clientID, tlsNoVerify)
+	c.Print("Initiating login...")
+	tok, publicClientID, err := auth.LoginWithPKCE(
+		cmd.Context(),
+		cp.GetEndpoint(),
+		c.FlagHelper.GetOptionalString("client-id"),
+		c.FlagHelper.GetOptionalBool("tls-no-verify"),
+	)
 	if err != nil {
-		cli.ExitWithError("could not authenticate", err)
+		c.Println("failed")
+		c.ExitWithError("could not authenticate", err)
 	}
-	printer.Println("ok")
+	c.Println("ok")
 
 	// Set the auth credentials to profile
 	if err := cp.SetAuthCredentials(profiles.AuthCredentials{
@@ -33,15 +35,15 @@ func auth_codeLogin(cmd *cobra.Command, args []string) {
 			RefreshToken:   tok.RefreshToken,
 		},
 	}); err != nil {
-		cli.ExitWithError("failed to set auth credentials", err)
+		c.ExitWithError("failed to set auth credentials", err)
 	}
 
-	printer.Println("Storing credentials to profile in keyring...")
+	c.Print("Storing credentials to profile in keyring...")
 	if err := cp.Save(); err != nil {
-		printer.Println("failed")
-		cli.ExitWithError("An error occurred while storing authentication credentials", err)
+		c.Println("failed")
+		c.ExitWithError("An error occurred while storing authentication credentials", err)
 	}
-	printer.Println("ok")
+	c.Println("ok")
 }
 
 var codeLoginCmd *man.Doc
