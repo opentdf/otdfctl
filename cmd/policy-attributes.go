@@ -20,15 +20,15 @@ var (
 )
 
 func policy_createAttribute(cmd *cobra.Command, args []string) {
-	h := NewHandler(cmd)
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
 	defer h.Close()
 
-	flagHelper := cli.NewFlagHelper(cmd)
-	name := flagHelper.GetRequiredString("name")
-	rule := flagHelper.GetRequiredString("rule")
-	values := flagHelper.GetStringSlice("value", attrValues, cli.FlagHelperStringSliceOptions{})
-	namespace := flagHelper.GetRequiredString("namespace")
-	metadataLabels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
+	name := c.Flags.GetRequiredString("name")
+	rule := c.Flags.GetRequiredString("rule")
+	values := c.Flags.GetStringSlice("value", attrValues, cli.FlagsStringSliceOptions{})
+	namespace := c.Flags.GetRequiredString("namespace")
+	metadataLabels := c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
 	attr, err := h.CreateAttribute(name, rule, namespace, values, getMetadataMutable(metadataLabels))
 	if err != nil {
@@ -58,11 +58,11 @@ func policy_createAttribute(cmd *cobra.Command, args []string) {
 }
 
 func policy_getAttribute(cmd *cobra.Command, args []string) {
-	flagHelper := cli.NewFlagHelper(cmd)
-	id := flagHelper.GetRequiredString("id")
-
-	h := NewHandler(cmd)
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
 	defer h.Close()
+
+	id := c.Flags.GetRequiredString("id")
 
 	attr, err := h.GetAttribute(id)
 	if err != nil {
@@ -86,7 +86,8 @@ func policy_getAttribute(cmd *cobra.Command, args []string) {
 }
 
 func policy_listAttributes(cmd *cobra.Command, args []string) {
-	h := NewHandler(cmd)
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
 	defer h.Close()
 
 	state := cli.GetState(cmd)
@@ -126,11 +127,11 @@ func policy_listAttributes(cmd *cobra.Command, args []string) {
 }
 
 func policy_deactivateAttribute(cmd *cobra.Command, args []string) {
-	flagHelper := cli.NewFlagHelper(cmd)
-	id := flagHelper.GetRequiredString("id")
-
-	h := NewHandler(cmd)
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
 	defer h.Close()
+
+	id := c.Flags.GetRequiredString("id")
 
 	attr, err := h.GetAttribute(id)
 	if err != nil {
@@ -161,12 +162,12 @@ func policy_deactivateAttribute(cmd *cobra.Command, args []string) {
 }
 
 func policy_updateAttribute(cmd *cobra.Command, args []string) {
-	h := NewHandler(cmd)
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
 	defer h.Close()
 
-	flagHelper := cli.NewFlagHelper(cmd)
-	id := flagHelper.GetRequiredString("id")
-	labels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
+	id := c.Flags.GetRequiredString("id")
+	labels := c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
 	if a, err := h.UpdateAttribute(id, getMetadataMutable(labels), getMetadataUpdateBehavior()); err != nil {
 		cli.ExitWithError(fmt.Sprintf("Failed to update attribute (%s)", id), err)
@@ -184,11 +185,11 @@ func policy_updateAttribute(cmd *cobra.Command, args []string) {
 }
 
 func policy_unsafeReactivateAttribute(cmd *cobra.Command, args []string) {
-	h := NewHandler(cmd)
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
 	defer h.Close()
 
-	flagHelper := cli.NewFlagHelper(cmd)
-	id := flagHelper.GetRequiredString("id")
+	id := c.Flags.GetRequiredString("id")
 
 	a, err := h.GetAttribute(id)
 	if err != nil {
@@ -216,14 +217,14 @@ func policy_unsafeReactivateAttribute(cmd *cobra.Command, args []string) {
 }
 
 func policy_unsafeUpdateAttribute(cmd *cobra.Command, args []string) {
-	h := NewHandler(cmd)
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
 	defer h.Close()
 
-	flagHelper := cli.NewFlagHelper(cmd)
-	id := flagHelper.GetRequiredString("id")
-	name := flagHelper.GetOptionalString("name")
-	rule := flagHelper.GetOptionalString("rule")
-	valuesOrder := flagHelper.GetStringSlice("values-order", attrValues, cli.FlagHelperStringSliceOptions{})
+	id := c.Flags.GetRequiredString("id")
+	name := c.Flags.GetOptionalString("name")
+	rule := c.Flags.GetOptionalString("rule")
+	valuesOrder := c.Flags.GetStringSlice("values-order", attrValues, cli.FlagsStringSliceOptions{})
 
 	a, err := h.GetAttribute(id)
 	if err != nil {
@@ -262,11 +263,11 @@ func policy_unsafeUpdateAttribute(cmd *cobra.Command, args []string) {
 }
 
 func policy_unsafeDeleteAttribute(cmd *cobra.Command, args []string) {
-	h := NewHandler(cmd)
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
 	defer h.Close()
 
-	flagHelper := cli.NewFlagHelper(cmd)
-	id := flagHelper.GetRequiredString("id")
+	id := c.Flags.GetRequiredString("id")
 
 	a, err := h.GetAttribute(id)
 	if err != nil {

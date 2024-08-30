@@ -3,11 +3,7 @@ package cli
 import "github.com/charmbracelet/lipgloss"
 
 func SuccessMessage(msg string) string {
-	return lipgloss.JoinHorizontal(
-		lipgloss.Left,
-		styleSuccessStatusBar.
-			MarginBottom(1).
-			Render("SUCCESS"), msg)
+	return lipgloss.JoinHorizontal(lipgloss.Left, styleSuccessStatusBar.Render("SUCCESS"), msg)
 }
 
 func FooterMessage(msg string) string {
@@ -24,23 +20,17 @@ func FooterMessage(msg string) string {
 	)
 }
 
+func DebugMessage(msg string) string {
+	return lipgloss.JoinHorizontal(lipgloss.Left, styleDebugStatusBar.Render("DEBUG"), msg)
+}
+
 func ErrorMessage(msg string, err error) string {
 	if err != nil {
 		msg += ": " + err.Error()
 	}
-
-	return lipgloss.JoinHorizontal(
-		lipgloss.Left,
-		styleErrorStatusBar.
-			PaddingRight(3).
-			Render("ERROR"), msg)
+	return lipgloss.JoinHorizontal(lipgloss.Left, styleErrorStatusBar.Render("ERROR"), msg)
 }
 
 func WarningMessage(msg string) string {
-	return lipgloss.JoinHorizontal(
-		lipgloss.Left,
-		styleWarningStatusBar.
-			Padding(0, 2).
-			MarginRight(1).
-			Render("WARNING"), msg)
+	return lipgloss.JoinHorizontal(lipgloss.Left, styleWarningStatusBar.Render("WARNING"), msg)
 }

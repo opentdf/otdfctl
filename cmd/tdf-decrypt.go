@@ -12,12 +12,12 @@ import (
 )
 
 func dev_tdfDecryptCmd(cmd *cobra.Command, args []string) {
-	h := NewHandler(cmd)
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
 	defer h.Close()
 
-	flagHelper := cli.NewFlagHelper(cmd)
-	output := flagHelper.GetOptionalString("out")
-	tdfType := flagHelper.GetOptionalString("tdf-type")
+	output := c.Flags.GetOptionalString("out")
+	tdfType := c.Flags.GetOptionalString("tdf-type")
 	if tdfType == "" {
 		tdfType = TDF3
 	}

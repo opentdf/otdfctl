@@ -9,20 +9,20 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type FlagHelperStringSliceOptions struct {
+type FlagsStringSliceOptions struct {
 	Min int
 	Max int
 }
 
-type FlagHelper struct {
+type flagHelper struct {
 	cmd *cobra.Command
 }
 
-func NewFlagHelper(cmd *cobra.Command) *FlagHelper {
-	return &FlagHelper{cmd: cmd}
+func newFlagHelper(cmd *cobra.Command) *flagHelper {
+	return &flagHelper{cmd: cmd}
 }
 
-func (f FlagHelper) GetRequiredString(flag string) string {
+func (f flagHelper) GetRequiredString(flag string) string {
 	v := f.cmd.Flag(flag).Value.String()
 	if v == "" {
 		fmt.Println(ErrorMessage("Flag "+flag+" is required", nil))
@@ -31,7 +31,7 @@ func (f FlagHelper) GetRequiredString(flag string) string {
 	return v
 }
 
-func (f FlagHelper) GetOptionalString(flag string) string {
+func (f flagHelper) GetOptionalString(flag string) string {
 	p := f.cmd.Flag(flag)
 	if p == nil {
 		return ""
@@ -39,7 +39,7 @@ func (f FlagHelper) GetOptionalString(flag string) string {
 	return p.Value.String()
 }
 
-func (f FlagHelper) GetStringSlice(flag string, v []string, opts FlagHelperStringSliceOptions) []string {
+func (f flagHelper) GetStringSlice(flag string, v []string, opts FlagsStringSliceOptions) []string {
 	if len(v) < opts.Min {
 		fmt.Println(ErrorMessage(fmt.Sprintf("Flag %s must have at least %d non-empty values", flag, opts.Min), nil))
 		os.Exit(1)
@@ -51,7 +51,7 @@ func (f FlagHelper) GetStringSlice(flag string, v []string, opts FlagHelperStrin
 	return v
 }
 
-func (f FlagHelper) GetRequiredInt32(flag string) int32 {
+func (f flagHelper) GetRequiredInt32(flag string) int32 {
 	v, e := f.cmd.Flags().GetInt32(flag)
 	if e != nil {
 		fmt.Println(ErrorMessage("Flag "+flag+" is required", nil))
@@ -64,12 +64,12 @@ func (f FlagHelper) GetRequiredInt32(flag string) int32 {
 	return v
 }
 
-func (f FlagHelper) GetOptionalBool(flag string) bool {
+func (f flagHelper) GetOptionalBool(flag string) bool {
 	v, _ := f.cmd.Flags().GetBool(flag)
 	return v
 }
 
-func (f FlagHelper) GetRequiredBool(flag string) bool {
+func (f flagHelper) GetRequiredBool(flag string) bool {
 	v, e := f.cmd.Flags().GetBool(flag)
 	if e != nil {
 		fmt.Println(ErrorMessage("Flag "+flag+" is required", nil))
@@ -92,7 +92,7 @@ func GetState(cmd *cobra.Command) common.ActiveStateEnum {
 	return state
 }
 
-// func (f FlagHelper) GetStructSlice(flag string, v []StructFlag[T], opts FlagHelperStringSliceOptions) ([]StructFlag[T], err) {
+// func (f flagHelper) GetStructSlice(flag string, v []StructFlag[T], opts flagHelperStringSliceOptions) ([]StructFlag[T], err) {
 // 	if len(v) < opts.Min {
 // 		fmt.Println(ErrorMessage(fmt.Sprintf("Flag %s must have at least %d non-empty values", flag, opts.Min), nil))
 // 		os.Exit(1)
