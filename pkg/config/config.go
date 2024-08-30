@@ -24,6 +24,9 @@ var (
 	// Test mode is used to determine if the application is running in test mode
 	//   "true" = running in test mode
 	TestMode = ""
+
+	// Test terminal size is a runtime env var to allow for testing of terminal output
+	TEST_TERMINAL_WIDTH = "TEST_TERMINAL_WIDTH"
 )
 
 type Output struct {
