@@ -18,7 +18,7 @@ setup() {
 
     # invoke binary with credentials
     run_otdfctl_kasg () {
-      run sh -c "./otdfctl $HOST $WITH_CREDS $*"
+      run sh -c "./otdfctl $HOST $WITH_CREDS policy kas-grants $*"
     }
 }
 
