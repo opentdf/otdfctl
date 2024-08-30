@@ -4,6 +4,8 @@
 # Make sure we have a terminal size large enough to test table output
 ####
 
+## Accepts two arguments: rows and columns (both integers)
+
 # Default terminal size
 DEFAULT_ROWS=40
 DEFAULT_COLUMNS=200
