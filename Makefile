@@ -87,7 +87,7 @@ build-test:
 
 .PHONY: test-bats
 test-bats: build-test
-	bats ./tests
+	./tests/terminal_size.sh && bats ./tests
 
 # Target for cleaning up the target directory
 .PHONY: clean
