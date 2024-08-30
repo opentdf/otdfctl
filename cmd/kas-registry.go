@@ -14,11 +14,11 @@ import (
 var policy_kasRegistryCmd *cobra.Command
 
 func policy_getKeyAccessRegistry(cmd *cobra.Command, args []string) {
-	h := NewHandler(cmd)
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
 	defer h.Close()
 
-	flagHelper := cli.NewFlagHelper(cmd)
-	id := flagHelper.GetRequiredString("id")
+	id := c.FlagHelper.GetRequiredString("id")
 
 	kas, err := h.GetKasRegistryEntry(id)
 	if err != nil {
@@ -49,7 +49,8 @@ func policy_getKeyAccessRegistry(cmd *cobra.Command, args []string) {
 }
 
 func policy_listKeyAccessRegistries(cmd *cobra.Command, args []string) {
-	h := NewHandler(cmd)
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
 	defer h.Close()
 
 	list, err := h.ListKasRegistryEntries()
@@ -85,14 +86,14 @@ func policy_listKeyAccessRegistries(cmd *cobra.Command, args []string) {
 }
 
 func policy_createKeyAccessRegistry(cmd *cobra.Command, args []string) {
-	h := NewHandler(cmd)
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
 	defer h.Close()
 
-	flagHelper := cli.NewFlagHelper(cmd)
-	uri := flagHelper.GetRequiredString("uri")
-	cachedJSON := flagHelper.GetOptionalString("public-keys")
-	remote := flagHelper.GetOptionalString("public-key-remote")
-	metadataLabels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
+	uri := c.Flags.GetRequiredString("uri")
+	cachedJSON := c.Flags.GetOptionalString("public-keys")
+	remote := c.Flags.GetOptionalString("public-key-remote")
+	metadataLabels := c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
 	if cachedJSON == "" && remote == "" {
 		e := fmt.Errorf("a public key is required. Please pass either a cached or remote public key")
@@ -141,16 +142,15 @@ func policy_createKeyAccessRegistry(cmd *cobra.Command, args []string) {
 }
 
 func policy_updateKeyAccessRegistry(cmd *cobra.Command, args []string) {
-	h := NewHandler(cmd)
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
 	defer h.Close()
 
-	flagHelper := cli.NewFlagHelper(cmd)
-
-	id := flagHelper.GetRequiredString("id")
-	uri := flagHelper.GetOptionalString("uri")
-	cachedJSON := flagHelper.GetOptionalString("public-keys")
-	remote := flagHelper.GetOptionalString("public-key-remote")
-	labels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
+	id := c.Flags.GetRequiredString("id")
+	uri := c.Flags.GetOptionalString("uri")
+	cachedJSON := c.Flags.GetOptionalString("public-keys")
+	remote := c.Flags.GetOptionalString("public-key-remote")
+	labels := c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
 	if cachedJSON == "" && remote == "" && len(labels) == 0 && uri == "" {
 		cli.ExitWithError("No values were passed to update. Please pass at least one value to update (E.G. 'uri', 'public-keys', 'public-key-remote', 'label')", nil)
@@ -193,12 +193,12 @@ func policy_updateKeyAccessRegistry(cmd *cobra.Command, args []string) {
 }
 
 func policy_deleteKeyAccessRegistry(cmd *cobra.Command, args []string) {
-	h := NewHandler(cmd)
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
 	defer h.Close()
 
-	flagHelper := cli.NewFlagHelper(cmd)
-	id := flagHelper.GetRequiredString("id")
-	force := flagHelper.GetOptionalBool("force")
+	id := c.Flags.GetRequiredString("id")
+	force := c.Flags.GetOptionalBool("force")
 
 	kas, err := h.GetKasRegistryEntry(id)
 	if err != nil {

@@ -17,11 +17,11 @@ var (
 )
 
 func policy_getAttributeNamespace(cmd *cobra.Command, args []string) {
-	h := NewHandler(cmd)
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
 	defer h.Close()
 
-	flagHelper := cli.NewFlagHelper(cmd)
-	id := flagHelper.GetRequiredString("id")
+	id := c.Flags.GetRequiredString("id")
 
 	ns, err := h.GetNamespace(id)
 	if err != nil {
@@ -40,7 +40,8 @@ func policy_getAttributeNamespace(cmd *cobra.Command, args []string) {
 }
 
 func policy_listAttributeNamespaces(cmd *cobra.Command, args []string) {
-	h := NewHandler(cmd)
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
 	defer h.Close()
 
 	state := cli.GetState(cmd)
@@ -75,12 +76,12 @@ func policy_listAttributeNamespaces(cmd *cobra.Command, args []string) {
 }
 
 func policy_createAttributeNamespace(cmd *cobra.Command, args []string) {
-	h := NewHandler(cmd)
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
 	defer h.Close()
 
-	flagHelper := cli.NewFlagHelper(cmd)
-	name := flagHelper.GetRequiredString("name")
-	metadataLabels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
+	name := c.Flags.GetRequiredString("name")
+	metadataLabels := c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
 	created, err := h.CreateNamespace(name, getMetadataMutable(metadataLabels))
 	if err != nil {
@@ -99,12 +100,12 @@ func policy_createAttributeNamespace(cmd *cobra.Command, args []string) {
 }
 
 func policy_deactivateAttributeNamespace(cmd *cobra.Command, args []string) {
-	h := NewHandler(cmd)
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
 	defer h.Close()
 
-	flagHelper := cli.NewFlagHelper(cmd)
-	id := flagHelper.GetRequiredString("id")
-	force := flagHelper.GetOptionalBool("force")
+	force := c.Flags.GetOptionalBool("force")
+	id := c.Flags.GetRequiredString("id")
 
 	ns, err := h.GetNamespace(id)
 	if err != nil {
@@ -133,12 +134,12 @@ func policy_deactivateAttributeNamespace(cmd *cobra.Command, args []string) {
 }
 
 func policy_updateAttributeNamespace(cmd *cobra.Command, args []string) {
-	h := NewHandler(cmd)
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
 	defer h.Close()
 
-	flagHelper := cli.NewFlagHelper(cmd)
-	id := flagHelper.GetRequiredString("id")
-	labels := flagHelper.GetStringSlice("label", metadataLabels, cli.FlagHelperStringSliceOptions{Min: 0})
+	id := c.Flags.GetRequiredString("id")
+	labels := c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
 	ns, err := h.UpdateNamespace(
 		id,
@@ -161,11 +162,11 @@ func policy_updateAttributeNamespace(cmd *cobra.Command, args []string) {
 }
 
 func policy_unsafeDeleteAttributeNamespace(cmd *cobra.Command, args []string) {
-	h := NewHandler(cmd)
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
 	defer h.Close()
 
-	flagHelper := cli.NewFlagHelper(cmd)
-	id := flagHelper.GetRequiredString("id")
+	id := c.Flags.GetRequiredString("id")
 
 	ns, err := h.GetNamespace(id)
 	if err != nil {
@@ -194,11 +195,11 @@ func policy_unsafeDeleteAttributeNamespace(cmd *cobra.Command, args []string) {
 }
 
 func policy_unsafeReactivateAttributeNamespace(cmd *cobra.Command, args []string) {
-	h := NewHandler(cmd)
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
 	defer h.Close()
 
-	flagHelper := cli.NewFlagHelper(cmd)
-	id := flagHelper.GetRequiredString("id")
+	id := c.Flags.GetRequiredString("id")
 
 	ns, err := h.GetNamespace(id)
 	if err != nil {
@@ -228,12 +229,12 @@ func policy_unsafeReactivateAttributeNamespace(cmd *cobra.Command, args []string
 }
 
 func policy_unsafeUpdateAttributeNamespace(cmd *cobra.Command, args []string) {
-	h := NewHandler(cmd)
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
 	defer h.Close()
 
-	flagHelper := cli.NewFlagHelper(cmd)
-	id := flagHelper.GetRequiredString("id")
-	name := flagHelper.GetRequiredString("name")
+	id := c.Flags.GetRequiredString("id")
+	name := c.Flags.GetRequiredString("name")
 
 	ns, err := h.GetNamespace(id)
 	if err != nil {
