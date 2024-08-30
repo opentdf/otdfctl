@@ -35,6 +35,9 @@ set_terminal_size_windows() {
     fi
 }
 
+# export the height/width for use in varied display tests
+export TEST_TERMINAL_WIDTH=$COLUMNS
+
 # Detect the OS and set the terminal size appropriately
 case "$OSTYPE" in
     linux*)

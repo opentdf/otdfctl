@@ -53,6 +53,7 @@ jobs:
     runs-on: ubuntu-22.04
     env:
       BATS_LIB_PATH: /usr/lib
+      TEST_TERMINAL_WIDTH: 200
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
       - name: Check out platform
@@ -106,8 +107,6 @@ jobs:
         run: cp otdfctl-example.yaml otdfctl.yaml
       - name: Setup Bats and bats libs
         uses: bats-core/bats-action@2.0.0
-      - name: prep the test terminal
-        run: ./tests/terminal_size.sh
       - run: tests/encrypt-decrypt.bats
       - run: tests/kas-grants.bats
       - run: tests/profile.bats
