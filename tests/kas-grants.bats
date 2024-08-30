@@ -10,6 +10,11 @@ setup_file() {
       export KAS_URI="https://e2etestkas.com"
       export KAS_ID=$(./otdfctl $HOST $WITH_CREDS policy kas-registry create --uri "$KAS_URI" --public-key-remote 'https://e2etestkas.com/pub_key' --json | jq -r '.id')
       export KAS_ID_FLAG="--kas-id $KAS_ID"
+
+      export NS_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes namespaces create -n "testing-kasg.uk" --json | jq -r '.id')
+      ATTR=$(./otdfctl $HOST $WITH_CREDS policy attributes create -n "attr1" --json --rule ANY_OF --namespace "$NS_ID" -v "val1")
+      export ATTR_ID=$(echo $ATTR | jq -r '.id')
+      export VAL_ID=$(echo $ATTR | jq -r '.values[0].id')
 }
 
 setup() {
@@ -29,7 +34,6 @@ teardown_file() {
 
 @test "namespace: assign grant then unassign it" {
     # assign the namespace a grant
-    export NS_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes namespaces list --json | jq -r '.[0].id')
     export NS_ID_FLAG="--namespace-id $NS_ID"
 
     run_otdfctl_kasg assign "$NS_ID_FLAG" "$KAS_ID_FLAG"
@@ -89,7 +93,6 @@ teardown_file() {
 }
 
 @test "attribute: assign grant then unassign it" {
-    export ATTR_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes list --json | jq -r '.[0].id')
     export ATTR_ID_FLAG="--attribute-id $ATTR_ID"
     run_otdfctl_kasg assign "$ATTR_ID_FLAG" "$KAS_ID_FLAG"
       assert_output --partial "SUCCESS"
@@ -141,7 +144,6 @@ teardown_file() {
 }
 
 @test "value: assign grant then unassign it" {
-    export VAL_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes list --json | jq -r '.[0].values[0].id')
     export VAL_ID_FLAG="--value-id $VAL_ID"
     run_otdfctl_kasg assign "$VAL_ID_FLAG" "$KAS_ID_FLAG"
       assert_output --partial "SUCCESS"
