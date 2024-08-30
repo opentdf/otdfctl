@@ -3,28 +3,33 @@
 ####
 # Make sure we have a terminal size large enough to test table output
 ####
+
+# Default terminal size
+DEFAULT_ROWS=40
+DEFAULT_COLUMNS=200
+
+# Set rows and columns to the defaults or use the provided arguments
+ROWS=${1:-$DEFAULT_ROWS}
+COLUMNS=${2:-$DEFAULT_COLUMNS}
+
 set_terminal_size_linux() {
-    # Using resize command if available
     if command -v resize &> /dev/null; then
-        resize -s 40 200
+        resize -s "$ROWS" "$COLUMNS"
     else
-        export COLUMNS=200
-        export LINES=40
+        export COLUMNS="$COLUMNS"
+        export LINES="$ROWS"
     fi
 }
 
 set_terminal_size_mac() {
-    printf '\e[8;40;200t'
+    printf '\e[8;%d;%dt' "$ROWS" "$COLUMNS"
 }
 
 set_terminal_size_windows() {
-    # Check if running in Git Bash or similar environment
     if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]; then
-        # Assuming Git Bash
-        printf '\e[8;40;200t'
+        printf '\e[8;%d;%dt' "$ROWS" "$COLUMNS"
     else
-        # Assuming Windows Command Prompt or PowerShell
-        cmd.exe /c "mode con: cols=200 lines=40"
+        cmd.exe /c "mode con: cols=$COLUMNS lines=$ROWS"
     fi
 }
 
