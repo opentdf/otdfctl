@@ -41,7 +41,6 @@ teardown() {
 }
 
 @test "create registration of a KAS with cached key" {
-    echo "cached: $CACHED_KEY"
     URI="https://testing-create-cached.co"
     run_otdfctl_kasr create --uri "$URI" -c "$CACHED_KEY" --json
         assert_output --partial "$KID"
