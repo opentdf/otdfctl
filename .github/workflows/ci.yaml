@@ -53,6 +53,7 @@ jobs:
     runs-on: ubuntu-22.04
     env:
       BATS_LIB_PATH: /usr/lib
+      TEST_TERMINAL_WIDTH: 200
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
       - name: Check out platform
@@ -110,3 +111,4 @@ jobs:
       - run: tests/kas-grants.bats
       - run: tests/profile.bats
       - run: tests/kas-registry.bats
+      - run: tests/namespaces.bats

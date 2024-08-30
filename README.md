@@ -76,3 +76,14 @@ prerequisites are met:
   - See the [platform README](https://github.com/opentdf/platform) for instructions
 
 To run the tests you can either run `make test-bats` or execute specific test suites with `bats tests/<test>.bats`.
+
+#### Terminal Size
+
+Some tests for output rendered in the terminal will vary in behavior depending on terminal size.
+
+Terminal size when testing:
+
+1. set to standard defaults if running `make test-bats`
+2. can be set manually by mouse in terminal where tests are triggered
+3. can be set by argument `./tests/resize_terminal.sh < rows height > < columns width >`
+4. can be set by environment variable, i.e. `export TEST_TERMINAL_WIDTH="200"` (200 is columns width)

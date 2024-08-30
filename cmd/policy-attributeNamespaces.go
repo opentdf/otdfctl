@@ -104,6 +104,7 @@ func policy_deactivateAttributeNamespace(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
+	force := c.Flags.GetOptionalBool("force")
 	id := c.Flags.GetRequiredString("id")
 
 	ns, err := h.GetNamespace(id)
@@ -112,7 +113,9 @@ func policy_deactivateAttributeNamespace(cmd *cobra.Command, args []string) {
 		cli.ExitWithError(errMsg, err)
 	}
 
-	cli.ConfirmAction(cli.ActionDeactivate, "namespace", ns.Name, false)
+	if !force {
+		cli.ConfirmAction(cli.ActionDeactivate, "namespace", ns.Name, false)
+	}
 
 	d, err := h.DeactivateNamespace(id)
 	if err != nil {
@@ -311,6 +314,11 @@ func init() {
 		deactivateCmd.GetDocFlag("id").Shorthand,
 		deactivateCmd.GetDocFlag("id").Default,
 		deactivateCmd.GetDocFlag("id").Description,
+	)
+	deactivateCmd.Flags().Bool(
+		deactivateCmd.GetDocFlag("force").Name,
+		false,
+		deactivateCmd.GetDocFlag("force").Description,
 	)
 
 	// unsafe
