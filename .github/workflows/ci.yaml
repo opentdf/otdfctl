@@ -53,6 +53,9 @@ jobs:
     runs-on: ubuntu-22.04
     env:
       BATS_LIB_PATH: /usr/lib
+      # set terminal size for tests
+      COLUMNS: 200
+      ROWS: 40
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
       - name: Check out platform
