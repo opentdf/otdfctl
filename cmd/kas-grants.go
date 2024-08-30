@@ -156,10 +156,10 @@ func policy_unassignKasGrant(cmd *cobra.Command, args []string) {
 }
 
 func policy_listKasGrants(cmd *cobra.Command, args []string) {
-	h := NewHandler(cmd)
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
 	defer h.Close()
-	flagHelper := cli.NewFlagHelper(cmd)
-	kasF := flagHelper.GetOptionalString("kas")
+	kasF := c.Flags.GetOptionalString("kas")
 	var (
 		kasID  string
 		kasURI string
