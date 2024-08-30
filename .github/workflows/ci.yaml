@@ -104,6 +104,8 @@ jobs:
         run: make build-test
       - name: set up the config
         run: cp otdfctl-example.yaml otdfctl.yaml
+      - name: prep the test terminal
+        run: ./tests/terminal_size.sh
       - name: Setup Bats and bats libs
         uses: bats-core/bats-action@2.0.0
       - run: tests/encrypt-decrypt.bats

@@ -3,8 +3,6 @@
 # Tests for namespaces
 
 setup_file() {
-    load "setup.bash"
-
     echo -n '{"clientId":"opentdf","clientSecret":"secret"}' > creds.json
     export WITH_CREDS='--with-client-creds-file ./creds.json'
     export HOST='--host http://localhost:8080'

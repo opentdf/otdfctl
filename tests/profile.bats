@@ -1,9 +1,5 @@
 #!/usr/bin/env bats
 
-setup_file(){
-  load "setup.bash"
-}
-
 setup() {  
   OTDFCTL_BIN=./otdfctl_testbuild
 
