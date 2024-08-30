@@ -26,7 +26,6 @@ setup() {
 }
 
 teardown() {
-    echo "created $CREATED"
     ID=$(echo "$CREATED" | jq -r '.id')
     run_otdfctl_kasr delete --id "$ID" --force
 }
@@ -39,24 +38,24 @@ teardown() {
     export CREATED="$output"
 }
 
-@test "create registration of a KAS with cached key" {
-    URI="https://testing-create-cached.co"
-    run_otdfctl_kasr create --uri "$URI" -c "$CACHED_KEY" --json
-        assert_output --partial "$KID"
-        assert_output --partial "$PEM"
-        assert_output --partial "$URI"
-    export CREATED="$output"
-}
-
-@test "get registered KAS" {
+@test "create KAS with cached key then get it" {
     URI="https://testing-get.gov"
     export CREATED=$(./otdfctl $HOST $DEBUG_LEVEL $WITH_CREDS policy kas-registry create --uri "$URI" -c "$CACHED_KEY" --json)
     ID=$(echo "$CREATED" | jq -r '.id')
-    run_otdfctl_kasr get --id "$ID"
+    run echo $CREATED
+        assert_output --partial "$URI"
+        assert_output --partial "uri"
+        assert_output --partial "pem"
+        assert_output --partial "$PEM"
+        assert_output --partial "$KID"
+
+    run_otdfctl_kasr get --id "$ID" --json
         assert_output --partial "$ID"
         assert_output --partial "$URI"
-        assert_output --partial "URI"
+        assert_output --partial "uri"
+        assert_output --partial "$PEM"
         assert_output --partial "pem"
+        assert_output --partial "$KID"
 }
 
 @test "update registered KAS" {

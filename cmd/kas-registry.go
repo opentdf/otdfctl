@@ -127,11 +127,16 @@ func policy_createKeyAccessRegistry(cmd *cobra.Command, args []string) {
 		cli.ExitWithError("Failed to create Registered KAS entry", err)
 	}
 
+	keyJSON, err := protojson.Marshal(key)
+	if err != nil {
+		cli.ExitWithError("Failed to marshal public key to JSON", err)
+	}
+
 	rows := [][]string{
 		{"Id", created.GetId()},
 		{"URI", created.GetUri()},
 		{"PublicKey Type", keyType},
-		{"PublicKey", key.String()},
+		{"PublicKey", string(keyJSON)},
 	}
 	if mdRows := getMetadataRows(created.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
