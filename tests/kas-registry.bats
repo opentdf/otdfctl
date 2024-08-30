@@ -28,8 +28,7 @@ setup() {
 teardown() {
     echo "created $CREATED"
     ID=$(echo "$CREATED" | jq -r '.id')
-    run_otdfctl_kasr delete --id "$ID"
-    # run_otdfctl_kasr delete --id "$ID" --force
+    run_otdfctl_kasr delete --id "$ID" --force
 }
 
 @test "create registration of a KAS with remote key" {
