@@ -4,6 +4,7 @@ import (
 	"runtime"
 
 	"github.com/opentdf/otdfctl/pkg/cli"
+	"github.com/opentdf/otdfctl/pkg/config"
 	"github.com/opentdf/otdfctl/pkg/profiles"
 	"github.com/spf13/cobra"
 )
@@ -160,8 +161,8 @@ var profileSetEndpointCmd = &cobra.Command{
 }
 
 func init() {
-	// Profiles are not supported on Linux
-	if runtime.GOOS == "linux" {
+	// Profiles are not supported on Linux (unless mocked in test mode)
+	if runtime.GOOS == "linux" && config.TestMode != "true" {
 		return
 	}
 

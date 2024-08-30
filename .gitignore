@@ -4,11 +4,13 @@ target/
 .vscode/launch.json
 otdfctl.yaml
 
-# Ignore the tructl binary
+# Ignore the binaries
 otdfctl
+otdfctl.*
 otdfctl_testbuild
+otdfctl_testbuild.*
 
-# Misc
+# Test artifacts
 creds.json
 
 # Hugo
