@@ -42,10 +42,10 @@ teardown_file() {
     # LIST should find the namespace in the grants
       # filtered by KAS
         # json
-          run_otdfctl_kasg list --kas $KAS_ID --json | jq --arg id "$NS_ID" '.[] | select(.namespace_grants | any(.[]?; .id == $id))'
-          assert_success
-          run_otdfctl_kasg list --kas $KAS_URI --json | jq --arg id "$NS_ID" '.[] | select(.namespace_grants | any(.[]?; .id == $id))'
-          assert_success
+          run_otdfctl_kasg list --kas $KAS_ID --json
+          assert_output --partial "$NS_ID"
+          run_otdfctl_kasg list --kas $KAS_URI --json
+          assert_output --partial "$NS_ID"
         # table
           run_otdfctl_kasg list --kas $KAS_ID
           assert_output --regexp "$KAS_URI.*Namespace.*$NS_ID"
@@ -55,8 +55,8 @@ teardown_file() {
 
       # unfiltered (all KASes)
         # json
-          run_otdfctl_kasg list --json | jq --arg id "$NS_ID" '.[] | select(.namespace_grants? | type == "array" and any(.[]?; .id == $id))'
-          assert_success
+          run_otdfctl_kasg list --json
+          assert_output --partial "$NS_ID"
         # table
           run_otdfctl_kasg list
           assert_output --regexp "$KAS_URI.*Namespace.*$NS_ID"
@@ -69,20 +69,20 @@ teardown_file() {
       assert_output --partial "KAS ID"
       assert_output --partial $KAS_ID
 
-    # LIST should not find the namespace within any grants to namespaces
+    # LIST should not find the namespace in the grants
       # filtered by KAS
         # json
-          run_otdfctl_kasg list --kas $KAS_ID --json | jq 'map(select(has("namespace_grants") | not))'
-          assert_success
-          run_otdfctl_kasg list --kas $KAS_URI --json | jq 'map(select(has("namespace_grants") | not))'
-          assert_success
+          run_otdfctl_kasg list --kas $KAS_ID --json 
+          refute_output --partial "$NS_ID"
+          run_otdfctl_kasg list --kas $KAS_URI --json
+          refute_output --partial "$NS_ID"
         # table
           run_otdfctl_kasg list
           refute_output --regexp "$KAS_URI.*Namespace.*$NS_ID"
       # unfiltered
         # json
-          run_otdfctl_kasg list --json | jq --arg id "$NS_ID" '.[] | select(.namespace_grants? | type == "array" and all(.[]?; .id != $id))'
-          assert_success
+          run_otdfctl_kasg list --json
+          refute_output --partial "$NS_ID"
         # table
           run_otdfctl_kasg list
           refute_output --regexp "$KAS_URI.*Namespace.*$NS_ID"
@@ -101,10 +101,10 @@ teardown_file() {
     # LIST should find the attribute in the grants
       # filtered by KAS
         # json
-          run_otdfctl_kasg list --kas $KAS_ID --json | jq --arg id "$ATTR_ID" '.[] | select(.attribute_grants | any(.[]?; .id == $id))'
-          assert_success
-          run_otdfctl_kasg list --kas $KAS_URI --json | jq --arg id "$ATTR_ID" '.[] | select(.attribute_grants | any(.[]?; .id == $id))'
-          assert_success
+          run_otdfctl_kasg list --kas $KAS_ID --json
+          assert_output --partial "$ATTR_ID"
+          run_otdfctl_kasg list --kas $KAS_URI --json
+          assert_output --partial "$ATTR_ID"
         # table
           run_otdfctl_kasg list --kas $KAS_URI
           assert_output --regexp "$KAS_URI.*Definition.*$ATTR_ID"
@@ -112,8 +112,8 @@ teardown_file() {
           assert_output --regexp "$KAS_URI.*Definition.*$ATTR_ID"
       # unfiltered
         # json
-          run_otdfctl_kasg list --json | jq --arg id "$ATTR_ID" '.[] | select(.attribute_grants? | type == "array" and any(.[]?; .id == $id))'
-          assert_success
+          run_otdfctl_kasg list --json
+          assert_output --partial "$ATTR_ID"
         # table
           run_otdfctl_kasg list
           assert_output --regexp "$KAS_URI.*Definition.*$ATTR_ID"
@@ -125,16 +125,16 @@ teardown_file() {
       assert_output --partial "KAS ID"
       assert_output --partial $KAS_ID
 
-    # LIST should not find the attribute within any grants to attributes
+    # LIST should not find the attribute in the grants
       # filtered by KAS
-        run_otdfctl_kasg list --kas $KAS_ID --json | jq 'map(select(has("attribute_grants") | not))'
-        assert_success
-        run_otdfctl_kasg list --kas $KAS_URI --json | jq 'map(select(has("attribute_grants") | not))'
-        assert_success
+        run_otdfctl_kasg list --kas $KAS_ID --json
+          refute_output --partial "$ATTR_ID"
+        run_otdfctl_kasg list --kas $KAS_URI --json 
+          refute_output --partial "$ATTR_ID"
       # unfiltered
         # json
-          run_otdfctl_kasg list --json | jq --arg id "$ATTR_ID" '.[] | select(.attribute_grants? | type == "array" and all(.[]?; .id != $id))'
-          assert_success
+          run_otdfctl_kasg list --json
+          refute_output --partial "$ATTR_ID"
         # table
           run_otdfctl_kasg list
           refute_output --regexp "$KAS_URI.*Definition.*$ATTR_ID"
@@ -153,23 +153,23 @@ teardown_file() {
     # LIST should find the value in the grants
       # filtered by KAS
         # json
-          run_otdfctl_kasg list --kas $KAS_ID --json | jq --arg id "$VAL_ID" '.[] | select(.value_grants | any(.[]?; .id == $id))'
-          assert_success
-          run_otdfctl_kasg list --kas $KAS_URI --json | jq --arg id "$VAL_ID" '.[] | select(.value_grants | any(.[]?; .id == $id))'
-          assert_success
+          run_otdfctl_kasg list --kas $KAS_ID --json 
+            assert_output --partial "$VAL_ID"
+          run_otdfctl_kasg list --kas $KAS_URI --json
+            assert_output --partial "$VAL_ID"
         # table
           run_otdfctl_kasg list --kas $KAS_ID
-          assert_output --regexp "$KAS_URI.*Value.*$VAL_ID"
+            assert_output --regexp "$KAS_URI.*Value.*$VAL_ID"
           run_otdfctl_kasg list --kas $KAS_URI
-          assert_output --regexp "$KAS_URI.*Value.*$VAL_ID"
+            assert_output --regexp "$KAS_URI.*Value.*$VAL_ID"
 
       # unfiltered
         # json
-          run_otdfctl_kasg list --json | jq --arg id "$VAL_ID" '.[] | select(.value_grants? | type == "array" and any(.[]?; .id == $id))'
-          assert_success
+          run_otdfctl_kasg list --json
+            assert_output --partial "$VAL_ID"
         # table
           run_otdfctl_kasg list
-          assert_output --regexp "$KAS_URI.*Value.*$VAL_ID"
+            assert_output --regexp "$KAS_URI.*Value.*$VAL_ID"
 
     run_otdfctl_kasg unassign $VAL_ID_FLAG $KAS_ID_FLAG --force
       assert_output --partial "SUCCESS"
@@ -178,25 +178,25 @@ teardown_file() {
       assert_output --partial "KAS ID"
       assert_output --partial $KAS_ID
 
-    # LIST should not find the value within any grants to values
+    # LIST should not find the value within any grants
       # filtered by KAS
         # json
-          run_otdfctl_kasg list --kas $KAS_ID --json | jq 'map(select(has("value_grants") | not))'
-          assert_success
-          run_otdfctl_kasg list --kas $KAS_URI --json | jq 'map(select(has("value_grants") | not))'
-          assert_success
+          run_otdfctl_kasg list --kas $KAS_ID --json
+            refute_output --partial "$VAL_ID"
+          run_otdfctl_kasg list --kas $KAS_URI --json
+            refute_output --partial "$VAL_ID"
         # table
           run_otdfctl_kasg list --kas $KAS_ID
-          refute_output --regexp "$KAS_URI.*Value.*$VAL_ID"
+            refute_output --regexp "$KAS_URI.*Value.*$VAL_ID"
           run_otdfctl_kasg list --kas $KAS_URI
-          refute_output --regexp "$KAS_URI.*Value.*$VAL_ID"
+            refute_output --regexp "$KAS_URI.*Value.*$VAL_ID"
       # unfiltered
         # json
-          run_otdfctl_kasg list --json | jq --arg id "$VAL_ID" '.[] | select(.value_grants? | type == "array" and all(.[]?; .id != $id))'
-          assert_success
+          run_otdfctl_kasg list --json
+            refute_output --partial "$VAL_ID"
         # table
           run_otdfctl_kasg list
-          refute_output --regexp "$KAS_URI.*Value.*$VAL_ID"
+            refute_output --regexp "$KAS_URI.*Value.*$VAL_ID"
     }
 
 @test "assign rejects more than one type of grant at once" {
