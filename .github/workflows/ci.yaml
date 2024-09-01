@@ -26,7 +26,7 @@ jobs:
     name: lint
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
       - uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491
         with:
           go-version-file: 'go.mod'
@@ -41,7 +41,7 @@ jobs:
     name: unit tests
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
       - uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491
         with:
           go-version-file: 'go.mod'
@@ -55,9 +55,9 @@ jobs:
       BATS_LIB_PATH: /usr/lib
       TEST_TERMINAL_WIDTH: 200
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
       - name: Check out platform
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
         with:
           repository: opentdf/platform
           path: platform
