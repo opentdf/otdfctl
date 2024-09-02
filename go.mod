@@ -24,7 +24,7 @@ require (
 	github.com/zitadel/oidc/v3 v3.27.0
 	golang.org/x/oauth2 v0.22.0
 	golang.org/x/term v0.23.0
-	google.golang.org/grpc v1.65.0
+	google.golang.org/grpc v1.66.0
 	google.golang.org/protobuf v1.34.2
 )
 
