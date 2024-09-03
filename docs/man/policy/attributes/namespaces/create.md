@@ -14,5 +14,11 @@ command:
     - name: label
       description: "Optional metadata 'labels' in the format: key=value"
       shorthand: l
-      default: ""
+      default: ''
 ---
+
+# Create an attribute namespace
+
+Creation of a `namespace` is required to add attributes or any other policy objects beneath.
+
+For more information, see the `namespaces` subcommand.

@@ -12,3 +12,5 @@ command:
 ---
 
 # List attribute namespaces
+
+For more general information, see the `namespaces` subcommand.

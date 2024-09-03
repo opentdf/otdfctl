@@ -12,7 +12,7 @@ command:
     - name: label
       description: "Optional metadata 'labels' in the format: key=value"
       shorthand: l
-      default: ""
+      default: ''
     - name: force-replace-labels
       description: Destructively replace entire set of existing metadata 'labels' with any provided to this command
       default: false
@@ -20,6 +20,6 @@ command:
 
 # Update an Attribute Namespace
 
-Attribute Namespace changes can be dangerous, so this command is for updates considered "safe."
+Attribute Namespace changes can be dangerous, so this command is for updates considered "safe" (currently just mutations to metadata `labels`).
 
-For unsafe updates, see the dedicated `update` command.
+For unsafe updates, see the dedicated `update` command. For more general information, see the `namespaces` subcommand.
