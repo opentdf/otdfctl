@@ -21,3 +21,5 @@ Any existing TDFs containing attributes under the old namespace will be rendered
 and already created may now become accessible.
 
 Make sure you know what you are doing.
+
+For more general information, see the `namespaces` subcommand.

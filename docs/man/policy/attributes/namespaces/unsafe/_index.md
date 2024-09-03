@@ -17,3 +17,5 @@ Depending on the unsafe change introduced and already existing TDFs, TDFs might 
 accessible or vice versa.
 
 Make sure you know what you are doing.
+
+For more general information, see the `namespaces` subcommand.
