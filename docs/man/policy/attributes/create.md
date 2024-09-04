@@ -55,9 +55,3 @@ If an Attribute is defined with logical rule `HIERARCHY`, an Entity must be mapp
 compared to a given Value on TDF'd Resource Data. Hierarchical values are considered highest at index 0 and lowest at the last index.
 
 For more general information about attributes, see the `attributes` subcommand.
-
-
-
-
-
-
