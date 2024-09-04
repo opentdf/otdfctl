@@ -22,3 +22,5 @@ Any existing TDFs containing attributes under the old value will be rendered ina
 and already created may now become accessible.
 
 Make sure you know what you are doing.
+
+For more information on attribute values, see the `values` subcommand.

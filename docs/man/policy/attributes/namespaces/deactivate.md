@@ -20,4 +20,6 @@ Deactivation of a Namespace renders any existing TDFs of those attributes inacce
 Deactivation will permanently reserve the Namespace name within a platform. Reactivation and deletion are both considered "unsafe"
 behaviors.
 
+For information about reactivation, see the `unsafe reactivate` subcommand.
+
 For reactivation, see the `unsafe` command.

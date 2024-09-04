@@ -16,3 +16,5 @@ Reactivating an Attribute Value can potentially open up an access path to any ex
 The Active/Inactive state of the Attribute Definition and Namespace above this Value will NOT be changed.
 
 Make sure you know what you are doing.
+
+For more information on attribute values, see the `values` subcommand.
