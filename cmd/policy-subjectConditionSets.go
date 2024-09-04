@@ -150,7 +150,7 @@ func policy_listSubjectConditionSets(cmd *cobra.Command, args []string) {
 
 	t := cli.NewTable(
 		cli.NewUUIDColumn(),
-		table.NewFlexColumn("subject_sets", "SubjectSets", cli.cli.FlexColumnWidthFour),
+		table.NewFlexColumn("subject_sets", "SubjectSets", cli.FlexColumnWidthFour),
 		table.NewFlexColumn("labels", "Labels", cli.FlexColumnWidthOne),
 		table.NewFlexColumn("created_at", "Created At", cli.FlexColumnWidthOne),
 		table.NewFlexColumn("updated_at", "Updated At", cli.FlexColumnWidthOne),
