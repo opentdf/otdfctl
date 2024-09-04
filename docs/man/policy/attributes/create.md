@@ -32,3 +32,32 @@ command:
       shorthand: l
       default: ''
 ---
+
+# Create an attribute definition
+
+Under a namespace, create an attribute with a rule.
+
+### Rules
+
+#### ANY_OF
+
+If an Attribute is defined with logical rule `ANY_OF`, an Entity who is mapped to `any` of the associated Values of the Attribute
+on TDF'd Resource Data will be Entitled.
+
+#### ALL_OF
+
+If an Attribute is defined with logical rule `ALL_OF`, an Entity must be mapped to `all` of the associated Values of the Attribute
+on TDF'd Resource Data to be Entitled.
+
+### HIERARCHY
+
+If an Attribute is defined with logical rule `HIERARCHY`, an Entity must be mapped to the same level Value or a level above in hierarchy
+compared to a given Value on TDF'd Resource Data. Hierarchical values are considered highest at index 0 and lowest at the last index.
+
+For more general information about attributes, see the `attributes` subcommand.
+
+
+
+
+
+

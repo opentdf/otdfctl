@@ -16,3 +16,5 @@ Deleting an Attribute Definition cascades deletion of any Attribute Values and a
 Any existing TDFs containing the deleted attribute of this name will be rendered inaccessible until it has been recreated.
 
 Make sure you know what you are doing.
+
+For more general information about attributes, see the `attributes` subcommand.

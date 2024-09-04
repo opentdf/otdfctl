@@ -7,6 +7,8 @@ command:
     - attribute
 ---
 
+# Manage attributes
+
 Commands to manage attributes within the platform.
 
 Attributes are used to to define the properties of a piece of data. These attributes will then be

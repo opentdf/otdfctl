@@ -46,3 +46,5 @@ To remove Values from an Attribute Definition, delete them separately via the `v
 `values create` commands.
 
 Make sure you know what you are doing.
+
+For more general information about attributes, see the `attributes` subcommand.
