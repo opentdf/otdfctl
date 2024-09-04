@@ -11,3 +11,7 @@ command:
       shorthand: i
       required: true
 ---
+
+# Get a subject condition set
+
+For more information about subject condition sets, see the `subject-condition-sets` subcommand.

@@ -27,6 +27,8 @@ command:
       default: false
 ---
 
+# Create a Subject Condition Set
+
 ### Example Subject Condition Sets
 
 `--subject-sets` example input:
@@ -92,3 +94,5 @@ This structure if their team name was "CoolTool" and they were entitled might lo
 If any condition in the group is not met (such as if `.org.name` were `marketing` instead),
 the condition set would not resolve to true, and the Subject would not be found to be entitled
 to the Attribute Value applicable to this Subject Condition Set via Subject Mapping between.
+
+For more information about subject condition sets, see the `subject-condition-sets` subcommand.

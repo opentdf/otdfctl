@@ -38,3 +38,11 @@ command:
       shorthand: l
       default: ''
 ---
+
+# Create a subject mapping
+
+Create a Subject Mapping to entitle an entity (via existing or new Subject Condition Set) to an Attribute Value.
+
+For more information about subject mappings, see the `subject-mappings` subcommand. 
+
+For more information about subject condition sets, see the `subject-condition-sets` subcommand.

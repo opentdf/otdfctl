@@ -9,3 +9,7 @@ command:
       shorthand: i
       required: true
 ---
+
+# Delete a subject condition set
+
+For more information about subject condition sets, see the `subject-condition-sets` subcommand.
