@@ -59,12 +59,12 @@ func policy_listAttributeNamespaces(cmd *cobra.Command, args []string) {
 	)
 	rows := []table.Row{}
 	for _, ns := range list {
-		metadata := cli.ConstructMetadata(ns.Metadata)
+		metadata := cli.ConstructMetadata(ns.GetMetadata())
 		rows = append(rows,
 			table.NewRow(table.RowData{
 				"id":         ns.GetId(),
 				"name":       ns.GetName(),
-				"active":     strconv.FormatBool(ns.Active.GetValue()),
+				"active":     strconv.FormatBool(ns.GetActive().GetValue()),
 				"labels":     metadata["Labels"],
 				"created_at": metadata["Created At"],
 				"updated_at": metadata["Updated At"],
@@ -81,9 +81,9 @@ func policy_createAttributeNamespace(cmd *cobra.Command, args []string) {
 	defer h.Close()
 
 	name := c.Flags.GetRequiredString("name")
-	metadataLabels := c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
+	labels := c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
-	created, err := h.CreateNamespace(name, getMetadataMutable(metadataLabels))
+	created, err := h.CreateNamespace(name, getMetadataMutable(labels))
 	if err != nil {
 		cli.ExitWithError("Failed to create namespace", err)
 	}

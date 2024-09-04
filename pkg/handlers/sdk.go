@@ -18,7 +18,8 @@ var (
 )
 
 type Handler struct {
-	sdk              *sdk.SDK
+	sdk *sdk.SDK
+	//nolint:containedctx // need to handle in a separate dedicated issue [https://github.com/opentdf/otdfctl/issues/364]
 	ctx              context.Context
 	OIDC_TOKEN       string
 	platformEndpoint string
@@ -50,7 +51,11 @@ func WithProfile(profile *profiles.ProfileStore) handlerOptsFunc {
 		c.tlsNoVerify = profile.GetTLSNoVerify()
 
 		// get sdk opts
-		auth.GetSDKAuthOptionFromProfile(profile)
+		opts, err := auth.GetSDKAuthOptionFromProfile(profile)
+		if err != nil {
+			return c
+		}
+		c.sdkOpts = append(c.sdkOpts, opts)
 
 		return c
 	}
@@ -125,7 +130,7 @@ func (h Handler) WithReplaceLabelsMetadata(metadata *common.MetadataMutable, lab
 // Append a label to the metadata
 func (h Handler) WithLabelMetadata(metadata *common.MetadataMutable, key, value string) func(*common.MetadataMutable) *common.MetadataMutable {
 	return func(*common.MetadataMutable) *common.MetadataMutable {
-		labels := metadata.Labels
+		labels := metadata.GetLabels()
 		labels[key] = value
 		nextMetadata := &common.MetadataMutable{
 			Labels: labels,

@@ -32,7 +32,7 @@ func (m LabelItem) Description() string {
 }
 
 func InitLabelList(attr *policy.Attribute, sdk handlers.Handler) (tea.Model, tea.Cmd) {
-	labels := attr.Metadata.Labels
+	labels := attr.GetMetadata().GetLabels()
 	var items []list.Item
 	for k, v := range labels {
 		item := LabelItem{

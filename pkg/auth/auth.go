@@ -201,7 +201,10 @@ func GetTokenWithClientCreds(ctx context.Context, endpoint string, clientId stri
 	return oidcrp.ClientCredentials(ctx, rp, url.Values{})
 }
 
-var keyLength = 16
+const (
+	keyLength       = 16
+	fiveSecDuration = 5 * time.Second
+)
 
 // Facilitates an auth code PKCE flow to obtain OIDC tokens.
 // Spawns a local server to handle the callback and opens a browser window in each respective OS.
@@ -238,10 +241,10 @@ func Login(ctx context.Context, platformEndpoint, tokenURL, authURL, publicClien
 		// use PKCE
 		oidcrp.WithPKCE(cookiehandler),
 		// allow IAT claim offset of 5 seconds
-		oidcrp.WithVerifierOpts(oidcrp.WithIssuedAtOffset(5*time.Second)),
+		oidcrp.WithVerifierOpts(oidcrp.WithIssuedAtOffset(fiveSecDuration)),
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create relying party: %v", err)
+		return nil, fmt.Errorf("failed to create relying party: %w", err)
 	}
 	stateProvider := func() string {
 		return uuid.New().String()

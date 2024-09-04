@@ -14,8 +14,14 @@ func (h Handler) EncryptNanoBytes(b []byte, values []string, kasUrlPath string) 
 		return nil, err
 	}
 
-	nanoTDFConfig.SetKasURL(h.platformEndpoint + kasUrlPath)
-	nanoTDFConfig.SetAttributes(values)
+	err = nanoTDFConfig.SetKasURL(h.platformEndpoint + kasUrlPath)
+	if err != nil {
+		return nil, err
+	}
+	err = nanoTDFConfig.SetAttributes(values)
+	if err != nil {
+		return nil, err
+	}
 
 	// TODO: validate values are FQNs or return an error [https://github.com/opentdf/platform/issues/515]
 	_, err = h.sdk.CreateNanoTDF(enc, bytes.NewReader(b), *nanoTDFConfig)

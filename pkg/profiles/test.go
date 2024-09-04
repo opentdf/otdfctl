@@ -37,6 +37,7 @@ type testConfig struct {
 
 func init() {
 	// If running in test mode, use the mock keyring
+	//nolint:nestif,forbidigo // test mode mocking so nested blocks and format directive make sense
 	if config.TestMode == "true" {
 		fmt.Printf(testModeMsg, testCfg)
 
@@ -47,6 +48,7 @@ func init() {
 		if testCfg != "" {
 			var err error
 			var cfg testConfig
+			//nolint:musttag // test config is annotated and this is a linter issue?
 			if err := json.NewDecoder(bytes.NewReader([]byte(testCfg))).Decode(&cfg); err != nil {
 				panic(err)
 			}

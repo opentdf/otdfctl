@@ -2,7 +2,6 @@ package cli
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/charmbracelet/huh"
 )
@@ -39,8 +38,7 @@ func ConfirmAction(action, resource, id string, force bool) {
 	}
 
 	if !confirm {
-		fmt.Println(ErrorMessage("Aborted", nil))
-		os.Exit(0)
+		ExitWithError("Aborted", nil)
 	}
 }
 

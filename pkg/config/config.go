@@ -47,7 +47,7 @@ const (
 	OutputStyled = "styled"
 )
 
-var ErrLoadingConfig = errors.New("Error loading config")
+var ErrLoadingConfig = errors.New("error loading config")
 
 // Load config with viper.
 // TODO force creation of the config in the `~/.config/otdfctl` directory
@@ -98,7 +98,7 @@ func LoadConfig(file string, key string) (*Config, error) {
 	return config, nil
 }
 
-func UpdateOutputFormat(cfgKey, format string) {
+func UpdateOutputFormat(cfgKey, format string) error {
 	v := viper.GetViper()
 	format = strings.ToLower(format)
 	formatter := "output.format"
@@ -110,5 +110,5 @@ func UpdateOutputFormat(cfgKey, format string) {
 	} else {
 		v.Set(formatter, OutputStyled)
 	}
-	viper.WriteConfig()
+	return viper.WriteConfig()
 }

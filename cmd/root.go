@@ -78,6 +78,7 @@ func NewHandler(c *cli.Cli) handlers.Handler {
 
 	// if global flags are set then validate and create a temporary profile in memory
 	var cp *profiles.ProfileStore
+	//nolint:nestif // nested if statements are necessary for validation
 	if host != "" || tlsNoVerify || withClientCreds != "" || withClientCredsFile != "" {
 		err := errors.New(
 			"when using global flags --host, --tls-no-verify, --with-client-creds, or --with-client-creds-file, " +
@@ -174,6 +175,7 @@ func init() {
 			return
 		}
 
+		//nolint:errcheck // error does not need to be checked
 		cmd.Help()
 	}))
 
@@ -230,5 +232,5 @@ func init() {
 		rootCmd.GetDocFlag("with-client-creds").Default,
 		rootCmd.GetDocFlag("with-client-creds").Description,
 	)
-	RootCmd.AddGroup(&cobra.Group{ID: "tdf"})
+	RootCmd.AddGroup(&cobra.Group{ID: TDF})
 }

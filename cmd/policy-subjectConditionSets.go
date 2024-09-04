@@ -56,7 +56,7 @@ func policy_createSubjectConditionSet(cmd *cobra.Command, args []string) {
 
 	ssFlagJSON := c.Flags.GetOptionalString("subject-sets")
 	ssFileJSON := c.Flags.GetOptionalString("subject-sets-file-json")
-	metadataLabels := c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
+	labels := c.Flags.GetStringSlice("label", []string{}, cli.FlagsStringSliceOptions{Min: 0})
 
 	// validate no flag conflicts
 	if ssFileJSON == "" && ssFlagJSON == "" {
@@ -87,18 +87,18 @@ func policy_createSubjectConditionSet(cmd *cobra.Command, args []string) {
 		cli.ExitWithError("Error unmarshalling subject sets", err)
 	}
 
-	scs, err := h.CreateSubjectConditionSet(ss, getMetadataMutable(metadataLabels))
+	scs, err := h.CreateSubjectConditionSet(ss, getMetadataMutable(labels))
 	if err != nil {
 		cli.ExitWithError("Error creating subject condition set", err)
 	}
 
-	subjectSetsJSON, err := marshalSubjectSetsProto(scs.SubjectSets)
+	subjectSetsJSON, err := marshalSubjectSetsProto(scs.GetSubjectSets())
 	if err != nil {
 		cli.ExitWithError("Error marshalling subject condition set", err)
 	}
 
 	rows := [][]string{
-		{"Id", scs.Id},
+		{"Id", scs.GetId()},
 		{"SubjectSets", string(subjectSetsJSON)},
 	}
 
@@ -107,7 +107,7 @@ func policy_createSubjectConditionSet(cmd *cobra.Command, args []string) {
 	}
 
 	t := cli.NewTabular(rows...)
-	HandleSuccess(cmd, scs.Id, t, scs)
+	HandleSuccess(cmd, scs.GetId(), t, scs)
 }
 
 func policy_getSubjectConditionSet(cmd *cobra.Command, args []string) {
@@ -121,13 +121,13 @@ func policy_getSubjectConditionSet(cmd *cobra.Command, args []string) {
 	if err != nil {
 		cli.ExitWithError(fmt.Sprintf("Subject Condition Set with id %s not found", id), err)
 	}
-	subjectSetsJSON, err := marshalSubjectSetsProto(scs.SubjectSets)
+	subjectSetsJSON, err := marshalSubjectSetsProto(scs.GetSubjectSets())
 	if err != nil {
 		cli.ExitWithError("Error marshalling subject condition set", err)
 	}
 
 	rows := [][]string{
-		{"Id", scs.Id},
+		{"Id", scs.GetId()},
 		{"SubjectSets", string(subjectSetsJSON)},
 	}
 	if mdRows := getMetadataRows(scs.GetMetadata()); mdRows != nil {
@@ -135,7 +135,7 @@ func policy_getSubjectConditionSet(cmd *cobra.Command, args []string) {
 	}
 
 	t := cli.NewTabular(rows...)
-	HandleSuccess(cmd, scs.Id, t, scs)
+	HandleSuccess(cmd, scs.GetId(), t, scs)
 }
 
 func policy_listSubjectConditionSets(cmd *cobra.Command, args []string) {
@@ -157,13 +157,13 @@ func policy_listSubjectConditionSets(cmd *cobra.Command, args []string) {
 	)
 	rows := []table.Row{}
 	for _, scs := range scsList {
-		subjectSetsJSON, err := marshalSubjectSetsProto(scs.SubjectSets)
+		subjectSetsJSON, err := marshalSubjectSetsProto(scs.GetSubjectSets())
 		if err != nil {
 			cli.ExitWithError("Error marshalling subject condition set", err)
 		}
-		metadata := cli.ConstructMetadata(scs.Metadata)
+		metadata := cli.ConstructMetadata(scs.GetMetadata())
 		rows = append(rows, table.NewRow(table.RowData{
-			"id":           scs.Id,
+			"id":           scs.GetId(),
 			"subject_sets": string(subjectSetsJSON),
 			"labels":       metadata["Labels"],
 			"created_at":   metadata["Created At"],
@@ -180,7 +180,7 @@ func policy_updateSubjectConditionSet(cmd *cobra.Command, args []string) {
 	defer h.Close()
 
 	id := c.Flags.GetRequiredString("id")
-	metadataLabels := c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
+	labels := c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 	ssFlagJSON := c.Flags.GetOptionalString("subject-sets")
 	ssFileJSON := c.Flags.GetOptionalString("subject-sets-file-json")
 
@@ -214,7 +214,7 @@ func policy_updateSubjectConditionSet(cmd *cobra.Command, args []string) {
 		cli.ExitWithError("Error unmarshalling subject sets", err)
 	}
 
-	_, err = h.UpdateSubjectConditionSet(id, ss, getMetadataMutable(metadataLabels), getMetadataUpdateBehavior())
+	_, err = h.UpdateSubjectConditionSet(id, ss, getMetadataMutable(labels), getMetadataUpdateBehavior())
 	if err != nil {
 		cli.ExitWithError("Error updating subject condition set", err)
 	}
@@ -224,13 +224,13 @@ func policy_updateSubjectConditionSet(cmd *cobra.Command, args []string) {
 		cli.ExitWithError("Error getting subject condition set", err)
 	}
 
-	subjectSetsJSON, err := marshalSubjectSetsProto(scs.SubjectSets)
+	subjectSetsJSON, err := marshalSubjectSetsProto(scs.GetSubjectSets())
 	if err != nil {
 		cli.ExitWithError("Error marshalling subject condition set", err)
 	}
 
 	rows := [][]string{
-		{"Id", scs.Id},
+		{"Id", scs.GetId()},
 		{"SubjectSets", string(subjectSetsJSON)},
 	}
 
@@ -239,7 +239,7 @@ func policy_updateSubjectConditionSet(cmd *cobra.Command, args []string) {
 	}
 
 	t := cli.NewTabular(rows...)
-	HandleSuccess(cmd, scs.Id, t, scs)
+	HandleSuccess(cmd, scs.GetId(), t, scs)
 }
 
 func policy_deleteSubjectConditionSet(cmd *cobra.Command, args []string) {
@@ -260,13 +260,13 @@ func policy_deleteSubjectConditionSet(cmd *cobra.Command, args []string) {
 		cli.ExitWithError(fmt.Sprintf("Subject Condition Set with id %s not found", id), err)
 	}
 
-	subjectSetsJSON, err := marshalSubjectSetsProto(scs.SubjectSets)
+	subjectSetsJSON, err := marshalSubjectSetsProto(scs.GetSubjectSets())
 	if err != nil {
 		cli.ExitWithError("Error marshalling subject condition set", err)
 	}
 
 	rows := [][]string{
-		{"Id", scs.Id},
+		{"Id", scs.GetId()},
 		{"SubjectSets", string(subjectSetsJSON)},
 	}
 
@@ -275,7 +275,7 @@ func policy_deleteSubjectConditionSet(cmd *cobra.Command, args []string) {
 	}
 
 	t := cli.NewTabular(rows...)
-	HandleSuccess(cmd, scs.Id, t, scs)
+	HandleSuccess(cmd, scs.GetId(), t, scs)
 }
 
 var policy_subjectConditionSetsCmd *cobra.Command

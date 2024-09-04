@@ -193,6 +193,10 @@ issues:
   # Default: 50
   max-issues-per-linter: 0
 
+  exclude-dirs:
+    # too much in flight within TUI to sufficiently lint
+    - tui
+
   exclude-rules:
     - source: "^//\\s*go:generate\\s"
       linters: [lll]

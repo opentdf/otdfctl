@@ -44,6 +44,7 @@ func policy_assignKasGrant(cmd *cobra.Command, args []string) {
 	}
 
 	ctx := cmd.Context()
+	//nolint:gocritic,nestif // this is more readable than a switch statement
 	if nsID != "" {
 		res, err = h.AssignKasGrantToNamespace(ctx, nsID, kasID)
 		if err != nil {
@@ -103,6 +104,7 @@ func policy_unassignKasGrant(cmd *cobra.Command, args []string) {
 	kasURI := kas.GetUri()
 
 	ctx := cmd.Context()
+	//nolint:gocritic,nestif // this is more readable than a switch statement
 	if nsID != "" {
 		ns, err := h.GetNamespace(nsID)
 		if err != nil || ns == nil {

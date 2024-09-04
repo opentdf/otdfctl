@@ -1,3 +1,4 @@
+//nolint:forbidigo // print statements need flexibility
 package cmd
 
 import (
@@ -17,8 +18,10 @@ import (
 // devCmd is the command for playground-style development
 var devCmd = man.Docs.GetCommand("dev")
 
+var metadataLabels []string
+
 func dev_designSystem(cmd *cobra.Command, args []string) {
-	fmt.Printf("Design system\n=============\n\n")
+	fmt.Print("Design system\n=============\n\n")
 
 	printDSComponent("Table", renderDSTable())
 
@@ -27,9 +30,9 @@ func dev_designSystem(cmd *cobra.Command, args []string) {
 
 func printDSComponent(title string, component string) {
 	fmt.Printf("%s\n", title)
-	fmt.Printf("-----\n\n")
+	fmt.Print("-----\n\n")
 	fmt.Printf("%s\n", component)
-	fmt.Printf("\n\n")
+	fmt.Print("\n\n")
 }
 
 func renderDSTable() string {

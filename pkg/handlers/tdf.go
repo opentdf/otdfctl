@@ -9,10 +9,12 @@ import (
 	"github.com/opentdf/platform/sdk"
 )
 
-var ErrTDFInspectFailNotValidTDF = errors.New("file or input is not a valid TDF")
-var ErrTDFInspectFailNotInspectable = errors.New("file or input is not inspectable")
-var ErrTDFUnableToReadAttributes = errors.New("unable to read attributes from TDF")
-var ErrTDFUnableToReadUnencryptedMetadata = errors.New("unable to read unencrypted metadata from TDF")
+var (
+	ErrTDFInspectFailNotValidTDF          = errors.New("file or input is not a valid TDF")
+	ErrTDFInspectFailNotInspectable       = errors.New("file or input is not inspectable")
+	ErrTDFUnableToReadAttributes          = errors.New("unable to read attributes from TDF")
+	ErrTDFUnableToReadUnencryptedMetadata = errors.New("unable to read unencrypted metadata from TDF")
+)
 
 func (h Handler) EncryptBytes(b []byte, values []string, mimeType string, kasUrlPath string) (*bytes.Buffer, error) {
 	var encrypted []byte
@@ -40,6 +42,7 @@ func (h Handler) DecryptTDF(toDecrypt []byte) (*bytes.Buffer, error) {
 
 	buf := new(bytes.Buffer)
 	_, err = io.Copy(buf, tdfreader)
+	//nolint:errorlint // callers intended to test error equality directly
 	if err != nil && err != io.EOF {
 		return nil, err
 	}

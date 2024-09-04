@@ -28,13 +28,12 @@ func (m LabelUpdate) Init() tea.Cmd {
 }
 
 func (m LabelUpdate) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch msg := msg.(type) {
-	case tea.KeyMsg:
+	if msg, ok := msg.(tea.KeyMsg); ok {
 		switch msg.String() {
 		case "enter":
 			if m.update.focusIndex == len(m.update.inputs) {
 				// update the label
-				metadata := &common.MetadataMutable{Labels: m.attr.Metadata.Labels}
+				metadata := &common.MetadataMutable{Labels: m.attr.GetMetadata().GetLabels()}
 				oldKey := m.label.title
 				newKey := m.update.inputs[0].Value()
 				newVal := m.update.inputs[1].Value()

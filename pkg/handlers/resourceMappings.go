@@ -25,7 +25,7 @@ func (h *Handler) CreateResourceMapping(attributeId string, terms []string, meta
 		return nil, err
 	}
 
-	return h.GetResourceMapping(res.ResourceMapping.GetId())
+	return h.GetResourceMapping(res.GetResourceMapping().GetId())
 }
 
 func (h *Handler) GetResourceMapping(id string) (*policy.ResourceMapping, error) {
@@ -73,5 +73,5 @@ func (h *Handler) DeleteResourceMapping(id string) (*policy.ResourceMapping, err
 		return nil, err
 	}
 
-	return resp.ResourceMapping, nil
+	return resp.GetResourceMapping(), nil
 }

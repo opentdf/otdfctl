@@ -1,3 +1,4 @@
+//nolint:gocritic // still in development
 package tui
 
 import (

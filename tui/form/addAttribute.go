@@ -76,7 +76,12 @@ func AddAttribute() (AttributeDefinition, error) {
 	return attr, nil
 }
 
-func addValue() (value string, another bool, err error) {
+func addValue() (string, bool, error) {
+	var (
+		value   string
+		another bool
+		err     error
+	)
 	valueForm := huh.NewForm(
 		huh.NewGroup(
 			huh.NewInput().

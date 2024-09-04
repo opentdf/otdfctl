@@ -1,3 +1,4 @@
+//nolint:forbidigo // should be able to print tables as needed
 package cli
 
 import (

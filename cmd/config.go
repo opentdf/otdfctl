@@ -16,8 +16,11 @@ func config_updateOutput(cmd *cobra.Command, args []string) {
 
 	format := c.Flags.GetRequiredString("format")
 
-	config.UpdateOutputFormat(cfgKey, format)
-	fmt.Println(cli.SuccessMessage(fmt.Sprintf("Output format updated to %s", format)))
+	err := config.UpdateOutputFormat(cfgKey, format)
+	if err != nil {
+		c.ExitWithError("Failed to update output format", err)
+	}
+	c.Println(cli.SuccessMessage(fmt.Sprintf("Output format updated to %s", format)))
 }
 
 func init() {

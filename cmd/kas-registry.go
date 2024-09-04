@@ -11,6 +11,11 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
+const (
+	keyRemote = "Remote"
+	keyCached = "Cached"
+)
+
 var policy_kasRegistryCmd *cobra.Command
 
 func policy_getKeyAccessRegistry(cmd *cobra.Command, args []string) {
@@ -26,11 +31,11 @@ func policy_getKeyAccessRegistry(cmd *cobra.Command, args []string) {
 		cli.ExitWithError(errMsg, err)
 	}
 
-	keyType := "Cached"
+	keyType := keyCached
 	key := &policy.PublicKey{}
 	key.PublicKey = &policy.PublicKey_Cached{Cached: kas.GetPublicKey().GetCached()}
-	if kas.PublicKey.GetRemote() != "" {
-		keyType = "Remote"
+	if kas.GetPublicKey().GetRemote() != "" {
+		keyType = keyRemote
 		key.PublicKey = &policy.PublicKey_Remote{Remote: kas.GetPublicKey().GetRemote()}
 	}
 	rows := [][]string{
@@ -45,7 +50,7 @@ func policy_getKeyAccessRegistry(cmd *cobra.Command, args []string) {
 	}
 	t := cli.NewTabular(rows...)
 
-	HandleSuccess(cmd, kas.Id, t, kas)
+	HandleSuccess(cmd, kas.GetId(), t, kas)
 }
 
 func policy_listKeyAccessRegistries(cmd *cobra.Command, args []string) {
@@ -66,11 +71,11 @@ func policy_listKeyAccessRegistries(cmd *cobra.Command, args []string) {
 	)
 	rows := []table.Row{}
 	for _, kas := range list {
-		keyType := "Cached"
+		keyType := keyCached
 		key := policy.PublicKey{}
 		key.PublicKey = &policy.PublicKey_Cached{Cached: kas.GetPublicKey().GetCached()}
-		if kas.PublicKey.GetRemote() != "" {
-			keyType = "Remote"
+		if kas.GetPublicKey().GetRemote() != "" {
+			keyType = keyRemote
 			key.PublicKey = &policy.PublicKey_Remote{Remote: kas.GetPublicKey().GetRemote()}
 		}
 
@@ -93,7 +98,7 @@ func policy_createKeyAccessRegistry(cmd *cobra.Command, args []string) {
 	uri := c.Flags.GetRequiredString("uri")
 	cachedJSON := c.Flags.GetOptionalString("public-keys")
 	remote := c.Flags.GetOptionalString("public-key-remote")
-	metadataLabels := c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
+	labels := c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
 	if cachedJSON == "" && remote == "" {
 		e := fmt.Errorf("a public key is required. Please pass either a cached or remote public key")
@@ -101,7 +106,7 @@ func policy_createKeyAccessRegistry(cmd *cobra.Command, args []string) {
 	}
 
 	key := &policy.PublicKey{}
-	keyType := "Cached"
+	keyType := keyCached
 	if cachedJSON != "" {
 		if remote != "" {
 			e := fmt.Errorf("only one public key is allowed. Please pass either a cached or remote public key but not both")
@@ -114,14 +119,14 @@ func policy_createKeyAccessRegistry(cmd *cobra.Command, args []string) {
 		}
 		key = cached
 	} else {
-		keyType = "Remote"
+		keyType = keyRemote
 		key.PublicKey = &policy.PublicKey_Remote{Remote: remote}
 	}
 
 	created, err := h.CreateKasRegistryEntry(
 		uri,
 		key,
-		getMetadataMutable(metadataLabels),
+		getMetadataMutable(labels),
 	)
 	if err != nil {
 		cli.ExitWithError("Failed to create Registered KAS entry", err)
@@ -157,6 +162,7 @@ func policy_updateKeyAccessRegistry(cmd *cobra.Command, args []string) {
 	}
 
 	var pubKey *policy.PublicKey
+	//nolint:gocritic // this is more readable than a switch statement
 	if cachedJSON != "" && remote != "" {
 		e := fmt.Errorf("only one public key is allowed. Please pass either a cached or remote public key but not both")
 		cli.ExitWithError("Issue with update flags 'public-keys' and 'public-key-remote': ", e)
