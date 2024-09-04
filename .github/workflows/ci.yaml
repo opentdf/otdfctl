@@ -112,3 +112,11 @@ jobs:
       - run: tests/profile.bats
       - run: tests/kas-registry.bats
       - run: tests/namespaces.bats
+
+  platform-xtest:
+    needs:
+      - golangci
+      - unit
+    uses: opentdf/tests/.github/workflows/xtest.yml@main
+    with:
+      otdfctl-ref: ${{ github.ref }}
