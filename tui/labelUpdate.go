@@ -43,7 +43,7 @@ func (m LabelUpdate) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 				metadata.Labels[newKey] = newVal
 				behavior := common.MetadataUpdateEnum_METADATA_UPDATE_ENUM_REPLACE
-				attr, err := m.sdk.UpdateAttribute(m.attr.Id, metadata, behavior)
+				attr, err := m.sdk.UpdateAttribute(m.attr.GetId(), metadata, behavior)
 				if err != nil {
 					// return error view
 				}

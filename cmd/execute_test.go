@@ -70,8 +70,8 @@ func Test_MountRootWithRename(t *testing.T) {
 }
 
 func Test_MountRootError(t *testing.T) {
-	assert.Error(t, MountRoot(nil, nil))
-	assert.Error(t, MountRoot(nil, &cobra.Command{
+	require.Error(t, MountRoot(nil, nil))
+	require.Error(t, MountRoot(nil, &cobra.Command{
 		Use:   "rename-otdfctl",
 		Short: "rename-otdfctl short",
 		Long:  "rename-otdfctl long",

@@ -26,7 +26,7 @@ func policy_createAttributeValue(cmd *cobra.Command, args []string) {
 		cli.ExitWithError(fmt.Sprintf("Failed to get parent attribute (%s)", attrId), err)
 	}
 
-	v, err := h.CreateAttributeValue(attr.Id, value, getMetadataMutable(metadataLabels))
+	v, err := h.CreateAttributeValue(attr.GetId(), value, getMetadataMutable(metadataLabels))
 	if err != nil {
 		cli.ExitWithError("Failed to create attribute value", err)
 	}
@@ -61,11 +61,11 @@ func policy_listAttributeValue(cmd *cobra.Command, args []string) {
 	}
 	t := cli.NewTable(
 		cli.NewUUIDColumn(),
-		table.NewFlexColumn("fqn", "Fqn", 4),
-		table.NewFlexColumn("active", "Active", 3),
-		table.NewFlexColumn("labels", "Labels", 1),
-		table.NewFlexColumn("created_at", "Created At", 1),
-		table.NewFlexColumn("updated_at", "Updated At", 1),
+		table.NewFlexColumn("fqn", "Fqn", cli.FlexColumnWidthFour),
+		table.NewFlexColumn("active", "Active", cli.FlexColumnWidthThree),
+		table.NewFlexColumn("labels", "Labels", cli.FlexColumnWidthOne),
+		table.NewFlexColumn("created_at", "Created At", cli.FlexColumnWidthOne),
+		table.NewFlexColumn("updated_at", "Updated At", cli.FlexColumnWidthOne),
 	)
 	rows := []table.Row{}
 	for _, val := range vals {

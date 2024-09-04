@@ -85,7 +85,7 @@ func (c *Cli) PrintJson(v interface{}) {
 	fmt.Println(string(b))
 }
 
-func (c *Cli) PrintIfJson(v interface{}) {
+func (c *Cli) PrintIfJSON(v interface{}) {
 	if c.printer.json {
 		c.PrintJson(v)
 	}

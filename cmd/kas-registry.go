@@ -60,9 +60,9 @@ func policy_listKeyAccessRegistries(cmd *cobra.Command, args []string) {
 
 	t := cli.NewTable(
 		cli.NewUUIDColumn(),
-		table.NewFlexColumn("uri", "URI", 4),
-		table.NewFlexColumn("pk_loc", "PublicKey Location", 3),
-		table.NewFlexColumn("pk", "PublicKey", 3),
+		table.NewFlexColumn("uri", "URI", cli.cli.cli.FlexColumnWidthFour),
+		table.NewFlexColumn("pk_loc", "PublicKey Location", cli.FlexColumnWidthThree),
+		table.NewFlexColumn("pk", "PublicKey", cli.FlexColumnWidthThree),
 	)
 	rows := []table.Row{}
 	for _, kas := range list {

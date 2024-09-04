@@ -170,7 +170,7 @@ func init() {
 			}
 
 			c.Println(config.AppName + " version " + config.Version + " (" + config.BuildTime + ") " + config.CommitSha)
-			c.ExitWithJson(v)
+			c.ExitWithJSON(v)
 			return
 		}
 

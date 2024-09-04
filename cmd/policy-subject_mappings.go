@@ -67,14 +67,14 @@ func policy_listSubjectMappings(cmd *cobra.Command, args []string) {
 	}
 	t := cli.NewTable(
 		cli.NewUUIDColumn(),
-		table.NewFlexColumn("subject_attrval_id", "Subject AttrVal: Id", 4),
-		table.NewFlexColumn("subject_attrval_value", "Subject AttrVal: Value", 3),
-		table.NewFlexColumn("actions", "Actions", 2),
-		table.NewFlexColumn("subject_condition_set_id", "Subject Condition Set: Id", 4),
-		table.NewFlexColumn("subject_condition_set", "Subject Condition Set", 3),
-		table.NewFlexColumn("labels", "Labels", 1),
-		table.NewFlexColumn("created_at", "Created At", 1),
-		table.NewFlexColumn("updated_at", "Updated At", 1),
+		table.NewFlexColumn("subject_attrval_id", "Subject AttrVal: Id", cli.FlexColumnWidthFour),
+		table.NewFlexColumn("subject_attrval_value", "Subject AttrVal: Value", cli.FlexColumnWidthThree),
+		table.NewFlexColumn("actions", "Actions", cli.FlexColumnWidthTwo),
+		table.NewFlexColumn("subject_condition_set_id", "Subject Condition Set: Id", cli.FlexColumnWidthFour),
+		table.NewFlexColumn("subject_condition_set", "Subject Condition Set", cli.FlexColumnWidthThree),
+		table.NewFlexColumn("labels", "Labels", cli.FlexColumnWidthOne),
+		table.NewFlexColumn("created_at", "Created At", cli.FlexColumnWidthOne),
+		table.NewFlexColumn("updated_at", "Updated At", cli.FlexColumnWidthOne),
 	)
 	rows := []table.Row{}
 	for _, sm := range list {

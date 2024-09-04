@@ -51,7 +51,7 @@ func ConfirmTextInput(action, resource, inputName, shouldMatchValue string) {
 		Value(&input).
 		Validate(func(s string) error {
 			if s != shouldMatchValue {
-				return fmt.Errorf(fmt.Sprintf("FQN entered [%s] does not match required %s: %s", s, inputName, shouldMatchValue))
+				return fmt.Errorf("entered FQN [%s] does not match required %s: %s", s, inputName, shouldMatchValue)
 			}
 			return nil
 		}).Run()

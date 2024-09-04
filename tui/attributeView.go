@@ -69,7 +69,7 @@ func (m AttributeView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "backspace":
-			return InitAttributeList(m.attr.Id, m.sdk)
+			return InitAttributeList(m.attr.GetId(), m.sdk)
 		case "ctrl+c", "q":
 			return m, tea.Quit
 		case "ctrl+d":

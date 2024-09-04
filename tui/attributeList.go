@@ -44,12 +44,12 @@ func InitAttributeList(id string, sdk handlers.Handler) (tea.Model, tea.Cmd) {
 		for _, val := range attr.Values {
 			vals = append(vals, val.Value)
 		}
-		if attr.Id == id {
+		if attr.GetId() == id {
 			selectIdx = i
 		}
 		item := AttributeItem{
-			id:   attr.Id,
-			name: attr.Name,
+			id:   attr.GetId(),
+			name: attr.GetName(),
 		}
 		attrs = append(attrs, item)
 	}

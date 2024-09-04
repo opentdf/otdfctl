@@ -35,14 +35,8 @@ func StartTea(h handlers.Handler) error {
 	return nil
 }
 
-func max(a, b int) int {
-	if a > b {
-		return a
-	}
-	return b
-}
-
 func ViewList(m list.Model) string {
+	//nolint:mnd // styling is magic
 	lipgloss.NewStyle().Padding(1, 2, 1, 2)
 	return lipgloss.JoinVertical(lipgloss.Top, m.View())
 }

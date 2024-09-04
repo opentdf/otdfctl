@@ -29,14 +29,14 @@ func policy_getAttributeNamespace(cmd *cobra.Command, args []string) {
 		cli.ExitWithError(errMsg, err)
 	}
 	rows := [][]string{
-		{"Id", ns.Id},
-		{"Name", ns.Name},
+		{"Id", ns.GetId()},
+		{"Name", ns.GetName()},
 	}
 	if mdRows := getMetadataRows(ns.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
 	}
 	t := cli.NewTabular(rows...)
-	HandleSuccess(cmd, ns.Id, t, ns)
+	HandleSuccess(cmd, ns.GetId(), t, ns)
 }
 
 func policy_listAttributeNamespaces(cmd *cobra.Command, args []string) {
@@ -51,19 +51,19 @@ func policy_listAttributeNamespaces(cmd *cobra.Command, args []string) {
 	}
 	t := cli.NewTable(
 		cli.NewUUIDColumn(),
-		table.NewFlexColumn("name", "Name", 4),
-		table.NewFlexColumn("active", "Active", 3),
-		table.NewFlexColumn("labels", "Labels", 1),
-		table.NewFlexColumn("created_at", "Created At", 1),
-		table.NewFlexColumn("updated_at", "Updated At", 1),
+		table.NewFlexColumn("name", "Name", cli.FlexColumnWidthFour),
+		table.NewFlexColumn("active", "Active", cli.FlexColumnWidthThree),
+		table.NewFlexColumn("labels", "Labels", cli.FlexColumnWidthOne),
+		table.NewFlexColumn("created_at", "Created At", cli.FlexColumnWidthOne),
+		table.NewFlexColumn("updated_at", "Updated At", cli.FlexColumnWidthOne),
 	)
 	rows := []table.Row{}
 	for _, ns := range list {
 		metadata := cli.ConstructMetadata(ns.Metadata)
 		rows = append(rows,
 			table.NewRow(table.RowData{
-				"id":         ns.Id,
-				"name":       ns.Name,
+				"id":         ns.GetId(),
+				"name":       ns.GetName(),
 				"active":     strconv.FormatBool(ns.Active.GetValue()),
 				"labels":     metadata["Labels"],
 				"created_at": metadata["Created At"],
@@ -89,14 +89,14 @@ func policy_createAttributeNamespace(cmd *cobra.Command, args []string) {
 	}
 	rows := [][]string{
 		{"Name", name},
-		{"Id", created.Id},
+		{"Id", created.GetId()},
 	}
 	if mdRows := getMetadataRows(created.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
 	}
 
 	t := cli.NewTabular(rows...)
-	HandleSuccess(cmd, created.Id, t, created)
+	HandleSuccess(cmd, created.GetId(), t, created)
 }
 
 func policy_deactivateAttributeNamespace(cmd *cobra.Command, args []string) {
@@ -114,7 +114,7 @@ func policy_deactivateAttributeNamespace(cmd *cobra.Command, args []string) {
 	}
 
 	if !force {
-		cli.ConfirmAction(cli.ActionDeactivate, "namespace", ns.Name, false)
+		cli.ConfirmAction(cli.ActionDeactivate, "namespace", ns.GetName(), false)
 	}
 
 	d, err := h.DeactivateNamespace(id)
@@ -123,14 +123,14 @@ func policy_deactivateAttributeNamespace(cmd *cobra.Command, args []string) {
 		cli.ExitWithError(errMsg, err)
 	}
 	rows := [][]string{
-		{"Id", ns.Id},
-		{"Name", ns.Name},
+		{"Id", ns.GetId()},
+		{"Name", ns.GetName()},
 	}
 	if mdRows := getMetadataRows(d.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
 	}
 	t := cli.NewTabular(rows...)
-	HandleSuccess(cmd, ns.Id, t, d)
+	HandleSuccess(cmd, ns.GetId(), t, d)
 }
 
 func policy_updateAttributeNamespace(cmd *cobra.Command, args []string) {
@@ -150,8 +150,8 @@ func policy_updateAttributeNamespace(cmd *cobra.Command, args []string) {
 		cli.ExitWithError(fmt.Sprintf("Failed to update namespace (%s)", id), err)
 	}
 	rows := [][]string{
-		{"Id", ns.Id},
-		{"Name", ns.Name},
+		{"Id", ns.GetId()},
+		{"Name", ns.GetName()},
 	}
 	if mdRows := getMetadataRows(ns.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
@@ -191,7 +191,7 @@ func policy_unsafeDeleteAttributeNamespace(cmd *cobra.Command, args []string) {
 		rows = append(rows, mdRows...)
 	}
 	t := cli.NewTabular(rows...)
-	HandleSuccess(cmd, ns.Id, t, ns)
+	HandleSuccess(cmd, ns.GetId(), t, ns)
 }
 
 func policy_unsafeReactivateAttributeNamespace(cmd *cobra.Command, args []string) {
@@ -225,7 +225,7 @@ func policy_unsafeReactivateAttributeNamespace(cmd *cobra.Command, args []string
 		rows = append(rows, mdRows...)
 	}
 	t := cli.NewTabular(rows...)
-	HandleSuccess(cmd, ns.Id, t, ns)
+	HandleSuccess(cmd, ns.GetId(), t, ns)
 }
 
 func policy_unsafeUpdateAttributeNamespace(cmd *cobra.Command, args []string) {
@@ -260,7 +260,7 @@ func policy_unsafeUpdateAttributeNamespace(cmd *cobra.Command, args []string) {
 		rows = append(rows, mdRows...)
 	}
 	t := cli.NewTabular(rows...)
-	HandleSuccess(cmd, ns.Id, t, ns)
+	HandleSuccess(cmd, ns.GetId(), t, ns)
 }
 
 func init() {

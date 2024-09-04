@@ -42,7 +42,7 @@ func NewTabular(rows ...[]string) table.Model {
 	return t
 }
 
-func getJsonHelper(command string) string {
+func getJSONHelper(command string) string {
 	return fmt.Sprintf("Use '%s --json' to see all properties", command)
 }
 
@@ -62,23 +62,23 @@ func PrintSuccessTable(cmd *cobra.Command, id string, t table.Model) {
 	switch cmd.Use {
 	case ActionGet:
 		msg.verb = fmt.Sprintf("Found %s: %s", resourceShort, id)
-		msg.helper = getJsonHelper(resource + " get --id=" + id)
+		msg.helper = getJSONHelper(resource + " get --id=" + id)
 	case ActionCreate:
 		msg.verb = fmt.Sprintf("Created %s: %s", resourceShort, id)
-		msg.helper = getJsonHelper(resource + " get --id=" + id)
+		msg.helper = getJSONHelper(resource + " get --id=" + id)
 	case ActionUpdate:
 		msg.verb = fmt.Sprintf("Updated %s: %s", resourceShort, id)
-		msg.helper = getJsonHelper(resource + " get --id=" + id)
+		msg.helper = getJSONHelper(resource + " get --id=" + id)
 	case ActionDelete:
 		msg.verb = fmt.Sprintf("Deleted %s: %s", resourceShort, id)
 		// strip off unsafe subcommand if found to get proper path to the list command
-		msg.helper = getJsonHelper(strings.ReplaceAll(resource, " unsafe", "") + " list")
+		msg.helper = getJSONHelper(strings.ReplaceAll(resource, " unsafe", "") + " list")
 	case ActionDeactivate:
 		msg.verb = fmt.Sprintf("Deactivated %s: %s", resourceShort, id)
-		msg.helper = getJsonHelper(resource + " list") // TODO: make sure the filters are provided here to get ACTIVE/INACTIVE/ANY
+		msg.helper = getJSONHelper(resource + " list") // TODO: make sure the filters are provided here to get ACTIVE/INACTIVE/ANY
 	case ActionList:
 		msg.verb = fmt.Sprintf("Found %s list", resourceShort)
-		msg.helper = getJsonHelper(resource + " get --id=<id>")
+		msg.helper = getJSONHelper(resource + " get --id=<id>")
 	default:
 		msg.verb = ""
 		msg.helper = ""

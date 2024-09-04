@@ -36,11 +36,11 @@ func policy_createAttribute(cmd *cobra.Command, args []string) {
 	}
 
 	a := cli.GetSimpleAttribute(&policy.Attribute{
-		Id:        attr.Id,
-		Name:      attr.Name,
+		Id:        attr.GetId(),
+		Name:      attr.GetName(),
 		Rule:      attr.Rule,
 		Values:    attr.Values,
-		Namespace: attr.Namespace,
+		Namespace: attr.GetNamespace(),
 	})
 	rows := [][]string{
 		{"Name", a.Name},
@@ -98,14 +98,14 @@ func policy_listAttributes(cmd *cobra.Command, args []string) {
 
 	t := cli.NewTable(
 		cli.NewUUIDColumn(),
-		table.NewFlexColumn("namespace", "Namespace", 4),
-		table.NewFlexColumn("name", "Name", 3),
-		table.NewFlexColumn("rule", "Rule", 2),
-		table.NewFlexColumn("values", "Values", 2),
-		table.NewFlexColumn("active", "Active", 2),
-		table.NewFlexColumn("labels", "Labels", 1),
-		table.NewFlexColumn("created_at", "Created At", 1),
-		table.NewFlexColumn("updated_at", "Updated At", 1),
+		table.NewFlexColumn("namespace", "Namespace", cli.FlexColumnWidthFour),
+		table.NewFlexColumn("name", "Name", cli.FlexColumnWidthThree),
+		table.NewFlexColumn("rule", "Rule", cli.FlexColumnWidthTwo),
+		table.NewFlexColumn("values", "Values", cli.FlexColumnWidthTwo),
+		table.NewFlexColumn("active", "Active", cli.FlexColumnWidthTwo),
+		table.NewFlexColumn("labels", "Labels", cli.FlexColumnWidthOne),
+		table.NewFlexColumn("created_at", "Created At", cli.FlexColumnWidthOne),
+		table.NewFlexColumn("updated_at", "Updated At", cli.FlexColumnWidthOne),
 	)
 	rows := []table.Row{}
 	for _, attr := range attrs {
@@ -139,7 +139,7 @@ func policy_deactivateAttribute(cmd *cobra.Command, args []string) {
 		cli.ExitWithError(errMsg, err)
 	}
 
-	cli.ConfirmAction(cli.ActionDeactivate, "attribute", attr.Name, false)
+	cli.ConfirmAction(cli.ActionDeactivate, "attribute", attr.GetName(), false)
 
 	attr, err = h.DeactivateAttribute(id)
 	if err != nil {

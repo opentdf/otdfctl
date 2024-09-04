@@ -6,13 +6,16 @@ import (
 	"golang.org/x/term"
 )
 
+var termWidthDefault = 80
+var termWidthWide = 120
+
 func styleDoc(doc string) string {
 	w, _, err := term.GetSize(0)
 	if err != nil {
-		w = 80
+		w = termWidthDefault
 	}
-	if w > 120 {
-		w = 120
+	if w > termWidthWide {
+		w = termWidthWide
 	}
 	// Set up a new glamour instance
 	// with some options

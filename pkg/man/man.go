@@ -11,8 +11,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var manLang string
-
 var Docs Manual
 
 type CommandOpts func(d *Doc)
@@ -73,7 +71,7 @@ type Manual struct {
 	Fr   map[string]*Doc
 }
 
-func (m Manual) SetLang(l string) {
+func (m *Manual) SetLang(l string) {
 	switch l {
 	case "en", "fr":
 		m.lang = l
@@ -143,8 +141,10 @@ func init() {
 		// check if file is a markdown file
 		if p[len(p)-1] != "md" {
 			return nil
-		} else if len(p) < 2 || len(p) > 3 { // check if file complies with naming convention
+		//nolint:mnd // check if file complies with naming conventions
+		} else if len(p) < 2 || len(p) > 3 { 
 			return nil
+		//nolint:mnd // check if file complies with naming conventions
 		} else if len(p) == 3 {
 			lang = p[1]
 		}
@@ -166,12 +166,12 @@ func init() {
 		slog.Debug("Found doc", slog.String("cmd", cmd), slog.String("lang", lang))
 		c, err := docsEmbed.ManFiles.ReadFile(path)
 		if err != nil {
-			return fmt.Errorf("Could not read file, %s: %s ", path, err.Error())
+			return fmt.Errorf("could not read file, %s: %s ", path, err.Error())
 		}
 
 		doc, err := processDoc(string(c))
 		if err != nil {
-			return fmt.Errorf("Could not process doc, %s: %s", path, err.Error())
+			return fmt.Errorf("could not process doc, %s: %s", path, err.Error())
 		}
 
 		slog.Debug("Adding doc: ", cmd, " ", lang, "\n")
@@ -181,7 +181,7 @@ func init() {
 		case "en":
 			Docs.En[cmd] = doc
 		default:
-			return fmt.Errorf("Unknown language, " + lang)
+			return fmt.Errorf("unknown language, " + lang)
 		}
 		return nil
 	})
