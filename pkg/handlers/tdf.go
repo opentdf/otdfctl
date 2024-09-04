@@ -3,6 +3,7 @@ package handlers
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"io"
 	"strings"
 
@@ -47,12 +48,26 @@ func (h Handler) DecryptTDF(toDecrypt []byte) (*bytes.Buffer, error) {
 }
 
 type TDFInspect struct {
-	Manifest            sdk.Manifest
+	NanoHeader          *sdk.NanoTDFHeader
+	ZTDFManifest        *sdk.Manifest
 	Attributes          []string
 	UnencryptedMetadata []byte
 }
 
 func (h Handler) InspectTDF(toInspect []byte) (TDFInspect, []error) {
+	if len(toInspect) < 3 {
+		return TDFInspect{}, []error{fmt.Errorf("tdf too small [%d] bytes", len(toInspect))}
+	}
+	switch {
+	case bytes.Equal([]byte("PK"), toInspect[0:2]):
+		return h.InspectZTDF(toInspect)
+	case bytes.Equal([]byte("L1L"), toInspect[0:3]):
+		return h.InspectNanoTDF(toInspect)
+	}
+	return TDFInspect{}, []error{fmt.Errorf("tdf format unrecognized")}
+}
+
+func (h Handler) InspectZTDF(toInspect []byte) (TDFInspect, []error) {
 	// grouping errors so we don't impact the piping of the data
 	errs := []error{}
 
@@ -74,9 +89,25 @@ func (h Handler) InspectTDF(toInspect []byte) (TDFInspect, []error) {
 		errs = append(errs, errors.Join(ErrTDFUnableToReadUnencryptedMetadata, err))
 	}
 
+	m := tdfreader.Manifest()
 	return TDFInspect{
-		Manifest:            tdfreader.Manifest(),
+		ZTDFManifest:        &m,
 		Attributes:          attributes,
 		UnencryptedMetadata: unencryptedMetadata,
 	}, errs
+}
+
+func (h Handler) InspectNanoTDF(toInspect []byte) (TDFInspect, []error) {
+	header, size, err := sdk.NewNanoTDFHeaderFromReader(bytes.NewReader(toInspect))
+	if err != nil {
+		return TDFInspect{}, []error{errors.Join(ErrTDFInspectFailNotValidTDF, err)}
+	}
+	r := TDFInspect{
+		NanoHeader: &header,
+	}
+	remainder := uint32(len(toInspect)) - size
+	if remainder < 18 {
+		return r, []error{ErrTDFInspectFailNotValidTDF}
+	}
+	return r, nil
 }
