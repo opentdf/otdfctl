@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"runtime"
 
 	"github.com/opentdf/otdfctl/pkg/cli"
@@ -108,7 +109,7 @@ var profileDeleteCmd = &cobra.Command{
 
 		c.Printf("Deleting profile %s... ", profileName)
 		if err := profile.DeleteProfile(profileName); err != nil {
-			if err == profiles.ErrDeletingDefaultProfile {
+			if errors.Is(err, profiles.ErrDeletingDefaultProfile) {
 				c.ExitWithWarning("Profile is set as default. Please set another profile as default before deleting.")
 			}
 			c.ExitWithError("Failed to delete profile", err)

@@ -13,8 +13,8 @@ func NewTabular(rows ...[]string) table.Model {
 	columnKeyProperty := "Property"
 	columnKeyValue := "Value"
 	t := NewTable(
-		table.NewFlexColumn(columnKeyProperty, columnKeyProperty, 1),
-		table.NewFlexColumn(columnKeyValue, columnKeyValue, 2),
+		table.NewFlexColumn(columnKeyProperty, columnKeyProperty, FlexColumnWidthOne),
+		table.NewFlexColumn(columnKeyValue, columnKeyValue, FlexColumnWidthTwo),
 	)
 
 	tr := []table.Row{}

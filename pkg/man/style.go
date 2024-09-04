@@ -1,3 +1,4 @@
+//nolint:mnd // styling is magic
 package man
 
 import (
@@ -6,8 +7,10 @@ import (
 	"golang.org/x/term"
 )
 
-var termWidthDefault = 80
-var termWidthWide = 120
+var (
+	termWidthDefault = 80
+	termWidthWide    = 120
+)
 
 func styleDoc(doc string) string {
 	w, _, err := term.GetSize(0)
@@ -41,6 +44,5 @@ func styleDoc(doc string) string {
 	return out
 }
 
-func boolPtr(b bool) *bool       { return &b }
 func stringPtr(s string) *string { return &s }
 func uintPtr(u uint) *uint       { return &u }

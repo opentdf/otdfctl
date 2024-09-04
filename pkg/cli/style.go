@@ -1,3 +1,4 @@
+//nolint:mnd // styling is magic
 package cli
 
 import "github.com/charmbracelet/lipgloss"

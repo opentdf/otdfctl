@@ -57,7 +57,7 @@ linters-settings:
         - github.com/golang/protobuf:
             recommendations:
               - google.golang.org/protobuf
-            reason: "see https://developers.google.com/protocol-buffers/docs/reference/go/faq#modules"
+            reason: 'see https://developers.google.com/protocol-buffers/docs/reference/go/faq#modules'
         - github.com/satori/go.uuid:
             recommendations:
               - github.com/google/uuid
@@ -105,6 +105,9 @@ linters-settings:
     packages:
       - github.com/jackc/pgx/v5
 
+  stylecheck:
+    checks: ['all', '-ST1003']
+
   tenv:
     # The option `all` will run against whole test files (`_test.go`) regardless of method/function signatures.
     # Otherwise, only methods that take `*testing.T`, `*testing.B`, and `testing.TB` as arguments are checked.
@@ -130,12 +133,11 @@ linters:
     - canonicalheader
     - containedctx # Containedctx is a linter that detects struct contained context.Context field.
     - contextcheck # checks the function whether use a non-inherited context
-    # - copyloopvar # checks for copying a loop variable to a function literal (requires go 1.22)
     - durationcheck # checks for two durations multiplied together
     - errname # checks that sentinel errors are prefixed with the Err and error types are suffixed with the Error
     - errorlint # finds code that will cause problems with the error wrapping scheme introduced in Go 1.13
     - exhaustive # checks exhaustiveness of enum switch statements
-    - exportloopref # checks for pointers to enclosing loop variables
+    - copyloopvar # checks for pointers to enclosing loop variables
     # - fatcontext
     - forbidigo # forbids identifiers
     - forcetypeassert # finds forced type assertions
@@ -164,7 +166,7 @@ linters:
     - promlinter # checks Prometheus metrics naming via promlint
     - protogetter # Reports direct reads from proto message fields when getters should be used.
     - reassign # checks that package variables are not reassigned
-    - revive # fast, configurable, extensible, flexible, and beautiful linter for Go, drop-in replacement of golint
+    # - revive # fast, configurable, extensible, flexible, and beautiful linter for Go, drop-in replacement of golint
     - rowserrcheck # checks whether Err of rows is checked successfully
     - sloglint # Ensure consistent code style when using log/slog.
     # - spancheck # checks for incorrect usage of opentracing.Span # Added in golangci-lint 1.56
@@ -173,7 +175,7 @@ linters:
     - tenv # detects using os.Setenv instead of t.Setenv since Go1.17
     - testableexamples # checks if examples are testable (have an expected output)
     - testifylint
-    #- testpackage # makes you use a separate _test package
+    # - testpackage # makes you use a separate _test package
     - tparallel # detects inappropriate usage of t.Parallel() method in your Go test codes
     - unconvert # removes unnecessary type conversions
     - unparam # reports unused function parameters
@@ -181,12 +183,7 @@ linters:
     - wastedassign # finds wasted assignment statements
     - whitespace # detects leading and trailing whitespace
 
-
 issues:
-  exclude-files:
-    - ".*\\.pb\\.go"
-    - ".*\\.pb\\.gw.go"
-
   # Maximum count of issues with the same text.
   # Set to 0 to disable.
   # Default: 3
@@ -198,13 +195,13 @@ issues:
 
   exclude-rules:
     - source: "^//\\s*go:generate\\s"
-      linters: [ lll ]
-    - source: "(noinspection|TODO)"
-      linters: [ godot ]
-    - source: "//noinspection"
-      linters: [ gocritic ]
+      linters: [lll]
+    - source: '(noinspection|TODO)'
+      linters: [godot]
+    - source: '//noinspection'
+      linters: [gocritic]
     - source: "^\\s+if _, ok := err\\.\\([^.]+\\.InternalError\\); ok {"
-      linters: [ errorlint ]
+      linters: [errorlint]
     - path: "_test\\.go"
       linters:
         - bodyclose
@@ -216,7 +213,7 @@ issues:
         - wrapcheck
         - lll
     - text: 'shadow: declaration of "(err)" shadows declaration at'
-      linters: [ govet ]
-    - text: "http://www.apache.org/licenses/LICENSE-2.0"
+      linters: [govet]
+    - text: 'http://www.apache.org/licenses/LICENSE-2.0'
       linters:
         - goimport

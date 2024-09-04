@@ -39,14 +39,12 @@ func (m LabelUpdate) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				newKey := m.update.inputs[0].Value()
 				newVal := m.update.inputs[1].Value()
 				if oldKey != newKey {
-					delete(metadata.Labels, oldKey)
+					delete(metadata.GetLabels(), oldKey)
 				}
 				metadata.Labels[newKey] = newVal
 				behavior := common.MetadataUpdateEnum_METADATA_UPDATE_ENUM_REPLACE
-				attr, err := m.sdk.UpdateAttribute(m.attr.GetId(), metadata, behavior)
-				if err != nil {
-					// return error view
-				}
+				// TODO: handle and return error view
+				attr, _ := m.sdk.UpdateAttribute(m.attr.GetId(), metadata, behavior)
 				return InitLabelList(attr, m.sdk)
 			}
 		}

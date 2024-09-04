@@ -42,7 +42,9 @@ func InitLabelList(attr *policy.Attribute, sdk handlers.Handler) (tea.Model, tea
 		items = append(items, item)
 	}
 	model, _ := InitRead("Read Labels", items)
-	return LabelList{attr: attr, sdk: sdk, read: model.(Read)}, nil
+	// TODO: handle and return error view
+	mod, _ := model.(Read)
+	return LabelList{attr: attr, sdk: sdk, read: mod}, nil
 }
 
 func (m LabelList) Init() tea.Cmd {

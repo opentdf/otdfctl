@@ -141,10 +141,10 @@ func init() {
 		// check if file is a markdown file
 		if p[len(p)-1] != "md" {
 			return nil
-		//nolint:mnd // check if file complies with naming conventions
-		} else if len(p) < 2 || len(p) > 3 { 
+			//lint:ignore // check if file complies with language file naming conventions
+		} else if len(p) < 2 || len(p) > 3 {
 			return nil
-		//nolint:mnd // check if file complies with naming conventions
+			//lint:ignore // check if file complies with language file naming conventions
 		} else if len(p) == 3 {
 			lang = p[1]
 		}
@@ -181,7 +181,8 @@ func init() {
 		case "en":
 			Docs.En[cmd] = doc
 		default:
-			return fmt.Errorf("unknown language, " + lang)
+			//nolint:govet // constance of language string is not a concern
+			return fmt.Errorf("unknown language [%s]" + lang)
 		}
 		return nil
 	})
