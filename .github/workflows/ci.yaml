@@ -62,3 +62,11 @@ jobs:
       - uses: opentdf/otdfctl/e2e@main
         with:
           otdfctl-ref: ${{ github.event.pull_request.head.sha }}
+
+  platform-xtest:
+    needs:
+      - golangci
+      - unit
+    uses: opentdf/tests/.github/workflows/xtest.yml@main
+    with:
+      otdfctl-ref: ${{ github.ref }}
