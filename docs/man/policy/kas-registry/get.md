@@ -1,5 +1,5 @@
 ---
-title: Get a Key Access Server registration
+title: Get a registered Key Access Server
 command:
   name: get
   aliases:
@@ -10,3 +10,7 @@ command:
       description: ID of the Key Access Server registration
       required: true
 ---
+
+# Get a registered Key Access Server
+
+For more information about registration of Key Access Servers, see the manual for `kas-registry`.

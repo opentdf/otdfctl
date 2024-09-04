@@ -23,7 +23,7 @@ command:
       default: ''
 ---
 
-For more information about registration of Key Access Servers, see the manual for `kas-registry`.
+# Create a KAS registration
 
 Public keys can be stored as either `remote` or `cached` under the following JSON structure.
 
@@ -68,3 +68,5 @@ The JSON value passed to the `--public-keys` flag stores the set of public keys 
 ### Local
 
 Deprecated.
+
+For more information about registration of Key Access Servers, see the manual for `kas-registry`.
