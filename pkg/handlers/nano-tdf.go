@@ -5,7 +5,7 @@ import (
 	"io"
 )
 
-func (h Handler) EncryptNanoBytes(b []byte, values []string, kasUrlPath string) (*bytes.Buffer, error) {
+func (h Handler) EncryptNanoBytes(b []byte, values []string, kasUrlPath string, ecdsaBinding bool) (*bytes.Buffer, error) {
 	var encrypted []byte
 	enc := bytes.NewBuffer(encrypted)
 
@@ -16,6 +16,9 @@ func (h Handler) EncryptNanoBytes(b []byte, values []string, kasUrlPath string) 
 
 	nanoTDFConfig.SetKasURL(h.platformEndpoint + kasUrlPath)
 	nanoTDFConfig.SetAttributes(values)
+	if ecdsaBinding {
+		nanoTDFConfig.EnableECDSAPolicyBinding()
+	}
 
 	// TODO: validate values are FQNs or return an error [https://github.com/opentdf/platform/issues/515]
 	_, err = h.sdk.CreateNanoTDF(enc, bytes.NewReader(b), *nanoTDFConfig)
