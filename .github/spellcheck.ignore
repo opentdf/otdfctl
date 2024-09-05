@@ -49,6 +49,7 @@ decrypt
 decryptable
 decrypted
 dev
+ecdsa
 encodings
 enum
 https
