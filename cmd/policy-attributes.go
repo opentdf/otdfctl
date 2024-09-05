@@ -240,18 +240,18 @@ func policy_unsafeUpdateAttribute(cmd *cobra.Command, args []string) {
 		cli.ExitWithError(fmt.Sprintf("Failed to update attribute (%s)", id), err)
 	} else {
 		var (
-			values   []string
-			valueIDs []string
+			retrievedVals []string
+			valueIDs      []string
 		)
 		for _, v := range a.GetValues() {
-			values = append(values, v.GetValue())
+			retrievedVals = append(retrievedVals, v.GetValue())
 			valueIDs = append(valueIDs, v.GetId())
 		}
 		rows := [][]string{
 			{"Id", a.GetId()},
 			{"Name", a.GetName()},
 			{"Rule", handlers.GetAttributeRuleFromAttributeType(a.GetRule())},
-			{"Values", cli.CommaSeparated(values)},
+			{"Values", cli.CommaSeparated(retrievedVals)},
 			{"Value IDs", cli.CommaSeparated(valueIDs)},
 		}
 		if mdRows := getMetadataRows(a.GetMetadata()); mdRows != nil {

@@ -12,8 +12,8 @@ import (
 )
 
 var (
-	terms []string
-	policy_resourceMappingsCmd    *cobra.Command
+	terms                      []string
+	policy_resourceMappingsCmd *cobra.Command
 )
 
 func policy_createResourceMapping(cmd *cobra.Command, args []string) {

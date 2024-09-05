@@ -57,6 +57,7 @@ func tdf_InspectCmd(cmd *cobra.Command, args []string) {
 		}
 	}
 
+	//nolint:gocritic,nestif // this is more readable than a switch statement
 	if result.ZTDFManifest != nil {
 		m := tdfInspectResult{
 			Manifest: tdfInspectManifest{
@@ -90,7 +91,8 @@ func tdf_InspectCmd(cmd *cobra.Command, args []string) {
 		if err != nil {
 			c.ExitWithError("not a valid NanoTDF", err)
 		}
-		cipherName := fmt.Sprintf("AES-%d", 8*cipherBytes)
+		aesMultiplier := 8
+		cipherName := fmt.Sprintf("AES-%d", aesMultiplier*cipherBytes)
 
 		n := nanoInspectResult{
 			Kas:          kas,
