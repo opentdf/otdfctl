@@ -92,7 +92,8 @@ func dev_tdfEncryptCmd(cmd *cobra.Command, args []string) {
 	if tdfType == TDF3 {
 		encrypted, err = h.EncryptBytes(bytesSlice, values, fileMimeType, kasURLPath)
 	} else if tdfType == NANO {
-		encrypted, err = h.EncryptNanoBytes(bytesSlice, values, kasURLPath)
+		ecdsaBinding := c.Flags.GetOptionalBool("ecdsa-binding")
+		encrypted, err = h.EncryptNanoBytes(bytesSlice, values, kasURLPath, ecdsaBinding)
 	} else {
 		cli.ExitWithError("Failed to encrypt", fmt.Errorf("unrecognized tdf-type: %s", tdfType))
 	}
@@ -150,6 +151,11 @@ func init() {
 		encryptCmd.GetDocFlag("tdf-type").Shorthand,
 		encryptCmd.GetDocFlag("tdf-type").Default,
 		encryptCmd.GetDocFlag("tdf-type").Description,
+	)
+	encryptCmd.Flags().Bool(
+		encryptCmd.GetDocFlag("ecdsa-binding").Name,
+		false,
+		encryptCmd.GetDocFlag("ecdsa-binding").Description,
 	)
 	encryptCmd.Command.GroupID = "tdf"
 	encryptCmd.Flags().String(

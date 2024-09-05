@@ -19,6 +19,8 @@ command:
         - tdf3
         - nano
       default: tdf3
+    - name: ecdsa-binding
+      description: For nano type containers only, enables ECDSA policy binding
     - name: kas-url-path
       description: URL path to the KAS service at the platform endpoint domain. Leading slash is required if needed.
       default: /kas
