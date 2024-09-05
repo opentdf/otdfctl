@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	policy_resource_mappingsTerms []string
+	terms []string
 	policy_resourceMappingsCmd    *cobra.Command
 )
 
@@ -22,12 +22,12 @@ func policy_createResourceMapping(cmd *cobra.Command, args []string) {
 	defer h.Close()
 
 	attrId := c.Flags.GetRequiredString("attribute-value-id")
-	terms := c.Flags.GetStringSlice("terms", policy_resource_mappingsTerms, cli.FlagsStringSliceOptions{
+	terms = c.Flags.GetStringSlice("terms", terms, cli.FlagsStringSliceOptions{
 		Min: 1,
 	})
-	labels := c.Flags.GetStringSlice("label", []string{}, cli.FlagsStringSliceOptions{Min: 0})
+	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
-	resourceMapping, err := h.CreateResourceMapping(attrId, terms, getMetadataMutable(labels))
+	resourceMapping, err := h.CreateResourceMapping(attrId, terms, getMetadataMutable(metadataLabels))
 	if err != nil {
 		cli.ExitWithError("Failed to create resource mapping", err)
 	}
@@ -111,10 +111,10 @@ func policy_updateResourceMapping(cmd *cobra.Command, args []string) {
 
 	id := c.Flags.GetRequiredString("id")
 	attrValueId := c.Flags.GetOptionalString("attribute-value-id")
-	terms := c.Flags.GetStringSlice("terms", policy_resource_mappingsTerms, cli.FlagsStringSliceOptions{})
-	labels := c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
+	terms = c.Flags.GetStringSlice("terms", terms, cli.FlagsStringSliceOptions{})
+	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
-	resourceMapping, err := h.UpdateResourceMapping(id, attrValueId, terms, getMetadataMutable(labels), getMetadataUpdateBehavior())
+	resourceMapping, err := h.UpdateResourceMapping(id, attrValueId, terms, getMetadataMutable(metadataLabels), getMetadataUpdateBehavior())
 	if err != nil {
 		cli.ExitWithError(fmt.Sprintf("Failed to update resource mapping (%s)", id), err)
 	}
@@ -164,7 +164,7 @@ func init() {
 		createDoc.GetDocFlag("attribute-value-id").Description,
 	)
 	createDoc.Flags().StringSliceVar(
-		&policy_resource_mappingsTerms,
+		&terms,
 		createDoc.GetDocFlag("terms").Name,
 		[]string{},
 		createDoc.GetDocFlag("terms").Description,
@@ -198,7 +198,7 @@ func init() {
 		updateDoc.GetDocFlag("attribute-value-id").Description,
 	)
 	updateDoc.Flags().StringSliceVar(
-		&policy_resource_mappingsTerms,
+		&terms,
 		updateDoc.GetDocFlag("terms").Name,
 		[]string{},
 		updateDoc.GetDocFlag("terms").Description,

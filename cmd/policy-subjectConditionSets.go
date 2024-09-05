@@ -56,7 +56,7 @@ func policy_createSubjectConditionSet(cmd *cobra.Command, args []string) {
 
 	ssFlagJSON := c.Flags.GetOptionalString("subject-sets")
 	ssFileJSON := c.Flags.GetOptionalString("subject-sets-file-json")
-	labels := c.Flags.GetStringSlice("label", []string{}, cli.FlagsStringSliceOptions{Min: 0})
+	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
 	// validate no flag conflicts
 	if ssFileJSON == "" && ssFlagJSON == "" {
@@ -87,7 +87,7 @@ func policy_createSubjectConditionSet(cmd *cobra.Command, args []string) {
 		cli.ExitWithError("Error unmarshalling subject sets", err)
 	}
 
-	scs, err := h.CreateSubjectConditionSet(ss, getMetadataMutable(labels))
+	scs, err := h.CreateSubjectConditionSet(ss, getMetadataMutable(metadataLabels))
 	if err != nil {
 		cli.ExitWithError("Error creating subject condition set", err)
 	}
@@ -180,7 +180,7 @@ func policy_updateSubjectConditionSet(cmd *cobra.Command, args []string) {
 	defer h.Close()
 
 	id := c.Flags.GetRequiredString("id")
-	labels := c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
+	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 	ssFlagJSON := c.Flags.GetOptionalString("subject-sets")
 	ssFileJSON := c.Flags.GetOptionalString("subject-sets-file-json")
 
@@ -214,7 +214,7 @@ func policy_updateSubjectConditionSet(cmd *cobra.Command, args []string) {
 		cli.ExitWithError("Error unmarshalling subject sets", err)
 	}
 
-	_, err = h.UpdateSubjectConditionSet(id, ss, getMetadataMutable(labels), getMetadataUpdateBehavior())
+	_, err = h.UpdateSubjectConditionSet(id, ss, getMetadataMutable(metadataLabels), getMetadataUpdateBehavior())
 	if err != nil {
 		cli.ExitWithError("Error updating subject condition set", err)
 	}

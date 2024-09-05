@@ -12,7 +12,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// dev_selectorsCmd *cobra.Command
+var selectors []string
 
 func dev_selectorsGen(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
@@ -65,7 +65,7 @@ func dev_selectorsTest(cmd *cobra.Command, args []string) {
 
 	subject := c.Flags.GetRequiredString("subject")
 	contextType := c.Flags.GetRequiredString("type")
-	selectors := c.Flags.GetStringSlice("selectors", []string{}, cli.FlagsStringSliceOptions{Min: 1})
+	selectors = c.Flags.GetStringSlice("selectors", selectors, cli.FlagsStringSliceOptions{Min: 1})
 
 	var value any
 	//nolint:gocritic,nestif // this is more readable than a switch statement

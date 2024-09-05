@@ -81,9 +81,9 @@ func policy_createAttributeNamespace(cmd *cobra.Command, args []string) {
 	defer h.Close()
 
 	name := c.Flags.GetRequiredString("name")
-	labels := c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
+	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
-	created, err := h.CreateNamespace(name, getMetadataMutable(labels))
+	created, err := h.CreateNamespace(name, getMetadataMutable(metadataLabels))
 	if err != nil {
 		cli.ExitWithError("Failed to create namespace", err)
 	}
@@ -139,11 +139,11 @@ func policy_updateAttributeNamespace(cmd *cobra.Command, args []string) {
 	defer h.Close()
 
 	id := c.Flags.GetRequiredString("id")
-	labels := c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
+	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
 	ns, err := h.UpdateNamespace(
 		id,
-		getMetadataMutable(labels),
+		getMetadataMutable(metadataLabels),
 		getMetadataUpdateBehavior(),
 	)
 	if err != nil {

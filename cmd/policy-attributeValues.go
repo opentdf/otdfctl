@@ -19,14 +19,14 @@ func policy_createAttributeValue(cmd *cobra.Command, args []string) {
 
 	attrId := c.FlagHelper.GetRequiredString("attribute-id")
 	value := c.FlagHelper.GetRequiredString("value")
-	labels := c.FlagHelper.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
+	metadataLabels = c.FlagHelper.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
 	attr, err := h.GetAttribute(attrId)
 	if err != nil {
 		cli.ExitWithError(fmt.Sprintf("Failed to get parent attribute (%s)", attrId), err)
 	}
 
-	v, err := h.CreateAttributeValue(attr.GetId(), value, getMetadataMutable(labels))
+	v, err := h.CreateAttributeValue(attr.GetId(), value, getMetadataMutable(metadataLabels))
 	if err != nil {
 		cli.ExitWithError("Failed to create attribute value", err)
 	}
@@ -89,14 +89,14 @@ func policy_updateAttributeValue(cmd *cobra.Command, args []string) {
 	defer h.Close()
 
 	id := c.Flags.GetRequiredString("id")
-	labels := c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
+	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
 	_, err := h.GetAttributeValue(id)
 	if err != nil {
 		cli.ExitWithError(fmt.Sprintf("Failed to get attribute value (%s)", id), err)
 	}
 
-	v, err := h.UpdateAttributeValue(id, getMetadataMutable(labels), getMetadataUpdateBehavior())
+	v, err := h.UpdateAttributeValue(id, getMetadataMutable(metadataLabels), getMetadataUpdateBehavior())
 	if err != nil {
 		cli.ExitWithError("Failed to update attribute value", err)
 	}

@@ -98,7 +98,7 @@ func policy_createKeyAccessRegistry(cmd *cobra.Command, args []string) {
 	uri := c.Flags.GetRequiredString("uri")
 	cachedJSON := c.Flags.GetOptionalString("public-keys")
 	remote := c.Flags.GetOptionalString("public-key-remote")
-	labels := c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
+	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
 	if cachedJSON == "" && remote == "" {
 		e := fmt.Errorf("a public key is required. Please pass either a cached or remote public key")
@@ -126,7 +126,7 @@ func policy_createKeyAccessRegistry(cmd *cobra.Command, args []string) {
 	created, err := h.CreateKasRegistryEntry(
 		uri,
 		key,
-		getMetadataMutable(labels),
+		getMetadataMutable(metadataLabels),
 	)
 	if err != nil {
 		cli.ExitWithError("Failed to create Registered KAS entry", err)
@@ -155,9 +155,9 @@ func policy_updateKeyAccessRegistry(cmd *cobra.Command, args []string) {
 	uri := c.Flags.GetOptionalString("uri")
 	cachedJSON := c.Flags.GetOptionalString("public-keys")
 	remote := c.Flags.GetOptionalString("public-key-remote")
-	labels := c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
+	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
-	if cachedJSON == "" && remote == "" && len(labels) == 0 && uri == "" {
+	if cachedJSON == "" && remote == "" && len(metadataLabels) == 0 && uri == "" {
 		cli.ExitWithError("No values were passed to update. Please pass at least one value to update (E.G. 'uri', 'public-keys', 'public-key-remote', 'label')", nil)
 	}
 
@@ -181,7 +181,7 @@ func policy_updateKeyAccessRegistry(cmd *cobra.Command, args []string) {
 		id,
 		uri,
 		pubKey,
-		getMetadataMutable(labels),
+		getMetadataMutable(metadataLabels),
 		getMetadataUpdateBehavior(),
 	)
 	if err != nil {

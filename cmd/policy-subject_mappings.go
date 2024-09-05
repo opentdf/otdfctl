@@ -14,8 +14,10 @@ import (
 )
 
 var (
-	actionDecrypt  = "DECRYPT"
-	actionTransmit = "TRANSMIT"
+	actionStandardDecrypt  = "DECRYPT"
+	actionStandardTransmit = "TRANSMIT"
+	actionsStandard        []string
+	actionsCustom          []string
 )
 
 func policy_getSubjectMapping(cmd *cobra.Command, args []string) {
@@ -111,27 +113,27 @@ func policy_createSubjectMapping(cmd *cobra.Command, args []string) {
 	defer h.Close()
 
 	attrValueId := c.Flags.GetRequiredString("attribute-value-id")
-	standardActions := c.Flags.GetStringSlice("action-standard", []string{}, cli.FlagsStringSliceOptions{Min: 0})
-	customActions := c.Flags.GetStringSlice("action-custom", []string{}, cli.FlagsStringSliceOptions{Min: 0})
-	labels := c.Flags.GetStringSlice("label", []string{}, cli.FlagsStringSliceOptions{Min: 0})
+	actionsStandard = c.Flags.GetStringSlice("action-standard", actionsStandard, cli.FlagsStringSliceOptions{Min: 0})
+	actionsCustom = c.Flags.GetStringSlice("action-custom", actionsCustom, cli.FlagsStringSliceOptions{Min: 0})
+	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 	existingSCSId := c.Flags.GetOptionalString("subject-condition-set-id")
 	// NOTE: labels within a new Subject Condition Set created on a SM creation are not supported
 	newScsJSON := c.Flags.GetOptionalString("subject-condition-set-new")
 
 	// validations
-	if len(standardActions) == 0 && len(customActions) == 0 {
+	if len(actionsStandard) == 0 && len(actionsCustom) == 0 {
 		cli.ExitWithError("At least one Standard or Custom Action [--action-standard, --action-custom] is required", nil)
 	}
-	if len(standardActions) > 0 {
-		for _, a := range standardActions {
+	if len(actionsStandard) > 0 {
+		for _, a := range actionsStandard {
 			a = strings.ToUpper(a)
-			if a != actionDecrypt && a != actionTransmit {
+			if a != actionStandardDecrypt && a != actionStandardTransmit {
 				cli.ExitWithError(fmt.Sprintf("Invalid Standard Action: '%s'. Must be one of [DECRYPT, TRANSMIT].", a), nil)
 			}
 		}
 	}
 
-	actions := getFullActionsList(standardActions, customActions)
+	actions := getFullActionsList(actionsStandard, actionsCustom)
 
 	var ss []*policy.SubjectSet
 	var scs *subjectmapping.SubjectConditionSetCreate
@@ -144,7 +146,7 @@ func policy_createSubjectMapping(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	mapping, err := h.CreateNewSubjectMapping(attrValueId, actions, existingSCSId, scs, getMetadataMutable(labels))
+	mapping, err := h.CreateNewSubjectMapping(attrValueId, actions, existingSCSId, scs, getMetadataMutable(metadataLabels))
 	if err != nil {
 		cli.ExitWithError("Failed to create subject mapping", err)
 	}
@@ -211,26 +213,26 @@ func policy_updateSubjectMapping(cmd *cobra.Command, args []string) {
 	defer h.Close()
 
 	id := c.Flags.GetRequiredString("id")
-	standardActions := c.Flags.GetStringSlice("action-standard", []string{}, cli.FlagsStringSliceOptions{Min: 0})
-	customActions := c.Flags.GetStringSlice("action-custom", []string{}, cli.FlagsStringSliceOptions{Min: 0})
+	actionsStandard = c.Flags.GetStringSlice("action-standard", actionsStandard, cli.FlagsStringSliceOptions{Min: 0})
+	actionsCustom = c.Flags.GetStringSlice("action-custom", actionsCustom, cli.FlagsStringSliceOptions{Min: 0})
 	scsId := c.Flags.GetOptionalString("subject-condition-set-id")
-	labels := c.Flags.GetStringSlice("label", []string{}, cli.FlagsStringSliceOptions{Min: 0})
+	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
-	if len(standardActions) > 0 {
-		for _, a := range standardActions {
+	if len(actionsStandard) > 0 {
+		for _, a := range actionsStandard {
 			a = strings.ToUpper(a)
-			if a != actionDecrypt && a != actionTransmit {
+			if a != actionStandardDecrypt && a != actionStandardTransmit {
 				cli.ExitWithError(fmt.Sprintf("Invalid Standard Action: '%s'. Must be one of [ENCRYPT, TRANSMIT]. Other actions must be custom.", a), nil)
 			}
 		}
 	}
-	actions := getFullActionsList(standardActions, customActions)
+	actions := getFullActionsList(actionsStandard, actionsCustom)
 
 	updated, err := h.UpdateSubjectMapping(
 		id,
 		scsId,
 		actions,
-		getMetadataMutable(labels),
+		getMetadataMutable(metadataLabels),
 		getMetadataUpdateBehavior(),
 	)
 	if err != nil {
@@ -247,9 +249,9 @@ func policy_updateSubjectMapping(cmd *cobra.Command, args []string) {
 
 func getSubjectMappingMappingActionEnumFromChoice(readable string) policy.Action_StandardAction {
 	switch readable {
-	case actionDecrypt:
+	case actionStandardDecrypt:
 		return policy.Action_STANDARD_ACTION_DECRYPT
-	case actionTransmit:
+	case actionStandardTransmit:
 		return policy.Action_STANDARD_ACTION_TRANSMIT
 	default:
 		return policy.Action_STANDARD_ACTION_UNSPECIFIED
@@ -299,13 +301,15 @@ func init() {
 		createDoc.GetDocFlag("attribute-value-id").Default,
 		createDoc.GetDocFlag("attribute-value-id").Description,
 	)
-	createDoc.Flags().StringSliceP(
+	createDoc.Flags().StringSliceVarP(
+		&actionsStandard,
 		createDoc.GetDocFlag("action-standard").Name,
 		createDoc.GetDocFlag("action-standard").Shorthand,
 		[]string{},
 		createDoc.GetDocFlag("action-standard").Description,
 	)
-	createDoc.Flags().StringSliceP(
+	createDoc.Flags().StringSliceVarP(
+		&actionsCustom,
 		createDoc.GetDocFlag("action-custom").Name,
 		createDoc.GetDocFlag("action-custom").Shorthand,
 		[]string{},
@@ -332,13 +336,15 @@ func init() {
 		updateDoc.GetDocFlag("id").Default,
 		updateDoc.GetDocFlag("id").Description,
 	)
-	updateDoc.Flags().StringSliceP(
+	updateDoc.Flags().StringSliceVarP(
+		&actionsStandard,
 		updateDoc.GetDocFlag("action-standard").Name,
 		updateDoc.GetDocFlag("action-standard").Shorthand,
 		[]string{},
 		updateDoc.GetDocFlag("action-standard").Description,
 	)
-	updateDoc.Flags().StringSliceP(
+	updateDoc.Flags().StringSliceVarP(
+		&actionsCustom,
 		updateDoc.GetDocFlag("action-custom").Name,
 		updateDoc.GetDocFlag("action-custom").Shorthand,
 		[]string{},
