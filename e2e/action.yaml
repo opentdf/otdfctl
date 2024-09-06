@@ -40,6 +40,7 @@ runs:
       uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
       with:
         ref: ${{ inputs.otdfctl-ref }}
+        path: otdfctl
       # Spin up the platform IFF it's not already running in the current workflow context
     - name: Check out platform
       if: ${{ inputs.platform-is-running == 'false' }}
@@ -112,16 +113,20 @@ runs:
     - name: Build the CLI
       shell: bash
       run: go build .
+      working-directory: otdfctl
     - name: Build the CLI in test mode
       shell: bash
       run: make build-test
+      working-directory: otdfctl
     - name: Set up the CLI config
       shell: bash
       run: cp otdfctl-example.yaml otdfctl.yaml
+      working-directory: otdfctl
     - name: Setup Bats and bats libs
       uses: bats-core/bats-action@2.0.0
     - name: Run Bats tests
       shell: bash
+      working-directory: otdfctl
       run: bats e2e
       env:
         # Define 'bats' install location in ubuntu
