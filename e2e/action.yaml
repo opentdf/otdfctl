@@ -128,7 +128,7 @@ runs:
     - name: Setup Bats and bats libs
       uses: bats-core/bats-action@2.0.0
     - name: Run Bats tests
-      # shell: bash
+      shell: bash
       run: e2e
       env:
         # Define 'bats' install location in ubuntu
