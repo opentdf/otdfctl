@@ -1,15 +1,6 @@
 name: 'end-to-end'
 
 on:
-  pull_request:
-    branches:
-      - main
-    paths-ignore:
-      - '**/*.yaml'
-      - '**/*.md'
-      - LICENSE
-      - CODEOWNERS
-      - '.gitignore'
   workflow_call:
     inputs:
       platform-is-running:
@@ -17,17 +8,15 @@ on:
         description: 'If false, spin up the platform and its resources'
         default: false
         type: boolean
-      # In a remote workflow_call, we should use the inputs.
-      # In a local PR call, we should run the CLI PR branch against the main branch of the platform.
       platform-ref:
         required: false
         description: 'The ref to check out for the platform'
-        default: ''
+        default: 'main'
         type: string
       otdfctl-ref:
         required: false
         description: 'The ref to check out for the otdfctl CLI'
-        default: ''
+        default: 'main'
         type: string
 
 jobs:
@@ -40,9 +29,8 @@ jobs:
       # Terminal width for testing printed output
       TEST_TERMINAL_WIDTH: 200
       PLATFORM_IS_RUNNING: ${{ inputs.platform-is-running }}
-      # Ternaries to handle empty inputs (a PR within otdfctl), or remote call scenario
-      PLATFORM_REF: ${{ inputs.platform-ref == '' && 'main' || inputs.platform-ref }}
-      OTDFCTL_REF: ${{ inputs.otdfctl-ref == '' && github.event.pull_request.head.sha || inputs.otdfctl-ref }}
+      PLATFORM_REF: ${{ inputs.platform-ref }}
+      OTDFCTL_REF: ${{ inputs.otdfctl-ref }}
     steps:
       - name: Report on the run context
         run: |

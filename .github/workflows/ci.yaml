@@ -48,4 +48,13 @@ jobs:
           cache: false
       - name: Unit Tests with the Go CLI
         run: go test ./... -short -race -cover
-  
+
+  e2e:
+    name: e2e tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: opentdf/otdfctl/.github/workflows/end-to-end.yaml@feat/e2e-ci
+        with:
+          platform-is-running: false
+          platform-ref: 'main'
+          otdfctl-ref: ${{ github.event.pull_request.head.sha }}
