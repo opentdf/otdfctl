@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"runtime"
 
 	"github.com/opentdf/otdfctl/pkg/cli"
@@ -18,7 +19,8 @@ var profileCreateCmd = &cobra.Command{
 	Use:     "create <profile> <endpoint>",
 	Aliases: []string{"add"},
 	Short:   "Create a new profile",
-	Args:    cobra.ExactArgs(2),
+	//nolint:mnd // two args
+	Args: cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		c := cli.New(cmd, args)
 		InitProfile(c, true)
@@ -107,7 +109,7 @@ var profileDeleteCmd = &cobra.Command{
 
 		c.Printf("Deleting profile %s... ", profileName)
 		if err := profile.DeleteProfile(profileName); err != nil {
-			if err == profiles.ErrDeletingDefaultProfile {
+			if errors.Is(err, profiles.ErrDeletingDefaultProfile) {
 				c.ExitWithWarning("Profile is set as default. Please set another profile as default before deleting.")
 			}
 			c.ExitWithError("Failed to delete profile", err)
@@ -139,7 +141,8 @@ var profileSetDefaultCmd = &cobra.Command{
 var profileSetEndpointCmd = &cobra.Command{
 	Use:   "set-endpoint <profile> <endpoint>",
 	Short: "Set a profile value",
-	Args:  cobra.ExactArgs(2),
+	//nolint:mnd // two args
+	Args: cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		c := cli.New(cmd, args)
 		InitProfile(c, false)

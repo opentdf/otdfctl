@@ -11,8 +11,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var manLang string
-
 var Docs Manual
 
 type CommandOpts func(d *Doc)
@@ -59,6 +57,7 @@ func WithHiddenFlags(flags ...string) CommandOpts {
 		// to hide root global flags, must set a custom help func that hides then calls the parent help func
 		d.SetHelpFunc(func(command *cobra.Command, strings []string) {
 			for _, f := range flags {
+				//nolint:errcheck // hidden flag err is not a concern
 				command.Flags().MarkHidden(f)
 			}
 			d.Parent().HelpFunc()(command, strings)
@@ -73,7 +72,7 @@ type Manual struct {
 	Fr   map[string]*Doc
 }
 
-func (m Manual) SetLang(l string) {
+func (m *Manual) SetLang(l string) {
 	switch l {
 	case "en", "fr":
 		m.lang = l
@@ -84,6 +83,7 @@ func (m Manual) SetLang(l string) {
 
 func (m Manual) GetDoc(cmd string) *Doc {
 	if m.lang != "en" {
+		//nolint:gocritic // other languages may be supported
 		switch m.lang {
 		case "fr":
 			if _, ok := m.Fr[cmd]; ok {
@@ -119,6 +119,7 @@ func (m Manual) GetCommand(cmd string, opts ...CommandOpts) *Doc {
 	return d
 }
 
+//nolint:mnd,gocritic // allow file separator counts to be hardcoded
 func init() {
 	slog.Debug("Loading docs from embed")
 	Docs = Manual{
@@ -143,7 +144,7 @@ func init() {
 		// check if file is a markdown file
 		if p[len(p)-1] != "md" {
 			return nil
-		} else if len(p) < 2 || len(p) > 3 { // check if file complies with naming convention
+		} else if len(p) < 2 || len(p) > 3 {
 			return nil
 		} else if len(p) == 3 {
 			lang = p[1]
@@ -166,12 +167,12 @@ func init() {
 		slog.Debug("Found doc", slog.String("cmd", cmd), slog.String("lang", lang))
 		c, err := docsEmbed.ManFiles.ReadFile(path)
 		if err != nil {
-			return fmt.Errorf("Could not read file, %s: %s ", path, err.Error())
+			return fmt.Errorf("could not read file, %s: %s ", path, err.Error())
 		}
 
 		doc, err := processDoc(string(c))
 		if err != nil {
-			return fmt.Errorf("Could not process doc, %s: %s", path, err.Error())
+			return fmt.Errorf("could not process doc, %s: %s", path, err.Error())
 		}
 
 		slog.Debug("Adding doc: ", cmd, " ", lang, "\n")
@@ -181,7 +182,8 @@ func init() {
 		case "en":
 			Docs.En[cmd] = doc
 		default:
-			return fmt.Errorf("Unknown language, " + lang)
+			//nolint:govet // constance of language string is not a concern
+			return fmt.Errorf("unknown language [%s]" + lang)
 		}
 		return nil
 	})
@@ -191,7 +193,7 @@ func init() {
 }
 
 func processDoc(doc string) (*Doc, error) {
-	if len(doc) <= 0 {
+	if len(doc) == 0 {
 		return nil, fmt.Errorf("empty document")
 	}
 	var matter struct {

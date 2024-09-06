@@ -35,11 +35,14 @@ func auth_clientCredentials(cmd *cobra.Command, args []string) {
 	}
 
 	// Set the client credentials
-	cp.SetAuthCredentials(profiles.AuthCredentials{
+	err := cp.SetAuthCredentials(profiles.AuthCredentials{
 		AuthType:     profiles.PROFILE_AUTH_TYPE_CLIENT_CREDENTIALS,
 		ClientId:     clientId,
 		ClientSecret: clientSecret,
 	})
+	if err != nil {
+		c.ExitWithError("Failed to set client credentials", err)
+	}
 
 	// Validate the client credentials
 	c.Printf("Validating client credentials for %s... ", cp.GetEndpoint())

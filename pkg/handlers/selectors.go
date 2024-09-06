@@ -17,6 +17,7 @@ func ProcessSubjectContext(subject interface{}, currSelector string, result []*p
 	}
 	currType := reflect.TypeOf(subject)
 
+	//nolint:exhaustive // default handles unspecified types as desired
 	switch currType.Kind() {
 	// maps (structs not supported): add the key to the selector then call on all values
 	case reflect.Map:
@@ -79,6 +80,7 @@ func ProcessSubjectContext(subject interface{}, currSelector string, result []*p
 }
 
 func isPrimitive(t reflect.Kind) bool {
+	//nolint:exhaustive // all primitives are covered
 	switch t {
 	case reflect.String,
 		reflect.Bool,
@@ -108,7 +110,11 @@ func TestSubjectContext(subject interface{}, selectors []string) ([]*policy.Subj
 	var sub any
 	if _, ok := subject.(jwt.MapClaims); ok {
 		subj := make(map[string]interface{})
-		for k, v := range subject.(jwt.MapClaims) {
+		subject, subOk := subject.(jwt.MapClaims)
+		if !subOk {
+			return nil, fmt.Errorf("failed to convert subject to jwt.MapClaims")
+		}
+		for k, v := range subject {
 			subj[k] = v
 		}
 		sub = subj
@@ -129,8 +135,9 @@ func TestSubjectContext(subject interface{}, selectors []string) ([]*policy.Subj
 			if !ok {
 				break
 			}
-			if err, ok := v.(error); ok {
-				if err, ok := err.(*gojq.HaltError); ok && err.Value() == nil {
+			if err, ok = v.(error); ok {
+				//nolint:errorlint // halt error is a type
+				if err, errOk := err.(*gojq.HaltError); errOk && err.Value() == nil {
 					break
 				}
 				// ignore error: we don't have a match but that is not an error state in this case

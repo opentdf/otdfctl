@@ -20,13 +20,15 @@ func Test_MountRoot(t *testing.T) {
 		Long:  "new-root long",
 	}
 
-	MountRoot(&rootCmd, nil)
+	err := MountRoot(&rootCmd, nil)
+	require.NoError(t, err)
 
 	assert.Equal(t, "new-root", rootCmd.Use)
 	assert.Equal(t, "new-root short", rootCmd.Short)
 	assert.Equal(t, "new-root long", rootCmd.Long)
 
-	rootCmd.Execute()
+	err = rootCmd.Execute()
+	require.NoError(t, err)
 	buf := make([]byte, 1024)
 	n, err := r.Read(buf)
 	require.NoError(t, err)
@@ -48,17 +50,19 @@ func Test_MountRootWithRename(t *testing.T) {
 		Long:  "new-root long",
 	}
 
-	MountRoot(&rootCmd, &cobra.Command{
+	err := MountRoot(&rootCmd, &cobra.Command{
 		Use:   "rename-otdfctl",
 		Short: "rename-otdfctl short",
 		Long:  "rename-otdfctl long",
 	})
+	require.NoError(t, err)
 
 	assert.Equal(t, "new-root", rootCmd.Use)
 	assert.Equal(t, "new-root short", rootCmd.Short)
 	assert.Equal(t, "new-root long", rootCmd.Long)
 
-	rootCmd.Execute()
+	err = rootCmd.Execute()
+	require.NoError(t, err)
 	buf := make([]byte, 1024)
 	n, err := r.Read(buf)
 	require.NoError(t, err)
@@ -70,8 +74,8 @@ func Test_MountRootWithRename(t *testing.T) {
 }
 
 func Test_MountRootError(t *testing.T) {
-	assert.Error(t, MountRoot(nil, nil))
-	assert.Error(t, MountRoot(nil, &cobra.Command{
+	require.Error(t, MountRoot(nil, nil))
+	require.Error(t, MountRoot(nil, &cobra.Command{
 		Use:   "rename-otdfctl",
 		Short: "rename-otdfctl short",
 		Long:  "rename-otdfctl long",

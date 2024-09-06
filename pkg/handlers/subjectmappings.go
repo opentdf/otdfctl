@@ -9,6 +9,7 @@ import (
 const (
 	SubjectMappingOperatorIn          = "IN"
 	SubjectMappingOperatorNotIn       = "NOT_IN"
+	SubjectMappingOperatorInContains  = "IN_CONTAINS"
 	SubjectMappingOperatorUnspecified = "UNSPECIFIED"
 )
 
@@ -61,7 +62,7 @@ func (h Handler) DeleteSubjectMapping(id string) (*policy.SubjectMapping, error)
 	resp, err := h.sdk.SubjectMapping.DeleteSubjectMapping(h.ctx, &subjectmapping.DeleteSubjectMappingRequest{
 		Id: id,
 	})
-	return resp.SubjectMapping, err
+	return resp.GetSubjectMapping(), err
 }
 
 func GetSubjectMappingOperatorFromChoice(readable string) policy.SubjectMappingOperatorEnum {
@@ -70,6 +71,8 @@ func GetSubjectMappingOperatorFromChoice(readable string) policy.SubjectMappingO
 		return policy.SubjectMappingOperatorEnum_SUBJECT_MAPPING_OPERATOR_ENUM_IN
 	case SubjectMappingOperatorNotIn:
 		return policy.SubjectMappingOperatorEnum_SUBJECT_MAPPING_OPERATOR_ENUM_NOT_IN
+	case SubjectMappingOperatorInContains:
+		return policy.SubjectMappingOperatorEnum_SUBJECT_MAPPING_OPERATOR_ENUM_IN_CONTAINS
 	case SubjectMappingOperatorUnspecified:
 		return policy.SubjectMappingOperatorEnum_SUBJECT_MAPPING_OPERATOR_ENUM_UNSPECIFIED
 	default:
@@ -83,6 +86,8 @@ func GetSubjectMappingOperatorChoiceFromEnum(enum policy.SubjectMappingOperatorE
 		return SubjectMappingOperatorIn
 	case policy.SubjectMappingOperatorEnum_SUBJECT_MAPPING_OPERATOR_ENUM_NOT_IN:
 		return SubjectMappingOperatorNotIn
+	case policy.SubjectMappingOperatorEnum_SUBJECT_MAPPING_OPERATOR_ENUM_IN_CONTAINS:
+		return SubjectMappingOperatorInContains
 	case policy.SubjectMappingOperatorEnum_SUBJECT_MAPPING_OPERATOR_ENUM_UNSPECIFIED:
 		return SubjectMappingOperatorUnspecified
 	default:

@@ -33,10 +33,8 @@ type AttributeView struct {
 }
 
 func InitAttributeView(id string, h handlers.Handler) (AttributeView, tea.Cmd) {
-	attr, err := h.GetAttribute(id)
-	if err != nil {
-		// return error view
-	}
+	// TODO: handle and return error view
+	attr, _ := h.GetAttribute(id)
 	sa := cli.GetSimpleAttribute(attr)
 	items := []list.Item{
 		AttributeSubItem{title: "ID", description: sa.Id},
@@ -50,7 +48,9 @@ func InitAttributeView(id string, h handlers.Handler) (AttributeView, tea.Cmd) {
 		AttributeSubItem{title: "Updated At", description: sa.Metadata["Updated At"]},
 	}
 	model, _ := InitRead("Read Attribute", items)
-	m := AttributeView{sdk: h, attr: attr, read: model.(Read)}
+
+	mod, _ := model.(Read)
+	m := AttributeView{sdk: h, attr: attr, read: mod}
 	model, msg := m.Update(WindowMsg())
 	m = model.(AttributeView)
 	return m, msg
@@ -69,7 +69,7 @@ func (m AttributeView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "backspace":
-			return InitAttributeList(m.attr.Id, m.sdk)
+			return InitAttributeList(m.attr.GetId(), m.sdk)
 		case "ctrl+c", "q":
 			return m, tea.Quit
 		case "ctrl+d":

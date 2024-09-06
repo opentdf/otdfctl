@@ -16,9 +16,12 @@ import (
 )
 
 const (
-	TDF3 = "tdf3"
-	NANO = "nano"
+	TDF3     = "tdf3"
+	NANO     = "nano"
+	Size_1MB = 1024 * 1024
 )
+
+var attrValues []string
 
 func dev_tdfEncryptCmd(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
@@ -34,7 +37,7 @@ func dev_tdfEncryptCmd(cmd *cobra.Command, args []string) {
 
 	out := c.Flags.GetOptionalString("out")
 	fileMimeType := c.Flags.GetOptionalString("mime-type")
-	values := c.Flags.GetStringSlice("attr", attrValues, cli.FlagsStringSliceOptions{Min: 0})
+	attrValues = c.Flags.GetStringSlice("attr", attrValues, cli.FlagsStringSliceOptions{Min: 0})
 	tdfType := c.Flags.GetOptionalString("tdf-type")
 	if tdfType == "" {
 		tdfType = TDF3
@@ -70,7 +73,7 @@ func dev_tdfEncryptCmd(cmd *cobra.Command, args []string) {
 	if fileMimeType == "" {
 		slog.Debug("Detecting mime type of file")
 		// get the mime type of the file
-		mimetype.SetLimit(1024 * 1024) // limit to 1MB
+		mimetype.SetLimit(Size_1MB) // limit to 1MB
 		m := mimetype.Detect(bytesSlice)
 		// default to application/octet-stream if no mime type is detected
 		fileMimeType = m.String()
@@ -89,12 +92,13 @@ func dev_tdfEncryptCmd(cmd *cobra.Command, args []string) {
 	// Do the encryption
 	var encrypted *bytes.Buffer
 	var err error
-	if tdfType == TDF3 {
+	switch tdfType {
+	case TDF3:
 		encrypted, err = h.EncryptBytes(bytesSlice, values, fileMimeType, kasURLPath)
-	} else if tdfType == NANO {
+	case NANO:
 		ecdsaBinding := c.Flags.GetOptionalBool("ecdsa-binding")
 		encrypted, err = h.EncryptNanoBytes(bytesSlice, values, kasURLPath, ecdsaBinding)
-	} else {
+	default:
 		cli.ExitWithError("Failed to encrypt", fmt.Errorf("unrecognized tdf-type: %s", tdfType))
 	}
 	if err != nil {
@@ -157,12 +161,12 @@ func init() {
 		false,
 		encryptCmd.GetDocFlag("ecdsa-binding").Description,
 	)
-	encryptCmd.Command.GroupID = "tdf"
 	encryptCmd.Flags().String(
 		encryptCmd.GetDocFlag("kas-url-path").Name,
 		encryptCmd.GetDocFlag("kas-url-path").Default,
 		encryptCmd.GetDocFlag("kas-url-path").Description,
 	)
+	encryptCmd.Command.GroupID = TDF
 
 	RootCmd.AddCommand(&encryptCmd.Command)
 }

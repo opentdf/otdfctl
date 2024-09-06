@@ -28,25 +28,22 @@ func (m LabelUpdate) Init() tea.Cmd {
 }
 
 func (m LabelUpdate) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch msg := msg.(type) {
-	case tea.KeyMsg:
+	if msg, ok := msg.(tea.KeyMsg); ok {
 		switch msg.String() {
 		case "enter":
 			if m.update.focusIndex == len(m.update.inputs) {
 				// update the label
-				metadata := &common.MetadataMutable{Labels: m.attr.Metadata.Labels}
+				metadata := &common.MetadataMutable{Labels: m.attr.GetMetadata().GetLabels()}
 				oldKey := m.label.title
 				newKey := m.update.inputs[0].Value()
 				newVal := m.update.inputs[1].Value()
 				if oldKey != newKey {
-					delete(metadata.Labels, oldKey)
+					delete(metadata.GetLabels(), oldKey)
 				}
 				metadata.Labels[newKey] = newVal
 				behavior := common.MetadataUpdateEnum_METADATA_UPDATE_ENUM_REPLACE
-				attr, err := m.sdk.UpdateAttribute(m.attr.Id, metadata, behavior)
-				if err != nil {
-					// return error view
-				}
+				// TODO: handle and return error view
+				attr, _ := m.sdk.UpdateAttribute(m.attr.GetId(), metadata, behavior)
 				return InitLabelList(attr, m.sdk)
 			}
 		}

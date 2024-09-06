@@ -10,10 +10,13 @@ import (
 	"github.com/opentdf/platform/sdk"
 )
 
-var ErrTDFInspectFailNotValidTDF = errors.New("file or input is not a valid TDF")
-var ErrTDFInspectFailNotInspectable = errors.New("file or input is not inspectable")
-var ErrTDFUnableToReadAttributes = errors.New("unable to read attributes from TDF")
-var ErrTDFUnableToReadUnencryptedMetadata = errors.New("unable to read unencrypted metadata from TDF")
+var (
+	ErrTDFInspectFailNotValidTDF          = errors.New("file or input is not a valid TDF")
+	ErrTDFInspectFailNotInspectable       = errors.New("file or input is not inspectable")
+	ErrTDFUnableToReadAttributes          = errors.New("unable to read attributes from TDF")
+	ErrTDFUnableToReadUnencryptedMetadata = errors.New("unable to read unencrypted metadata from TDF")
+	minBytesLength                        = 3
+)
 
 func (h Handler) EncryptBytes(b []byte, values []string, mimeType string, kasUrlPath string) (*bytes.Buffer, error) {
 	var encrypted []byte
@@ -41,6 +44,7 @@ func (h Handler) DecryptTDF(toDecrypt []byte) (*bytes.Buffer, error) {
 
 	buf := new(bytes.Buffer)
 	_, err = io.Copy(buf, tdfreader)
+	//nolint:errorlint // callers intended to test error equality directly
 	if err != nil && err != io.EOF {
 		return nil, err
 	}
@@ -55,7 +59,7 @@ type TDFInspect struct {
 }
 
 func (h Handler) InspectTDF(toInspect []byte) (TDFInspect, []error) {
-	if len(toInspect) < 3 {
+	if len(toInspect) < minBytesLength {
 		return TDFInspect{}, []error{fmt.Errorf("tdf too small [%d] bytes", len(toInspect))}
 	}
 	switch {
@@ -97,6 +101,7 @@ func (h Handler) InspectZTDF(toInspect []byte) (TDFInspect, []error) {
 	}, errs
 }
 
+//nolint:gosec,mnd // SDK should secure lengths of inputs/outputs
 func (h Handler) InspectNanoTDF(toInspect []byte) (TDFInspect, []error) {
 	header, size, err := sdk.NewNanoTDFHeaderFromReader(bytes.NewReader(toInspect))
 	if err != nil {

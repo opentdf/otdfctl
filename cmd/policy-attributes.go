@@ -12,9 +12,9 @@ import (
 )
 
 var (
-	attrValues                 []string
-	metadataLabels             []string
 	forceReplaceMetadataLabels bool
+	values                     []string
+	valuesOrder                []string
 
 	policy_attributesCmd = man.Docs.GetCommand("policy/attributes")
 )
@@ -26,9 +26,9 @@ func policy_createAttribute(cmd *cobra.Command, args []string) {
 
 	name := c.Flags.GetRequiredString("name")
 	rule := c.Flags.GetRequiredString("rule")
-	values := c.Flags.GetStringSlice("value", attrValues, cli.FlagsStringSliceOptions{})
+	values = c.Flags.GetStringSlice("value", values, cli.FlagsStringSliceOptions{})
 	namespace := c.Flags.GetRequiredString("namespace")
-	metadataLabels := c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
+	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
 	attr, err := h.CreateAttribute(name, rule, namespace, values, getMetadataMutable(metadataLabels))
 	if err != nil {
@@ -36,11 +36,11 @@ func policy_createAttribute(cmd *cobra.Command, args []string) {
 	}
 
 	a := cli.GetSimpleAttribute(&policy.Attribute{
-		Id:        attr.Id,
-		Name:      attr.Name,
-		Rule:      attr.Rule,
-		Values:    attr.Values,
-		Namespace: attr.Namespace,
+		Id:        attr.GetId(),
+		Name:      attr.GetName(),
+		Rule:      attr.GetRule(),
+		Values:    attr.GetValues(),
+		Namespace: attr.GetNamespace(),
 	})
 	rows := [][]string{
 		{"Name", a.Name},
@@ -98,14 +98,14 @@ func policy_listAttributes(cmd *cobra.Command, args []string) {
 
 	t := cli.NewTable(
 		cli.NewUUIDColumn(),
-		table.NewFlexColumn("namespace", "Namespace", 4),
-		table.NewFlexColumn("name", "Name", 3),
-		table.NewFlexColumn("rule", "Rule", 2),
-		table.NewFlexColumn("values", "Values", 2),
-		table.NewFlexColumn("active", "Active", 2),
-		table.NewFlexColumn("labels", "Labels", 1),
-		table.NewFlexColumn("created_at", "Created At", 1),
-		table.NewFlexColumn("updated_at", "Updated At", 1),
+		table.NewFlexColumn("namespace", "Namespace", cli.FlexColumnWidthFour),
+		table.NewFlexColumn("name", "Name", cli.FlexColumnWidthThree),
+		table.NewFlexColumn("rule", "Rule", cli.FlexColumnWidthTwo),
+		table.NewFlexColumn("values", "Values", cli.FlexColumnWidthTwo),
+		table.NewFlexColumn("active", "Active", cli.FlexColumnWidthTwo),
+		table.NewFlexColumn("labels", "Labels", cli.FlexColumnWidthOne),
+		table.NewFlexColumn("created_at", "Created At", cli.FlexColumnWidthOne),
+		table.NewFlexColumn("updated_at", "Updated At", cli.FlexColumnWidthOne),
 	)
 	rows := []table.Row{}
 	for _, attr := range attrs {
@@ -139,7 +139,7 @@ func policy_deactivateAttribute(cmd *cobra.Command, args []string) {
 		cli.ExitWithError(errMsg, err)
 	}
 
-	cli.ConfirmAction(cli.ActionDeactivate, "attribute", attr.Name, false)
+	cli.ConfirmAction(cli.ActionDeactivate, "attribute", attr.GetName(), false)
 
 	attr, err = h.DeactivateAttribute(id)
 	if err != nil {
@@ -167,14 +167,14 @@ func policy_updateAttribute(cmd *cobra.Command, args []string) {
 	defer h.Close()
 
 	id := c.Flags.GetRequiredString("id")
-	labels := c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
+	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
-	if a, err := h.UpdateAttribute(id, getMetadataMutable(labels), getMetadataUpdateBehavior()); err != nil {
+	if a, err := h.UpdateAttribute(id, getMetadataMutable(metadataLabels), getMetadataUpdateBehavior()); err != nil {
 		cli.ExitWithError(fmt.Sprintf("Failed to update attribute (%s)", id), err)
 	} else {
 		rows := [][]string{
-			{"Id", a.Id},
-			{"Name", a.Name},
+			{"Id", a.GetId()},
+			{"Name", a.GetName()},
 		}
 		if mdRows := getMetadataRows(a.GetMetadata()); mdRows != nil {
 			rows = append(rows, mdRows...)
@@ -201,12 +201,12 @@ func policy_unsafeReactivateAttribute(cmd *cobra.Command, args []string) {
 		cli.ConfirmTextInput(cli.ActionReactivate, "attribute", cli.InputNameFQN, a.GetFqn())
 	}
 
-	if a, err := h.UnsafeReactivateAttribute(id); err != nil {
+	if reactivatedAttr, err := h.UnsafeReactivateAttribute(id); err != nil {
 		cli.ExitWithError(fmt.Sprintf("Failed to reactivate attribute (%s)", id), err)
 	} else {
 		rows := [][]string{
-			{"Id", a.Id},
-			{"Name", a.Name},
+			{"Id", reactivatedAttr.GetId()},
+			{"Name", reactivatedAttr.GetName()},
 		}
 		if mdRows := getMetadataRows(a.GetMetadata()); mdRows != nil {
 			rows = append(rows, mdRows...)
@@ -224,7 +224,7 @@ func policy_unsafeUpdateAttribute(cmd *cobra.Command, args []string) {
 	id := c.Flags.GetRequiredString("id")
 	name := c.Flags.GetOptionalString("name")
 	rule := c.Flags.GetOptionalString("rule")
-	valuesOrder := c.Flags.GetStringSlice("values-order", attrValues, cli.FlagsStringSliceOptions{})
+	valuesOrder = c.Flags.GetStringSlice("values-order", valuesOrder, cli.FlagsStringSliceOptions{})
 
 	a, err := h.GetAttribute(id)
 	if err != nil {
@@ -240,18 +240,18 @@ func policy_unsafeUpdateAttribute(cmd *cobra.Command, args []string) {
 		cli.ExitWithError(fmt.Sprintf("Failed to update attribute (%s)", id), err)
 	} else {
 		var (
-			values   []string
-			valueIDs []string
+			retrievedVals []string
+			valueIDs      []string
 		)
 		for _, v := range a.GetValues() {
-			values = append(values, v.GetValue())
+			retrievedVals = append(retrievedVals, v.GetValue())
 			valueIDs = append(valueIDs, v.GetId())
 		}
 		rows := [][]string{
-			{"Id", a.Id},
+			{"Id", a.GetId()},
 			{"Name", a.GetName()},
 			{"Rule", handlers.GetAttributeRuleFromAttributeType(a.GetRule())},
-			{"Values", cli.CommaSeparated(values)},
+			{"Values", cli.CommaSeparated(retrievedVals)},
 			{"Value IDs", cli.CommaSeparated(valueIDs)},
 		}
 		if mdRows := getMetadataRows(a.GetMetadata()); mdRows != nil {
@@ -284,8 +284,8 @@ func policy_unsafeDeleteAttribute(cmd *cobra.Command, args []string) {
 	} else {
 		rows := [][]string{
 			{"Deleted", "true"},
-			{"Id", a.Id},
-			{"Name", a.Name},
+			{"Id", a.GetId()},
+			{"Name", a.GetName()},
 		}
 		if mdRows := getMetadataRows(a.GetMetadata()); mdRows != nil {
 			rows = append(rows, mdRows...)
@@ -313,7 +313,7 @@ func init() {
 		createDoc.GetDocFlag("rule").Description,
 	)
 	createDoc.Flags().StringSliceVarP(
-		&attrValues,
+		&values,
 		createDoc.GetDocFlag("value").Name,
 		createDoc.GetDocFlag("value").Shorthand,
 		[]string{},
@@ -420,7 +420,7 @@ func init() {
 		unsafeUpdateCmd.GetDocFlag("rule").Description,
 	)
 	unsafeUpdateCmd.Flags().StringSliceVarP(
-		&attrValues,
+		&valuesOrder,
 		unsafeUpdateCmd.GetDocFlag("values-order").Name,
 		unsafeUpdateCmd.GetDocFlag("values-order").Shorthand,
 		[]string{},

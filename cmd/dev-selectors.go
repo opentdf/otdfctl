@@ -12,11 +12,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	selectors []string
-
-	// dev_selectorsCmd *cobra.Command
-)
+var selectors []string
 
 func dev_selectorsGen(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
@@ -27,6 +23,7 @@ func dev_selectorsGen(cmd *cobra.Command, args []string) {
 	contextType := c.Flags.GetRequiredString("type")
 
 	var value any
+	//nolint:gocritic,nestif // this is more readable than a switch statement
 	if contextType == "json" || contextType == "" {
 		if err := json.Unmarshal([]byte(subject), &value); err != nil {
 			cli.ExitWithError(fmt.Sprintf("Could not unmarshal JSON subject context input: %s", subject), err)
@@ -54,7 +51,7 @@ func dev_selectorsGen(cmd *cobra.Command, args []string) {
 
 	rows := [][]string{}
 	for _, r := range result {
-		rows = append(rows, []string{r.ExternalSelectorValue, r.ExternalValue})
+		rows = append(rows, []string{r.GetExternalSelectorValue(), r.GetExternalValue()})
 	}
 
 	t := cli.NewTabular(rows...)
@@ -68,9 +65,10 @@ func dev_selectorsTest(cmd *cobra.Command, args []string) {
 
 	subject := c.Flags.GetRequiredString("subject")
 	contextType := c.Flags.GetRequiredString("type")
-	selectors := c.Flags.GetStringSlice("selectors", selectors, cli.FlagsStringSliceOptions{Min: 1})
+	selectors = c.Flags.GetStringSlice("selectors", selectors, cli.FlagsStringSliceOptions{Min: 1})
 
 	var value any
+	//nolint:gocritic,nestif // this is more readable than a switch statement
 	if contextType == "json" || contextType == "" {
 		if err := json.Unmarshal([]byte(subject), &value); err != nil {
 			cli.ExitWithError(fmt.Sprintf("Could not unmarshal JSON subject context input: %s", subject), err)
@@ -97,7 +95,7 @@ func dev_selectorsTest(cmd *cobra.Command, args []string) {
 
 	rows := [][]string{}
 	for _, r := range result {
-		rows = append(rows, []string{r.ExternalSelectorValue, r.ExternalValue})
+		rows = append(rows, []string{r.GetExternalSelectorValue(), r.GetExternalValue()})
 	}
 
 	t := cli.NewTabular(rows...)
@@ -136,8 +134,7 @@ func init() {
 		testCmd.GetDocFlag("type").Default,
 		testCmd.GetDocFlag("type").Description,
 	)
-	testCmd.Flags().StringArrayVarP(
-		&selectors,
+	testCmd.Flags().StringArrayP(
 		testCmd.GetDocFlag("selector").Name,
 		testCmd.GetDocFlag("selector").Shorthand,
 		[]string{},

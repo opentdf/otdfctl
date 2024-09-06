@@ -2,7 +2,6 @@ package cli
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/opentdf/platform/protocol/go/common"
@@ -25,8 +24,7 @@ func newFlagHelper(cmd *cobra.Command) *flagHelper {
 func (f flagHelper) GetRequiredString(flag string) string {
 	v := f.cmd.Flag(flag).Value.String()
 	if v == "" {
-		fmt.Println(ErrorMessage("Flag '--"+flag+"' is required", nil))
-		os.Exit(1)
+		ExitWithError("Flag '--"+flag+"' is required", nil)
 	}
 	return v
 }
@@ -41,12 +39,10 @@ func (f flagHelper) GetOptionalString(flag string) string {
 
 func (f flagHelper) GetStringSlice(flag string, v []string, opts FlagsStringSliceOptions) []string {
 	if len(v) < opts.Min {
-		fmt.Println(ErrorMessage(fmt.Sprintf("Flag '--%s' must have at least %d non-empty values", flag, opts.Min), nil))
-		os.Exit(1)
+		ExitWithError(fmt.Sprintf("Flag '--%s' must have at least %d non-empty values", flag, opts.Min), nil)
 	}
 	if opts.Max > 0 && len(v) > opts.Max {
-		fmt.Println(ErrorMessage(fmt.Sprintf("Flag '--%s' must have at most %d non-empty values", flag, opts.Max), nil))
-		os.Exit(1)
+		ExitWithError(fmt.Sprintf("Flag '--%s' must have at most %d non-empty values", flag, opts.Max), nil)
 	}
 	return v
 }
@@ -54,8 +50,7 @@ func (f flagHelper) GetStringSlice(flag string, v []string, opts FlagsStringSlic
 func (f flagHelper) GetRequiredInt32(flag string) int32 {
 	v, e := f.cmd.Flags().GetInt32(flag)
 	if e != nil {
-		fmt.Println(ErrorMessage("Flag '--"+flag+"' is required", nil))
-		os.Exit(1)
+		ExitWithError("Flag '--"+flag+"' is required", nil)
 	}
 	// if v == 0 {
 	// 	fmt.Println(ErrorMessage("Flag "+flag+" must be greater than 0", nil))
@@ -72,8 +67,7 @@ func (f flagHelper) GetOptionalBool(flag string) bool {
 func (f flagHelper) GetRequiredBool(flag string) bool {
 	v, e := f.cmd.Flags().GetBool(flag)
 	if e != nil {
-		fmt.Println(ErrorMessage("Flag '--"+flag+"' is required", nil))
-		os.Exit(1)
+		ExitWithError("Flag '--"+flag+"' is required", nil)
 	}
 	return v
 }

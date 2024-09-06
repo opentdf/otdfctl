@@ -25,9 +25,8 @@ type Profile struct {
 }
 
 type CurrentProfileStore struct {
-	store StoreInterface
-
-	config ProfileConfig
+	StoreInterface
+	ProfileConfig
 }
 
 const (
@@ -124,7 +123,7 @@ func (p *Profile) AddProfile(profileName string, endpoint string, tlsNoVerify bo
 	}
 
 	if setDefault || p.globalStore.GetDefaultProfile() == "" {
-		p.globalStore.SetDefaultProfile(profileName)
+		return p.globalStore.SetDefaultProfile(profileName)
 	}
 
 	return nil

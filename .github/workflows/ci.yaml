@@ -34,9 +34,9 @@ jobs:
       - name: golangci-lint
         uses: golangci/golangci-lint-action@aaa42aa0628b4ae2578232a66b541047968fac86
         with:
-          version: v1.55
+          version: v1.60.3
           # Optional: golangci-lint command line arguments.
-          args: --timeout=10m
+          args: --timeout=10m --out-format=colored-line-number
   unit:
     name: unit tests
     runs-on: ubuntu-latest

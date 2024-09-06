@@ -16,12 +16,12 @@ import (
 var (
 	focusedStyle        = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
 	blurredStyle        = lipgloss.NewStyle().Foreground(lipgloss.Color("240"))
-	cursorStyle         = focusedStyle.Copy()
+	cursorStyle         = focusedStyle
 	noStyle             = lipgloss.NewStyle()
-	helpStyle           = blurredStyle.Copy()
+	helpStyle           = blurredStyle
 	cursorModeHelpStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("244"))
 
-	focusedButton = focusedStyle.Copy().Render("[ Submit ]")
+	focusedButton = focusedStyle.Render("[ Submit ]")
 	blurredButton = fmt.Sprintf("[ %s ]", blurredStyle.Render("Submit"))
 )
 
@@ -61,8 +61,7 @@ func (m Update) Init() tea.Cmd {
 }
 
 func (m Update) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch msg := msg.(type) {
-	case tea.KeyMsg:
+	if msg, ok := msg.(tea.KeyMsg); ok {
 		switch msg.String() {
 		case "ctrl+c", "esc":
 			return m, tea.Quit

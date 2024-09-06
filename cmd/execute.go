@@ -52,7 +52,10 @@ func Execute(opts ...ExecuteOptFunc) {
 	}
 
 	if c.mountTo != nil {
-		MountRoot(c.mountTo, c.renameCmd)
+		err := MountRoot(c.mountTo, c.renameCmd)
+		if err != nil {
+			os.Exit(1)
+		}
 	} else {
 		err := RootCmd.Execute()
 		if err != nil {

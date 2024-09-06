@@ -30,6 +30,7 @@ func (m Read) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.width = msg.Width
 		return m, nil
 	case tea.KeyMsg:
+		//nolint:exhaustive // only interested in a few key types
 		switch msg.Type {
 		case tea.KeyCtrlC, tea.KeyEsc:
 			return m, tea.Quit

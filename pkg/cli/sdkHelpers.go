@@ -32,13 +32,13 @@ func ConstructMetadata(m *common.Metadata) map[string]string {
 		return metadata
 	}
 	metadata = map[string]string{
-		"Created At": m.CreatedAt.AsTime().Format(time.UnixDate),
-		"Updated At": m.UpdatedAt.AsTime().Format(time.UnixDate),
+		"Created At": m.GetCreatedAt().AsTime().Format(time.UnixDate),
+		"Updated At": m.GetUpdatedAt().AsTime().Format(time.UnixDate),
 	}
 
 	labels := []string{}
 	if m.Labels != nil {
-		for k, v := range m.Labels {
+		for k, v := range m.GetLabels() {
 			labels = append(labels, k+": "+v)
 		}
 	}
@@ -67,7 +67,7 @@ func GetSimpleAttributeValue(v *policy.Value) SimpleAttributeValue {
 	return SimpleAttributeValue{
 		Id:       v.GetId(),
 		FQN:      v.GetFqn(),
-		Active:   strconv.FormatBool(v.Active.GetValue()),
+		Active:   strconv.FormatBool(v.GetActive().GetValue()),
 		Metadata: ConstructMetadata(v.GetMetadata()),
 	}
 }
