@@ -39,10 +39,10 @@ jobs:
       BATS_LIB_PATH: /usr/lib
       # Terminal width for testing printed output
       TEST_TERMINAL_WIDTH: 200
-      PLATFORM_IS_RUNNING: '${{ inputs.platform-is-running }}'
+      PLATFORM_IS_RUNNING: ${{ inputs.platform-is-running }}
       # Ternaries to handle empty inputs (a PR within otdfctl), or remote call scenario
-      PLATFORM_REF: '${{ inputs.platform-ref == '' && 'main' || inputs.platform-ref }}'
-      OTDFCTL_REF: '${{ inputs.otdfctl-ref == '' && github.event.pull_request.head.sha || inputs.otdfctl-ref }}'
+      PLATFORM_REF: ${{ inputs.platform-ref == '' && 'main' || inputs.platform-ref }}
+      OTDFCTL_REF: ${{ inputs.otdfctl-ref == '' && github.event.pull_request.head.sha || inputs.otdfctl-ref }}
     steps:
       - name: Check out otdfctl CLI
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
