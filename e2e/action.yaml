@@ -1,10 +1,11 @@
 name: 'end-to-end'
 description: 'Run end-to-end tests for the otdfctl CLI'
 inputs:
+  # Known issue: boolean defaults are treated as strings [https://stackoverflow.com/questions/76292948/github-action-boolean-input-with-default-value]
   platform-is-running:
     required: false
-    description: 'If false, spin up the platform and its resources'
     default: 'false'
+    description: 'If false, spin up the platform and its resources'
   platform-ref:
     required: false
     description: 'The ref to check out for the platform'
@@ -25,7 +26,7 @@ runs:
     - name: Report on the run context
       shell: bash
       run: |
-        if ${{ inputs.platform-is-running }}; then
+        if [ ${{ inputs.platform-is-running }} == 'true' ]; then
           echo "Platform is already running"
         else
           if [ "${{ inputs.platform-ref }}" == "" ]; then
