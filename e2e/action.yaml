@@ -1,23 +1,21 @@
 name: 'end-to-end'
 
-on:
-  workflow_call:
-    inputs:
-      platform-is-running:
-        required: false
-        description: 'If false, spin up the platform and its resources'
-        default: false
-        type: boolean
-      platform-ref:
-        required: false
-        description: 'The ref to check out for the platform'
-        default: 'main'
-        type: string
-      otdfctl-ref:
-        required: false
-        description: 'The ref to check out for the otdfctl CLI'
-        default: 'main'
-        type: string
+inputs:
+  platform-is-running:
+    required: false
+    description: 'If false, spin up the platform and its resources'
+    default: false
+    type: boolean
+  platform-ref:
+    required: false
+    description: 'The ref to check out for the platform'
+    default: 'main'
+    type: string
+  otdfctl-ref:
+    required: false
+    description: 'The ref to check out for the otdfctl CLI'
+    default: 'main'
+    type: string
 
 jobs:
   end-to-end:
@@ -50,13 +48,13 @@ jobs:
             echo "otdfctl will be tested from 'main' or '${{ inputs.otdfctl-ref }}'"
           fi
       - name: Check out otdfctl CLI
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
         with:
           ref: ${{ inputs.otdfctl-ref }}
         # Spin up the platform IFF it's not already running in the current workflow context
       - name: Check out platform
         if: ${{ ! inputs.platform-is-running }}
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
         with:
           repository: opentdf/platform
           path: platform
