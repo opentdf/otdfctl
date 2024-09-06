@@ -17,15 +17,17 @@ on:
         description: 'If false, spin up the platform and its resources'
         default: false
         type: boolean
+      # In a remote workflow_call, we should use the inputs.
+      # In a local PR call, we should run the CLI PR branch against the main branch of the platform.
       platform-ref:
         required: false
         description: 'The ref to check out for the platform'
-        default: 'main'
+        default: ''
         type: string
       otdfctl-ref:
         required: false
         description: 'The ref to check out for the otdfctl CLI'
-        default: 'main'
+        default: ''
         type: string
 
 jobs:
@@ -37,10 +39,10 @@ jobs:
       BATS_LIB_PATH: /usr/lib
       # Terminal width for testing printed output
       TEST_TERMINAL_WIDTH: 200
-      # Read the inputs into the environment
       PLATFORM_IS_RUNNING: '${{ inputs.platform-is-running }}'
-      PLATFORM_REF: '${{ inputs.platform-ref }}'
-      OTDFCTL_REF: '${{ inputs.otdfctl-ref }}'
+      # Ternaries to handle empty inputs (a PR within otdfctl), or remote call scenario
+      PLATFORM_REF: '${{ inputs.platform-ref == '' && 'main' || inputs.platform-ref }}'
+      OTDFCTL_REF: '${{ inputs.otdfctl-ref == '' && github.event.pull_request.head.sha || inputs.otdfctl-ref }}'
     steps:
       - name: Check out otdfctl CLI
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
@@ -103,9 +105,9 @@ jobs:
           log-output-if: true
           wait-for: 90s
           working-directory: platform
-      
+
       # Build the CLI and run tests
-      - name: Set up go (if needed)
+      - name: Set up go (CLI version, if needed)
         if: steps.setup-go.outcome != 'success'
         uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7
         with:
