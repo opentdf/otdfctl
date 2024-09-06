@@ -44,6 +44,23 @@ jobs:
       PLATFORM_REF: ${{ inputs.platform-ref == '' && 'main' || inputs.platform-ref }}
       OTDFCTL_REF: ${{ inputs.otdfctl-ref == '' && github.event.pull_request.head.sha || inputs.otdfctl-ref }}
     steps:
+      - name: Report on the run context
+        run: |
+          if [ "${{ env.PLATFORM_IS_RUNNING }}" == "true" ]; then
+            echo "Platform is already running"
+          else
+            if [ "${{ env.PLATFORM_REF }}" == "" ]; then
+              echo "Platform will be spun up from 'main'"
+            else
+              echo "Platform will be checked out at '${{ env.PLATFORM_REF }}' and spun up"
+            fi
+          fi
+
+          if [ "${{ env.OTDFCTL_REF }}" == "" ]; then
+            echo "otdfctl will be tested from the PR branch"
+          else
+            echo "otdfctl will be tested from 'main' or '${{ env.OTDFCTL_REF }}'"
+          fi
       - name: Check out otdfctl CLI
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
         with:
