@@ -39,6 +39,7 @@ runs:
     - name: Check out otdfctl CLI
       uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
       with:
+        repository: opentdf/otdfctl
         ref: ${{ inputs.otdfctl-ref }}
         path: otdfctl
       # Spin up the platform IFF it's not already running in the current workflow context
@@ -109,7 +110,7 @@ runs:
       if: steps.setup-go.outcome != 'success'
       uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7
       with:
-        go-version-file: go.mod
+        go-version-file: otdfctl/go.mod
     - name: Build the CLI
       shell: bash
       run: go build .
