@@ -198,6 +198,7 @@ func GetTokenWithClientCreds(ctx context.Context, endpoint string, clientId stri
 	if err != nil {
 		return nil, err
 	}
+
 	return oidcrp.ClientCredentials(ctx, rp, url.Values{})
 }
 
