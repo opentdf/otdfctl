@@ -94,10 +94,10 @@ func dev_tdfEncryptCmd(cmd *cobra.Command, args []string) {
 	var err error
 	switch tdfType {
 	case TDF3:
-		encrypted, err = h.EncryptBytes(bytesSlice, values, fileMimeType, kasURLPath)
+		encrypted, err = h.EncryptBytes(bytesSlice, attrValues, fileMimeType, kasURLPath)
 	case NANO:
 		ecdsaBinding := c.Flags.GetOptionalBool("ecdsa-binding")
-		encrypted, err = h.EncryptNanoBytes(bytesSlice, values, kasURLPath, ecdsaBinding)
+		encrypted, err = h.EncryptNanoBytes(bytesSlice, attrValues, kasURLPath, ecdsaBinding)
 	default:
 		cli.ExitWithError("Failed to encrypt", fmt.Errorf("unrecognized tdf-type: %s", tdfType))
 	}
