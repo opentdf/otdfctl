@@ -19,14 +19,11 @@ inputs:
 
 runs:
   using: 'composite'
-  env:
-    # Define 'bats' install location in ubuntu
-    BATS_LIB_PATH: /usr/lib
-    # Terminal width for testing printed output
-    TEST_TERMINAL_WIDTH: 200
-    # PLATFORM_IS_RUNNING: ${{ inputs.platform-is-running }}
-    # PLATFORM_REF: ${{ inputs.platform-ref }}
-    # OTDFCTL_REF: ${{ inputs.otdfctl-ref }}
+  # env:
+  #   # Define 'bats' install location in ubuntu
+  #   BATS_LIB_PATH: /usr/lib
+  #   # Terminal width for testing printed output
+  #   TEST_TERMINAL_WIDTH: 200
   steps:
     - name: Report on the run context
       run: |
@@ -121,8 +118,14 @@ runs:
       run: cp otdfctl-example.yaml otdfctl.yaml
     - name: Setup Bats and bats libs
       uses: bats-core/bats-action@2.0.0
-    - run: e2e/encrypt-decrypt.bats
-    - run: e2e/kas-grants.bats
-    - run: e2e/profile.bats
-    - run: e2e/kas-registry.bats
-    - run: e2e/namespaces.bats
+    - run: e2e
+      env:
+        # Define 'bats' install location in ubuntu
+        BATS_LIB_PATH: /usr/lib
+        # Terminal width for testing printed output
+        TEST_TERMINAL_WIDTH: 200
+    # - run: e2e/encrypt-decrypt.bats
+    # - run: e2e/kas-grants.bats
+    # - run: e2e/profile.bats
+    # - run: e2e/kas-registry.bats
+    # - run: e2e/namespaces.bats
