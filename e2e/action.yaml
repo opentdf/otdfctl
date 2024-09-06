@@ -28,42 +28,42 @@ jobs:
       BATS_LIB_PATH: /usr/lib
       # Terminal width for testing printed output
       TEST_TERMINAL_WIDTH: 200
-      PLATFORM_IS_RUNNING: ${{ inputs.platform-is-running }}
-      PLATFORM_REF: ${{ inputs.platform-ref }}
-      OTDFCTL_REF: ${{ inputs.otdfctl-ref }}
+      # PLATFORM_IS_RUNNING: ${{ inputs.platform-is-running }}
+      # PLATFORM_REF: ${{ inputs.platform-ref }}
+      # OTDFCTL_REF: ${{ inputs.otdfctl-ref }}
     steps:
       - name: Report on the run context
         run: |
-          if [ "${{ env.PLATFORM_IS_RUNNING }}" == "true" ]; then
+          if [ "${{ inputs.platform-is-running }}" == "true" ]; then
             echo "Platform is already running"
           else
-            if [ "${{ env.PLATFORM_REF }}" == "" ]; then
+            if [ "${{ inputs.platform-ref }}" == "" ]; then
               echo "Platform will be spun up from 'main'"
             else
-              echo "Platform will be checked out at '${{ env.PLATFORM_REF }}' and spun up"
+              echo "Platform will be checked out at '${{ inputs.platform-ref }}' and spun up"
             fi
           fi
 
-          if [ ${{ env.OTDFCTL_REF == github.event.pull_request.head.sha }} ]; then
+          if [ ${{ inputs.otdfctl-ref == github.event.pull_request.head.sha }} ]; then
             echo "otdfctl will be tested from the PR branch"
           else
-            echo "otdfctl will be tested from 'main' or '${{ env.OTDFCTL_REF }}'"
+            echo "otdfctl will be tested from 'main' or '${{ inputs.otdfctl-ref }}'"
           fi
       - name: Check out otdfctl CLI
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
         with:
-          ref: ${{ env.OTDFCTL_REF }}
+          ref: ${{ inputs.otdfctl-ref }}
         # Spin up the platform IFF it's not already running in the current workflow context
       - name: Check out platform
-        if: ${{ ! env.PLATFORM_IS_RUNNING }}
+        if: ${{ ! inputs.platform-is-running }}
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
         with:
           repository: opentdf/platform
           path: platform
-          ref: ${{ env.PLATFORM_REF }}
+          ref: ${{ inputs.platform-ref }}
       - name: Set up go (platform's go version)
         id: setup-go
-        if: ${{ ! env.PLATFORM_IS_RUNNING }}
+        if: ${{ ! inputs.platform-is-running }}
         uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7
         with:
           go-version-file: 'platform/service/go.mod'
@@ -73,13 +73,13 @@ jobs:
             platform/protocol/go/go.sum
             platform/sdk/go.sum
       - name: Provide the platform with keys
-        if: ${{ ! env.PLATFORM_IS_RUNNING }}
+        if: ${{ ! inputs.platform-is-running }}
         run: |
           .github/scripts/init-temp-keys.sh
           cp opentdf-dev.yaml opentdf.yaml
         working-directory: platform
       - name: Trust the generated certs
-        if: ${{ ! env.PLATFORM_IS_RUNNING }}
+        if: ${{ ! inputs.platform-is-running }}
         run: |
           sudo chmod -R 777 ./keys
           sudo apt-get install -y ca-certificates
@@ -87,19 +87,19 @@ jobs:
           sudo update-ca-certificates
         working-directory: platform
       - name: Spin up platform's containerized resources
-        if: ${{ ! env.PLATFORM_IS_RUNNING }}
+        if: ${{ ! inputs.platform-is-running }}
         run: docker compose up -d --wait --wait-timeout 240
         working-directory: platform
       - name: Provision realms/clients/users into idP
-        if: ${{ ! env.PLATFORM_IS_RUNNING }}
+        if: ${{ ! inputs.platform-is-running }}
         run: go run ./service provision keycloak
         working-directory: platform
       - name: Provision test fixture policy
-        if: ${{ ! env.PLATFORM_IS_RUNNING }}
+        if: ${{ ! inputs.platform-is-running }}
         run: go run ./service provision fixtures
         working-directory: platform
       - name: Start platform server in background
-        if: ${{ ! env.PLATFORM_IS_RUNNING }}
+        if: ${{ ! inputs.platform-is-running }}
         uses: JarvusInnovations/background-action@2428e7b970a846423095c79d43f759abf979a635
         with:
           run: >
