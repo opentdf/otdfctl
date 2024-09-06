@@ -24,21 +24,13 @@ runs:
         if [ ${{ inputs.platform-is-running }} == 'true' ]; then
           echo "Platform is already running"
         else
-          if [ "${{ inputs.platform-ref }}" == "" ]; then
-            echo "Platform will be spun up from 'main'"
-          else
             echo "Platform will be checked out at '${{ inputs.platform-ref }}' and spun up"
-          fi
         fi
-
-        if [ ${{ inputs.otdfctl-ref == github.event.pull_request.head.sha }} ]; then
-          echo "otdfctl will be tested from the PR branch"
-        else
-          echo "otdfctl will be tested from 'main' or '${{ inputs.otdfctl-ref }}'"
-        fi
+        echo "Testing otdfctl CLI from '${{ inputs.otdfctl-ref }}'"
     - name: Check out otdfctl CLI
       uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
       with:
+        repository: opentdf/otdfctl
         ref: ${{ inputs.otdfctl-ref }}
         path: otdfctl
       # Spin up the platform IFF it's not already running in the current workflow context
@@ -109,7 +101,7 @@ runs:
       if: steps.setup-go.outcome != 'success'
       uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7
       with:
-        go-version-file: go.mod
+        go-version-file: otdfctl/go.mod
     - name: Build the CLI
       shell: bash
       run: go build .
