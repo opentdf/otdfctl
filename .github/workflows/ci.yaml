@@ -55,6 +55,5 @@ jobs:
     steps:
       - uses: opentdf/otdfctl/e2e@feat/e2e-ci
         with:
-          platform-is-running: false
           platform-ref: 'main'
           otdfctl-ref: ${{ github.event.pull_request.head.sha }}

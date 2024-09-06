@@ -28,7 +28,7 @@ runs:
     - name: Report on the run context
       shell: bash
       run: |
-        if [ "${{ inputs.platform-is-running }}" == "true" ]; then
+        if [ ${{ inputs.platform-is-running }} ]; then
           echo "Platform is already running"
         else
           if [ "${{ inputs.platform-ref }}" == "" ]; then
