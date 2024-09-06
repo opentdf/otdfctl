@@ -24,18 +24,9 @@ runs:
         if [ ${{ inputs.platform-is-running }} == 'true' ]; then
           echo "Platform is already running"
         else
-          if [ "${{ inputs.platform-ref }}" == "" ]; then
-            echo "Platform will be spun up from 'main'"
-          else
             echo "Platform will be checked out at '${{ inputs.platform-ref }}' and spun up"
-          fi
         fi
-
-        if [ ${{ inputs.otdfctl-ref == github.event.pull_request.head.sha }} ]; then
-          echo "otdfctl will be tested from the PR branch"
-        else
-          echo "otdfctl will be tested from 'main' or '${{ inputs.otdfctl-ref }}'"
-        fi
+        echo "Testing otdfctl CLI from '${{ inputs.otdfctl-ref }}'"
     - name: Check out otdfctl CLI
       uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
       with:
