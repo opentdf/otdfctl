@@ -36,3 +36,7 @@ func (h Handler) DecryptNanoTDF(toDecrypt []byte) (*bytes.Buffer, error) {
 	}
 	return &outBuf, nil
 }
+
+func trigger() {
+	return
+}
