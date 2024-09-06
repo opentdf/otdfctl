@@ -17,11 +17,6 @@ inputs:
 
 runs:
   using: 'composite'
-  # env:
-  #   # Define 'bats' install location in ubuntu
-  #   BATS_LIB_PATH: /usr/lib
-  #   # Terminal width for testing printed output
-  #   TEST_TERMINAL_WIDTH: 200
   steps:
     - name: Report on the run context
       shell: bash
@@ -133,8 +128,3 @@ runs:
         BATS_LIB_PATH: /usr/lib
         # Terminal width for testing printed output
         TEST_TERMINAL_WIDTH: 200
-    # - run: e2e/encrypt-decrypt.bats
-    # - run: e2e/kas-grants.bats
-    # - run: e2e/profile.bats
-    # - run: e2e/kas-registry.bats
-    # - run: e2e/namespaces.bats
