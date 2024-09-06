@@ -185,20 +185,20 @@ func policy_listKasGrants(cmd *cobra.Command, args []string) {
 	rows := []table.Row{}
 	t := cli.NewTable(
 		// columns should be kas id, kas uri, type, id, fqn
-		table.NewFlexColumn("kas_id", "KAS ID", 3),
-		table.NewFlexColumn("kas_uri", "KAS URI", 3),
-		table.NewFlexColumn("grant_type", "Assigned To", 1),
-		table.NewFlexColumn("id", "Granted Object ID", 3),
-		table.NewFlexColumn("fqn", "Granted Object FQN", 3),
+		table.NewFlexColumn("kas_id", "KAS ID", cli.FlexColumnWidthThree),
+		table.NewFlexColumn("kas_uri", "KAS URI", cli.FlexColumnWidthThree),
+		table.NewFlexColumn("grant_type", "Assigned To", cli.FlexColumnWidthOne),
+		table.NewFlexColumn("id", "Granted Object ID", cli.FlexColumnWidthThree),
+		table.NewFlexColumn("fqn", "Granted Object FQN", cli.FlexColumnWidthThree),
 	)
 
 	for _, g := range grants {
-		kasID := g.GetKeyAccessServer().GetId()
-		kasURI := g.GetKeyAccessServer().GetUri()
+		grantedKasID := g.GetKeyAccessServer().GetId()
+		grantedKasURI := g.GetKeyAccessServer().GetUri()
 		for _, ag := range g.GetAttributeGrants() {
 			rows = append(rows, table.NewRow(table.RowData{
-				"kas_id":     kasID,
-				"kas_uri":    kasURI,
+				"kas_id":     grantedKasID,
+				"kas_uri":    grantedKasURI,
 				"grant_type": "Definition",
 				"id":         ag.GetId(),
 				"fqn":        ag.GetFqn(),
@@ -206,8 +206,8 @@ func policy_listKasGrants(cmd *cobra.Command, args []string) {
 		}
 		for _, vg := range g.GetValueGrants() {
 			rows = append(rows, table.NewRow(table.RowData{
-				"kas_id":     kasID,
-				"kas_uri":    kasURI,
+				"kas_id":     grantedKasID,
+				"kas_uri":    grantedKasURI,
 				"grant_type": "Value",
 				"id":         vg.GetId(),
 				"fqn":        vg.GetFqn(),
@@ -215,8 +215,8 @@ func policy_listKasGrants(cmd *cobra.Command, args []string) {
 		}
 		for _, ng := range g.GetNamespaceGrants() {
 			rows = append(rows, table.NewRow(table.RowData{
-				"kas_id":     kasID,
-				"kas_uri":    kasURI,
+				"kas_id":     grantedKasID,
+				"kas_uri":    grantedKasURI,
 				"grant_type": "Namespace",
 				"id":         ng.GetId(),
 				"fqn":        ng.GetFqn(),
