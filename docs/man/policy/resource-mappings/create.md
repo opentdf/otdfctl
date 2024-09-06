@@ -18,3 +18,9 @@ command:
       shorthand: l
       default: ""
 ---
+
+# Create a resource mapping
+
+Associate an attribute value with a set of plaintext string terms.
+
+For more information about resource mappings, see the `resource-mappings` subcommand.

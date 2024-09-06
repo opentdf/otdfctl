@@ -6,3 +6,7 @@ command:
   aliases:
     - l
 ---
+
+# List subject condition sets
+
+For more information about subject condition sets, see the `subject-condition-sets` subcommand.

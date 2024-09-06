@@ -36,6 +36,8 @@ command:
       default: false
 ---
 
+# Assign a grant to a KAS
+
 Assign a registered Key Access Server (KAS) to an attribute namespace, definition, or value.
 
 For more information, see `kas-registry` and `kas-grants` manuals.

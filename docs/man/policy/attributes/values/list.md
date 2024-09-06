@@ -20,3 +20,7 @@ command:
 ---
 
 # List attribute values
+
+By default, the list will only provide `active` values if unspecified, but the filter can be controlled with the `--state` flag.
+
+For more general information about attribute values, see the `values` subcommand.

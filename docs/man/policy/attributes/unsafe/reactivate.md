@@ -16,3 +16,5 @@ Reactivating an Attribute Definition can potentially open up an access path to a
 The Active/Inactive state of any Attribute Values under this Definition will NOT be changed.
 
 Make sure you know what you are doing.
+
+For more general information about attributes, see the `attributes` subcommand.

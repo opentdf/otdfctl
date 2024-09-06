@@ -35,4 +35,14 @@ command:
       default: false
 ---
 
-'Actions' are updated in place, destructively replacing the current set. If you want to add or remove actions, you must provide the full set of actions on update.
+# Update a subject mapping
+
+Update a Subject Mapping to alter entitlement of an entity to an Attribute Value.
+
+`Actions` are updated in place, destructively replacing the current set. If you want to add or remove actions, you must provide the full set of actions on update.
+
+At this time, creation of a new SCS during update of a subject mapping is not supported.
+
+For more information about subject mappings, see the `subject-mappings` subcommand.
+
+For more information about subject condition sets, see the `subject-condition-sets` subcommand.

@@ -16,7 +16,13 @@ command:
     - name: label
       description: "Optional metadata 'labels' in the format: key=value"
       shorthand: l
-      default: ""
+      default: ''
 ---
 
-This command allows you to manage the values of an attribute.
+# Create an attribute value
+
+Add a single new value underneath an existing attribute.
+
+For a hierarchical attribute, a new value is added in lowest hierarchy (last).
+
+For more information on attribute values, see the `values` subcommand.

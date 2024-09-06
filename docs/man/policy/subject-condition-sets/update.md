@@ -13,7 +13,7 @@ command:
     - name: subject-sets
       description: A JSON array of subject sets, containing a list of condition groups, each with one or more conditions
       shorthand: s
-      default: ""
+      default: ''
     - name: subject-sets-file-json
       description: A JSON file with path from the current working directory containing an array of subject sets
       shorthand: j
@@ -22,8 +22,14 @@ command:
     - name: label
       description: "Optional metadata 'labels' in the format: key=value"
       shorthand: l
-      default: ""
+      default: ''
     - name: force-replace-labels
       description: Destructively replace entire set of existing metadata 'labels' with any provided to this command
       default: false
 ---
+
+# Update a subject condition set
+
+Replace the existing conditional logic within an SCS with new conditional logic, passing either JSON directly or a JSON file.
+
+For more information about subject condition sets, see the `subject-condition-sets` subcommand.

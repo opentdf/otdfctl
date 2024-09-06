@@ -9,9 +9,6 @@ command:
     - name: id
       shorthand: i
       description: The ID of the attribute value to update
-    - name: value
-      shorthand: v
-      description: The new value
     - name: label
       description: "Optional metadata 'labels' in the format: key=value"
       shorthand: l
@@ -21,4 +18,10 @@ command:
       default: false
 ---
 
-This command allows you to manage the values of an attribute.
+# Update an attribute value
+
+Attribute Value changes can be dangerous, so this command is for updates considered "safe" (currently just mutations to metadata `labels`).
+
+For unsafe updates, see the dedicated `unsafe update` command. For more general information, see the `values` subcommand.
+
+For more general information about attributes, see the `attributes` subcommand.

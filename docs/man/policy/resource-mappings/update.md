@@ -22,3 +22,9 @@ command:
       description: Destructively replace entire set of existing metadata 'labels' with any provided to this command
       default: false
 ---
+
+# Update a resource mapping
+
+Alter the attribute value associated with a resource mapping's terms, or fully replace the terms in a given resource mapping.
+
+For more information about resource mappings, see the `resource-mappings` subcommand.

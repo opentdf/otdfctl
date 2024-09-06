@@ -9,3 +9,7 @@ command:
       description: The ID of the resource mapping to get.
       default: ""
 ---
+
+# Get a resource mapping
+
+For more information about resource mappings, see the `resource-mappings` subcommand.

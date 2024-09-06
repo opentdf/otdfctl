@@ -16,3 +16,5 @@ Deleting a Namespace cascades deletion of any Attribute Definitions, Values, and
 Any existing TDFs containing attributes under this namespace will be rendered inaccessible until it has been recreated.
 
 Make sure you know what you are doing.
+
+For more general information, see the `namespaces` subcommand.

@@ -52,7 +52,7 @@ Grants to Attribute Objects:
 | no              | no                    | yes              | value                        |
 | no              | no                    | no               | default KAS/platform key     |
 
-> Note:
+> [!NOTE]
 > A namespace grant may soon be required with deprecation of a default KAS/platform key.
 
 ## Split Scenarios
@@ -119,4 +119,4 @@ Attribute B: `https://conglomerate.com/attr/department/value/marketing`
 | -             | Bob      | -             | Alice    | AND   |
 
 > [!NOTE]
-> Any KAS Grants to attributes of different definitions or namespaces will be `AND` splits.
+> Any KAS Grants to attributes across different definitions or namespaces will be `AND` splits.

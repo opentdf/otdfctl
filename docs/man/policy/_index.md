@@ -12,7 +12,7 @@ command:
       default: 'false'
 ---
 
-Manage policies within the platform.
+# Manage platform policy
 
 Policy is a set of rules that are enforced by the platform. Specific to the the data-centric
 security, policy revolves around data attributes (referred to as attributes). Within the context

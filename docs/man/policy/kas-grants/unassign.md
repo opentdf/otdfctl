@@ -27,6 +27,8 @@ command:
       description: Force the unassignment with no confirmation
 ---
 
-Unassign a registered Key Access Server (KAS) to an attribute definition or value.
+# Unassign a grant to a KAS
+
+Unassign a registered Key Access Server (KAS) to an attribute namespace, definition, or value.
 
 For more information, see `kas-registry` and `kas-grants` manuals.

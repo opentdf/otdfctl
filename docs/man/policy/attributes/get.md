@@ -9,3 +9,9 @@ command:
       shorthand: i
       description: ID of the attribute
 ---
+
+# Get an attribute
+
+Retrieve an attribute along with its metadata, rule, and values.
+
+For more general information about attributes, see the `attributes` subcommand.

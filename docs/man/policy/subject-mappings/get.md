@@ -11,3 +11,9 @@ command:
       required: true
       default: ""
 ---
+
+# Get a subject mapping
+
+Retrieve the specifics of a Subject Mapping.
+
+For more information about subject mappings, see the `subject-mappings` subcommand.
