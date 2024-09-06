@@ -56,7 +56,7 @@ jobs:
             fi
           fi
 
-          if [ "${{ env.OTDFCTL_REF }}" == "" ]; then
+          if [ ${{ env.OTDFCTL_REF == github.event.pull_request.head.sha }} ]; then
             echo "otdfctl will be tested from the PR branch"
           else
             echo "otdfctl will be tested from 'main' or '${{ env.OTDFCTL_REF }}'"
