@@ -26,6 +26,7 @@ runs:
   #   TEST_TERMINAL_WIDTH: 200
   steps:
     - name: Report on the run context
+      shell: bash
       run: |
         if [ "${{ inputs.platform-is-running }}" == "true" ]; then
           echo "Platform is already running"
@@ -66,6 +67,7 @@ runs:
           platform/protocol/go/go.sum
           platform/sdk/go.sum
     - name: Provide the platform with keys
+      shell: bash
       if: ${{ ! inputs.platform-is-running }}
       run: |
         .github/scripts/init-temp-keys.sh
@@ -73,6 +75,7 @@ runs:
       working-directory: platform
     - name: Trust the generated certs
       if: ${{ ! inputs.platform-is-running }}
+      shell: bash
       run: |
         sudo chmod -R 777 ./keys
         sudo apt-get install -y ca-certificates
@@ -81,14 +84,17 @@ runs:
       working-directory: platform
     - name: Spin up platform's containerized resources
       if: ${{ ! inputs.platform-is-running }}
+      shell: bash
       run: docker compose up -d --wait --wait-timeout 240
       working-directory: platform
     - name: Provision realms/clients/users into idP
       if: ${{ ! inputs.platform-is-running }}
+      shell: bash
       run: go run ./service provision keycloak
       working-directory: platform
     - name: Provision test fixture policy
       if: ${{ ! inputs.platform-is-running }}
+      shell: bash
       run: go run ./service provision fixtures
       working-directory: platform
     - name: Start platform server in background
@@ -111,14 +117,19 @@ runs:
       with:
         go-version-file: go.mod
     - name: Build the CLI
+      shell: bash
       run: go build .
     - name: Build the CLI in test mode
+      shell: bash
       run: make build-test
     - name: Set up the CLI config
+      shell: bash
       run: cp otdfctl-example.yaml otdfctl.yaml
     - name: Setup Bats and bats libs
       uses: bats-core/bats-action@2.0.0
-    - run: e2e
+    - name: Run Bats tests
+      # shell: bash
+      run: e2e
       env:
         # Define 'bats' install location in ubuntu
         BATS_LIB_PATH: /usr/lib
