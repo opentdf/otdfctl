@@ -12,7 +12,7 @@ func (h *Handler) ListAttributeValues(attributeId string, state common.ActiveSta
 	if err != nil {
 		return nil, err
 	}
-	return resp.Values, err
+	return resp.GetValues(), err
 }
 
 // Creates and returns the created value

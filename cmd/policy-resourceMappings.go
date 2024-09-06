@@ -12,8 +12,8 @@ import (
 )
 
 var (
-	policy_resource_mappingsTerms []string
-	policy_resourceMappingsCmd    *cobra.Command
+	terms                      []string
+	policy_resourceMappingsCmd *cobra.Command
 )
 
 func policy_createResourceMapping(cmd *cobra.Command, args []string) {
@@ -22,26 +22,26 @@ func policy_createResourceMapping(cmd *cobra.Command, args []string) {
 	defer h.Close()
 
 	attrId := c.Flags.GetRequiredString("attribute-value-id")
-	terms := c.Flags.GetStringSlice("terms", policy_resource_mappingsTerms, cli.FlagsStringSliceOptions{
+	terms = c.Flags.GetStringSlice("terms", terms, cli.FlagsStringSliceOptions{
 		Min: 1,
 	})
-	metadataLabels := c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
+	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
 	resourceMapping, err := h.CreateResourceMapping(attrId, terms, getMetadataMutable(metadataLabels))
 	if err != nil {
 		cli.ExitWithError("Failed to create resource mapping", err)
 	}
 	rows := [][]string{
-		{"Id", resourceMapping.Id},
-		{"Attribute Value Id", resourceMapping.AttributeValue.Id},
-		{"Attribute Value", resourceMapping.AttributeValue.Value},
-		{"Terms", strings.Join(resourceMapping.Terms, ", ")},
+		{"Id", resourceMapping.GetId()},
+		{"Attribute Value Id", resourceMapping.GetAttributeValue().GetId()},
+		{"Attribute Value", resourceMapping.GetAttributeValue().GetValue()},
+		{"Terms", strings.Join(resourceMapping.GetTerms(), ", ")},
 	}
 	if mdRows := getMetadataRows(resourceMapping.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
 	}
 	t := cli.NewTabular(rows...)
-	HandleSuccess(cmd, resourceMapping.Id, t, resourceMapping)
+	HandleSuccess(cmd, resourceMapping.GetId(), t, resourceMapping)
 }
 
 func policy_getResourceMapping(cmd *cobra.Command, args []string) {
@@ -56,16 +56,16 @@ func policy_getResourceMapping(cmd *cobra.Command, args []string) {
 		cli.ExitWithError(fmt.Sprintf("Failed to get resource mapping (%s)", id), err)
 	}
 	rows := [][]string{
-		{"Id", resourceMapping.Id},
-		{"Attribute Value Id", resourceMapping.AttributeValue.Id},
-		{"Attribute Value", resourceMapping.AttributeValue.Value},
-		{"Terms", strings.Join(resourceMapping.Terms, ", ")},
+		{"Id", resourceMapping.GetId()},
+		{"Attribute Value Id", resourceMapping.GetAttributeValue().GetId()},
+		{"Attribute Value", resourceMapping.GetAttributeValue().GetValue()},
+		{"Terms", strings.Join(resourceMapping.GetTerms(), ", ")},
 	}
 	if mdRows := getMetadataRows(resourceMapping.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
 	}
 	t := cli.NewTabular(rows...)
-	HandleSuccess(cmd, resourceMapping.Id, t, resourceMapping)
+	HandleSuccess(cmd, resourceMapping.GetId(), t, resourceMapping)
 }
 
 func policy_listResourceMappings(cmd *cobra.Command, args []string) {
@@ -80,21 +80,21 @@ func policy_listResourceMappings(cmd *cobra.Command, args []string) {
 
 	t := cli.NewTable(
 		cli.NewUUIDColumn(),
-		table.NewFlexColumn("attr_value_id", "Attribute Value Id", 4),
-		table.NewFlexColumn("attr_value", "Attribute Value", 4),
-		table.NewFlexColumn("terms", "Terms", 3),
-		table.NewFlexColumn("labels", "Labels", 1),
-		table.NewFlexColumn("created_at", "Created At", 1),
-		table.NewFlexColumn("updated_at", "Updated At", 1),
+		table.NewFlexColumn("attr_value_id", "Attribute Value Id", cli.FlexColumnWidthFour),
+		table.NewFlexColumn("attr_value", "Attribute Value", cli.FlexColumnWidthFour),
+		table.NewFlexColumn("terms", "Terms", cli.FlexColumnWidthThree),
+		table.NewFlexColumn("labels", "Labels", cli.FlexColumnWidthOne),
+		table.NewFlexColumn("created_at", "Created At", cli.FlexColumnWidthOne),
+		table.NewFlexColumn("updated_at", "Updated At", cli.FlexColumnWidthOne),
 	)
 	rows := []table.Row{}
 	for _, resourceMapping := range rmList {
-		metadata := cli.ConstructMetadata(resourceMapping.Metadata)
+		metadata := cli.ConstructMetadata(resourceMapping.GetMetadata())
 		rows = append(rows, table.NewRow(table.RowData{
-			"id":            resourceMapping.Id,
-			"attr_value_id": resourceMapping.AttributeValue.Id,
-			"attr_value":    resourceMapping.AttributeValue.Value,
-			"terms":         strings.Join(resourceMapping.Terms, ", "),
+			"id":            resourceMapping.GetId(),
+			"attr_value_id": resourceMapping.GetAttributeValue().GetId(),
+			"attr_value":    resourceMapping.GetAttributeValue().GetValue(),
+			"terms":         strings.Join(resourceMapping.GetTerms(), ", "),
 			"labels":        metadata["Labels"],
 			"created_at":    metadata["Created At"],
 			"updated_at":    metadata["Updated At"],
@@ -111,24 +111,24 @@ func policy_updateResourceMapping(cmd *cobra.Command, args []string) {
 
 	id := c.Flags.GetRequiredString("id")
 	attrValueId := c.Flags.GetOptionalString("attribute-value-id")
-	terms := c.Flags.GetStringSlice("terms", policy_resource_mappingsTerms, cli.FlagsStringSliceOptions{})
-	labels := c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
+	terms = c.Flags.GetStringSlice("terms", terms, cli.FlagsStringSliceOptions{})
+	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
-	resourceMapping, err := h.UpdateResourceMapping(id, attrValueId, terms, getMetadataMutable(labels), getMetadataUpdateBehavior())
+	resourceMapping, err := h.UpdateResourceMapping(id, attrValueId, terms, getMetadataMutable(metadataLabels), getMetadataUpdateBehavior())
 	if err != nil {
 		cli.ExitWithError(fmt.Sprintf("Failed to update resource mapping (%s)", id), err)
 	}
 	rows := [][]string{
-		{"Id", resourceMapping.Id},
-		{"Attribute Value Id", resourceMapping.AttributeValue.Id},
-		{"Attribute Value", resourceMapping.AttributeValue.Value},
-		{"Terms", strings.Join(resourceMapping.Terms, ", ")},
+		{"Id", resourceMapping.GetId()},
+		{"Attribute Value Id", resourceMapping.GetAttributeValue().GetId()},
+		{"Attribute Value", resourceMapping.GetAttributeValue().GetValue()},
+		{"Terms", strings.Join(resourceMapping.GetTerms(), ", ")},
 	}
 	if mdRows := getMetadataRows(resourceMapping.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
 	}
 	t := cli.NewTabular(rows...)
-	HandleSuccess(cmd, resourceMapping.Id, t, resourceMapping)
+	HandleSuccess(cmd, resourceMapping.GetId(), t, resourceMapping)
 }
 
 func policy_deleteResourceMapping(cmd *cobra.Command, args []string) {
@@ -145,13 +145,13 @@ func policy_deleteResourceMapping(cmd *cobra.Command, args []string) {
 		cli.ExitWithError(fmt.Sprintf("Failed to delete resource mapping (%s)", id), err)
 	}
 	rows := [][]string{
-		{"Id", resourceMapping.Id},
-		{"Attribute Value Id", resourceMapping.AttributeValue.Id},
-		{"Attribute Value", resourceMapping.AttributeValue.Value},
-		{"Terms", strings.Join(resourceMapping.Terms, ", ")},
+		{"Id", resourceMapping.GetId()},
+		{"Attribute Value Id", resourceMapping.GetAttributeValue().GetId()},
+		{"Attribute Value", resourceMapping.GetAttributeValue().GetValue()},
+		{"Terms", strings.Join(resourceMapping.GetTerms(), ", ")},
 	}
 	t := cli.NewTabular(rows...)
-	HandleSuccess(cmd, resourceMapping.Id, t, resourceMapping)
+	HandleSuccess(cmd, resourceMapping.GetId(), t, resourceMapping)
 }
 
 func init() {
@@ -164,7 +164,7 @@ func init() {
 		createDoc.GetDocFlag("attribute-value-id").Description,
 	)
 	createDoc.Flags().StringSliceVar(
-		&policy_resource_mappingsTerms,
+		&terms,
 		createDoc.GetDocFlag("terms").Name,
 		[]string{},
 		createDoc.GetDocFlag("terms").Description,
@@ -198,7 +198,7 @@ func init() {
 		updateDoc.GetDocFlag("attribute-value-id").Description,
 	)
 	updateDoc.Flags().StringSliceVar(
-		&policy_resource_mappingsTerms,
+		&terms,
 		updateDoc.GetDocFlag("terms").Name,
 		[]string{},
 		updateDoc.GetDocFlag("terms").Description,

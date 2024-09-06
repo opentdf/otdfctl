@@ -57,7 +57,7 @@ func (c *Cli) ExitWithSuccess(msg string) {
 	c.ExitWithMessage(SuccessMessage(msg), 0)
 }
 
-func (c *Cli) ExitWithJson(v interface{}) {
+func (c *Cli) ExitWithJSON(v interface{}) {
 	if c.printer.json {
 		c.PrintJson(v)
 		os.Exit(0)

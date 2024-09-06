@@ -13,6 +13,8 @@ func CommaSeparated(values []string) string {
 	return "[" + strings.Join(values, ", ") + "]"
 }
 
+var defaultWidth = 80
+
 // Returns the terminal width (overridden by the TEST_TERMINAL_WIDTH env var for testing)
 func TermWidth() int {
 	var (
@@ -23,12 +25,12 @@ func TermWidth() int {
 	if testSize == "" {
 		w, _, err = term.GetSize(0)
 		if err != nil {
-			return 80
+			return defaultWidth
 		}
 		return w
 	}
 	if w, err = strconv.Atoi(testSize); err != nil {
-		return 80
+		return defaultWidth
 	}
 	return w
 }

@@ -1,3 +1,4 @@
+//nolint:mnd // styling is magic
 package cli
 
 import "github.com/charmbracelet/lipgloss"
@@ -61,6 +62,7 @@ var colorOrange = Color{
 	},
 }
 
+//lint:ignore U1000 // not used yet
 var colorYellow = Color{
 	Foreground: lipgloss.CompleteAdaptiveColor{
 		Light: lipgloss.CompleteColor{
@@ -169,6 +171,7 @@ var colorIndigo = Color{
 	},
 }
 
+//lint:ignore U1000 // not used yet
 var colorViolet = Color{
 	Foreground: lipgloss.CompleteAdaptiveColor{
 		Light: lipgloss.CompleteColor{
@@ -299,6 +302,7 @@ var styleErrorStatusBar = lipgloss.NewStyle().
 	PaddingRight(3).
 	MarginRight(1)
 
+//lint:ignore U1000 // not used yet
 var styleNoteStatusBar = lipgloss.NewStyle().
 	Inherit(statusBarStyle).
 	Foreground(colorYellow.Foreground).
@@ -345,12 +349,14 @@ var styleTable = lipgloss.NewStyle().
 
 // Text
 
+//lint:ignore U1000 // not used yet
 var styleText = lipgloss.NewStyle().
 	Foreground(lipgloss.CompleteAdaptiveColor{
 		Light: colorBlack.Foreground.Light,
 		Dark:  colorWhite.Foreground.Dark,
 	})
 
+//lint:ignore U1000 // not used yet
 var styleTextBold = lipgloss.NewStyle().
 	Foreground(lipgloss.CompleteAdaptiveColor{
 		Light: colorBlack.Foreground.Light,

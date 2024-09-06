@@ -1,3 +1,4 @@
+//nolint:gocritic // still in development
 package tui
 
 import (
@@ -47,6 +48,7 @@ func InitAppMenu(h handlers.Handler) (AppMenu, tea.Cmd) {
 		view: nil,
 		sdk:  h,
 	}
+	//nolint:mnd // styling is magic
 	m.list = list.New([]list.Item{}, list.NewDefaultDelegate(), 8, 8)
 	m.list.Title = "OpenTDF"
 	m.list.SetItems([]list.Item{

@@ -42,18 +42,12 @@ type ConfigFlagOverrides struct {
 	OutputFormatJSON bool
 }
 
-type Error string
-
-func (e Error) Error() string {
-	return string(e)
-}
-
 const (
 	OutputJSON   = "json"
 	OutputStyled = "styled"
-
-	ErrLoadingConfig Error = "error loading config"
 )
+
+var ErrLoadingConfig = errors.New("error loading config")
 
 // Load config with viper.
 // TODO force creation of the config in the `~/.config/otdfctl` directory
@@ -104,7 +98,7 @@ func LoadConfig(file string, key string) (*Config, error) {
 	return config, nil
 }
 
-func UpdateOutputFormat(cfgKey, format string) {
+func UpdateOutputFormat(cfgKey, format string) error {
 	v := viper.GetViper()
 	format = strings.ToLower(format)
 	formatter := "output.format"
@@ -116,5 +110,5 @@ func UpdateOutputFormat(cfgKey, format string) {
 	} else {
 		v.Set(formatter, OutputStyled)
 	}
-	viper.WriteConfig()
+	return viper.WriteConfig()
 }

@@ -11,6 +11,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var TDF = "tdf"
+
 func dev_tdfDecryptCmd(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
@@ -39,11 +41,12 @@ func dev_tdfDecryptCmd(cmd *cobra.Command, args []string) {
 
 	var decrypted *bytes.Buffer
 	var err error
-	if tdfType == TDF3 {
+	switch tdfType {
+	case TDF3:
 		decrypted, err = h.DecryptTDF(bytesToDecrypt)
-	} else if tdfType == NANO {
+	case NANO:
 		decrypted, err = h.DecryptNanoTDF(bytesToDecrypt)
-	} else {
+	default:
 		cli.ExitWithError("Failed to decrypt", fmt.Errorf("unrecognized tdf-type: %s", tdfType))
 	}
 	if err != nil {
@@ -51,7 +54,7 @@ func dev_tdfDecryptCmd(cmd *cobra.Command, args []string) {
 	}
 
 	if output == "" {
-		// Print decrypted content to stdout
+		//nolint:forbidigo // printing decrypted content to stdout
 		fmt.Print(decrypted.String())
 		return
 	}
@@ -83,7 +86,7 @@ func init() {
 		decryptCmd.GetDocFlag("tdf-type").Default,
 		decryptCmd.GetDocFlag("tdf-type").Description,
 	)
-	decryptCmd.Command.GroupID = "tdf"
+	decryptCmd.Command.GroupID = TDF
 
 	RootCmd.AddCommand(&decryptCmd.Command)
 }

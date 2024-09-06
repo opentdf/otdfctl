@@ -1,3 +1,4 @@
+//nolint:forbidigo // print statements need flexibility
 package cmd
 
 import (
@@ -17,8 +18,10 @@ import (
 // devCmd is the command for playground-style development
 var devCmd = man.Docs.GetCommand("dev")
 
+var metadataLabels []string
+
 func dev_designSystem(cmd *cobra.Command, args []string) {
-	fmt.Printf("Design system\n=============\n\n")
+	fmt.Print("Design system\n=============\n\n")
 
 	printDSComponent("Table", renderDSTable())
 
@@ -27,16 +30,16 @@ func dev_designSystem(cmd *cobra.Command, args []string) {
 
 func printDSComponent(title string, component string) {
 	fmt.Printf("%s\n", title)
-	fmt.Printf("-----\n\n")
+	fmt.Print("-----\n\n")
 	fmt.Printf("%s\n", component)
-	fmt.Printf("\n\n")
+	fmt.Print("\n\n")
 }
 
 func renderDSTable() string {
 	tbl := cli.NewTable(
-		table.NewFlexColumn("one", "One", 1),
-		table.NewFlexColumn("two", "Two", 1),
-		table.NewFlexColumn("three", "Three", 1),
+		table.NewFlexColumn("one", "One", cli.FlexColumnWidthOne),
+		table.NewFlexColumn("two", "Two", cli.FlexColumnWidthOne),
+		table.NewFlexColumn("three", "Three", cli.FlexColumnWidthOne),
 	).WithRows([]table.Row{
 		table.NewRow(table.RowData{
 			"one":   "1",
@@ -83,13 +86,15 @@ func getMetadataRows(m *common.Metadata) [][]string {
 // 	return nil
 // }
 
+const keyValLength = 2
+
 func getMetadataMutable(labels []string) *common.MetadataMutable {
 	metadata := common.MetadataMutable{}
 	if len(labels) > 0 {
 		metadata.Labels = map[string]string{}
 		for _, label := range labels {
 			kv := strings.Split(label, "=")
-			if len(kv) != 2 {
+			if len(kv) != keyValLength {
 				cli.ExitWithError("Invalid label format", nil)
 			}
 			metadata.Labels[kv[0]] = kv[1]
@@ -110,7 +115,7 @@ func getMetadataUpdateBehavior() common.MetadataUpdateEnum {
 func HandleSuccess(command *cobra.Command, id string, t table.Model, policyObject interface{}) {
 	c := cli.New(command, []string{})
 	if OtdfctlCfg.Output.Format == config.OutputJSON || configFlagOverrides.OutputFormatJSON {
-		c.ExitWithJson(policyObject)
+		c.ExitWithJSON(policyObject)
 	}
 	cli.PrintSuccessTable(command, id, t)
 }

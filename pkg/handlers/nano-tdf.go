@@ -14,8 +14,14 @@ func (h Handler) EncryptNanoBytes(b []byte, values []string, kasUrlPath string, 
 		return nil, err
 	}
 
-	nanoTDFConfig.SetKasURL(h.platformEndpoint + kasUrlPath)
-	nanoTDFConfig.SetAttributes(values)
+	err = nanoTDFConfig.SetKasURL(h.platformEndpoint + kasUrlPath)
+	if err != nil {
+		return nil, err
+	}
+	err = nanoTDFConfig.SetAttributes(values)
+	if err != nil {
+		return nil, err
+	}
 	if ecdsaBinding {
 		nanoTDFConfig.EnableECDSAPolicyBinding()
 	}

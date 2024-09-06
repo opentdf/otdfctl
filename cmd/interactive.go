@@ -12,6 +12,7 @@ func init() {
 		man.WithRun(func(cmd *cobra.Command, args []string) {
 			c := cli.New(cmd, args)
 			h := NewHandler(c)
+			//nolint:errcheck // error does not need to be checked
 			tui.StartTea(h)
 		}),
 	)

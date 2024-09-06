@@ -32,7 +32,7 @@ func auth_printAccessToken(cmd *cobra.Command, args []string) {
 	c.Println("ok")
 	c.Printf("Access Token: %s\n", tok.AccessToken)
 
-	c.PrintIfJson(tok)
+	c.PrintIfJSON(tok)
 }
 
 func init() {

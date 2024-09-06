@@ -1,3 +1,4 @@
+//nolint:forbidigo // print statements require flexibility
 package cli
 
 import (
@@ -57,7 +58,7 @@ const debugPrefix = "DEBUG: "
 func (c *Cli) Debug(args ...interface{}) {
 	if c.printer.debug {
 		args = append([]interface{}{debugPrefix}, args...)
-		c.Print(args)
+		c.Print(args...)
 	}
 }
 
@@ -70,7 +71,7 @@ func (c *Cli) Debugf(format string, args ...interface{}) {
 
 func (c *Cli) Debugln(args ...interface{}) {
 	if c.printer.debug {
-		args = append([]interface{}{"DEBUG: "}, args)
+		args = append([]interface{}{"DEBUG: "}, args...)
 		c.Println(args...)
 	}
 }
@@ -85,7 +86,7 @@ func (c *Cli) PrintJson(v interface{}) {
 	fmt.Println(string(b))
 }
 
-func (c *Cli) PrintIfJson(v interface{}) {
+func (c *Cli) PrintIfJSON(v interface{}) {
 	if c.printer.json {
 		c.PrintJson(v)
 	}

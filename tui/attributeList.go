@@ -33,23 +33,23 @@ func (m AttributeItem) Description() string {
 
 func InitAttributeList(id string, sdk handlers.Handler) (tea.Model, tea.Cmd) {
 	l := list.New([]list.Item{}, list.NewDefaultDelegate(), constants.WindowSize.Width, constants.WindowSize.Height)
-	res, err := sdk.ListAttributes(common.ActiveStateEnum_ACTIVE_STATE_ENUM_ANY)
-	if err != nil {
-		// return error view
-	}
+	// TODO: handle and return error view
+	res, _ := sdk.ListAttributes(common.ActiveStateEnum_ACTIVE_STATE_ENUM_ANY)
 	var attrs []list.Item
 	selectIdx := 0
 	for i, attr := range res {
 		var vals []string
-		for _, val := range attr.Values {
-			vals = append(vals, val.Value)
+		for _, val := range attr.GetValues() {
+			// TODO: do something with values here
+			//lint:ignore SA4010 // still in-progress
+			vals = append(vals, val.GetValue())
 		}
-		if attr.Id == id {
+		if attr.GetId() == id {
 			selectIdx = i
 		}
 		item := AttributeItem{
-			id:   attr.Id,
-			name: attr.Name,
+			id:   attr.GetId(),
+			name: attr.GetName(),
 		}
 		attrs = append(attrs, item)
 	}

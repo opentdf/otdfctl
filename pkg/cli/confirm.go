@@ -2,7 +2,6 @@ package cli
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/charmbracelet/huh"
 )
@@ -39,8 +38,7 @@ func ConfirmAction(action, resource, id string, force bool) {
 	}
 
 	if !confirm {
-		fmt.Println(ErrorMessage("Aborted", nil))
-		os.Exit(0)
+		ExitWithError("Aborted", nil)
 	}
 }
 
@@ -51,7 +49,7 @@ func ConfirmTextInput(action, resource, inputName, shouldMatchValue string) {
 		Value(&input).
 		Validate(func(s string) error {
 			if s != shouldMatchValue {
-				return fmt.Errorf(fmt.Sprintf("FQN entered [%s] does not match required %s: %s", s, inputName, shouldMatchValue))
+				return fmt.Errorf("entered FQN [%s] does not match required %s: %s", s, inputName, shouldMatchValue)
 			}
 			return nil
 		}).Run()

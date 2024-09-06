@@ -32,7 +32,7 @@ func (m LabelItem) Description() string {
 }
 
 func InitLabelList(attr *policy.Attribute, sdk handlers.Handler) (tea.Model, tea.Cmd) {
-	labels := attr.Metadata.Labels
+	labels := attr.GetMetadata().GetLabels()
 	var items []list.Item
 	for k, v := range labels {
 		item := LabelItem{
@@ -42,7 +42,9 @@ func InitLabelList(attr *policy.Attribute, sdk handlers.Handler) (tea.Model, tea
 		items = append(items, item)
 	}
 	model, _ := InitRead("Read Labels", items)
-	return LabelList{attr: attr, sdk: sdk, read: model.(Read)}, nil
+	// TODO: handle and return error view
+	mod, _ := model.(Read)
+	return LabelList{attr: attr, sdk: sdk, read: mod}, nil
 }
 
 func (m LabelList) Init() tea.Cmd {
@@ -58,7 +60,7 @@ func (m LabelList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "backspace":
-			return InitAttributeView(m.attr.Id, m.sdk)
+			return InitAttributeView(m.attr.GetId(), m.sdk)
 		case "ctrl+c", "q", "esc":
 			return m, tea.Quit
 		case "enter", "e":

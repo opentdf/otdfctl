@@ -1,8 +1,15 @@
 package cli
 
 import (
-	// "github.com/evertras/bubble-table/table"
 	"github.com/evertras/bubble-table/table"
+)
+
+const (
+	FlexColumnWidthOne   = 1
+	FlexColumnWidthTwo   = 2
+	FlexColumnWidthThree = 3
+	FlexColumnWidthFour  = 4
+	FlexColumnWidthFive  = 5
 )
 
 func NewTable(cols ...table.Column) table.Model {
@@ -14,5 +21,5 @@ func NewTable(cols ...table.Column) table.Model {
 }
 
 func NewUUIDColumn() table.Column {
-	return table.NewFlexColumn("id", "ID", 5)
+	return table.NewFlexColumn("id", "ID", FlexColumnWidthFive)
 }

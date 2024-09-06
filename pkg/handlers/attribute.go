@@ -39,7 +39,7 @@ func (h Handler) GetAttribute(id string) (*policy.Attribute, error) {
 		return nil, err
 	}
 
-	return resp.Attribute, nil
+	return resp.GetAttribute(), nil
 }
 
 func (h Handler) ListAttributes(state common.ActiveStateEnum) ([]*policy.Attribute, error) {
@@ -47,7 +47,7 @@ func (h Handler) ListAttributes(state common.ActiveStateEnum) ([]*policy.Attribu
 	if err != nil {
 		return nil, err
 	}
-	return resp.Attributes, err
+	return resp.GetAttributes(), err
 }
 
 // Creates and returns the created attribute
@@ -157,6 +157,7 @@ func GetAttributeRuleOptions() []string {
 
 // Provides the un-prefixed human-readable attribute rule
 func GetAttributeRuleFromAttributeType(rule policy.AttributeRuleTypeEnum) string {
+	//nolint:exhaustive // should not consider UNSPECIFIED
 	switch rule {
 	case policy.AttributeRuleTypeEnum_ATTRIBUTE_RULE_TYPE_ENUM_ALL_OF:
 		return AttributeRuleAllOf
@@ -170,6 +171,7 @@ func GetAttributeRuleFromAttributeType(rule policy.AttributeRuleTypeEnum) string
 }
 
 func GetAttributeRuleFromReadableString(rule string) (policy.AttributeRuleTypeEnum, error) {
+	// should not consider UNSPECIFIED
 	switch rule {
 	case AttributeRuleAllOf:
 		return policy.AttributeRuleTypeEnum_ATTRIBUTE_RULE_TYPE_ENUM_ALL_OF, nil
