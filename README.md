@@ -75,7 +75,7 @@ prerequisites are met:
 - The platform is running and provisioned with basic keycloak clients/users
   - See the [platform README](https://github.com/opentdf/platform) for instructions
 
-To run the tests you can either run `make test-bats` or execute specific test suites with `bats tests/<test>.bats`.
+To run the tests you can either run `make test-bats` or execute specific test suites with `bats e2e/<test>.bats`.
 
 #### Terminal Size
 
@@ -85,5 +85,5 @@ Terminal size when testing:
 
 1. set to standard defaults if running `make test-bats`
 2. can be set manually by mouse in terminal where tests are triggered
-3. can be set by argument `./tests/resize_terminal.sh < rows height > < columns width >`
+3. can be set by argument `./e2e/resize_terminal.sh < rows height > < columns width >`
 4. can be set by environment variable, i.e. `export TEST_TERMINAL_WIDTH="200"` (200 is columns width)

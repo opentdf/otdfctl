@@ -125,8 +125,8 @@ jobs:
         run: cp otdfctl-example.yaml otdfctl.yaml
       - name: Setup Bats and bats libs
         uses: bats-core/bats-action@2.0.0
-      - run: tests/encrypt-decrypt.bats
-      - run: tests/kas-grants.bats
-      - run: tests/profile.bats
-      - run: tests/kas-registry.bats
-      - run: tests/namespaces.bats
+      - run: e2e/encrypt-decrypt.bats
+      - run: e2e/kas-grants.bats
+      - run: e2e/profile.bats
+      - run: e2e/kas-registry.bats
+      - run: e2e/namespaces.bats
