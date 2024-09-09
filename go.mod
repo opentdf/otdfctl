@@ -22,7 +22,7 @@ require (
 	github.com/stretchr/testify v1.9.0
 	github.com/zalando/go-keyring v0.2.5
 	github.com/zitadel/oidc/v3 v3.29.0
-	golang.org/x/oauth2 v0.22.0
+	golang.org/x/oauth2 v0.23.0
 	golang.org/x/term v0.23.0
 	google.golang.org/grpc v1.66.0
 	google.golang.org/protobuf v1.34.2
