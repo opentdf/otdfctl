@@ -57,6 +57,6 @@ jobs:
         uses: opentdf/platform/test/start-up-with-containers@main
         with:
           platform-ref: 'main'
-      - uses: opentdf/otdfctl/e2e@main
+      - uses: opentdf/otdfctl/e2e@feat/reusable-plat
         with:
           otdfctl-ref: ${{ github.event.pull_request.head.sha }}
