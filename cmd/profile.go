@@ -10,9 +10,30 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// Hide the commands (like profiles) that shouldn't show if running in the Linux OS
+// unless we're running in test mode.
+//
+//	var hideCommandInLinux = func(cmd *cobra.Command, args []string) {
+//		if runtime.GOOS == "linux" {
+//			if config.TestMode == "true" {
+//				return
+//			}
+//			cmd.Pa
+//			cmd.Hidden = true
+//		}
+//	}
+var hideCommandInLinux = func() bool {
+	if runtime.GOOS == "linux" {
+		return config.TestMode != "true"
+	}
+	return false
+}
+
 var profileCmd = &cobra.Command{
-	Use:   "profile",
-	Short: "Manage profiles (experimental)",
+	Use:    "profile",
+	Short:  "Manage profiles (experimental)",
+	Hidden: hideCommandInLinux(),
+	// PreRun: hideCommandInLinux,
 }
 
 var profileCreateCmd = &cobra.Command{
@@ -164,11 +185,6 @@ var profileSetEndpointCmd = &cobra.Command{
 }
 
 func init() {
-	// Profiles are not supported on Linux (unless mocked in test mode)
-	if runtime.GOOS == "linux" && config.TestMode != "true" {
-		return
-	}
-
 	profileCreateCmd.Flags().Bool("set-default", false, "Set the profile as default")
 	profileCreateCmd.Flags().Bool("tls-no-verify", false, "Disable TLS verification")
 
