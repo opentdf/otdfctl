@@ -20,3 +20,4 @@ output/
 
 # Ignore any TDF files created by the CLI
 *.tdf
+dist/

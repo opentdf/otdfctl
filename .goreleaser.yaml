@@ -1,0 +1,162 @@
+# This is an example .goreleaser.yml file with some sensible defaults.
+# Make sure to check the documentation at https://goreleaser.com
+
+# The lines below are called `modelines`. See `:help modeline`
+# Feel free to remove those if you don't want/need to use them.
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+# vim: set ts=2 sw=2 tw=0 fo=cnqoj
+
+version: 2
+
+project_name: otdfctl
+
+builds:
+  - id: otdfctl
+    main: .
+    binary: otdfctl
+    goos:
+      - linux
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+      - -X 'github.com/opentdf/otdfctl/pkg/config.Version={{ .Version }}'
+      - -X 'github.com/opentdf/otdfctl/pkg/config.CommitSha={{ .ShortCommit }}'
+      - -X 'github.com/opentdf/otdfctl/pkg/config.BuildTime={{ .Date }}'
+  
+  - id: otdfctl-osx
+    main: .
+    binary: otdfctl
+    goos:
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+      - -X github.com/opentdf/otdfctl/pkg/config.Version={{ .Version }}
+      - -X github.com/opentdf/otdfctl/pkg/config.CommitSha={{ .ShortCommit }}
+      - -X github.com/opentdf/otdfctl/pkg/config.BuildTime={{ .Date }}
+
+snapshot:
+  version_template: "{{ .Version }}.{{ .ShortCommit }}"
+
+gomod:
+  proxy: true
+  env:
+    - GOPROXY=https://proxy.golang.org,direct
+    - GOSUMDB=sum.golang.org
+
+metadata:
+  mod_timestamp: "{{ .CommitTimestamp }}"
+
+sboms:
+  - artifacts: binary
+    id: spdx
+    ids:
+      - otdfctl
+      - otdfctl-osx
+    documents:
+      - "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}.spdx.json"
+    args: ["$artifact", "--output", "spdx-json=$document"]
+  - artifacts: binary
+    id: cyclonedx
+    ids:
+      - otdfctl
+      - otdfctl-osx
+    documents:
+      - "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}.cyclonedx.json"
+    args: ["$artifact", "--output", "cyclonedx-json=$document"]
+
+signs:
+  - cmd: cosign
+    args:
+      - sign-blob
+      - --tlog-upload=false
+      - --key={{ .Env.KMS_KEY }}
+      - "--output-signature=${signature}"
+      - "${artifact}"
+      - "--yes"
+    artifacts: all
+
+# .goreleaser.yaml
+notarize:
+  macos:
+    - # Whether this configuration is enabled or not.
+      #
+      # Default: false
+      # Templates: allowed
+      enabled: '{{ isEnvSet "MACOS_SIGN_P12" }}'
+
+      # IDs to use to filter the built binaries.
+      #
+      # Default: Project Name
+      ids:
+        - otdfctl-osx
+      # Before notarizing, we need to sign the binary.
+      # This blocks defines the configuration for doing so.
+      sign:
+        # The .p12 certificate file path or its base64'd contents.
+        certificate: "{{.Env.MACOS_SIGN_P12}}"
+
+        # The password to be used to open the certificate.
+        password: "{{.Env.MACOS_SIGN_PASSWORD}}"
+
+      # Then, we notarize the binaries.
+      notarize:
+        # The issuer ID.
+        # Its the UUID you see when creating the App Store Connect key.
+        issuer_id: "{{.Env.MACOS_NOTARY_ISSUER_ID}}"
+
+        # Key ID.
+        # You can see it in the list of App Store Connect Keys.
+        # It will also be in the ApiKey filename.
+        key_id: "{{.Env.MACOS_NOTARY_KEY_ID}}"
+
+        # The .p8 key file path or its base64'd contents.
+        key: "{{.Env.MACOS_NOTARY_KEY}}"
+
+        # Whether to wait for the notarization to finish.
+        # Not recommended, as it could take a really long time.
+        wait: true
+
+        # Timeout for the notarization.
+        # Beware of the overall `--timeout` time.
+        # This only has any effect if `wait` is true.
+        #
+        # Default: 10m
+        # timeout: 20m
+
+archives:
+  - format: tar.gz
+    # this name template makes the OS and Arch compatible with the results of `uname`.
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+    # use zip for windows archives
+    format_overrides:
+      - goos: windows
+        format: zip
+
+brews:
+  - repository:
+      owner: otdfctl
+      name: homebrew-tap
+    directory: Formula
+    goarm: "7"
+    homepage: https://github.com/opentdf/otdfctl
+    description: Deliver Go binaries as fast and easily as possible
+    license: MIT
+    test: |
+      system "#{bin}/otdfctl version"
+    extra_install: |-
+      bash_completion.install "completions/otdfctl.bash" => "otdfctl"
+      zsh_completion.install "completions/otdfctl.zsh" => "_otdfctl"
+      fish_completion.install "completions/otdfctl.fish"
+      man1.install "manpages/otdfctl.1.gz"
