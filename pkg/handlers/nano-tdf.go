@@ -3,31 +3,23 @@ package handlers
 import (
 	"bytes"
 	"io"
+
+	"github.com/opentdf/platform/sdk"
 )
 
 func (h Handler) EncryptNanoBytes(b []byte, values []string, kasUrlPath string, ecdsaBinding bool) (*bytes.Buffer, error) {
 	var encrypted []byte
 	enc := bytes.NewBuffer(encrypted)
 
-	nanoTDFConfig, err := h.sdk.NewNanoTDFConfig()
-	if err != nil {
-		return nil, err
-	}
-
-	err = nanoTDFConfig.SetKasURL(h.platformEndpoint + kasUrlPath)
-	if err != nil {
-		return nil, err
-	}
-	err = nanoTDFConfig.SetAttributes(values)
-	if err != nil {
-		return nil, err
+	options := []sdk.NanoTDFOption{
+		sdk.WithKasURL(h.platformEndpoint + kasUrlPath),
+		sdk.WithNanoDataAttributes(values),
 	}
 	if ecdsaBinding {
-		nanoTDFConfig.EnableECDSAPolicyBinding()
+		options = append(options, sdk.WithECDSAPolicyBinding())
 	}
-
 	// TODO: validate values are FQNs or return an error [https://github.com/opentdf/platform/issues/515]
-	_, err = h.sdk.CreateNanoTDF(enc, bytes.NewReader(b), *nanoTDFConfig)
+	_, err := h.sdk.CreateNanoTDF(enc, bytes.NewReader(b), options...)
 	if err != nil {
 		return nil, err
 	}
