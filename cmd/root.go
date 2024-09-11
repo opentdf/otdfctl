@@ -5,6 +5,7 @@ package cmd
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/opentdf/otdfctl/pkg/auth"
 	"github.com/opentdf/otdfctl/pkg/cli"
@@ -138,6 +139,9 @@ func NewHandler(c *cli.Cli) handlers.Handler {
 	}
 
 	if err := auth.ValidateProfileAuthCredentials(c.Context(), cp); err != nil {
+		if errors.Is(err, auth.ErrPlatformConfigNotFound) {
+			cli.ExitWithError(fmt.Sprintf("Failed to get platform configuration. Is the platform accepting connections at '%s'?", cp.GetEndpoint()), nil)
+		}
 		if errors.Is(err, auth.ErrProfileCredentialsNotFound) {
 			cli.ExitWithWarning("Profile missing credentials. Please login or add client credentials.")
 		}

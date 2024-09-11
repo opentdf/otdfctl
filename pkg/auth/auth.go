@@ -85,7 +85,7 @@ func getPlatformConfiguration(endpoint, publicClientID string, tlsNoVerify bool)
 
 	e, err := utils.NormalizeEndpoint(endpoint)
 	if err != nil {
-		return c, errors.Join(ErrProfileCredentialsNotFound, err)
+		return c, err
 	}
 
 	opts := []sdk.Option{}
@@ -99,7 +99,7 @@ func getPlatformConfiguration(endpoint, publicClientID string, tlsNoVerify bool)
 
 	s, err := sdk.New(e.String(), opts...)
 	if err != nil {
-		return c, errors.Join(ErrProfileCredentialsNotFound, err)
+		return c, err
 	}
 
 	errs := []error{}
@@ -303,6 +303,9 @@ func newOidcRelyingParty(ctx context.Context, endpoint string, tlsNoVerify bool,
 
 	pc, err := getPlatformConfiguration(endpoint, pcClient, tlsNoVerify)
 	if err != nil {
+		if errors.Is(err, sdk.ErrPlatformConfigFailed) {
+			return nil, ErrPlatformConfigNotFound
+		}
 		return nil, err
 	}
 
