@@ -32,12 +32,14 @@ teardown_file() {
 }
 
 @test "helpful error if bad credentials" {
+    # nonexistent client creds
     echo -n '{"clientId":"badClient","clientSecret":"badSecret"}' > bad_creds.json
     BAD_CREDS="--with-client-creds-file ./bad_creds.json"
     run_otdfctl $HOST $BAD_CREDS policy attributes list
     assert_failure
     assert_output --partial "Failed to get access token"
 
+    # malformed JSON
     BAD_CREDS="--with-client-creds '{clientId:"badClient",clientSecret:"badSecret"}'"
     run_otdfctl $HOST $BAD_CREDS policy attributes list
     assert_failure
