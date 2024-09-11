@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/google/uuid"
 	"github.com/opentdf/platform/protocol/go/common"
 	"github.com/spf13/cobra"
 )
@@ -27,6 +28,15 @@ func (f flagHelper) GetRequiredString(flag string) string {
 		ExitWithError("Flag '--"+flag+"' is required", nil)
 	}
 	return v
+}
+
+func (f flagHelper) GetRequiredID(idFlag string) string {
+	v := f.GetRequiredString(idFlag)
+	id, err := uuid.Parse(v)
+	if err != nil {
+		ExitWithError(fmt.Sprintf("Flag '--%s' received value '%s' must be a valid UUID", idFlag, v), nil)
+	}
+	return id.String()
 }
 
 func (f flagHelper) GetOptionalString(flag string) string {

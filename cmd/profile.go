@@ -10,30 +10,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// Hide the commands (like profiles) that shouldn't show if running in the Linux OS
-// unless we're running in test mode.
-//
-//	var hideCommandInLinux = func(cmd *cobra.Command, args []string) {
-//		if runtime.GOOS == "linux" {
-//			if config.TestMode == "true" {
-//				return
-//			}
-//			cmd.Pa
-//			cmd.Hidden = true
-//		}
-//	}
-var hideCommandInLinux = func() bool {
-	if runtime.GOOS == "linux" {
-		return config.TestMode != "true"
-	}
-	return false
-}
+var (
+	runningInLinux         = runtime.GOOS == "linux"
+	runningInLinuxTestMode = runningInLinux && config.TestMode == "true"
+)
 
 var profileCmd = &cobra.Command{
 	Use:    "profile",
 	Short:  "Manage profiles (experimental)",
-	Hidden: hideCommandInLinux(),
-	// PreRun: hideCommandInLinux,
+	Hidden: runningInLinux && !runningInLinuxTestMode,
 }
 
 var profileCreateCmd = &cobra.Command{

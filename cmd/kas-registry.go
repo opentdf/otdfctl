@@ -23,7 +23,7 @@ func policy_getKeyAccessRegistry(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
-	id := c.FlagHelper.GetRequiredString("id")
+	id := c.FlagHelper.GetRequiredID("id")
 
 	kas, err := h.GetKasRegistryEntry(id)
 	if err != nil {
@@ -156,7 +156,7 @@ func policy_updateKeyAccessRegistry(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
-	id := c.Flags.GetRequiredString("id")
+	id := c.Flags.GetRequiredID("id")
 	uri := c.Flags.GetOptionalString("uri")
 	cachedJSON := c.Flags.GetOptionalString("public-keys")
 	remote := c.Flags.GetOptionalString("public-key-remote")
@@ -208,7 +208,7 @@ func policy_deleteKeyAccessRegistry(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
-	id := c.Flags.GetRequiredString("id")
+	id := c.Flags.GetRequiredID("id")
 	force := c.Flags.GetOptionalBool("force")
 
 	kas, err := h.GetKasRegistryEntry(id)

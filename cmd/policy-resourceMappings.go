@@ -21,7 +21,7 @@ func policy_createResourceMapping(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
-	attrId := c.Flags.GetRequiredString("attribute-value-id")
+	attrId := c.Flags.GetRequiredID("attribute-value-id")
 	terms = c.Flags.GetStringSlice("terms", terms, cli.FlagsStringSliceOptions{
 		Min: 1,
 	})
@@ -49,7 +49,7 @@ func policy_getResourceMapping(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
-	id := c.Flags.GetRequiredString("id")
+	id := c.Flags.GetRequiredID("id")
 
 	resourceMapping, err := h.GetResourceMapping(id)
 	if err != nil {
@@ -109,7 +109,7 @@ func policy_updateResourceMapping(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
-	id := c.Flags.GetRequiredString("id")
+	id := c.Flags.GetRequiredID("id")
 	attrValueId := c.Flags.GetOptionalString("attribute-value-id")
 	terms = c.Flags.GetStringSlice("terms", terms, cli.FlagsStringSliceOptions{})
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
@@ -136,7 +136,7 @@ func policy_deleteResourceMapping(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
-	id := c.Flags.GetRequiredString("id")
+	id := c.Flags.GetRequiredID("id")
 
 	cli.ConfirmAction(cli.ActionDelete, "resource-mapping", id, false)
 
