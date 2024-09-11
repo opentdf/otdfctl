@@ -110,7 +110,7 @@ func policy_updateResourceMapping(cmd *cobra.Command, args []string) {
 	defer h.Close()
 
 	id := c.Flags.GetRequiredID("id")
-	attrValueId := c.Flags.GetOptionalString("attribute-value-id")
+	attrValueId := c.Flags.GetOptionalID("attribute-value-id")
 	terms = c.Flags.GetStringSlice("terms", terms, cli.FlagsStringSliceOptions{})
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 

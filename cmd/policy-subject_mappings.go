@@ -116,7 +116,7 @@ func policy_createSubjectMapping(cmd *cobra.Command, args []string) {
 	actionsStandard = c.Flags.GetStringSlice("action-standard", actionsStandard, cli.FlagsStringSliceOptions{Min: 0})
 	actionsCustom = c.Flags.GetStringSlice("action-custom", actionsCustom, cli.FlagsStringSliceOptions{Min: 0})
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
-	existingSCSId := c.Flags.GetOptionalString("subject-condition-set-id")
+	existingSCSId := c.Flags.GetOptionalID("subject-condition-set-id")
 	// NOTE: labels within a new Subject Condition Set created on a SM creation are not supported
 	newScsJSON := c.Flags.GetOptionalString("subject-condition-set-new")
 
@@ -215,7 +215,7 @@ func policy_updateSubjectMapping(cmd *cobra.Command, args []string) {
 	id := c.Flags.GetRequiredID("id")
 	actionsStandard = c.Flags.GetStringSlice("action-standard", actionsStandard, cli.FlagsStringSliceOptions{Min: 0})
 	actionsCustom = c.Flags.GetStringSlice("action-custom", actionsCustom, cli.FlagsStringSliceOptions{Min: 0})
-	scsId := c.Flags.GetOptionalString("subject-condition-set-id")
+	scsId := c.Flags.GetOptionalID("subject-condition-set-id")
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
 	if len(actionsStandard) > 0 {

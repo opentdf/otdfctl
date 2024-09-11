@@ -39,6 +39,18 @@ func (f flagHelper) GetRequiredID(idFlag string) string {
 	return id.String()
 }
 
+func (f flagHelper) GetOptionalID(idFlag string) string {
+	p := f.GetOptionalString(idFlag)
+	if p == "" {
+		return ""
+	}
+	id, err := uuid.Parse(p)
+	if err != nil {
+		ExitWithError(fmt.Sprintf("Optional flag '--%s' received value '%s' and must be a valid UUID if used", idFlag, p), nil)
+	}
+	return id.String()
+}
+
 func (f flagHelper) GetOptionalString(flag string) string {
 	p := f.cmd.Flag(flag)
 	if p == nil {
