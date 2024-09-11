@@ -202,9 +202,9 @@ teardown_file() {
     }
 
 @test "assign rejects more than one type of grant at once" {
-    export NS_ID_FLAG='--namespace-id hello'
-    export ATTR_ID_FLAG='--attribute-id world'
-    export VAL_ID_FLAG='--value-id goodnight'
+    export NS_ID_FLAG='--namespace-id 258e69b7-9e61-46e1-8fd6-b4ba00898ec2'
+    export ATTR_ID_FLAG='--attribute-id 258e69b7-9e61-46e1-8fd6-b4ba00898ec3'
+    export VAL_ID_FLAG='--value-id 258e69b7-9e61-46e1-8fd6-b4ba00898ec4'
     
     run_otdfctl_kasg assign $ATTR_ID_FLAG $VAL_ID_FLAG $KAS_ID_FLAG
       assert_failure
@@ -220,9 +220,9 @@ teardown_file() {
 }
 
 @test "unassign rejects more than one type of grant at once" {
-    export NS_ID_FLAG='--namespace-id hello'
-    export ATTR_ID_FLAG='--attribute-id world'
-    export VAL_ID_FLAG='--value-id goodnight'
+    export NS_ID_FLAG='--namespace-id 258e69b7-9e61-46e1-8fd6-b4ba00898ec2'
+    export ATTR_ID_FLAG='--attribute-id 258e69b7-9e61-46e1-8fd6-b4ba00898ec1'
+    export VAL_ID_FLAG='--value-id 258e69b7-9e61-46e1-8fd6-b4ba00898ec3'
 
     run_otdfctl_kasg unassign $ATTR_ID_FLAG $VAL_ID_FLAG $KAS_ID_FLAG
       assert_failure
@@ -235,4 +235,22 @@ teardown_file() {
     run_otdfctl_kasg unassign $ATTR_ID_FLAG $NS_ID_FLAG $KAS_ID_FLAG
       assert_failure
       assert_output --partial "Must specify exactly one Attribute Namespace ID, Definition ID, or Value ID to unassign"
+}
+
+@test "optional ID flag string error message" {
+    export NS_ID_FLAG='--namespace-id hello'
+    export ATTR_ID_FLAG='--attribute-id world'
+    export VAL_ID_FLAG='--value-id goodnight'
+
+    run_otdfctl_kasg unassign $NS_ID_FLAG $KAS_ID_FLAG
+      assert_failure
+      assert_output --partial "Optional flag '--namespace-id' received value 'hello' and must be a valid UUID if used"
+    
+    run_otdfctl_kasg unassign $ATTR_ID_FLAG $KAS_ID_FLAG
+      assert_failure
+      assert_output --partial "Optional flag '--attribute-id' received value 'world' and must be a valid UUID if used"
+    
+    run_otdfctl_kasg unassign $VAL_ID_FLAG $KAS_ID_FLAG
+      assert_failure
+      assert_output --partial "Optional flag '--value-id' received value 'goodnight' and must be a valid UUID if used"
 }
