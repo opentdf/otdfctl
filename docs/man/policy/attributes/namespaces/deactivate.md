@@ -8,7 +8,7 @@ command:
       description: ID of the attribute namespace
       required: true
     - name: force
-      description: Force deletion without interactive confirmation (dangerous)
+      description: Force deactivation without interactive confirmation (dangerous)
 ---
 
 # Deactivate an attribute namespace

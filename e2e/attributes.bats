@@ -40,6 +40,13 @@ teardown_file() {
   unset HOST WITH_CREDS NS_NAME NS_ID ATTR_NAME_RANDOM
 }
 
+@test "Create an attribute - With Values" {
+    run_otdfctl_attr create --name attrWithValues --namespace "$NS_ID" --rule HIERARCHY -v val1 -v val2 --json
+      assert_success 
+      [ "$( echo "$output" | jq -r '.values[0].value' )" = "val1" ]
+      [ "$( echo "$output" | jq -r '.values[1].value' )" = "val2" ]
+}
+
 @test "Create an attribute - Bad" {
   # bad rule
     run_otdfctl_attr create --name attr1 --namespace "$NS_ID" --rule NONEXISTENT
@@ -81,28 +88,64 @@ teardown_file() {
     assert_failure  
 }
 
-@test "Update an attribute definition - Good" {
-  run_otdfctl_attr update --force-replace-labels -l key=somethingElse --id "$ATTR_ID" --json
-  assert_success
-  [ "$(echo $output | jq -r '.metadata.labels.key')" = "somethingElse" ]
+@test "Update an attribute definition (Safe) - Good" {
+  # replace labels
+    run_otdfctl_attr update --force-replace-labels -l key=somethingElse --id "$ATTR_ID" --json
+    assert_success
+    [ "$(echo $output | jq -r '.metadata.labels.key')" = "somethingElse" ]
 
-  run_otdfctl_attr update -l other=testing  --id "$ATTR_ID" --json
-  assert_success
-  [ "$(echo $output | jq -r '.metadata.labels.other')" = "testing" ]
-  [ "$(echo $output | jq -r '.metadata.labels.key')" = "somethingElse" ]
+  # extend labels
+    run_otdfctl_attr update -l other=testing  --id "$ATTR_ID" --json
+    assert_success
+    [ "$(echo $output | jq -r '.metadata.labels.other')" = "testing" ]
+    [ "$(echo $output | jq -r '.metadata.labels.key')" = "somethingElse" ]
 }
 
-@test "Update an attribute definition - Bad" {
+@test "Update an attribute definition (Safe) - Bad" {
   # no id
   run_otdfctl_attr update
   assert_failure
 }
 
-# List attributes
+@test "List attribute definitions" {
+  run_otdfctl_attr list
+  assert_success
+  assert_output --partial "$ATTR_ID"
 
-# Deactivate Attribute
+  run_otdfctl_attr list --state active
+  assert_success
+  assert_output --partial "$ATTR_ID"
 
-# Unsafe Reactivate
+  run_otdfctl_attr list --state inactive
+  assert_success
+  refute_output --partial "$ATTR_ID"
+}
+
+@test "Deactivate then unsafe reactivate an attribute definition" {
+  run_otdfctl_attr deactivate
+  assert_failure
+
+  run_otdfctl_attr get --id "$ATTR_ID" --json
+  assert_success
+  [ "$(echo "$output" | jq -r '.active.value')" = true ]
+
+  run_otdfctl_attr deactivate --id "$ATTR_ID" --force
+  assert_success
+
+  run_otdfctl_attr get --id "$ATTR_ID" --json
+  assert_success
+  [ "$(echo "$output" | jq -r '.active')" = {} ]
+
+  run_otdfctl_attr unsafe reactivate
+  assert_failure
+
+  run_otdfctl_attr unsafe reactivate --id "$ATTR_ID" --force
+  assert_success
+
+  run_otdfctl_attr get --id "$ATTR_ID" --json
+  assert_success
+  [ "$(echo "$output" | jq -r '.active.value')" = true ]
+}
 
 # Unsafe Delete
 
