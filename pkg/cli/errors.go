@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"errors"
 	"os"
 
 	"google.golang.org/grpc/codes"
@@ -25,22 +24,18 @@ func ExitWithWarning(warnMsg string) {
 
 // ExitWithError prints an error message and exits with a non-zero status code.
 func (c *Cli) ExitWithError(errMsg string, err error) {
-	if err == nil {
-		// ensure message and exit are satisfied even if nil error passed
-		err = errors.New("")
-	}
 	c.ExitWithNotFoundError(errMsg, err)
-	if err != nil {
-		c.Println(ErrorMessage(errMsg, err))
-		os.Exit(1)
-	}
+	c.Println(ErrorMessage(errMsg, err))
+	os.Exit(1)
 }
 
 // ExitWithNotFoundError prints an error message and exits with a non-zero status code if the error is a NotFound error.
 func (c *Cli) ExitWithNotFoundError(errMsg string, err error) {
-	if e, ok := status.FromError(err); ok && e.Code() == codes.NotFound {
-		c.Println(ErrorMessage(errMsg+": not found", nil))
-		os.Exit(1)
+	if err != nil {
+		if e, ok := status.FromError(err); ok && e.Code() == codes.NotFound {
+			c.Println(ErrorMessage(errMsg+": not found", nil))
+			os.Exit(1)
+		}
 	}
 }
 
@@ -50,7 +45,7 @@ func (c *Cli) ExitWithMessage(msg string, code int) {
 }
 
 func (c *Cli) ExitWithWarning(warnMsg string) {
-	c.ExitWithMessage(WarningMessage(warnMsg), 0)
+	c.ExitWithMessage(WarningMessage(warnMsg), 1)
 }
 
 func (c *Cli) ExitWithSuccess(msg string) {

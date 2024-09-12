@@ -21,7 +21,7 @@ func policy_getAttributeNamespace(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
-	id := c.Flags.GetRequiredString("id")
+	id := c.Flags.GetRequiredID("id")
 
 	ns, err := h.GetNamespace(id)
 	if err != nil {
@@ -105,7 +105,7 @@ func policy_deactivateAttributeNamespace(cmd *cobra.Command, args []string) {
 	defer h.Close()
 
 	force := c.Flags.GetOptionalBool("force")
-	id := c.Flags.GetRequiredString("id")
+	id := c.Flags.GetRequiredID("id")
 
 	ns, err := h.GetNamespace(id)
 	if err != nil {
@@ -138,7 +138,7 @@ func policy_updateAttributeNamespace(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
-	id := c.Flags.GetRequiredString("id")
+	id := c.Flags.GetRequiredID("id")
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
 	ns, err := h.UpdateNamespace(
@@ -166,7 +166,7 @@ func policy_unsafeDeleteAttributeNamespace(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
-	id := c.Flags.GetRequiredString("id")
+	id := c.Flags.GetRequiredID("id")
 
 	ns, err := h.GetNamespace(id)
 	if err != nil {
@@ -199,7 +199,7 @@ func policy_unsafeReactivateAttributeNamespace(cmd *cobra.Command, args []string
 	h := NewHandler(c)
 	defer h.Close()
 
-	id := c.Flags.GetRequiredString("id")
+	id := c.Flags.GetRequiredID("id")
 
 	ns, err := h.GetNamespace(id)
 	if err != nil {
@@ -233,7 +233,7 @@ func policy_unsafeUpdateAttributeNamespace(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
-	id := c.Flags.GetRequiredString("id")
+	id := c.Flags.GetRequiredID("id")
 	name := c.Flags.GetRequiredString("name")
 
 	ns, err := h.GetNamespace(id)

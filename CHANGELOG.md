@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.13.0](https://github.com/opentdf/otdfctl/compare/v0.12.2...v0.13.0) (2024-09-12)
+
+
+### Features
+
+* add cli test mode and profile tests ([#313](https://github.com/opentdf/otdfctl/issues/313)) ([e0bc183](https://github.com/opentdf/otdfctl/commit/e0bc1836e8b5f14c87b5d572ad7937924c76d860))
+* **ci:** make e2e test workflow reusable ([#365](https://github.com/opentdf/otdfctl/issues/365)) ([d94408c](https://github.com/opentdf/otdfctl/commit/d94408cc2898d46b3444e874c035ff2bffe451f4))
+* **ci:** namespaces e2e tests and test suite improvements ([#351](https://github.com/opentdf/otdfctl/issues/351)) ([ce28555](https://github.com/opentdf/otdfctl/commit/ce285554866bf89ee8aa2df4a4b426548a58b59a))
+* **ci:** reusable platform composite action in e2e tests ([#369](https://github.com/opentdf/otdfctl/issues/369)) ([f7d5a1c](https://github.com/opentdf/otdfctl/commit/f7d5a1c07304bee14dfc92fa81bd65389e76d9f6))
+* **core:** add ecdsa-binding encrypt flag ([#360](https://github.com/opentdf/otdfctl/issues/360)) ([8702ec0](https://github.com/opentdf/otdfctl/commit/8702ec007b6d1354b6c0366e6b375f26216dfde1))
+* **core:** adds missing long manual output docs ([#362](https://github.com/opentdf/otdfctl/issues/362)) ([8e1390f](https://github.com/opentdf/otdfctl/commit/8e1390f20c17a5900c586f94384af76ffd9a2844)), closes [#359](https://github.com/opentdf/otdfctl/issues/359)
+* **core:** kas-grants list ([#346](https://github.com/opentdf/otdfctl/issues/346)) ([7f51282](https://github.com/opentdf/otdfctl/commit/7f512825eab814e3c130e3fe4e8ed85ecbe2d146)), closes [#253](https://github.com/opentdf/otdfctl/issues/253)
+
+
+### Bug Fixes
+
+* **ci:** e2e workflow should be fully reusable ([#368](https://github.com/opentdf/otdfctl/issues/368)) ([cc1e2b9](https://github.com/opentdf/otdfctl/commit/cc1e2b938fb0c8c4cf64d735f2961f7c9cae79fa))
+* **ci:** enhance lint config and resolve all lint issues ([#363](https://github.com/opentdf/otdfctl/issues/363)) ([5c1dbf1](https://github.com/opentdf/otdfctl/commit/5c1dbf1f5e441ca0ebd8cfcca145a77b623f3638))
+* **core:** GOOS, error message fixes ([#378](https://github.com/opentdf/otdfctl/issues/378)) ([623a82a](https://github.com/opentdf/otdfctl/commit/623a82ad3c1ed698a83eed54cf15a4f552096728)), closes [#380](https://github.com/opentdf/otdfctl/issues/380)
+* **core:** metadata rendering cleanup ([#293](https://github.com/opentdf/otdfctl/issues/293)) ([ed21f81](https://github.com/opentdf/otdfctl/commit/ed21f81863450fd6167106711392e713a43c55be))
+* **core:** wire attribute value FQNs to encrypt ([#370](https://github.com/opentdf/otdfctl/issues/370)) ([21f9b80](https://github.com/opentdf/otdfctl/commit/21f9b80cdee7d695a308937b08dbc768d11fbbd5))
+* refactor to support varying print output ([#350](https://github.com/opentdf/otdfctl/issues/350)) ([d6932f3](https://github.com/opentdf/otdfctl/commit/d6932f30d9f653e46b32761a3257f3555ef0a6eb))
+
 ## [0.12.2](https://github.com/opentdf/otdfctl/compare/v0.12.1...v0.12.2) (2024-08-27)
 
 

@@ -115,7 +115,7 @@ func policy_getSubjectConditionSet(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
-	id := c.Flags.GetRequiredString("id")
+	id := c.Flags.GetRequiredID("id")
 
 	scs, err := h.GetSubjectConditionSet(id)
 	if err != nil {
@@ -179,7 +179,7 @@ func policy_updateSubjectConditionSet(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
-	id := c.Flags.GetRequiredString("id")
+	id := c.Flags.GetRequiredID("id")
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 	ssFlagJSON := c.Flags.GetOptionalString("subject-sets")
 	ssFileJSON := c.Flags.GetOptionalString("subject-sets-file-json")
@@ -247,7 +247,7 @@ func policy_deleteSubjectConditionSet(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
-	id := c.Flags.GetRequiredString("id")
+	id := c.Flags.GetRequiredID("id")
 
 	scs, err := h.GetSubjectConditionSet(id)
 	if err != nil {
