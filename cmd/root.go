@@ -76,6 +76,7 @@ func NewHandler(c *cli.Cli) handlers.Handler {
 	tlsNoVerify := c.FlagHelper.GetOptionalBool("tls-no-verify")
 	withClientCreds := c.FlagHelper.GetOptionalString("with-client-creds")
 	withClientCredsFile := c.FlagHelper.GetOptionalString("with-client-creds-file")
+	var inMemoryProfile bool
 
 	// if global flags are set then validate and create a temporary profile in memory
 	var cp *profiles.ProfileStore
@@ -108,6 +109,7 @@ func NewHandler(c *cli.Cli) handlers.Handler {
 			cli.ExitWithError("Failed to get client credentials", err)
 		}
 
+		inMemoryProfile = true
 		profile, err = profiles.New(profiles.WithInMemoryStore())
 		if err != nil || profile == nil {
 			cli.ExitWithError("Failed to initialize a temporary profile", err)
@@ -141,6 +143,9 @@ func NewHandler(c *cli.Cli) handlers.Handler {
 	if err := auth.ValidateProfileAuthCredentials(c.Context(), cp); err != nil {
 		if errors.Is(err, auth.ErrPlatformConfigNotFound) {
 			cli.ExitWithError(fmt.Sprintf("Failed to get platform configuration. Is the platform accepting connections at '%s'?", cp.GetEndpoint()), nil)
+		}
+		if inMemoryProfile {
+			cli.ExitWithError("Failed to authenticate with flag-provided client credentials", err)
 		}
 		if errors.Is(err, auth.ErrProfileCredentialsNotFound) {
 			cli.ExitWithWarning("Profile missing credentials. Please login or add client credentials.")
