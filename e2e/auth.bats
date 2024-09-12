@@ -37,7 +37,7 @@ teardown_file() {
     BAD_CREDS="--with-client-creds-file ./bad_creds.json"
     run_otdfctl $HOST $BAD_CREDS policy attributes list
     assert_failure
-    assert_output --partial "Failed to get access token"
+    assert_output --partial "Failed to authenticate with flag-provided client credentials"
 
     # malformed JSON
     BAD_CREDS="--with-client-creds '{clientId:"badClient",clientSecret:"badSecret"}'"

@@ -70,6 +70,8 @@ func InitProfile(c *cli.Cli, onlyNew bool) *profiles.ProfileStore {
 
 // instantiates a new handler with authentication via client credentials
 // TODO make this a preRun hook
+//
+//nolint:nestif // separate refactor [https://github.com/opentdf/otdfctl/issues/383]
 func NewHandler(c *cli.Cli) handlers.Handler {
 	// Non-profile flags
 	host := c.FlagHelper.GetOptionalString("host")

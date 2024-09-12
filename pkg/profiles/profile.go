@@ -69,6 +69,7 @@ func newStoreFactory(driver ProfileDriver) NewStoreInterface {
 func New(opts ...profileConfigVariadicFunc) (*Profile, error) {
 	var err error
 
+	newStoreFactory("hello")
 	if testProfile != nil {
 		return testProfile, nil
 	}
