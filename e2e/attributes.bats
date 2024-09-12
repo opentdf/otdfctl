@@ -147,6 +147,29 @@ teardown_file() {
   [ "$(echo "$output" | jq -r '.active.value')" = true ]
 }
 
-# Unsafe Delete
+@test "Unsafe Update an attribute definition" {
+  # create with two values
+  run_otdfctl_attr create --name created --namespace "$NS_ID" --rule HIERARCHY -v val1 -v val2 --json
+    CREATED_ID=$(echo "$output" | jq -r '.id')
+    VAL1_ID=$(echo "$output" | jq -r '.values[0].id')
+    VAL2_ID=$(echo "$output" | jq -r '.values[1].id')
 
-# Unsafe Update
+  run_otdfctl_attr unsafe update --name updated --id "$CREATED_ID" --json --force
+    assert_success
+  run_otdfctl_attr get --id "$CREATED_ID" --json
+    assert_success
+    [ "$(echo "$output" | jq -r '.name')" = "updated" ]
+
+  run_otdfctl_attr unsafe update --rule ALL_OF --id "$CREATED_ID" --json --force
+    assert_success
+  run_otdfctl_attr get --id "$CREATED_ID" --json
+    assert_success
+    [ "$(echo "$output" | jq -r '.rule')" = 1 ]
+
+  run_otdfctl_attr unsafe update --id "$CREATED_ID" --json --values-order "$VAL2_ID" --values-order "$VAL1_ID" --force
+    assert_success
+  run_otdfctl_attr get --id "$CREATED_ID" --json
+    assert_success
+    [ "$(echo "$output" | jq -r '.values[0].value')" = "val2" ]
+    [ "$(echo "$output" | jq -r '.values[1].value')" = "val1" ]
+}
