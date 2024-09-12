@@ -14,7 +14,7 @@ const (
 )
 
 type profileConfig struct {
-	driver string
+	driver ProfileDriver
 }
 
 type Profile struct {
@@ -30,12 +30,15 @@ type CurrentProfileStore struct {
 }
 
 const (
-	PROFILE_DRIVER_KEYRING   = "keyring"
-	PROFILE_DRIVER_IN_MEMORY = "in-memory"
-	PROFILE_DRIVER_DEFAULT   = PROFILE_DRIVER_KEYRING
+	PROFILE_DRIVER_KEYRING   ProfileDriver = "keyring"
+	PROFILE_DRIVER_IN_MEMORY ProfileDriver = "in-memory"
+	PROFILE_DRIVER_DEFAULT                 = PROFILE_DRIVER_KEYRING
 )
 
-type profileConfigVariadicFunc func(profileConfig) profileConfig
+type (
+	profileConfigVariadicFunc func(profileConfig) profileConfig
+	ProfileDriver             string
+)
 
 func WithInMemoryStore() profileConfigVariadicFunc {
 	return func(c profileConfig) profileConfig {
@@ -51,7 +54,7 @@ func WithKeyringStore() profileConfigVariadicFunc {
 	}
 }
 
-func newStoreFactory(driver string) NewStoreInterface {
+func newStoreFactory(driver ProfileDriver) NewStoreInterface {
 	switch driver {
 	case PROFILE_DRIVER_KEYRING:
 		return NewKeyringStore
@@ -66,6 +69,7 @@ func newStoreFactory(driver string) NewStoreInterface {
 func New(opts ...profileConfigVariadicFunc) (*Profile, error) {
 	var err error
 
+	newStoreFactory("hello")
 	if testProfile != nil {
 		return testProfile, nil
 	}

@@ -17,7 +17,7 @@ func policy_createAttributeValue(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
-	attrId := c.FlagHelper.GetRequiredString("attribute-id")
+	attrId := c.FlagHelper.GetRequiredID("attribute-id")
 	value := c.FlagHelper.GetRequiredString("value")
 	metadataLabels = c.FlagHelper.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
@@ -39,7 +39,7 @@ func policy_getAttributeValue(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
-	id := c.FlagHelper.GetRequiredString("id")
+	id := c.FlagHelper.GetRequiredID("id")
 
 	v, err := h.GetAttributeValue(id)
 	if err != nil {
@@ -53,7 +53,7 @@ func policy_listAttributeValue(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
 	defer h.Close()
-	attrId := c.FlagHelper.GetRequiredString("attribute-id")
+	attrId := c.FlagHelper.GetRequiredID("attribute-id")
 	state := cli.GetState(cmd)
 	vals, err := h.ListAttributeValues(attrId, state)
 	if err != nil {
@@ -88,7 +88,7 @@ func policy_updateAttributeValue(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
-	id := c.Flags.GetRequiredString("id")
+	id := c.Flags.GetRequiredID("id")
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
 	_, err := h.GetAttributeValue(id)
@@ -109,7 +109,7 @@ func policy_deactivateAttributeValue(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
-	id := c.Flags.GetRequiredString("id")
+	id := c.Flags.GetRequiredID("id")
 
 	value, err := h.GetAttributeValue(id)
 	if err != nil {
@@ -131,7 +131,7 @@ func policy_unsafeReactivateAttributeValue(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
-	id := c.Flags.GetRequiredString("id")
+	id := c.Flags.GetRequiredID("id")
 
 	v, err := h.GetAttributeValue(id)
 	if err != nil {
@@ -162,7 +162,7 @@ func policy_unsafeUpdateAttributeValue(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
-	id := c.Flags.GetRequiredString("id")
+	id := c.Flags.GetRequiredID("id")
 	value := c.Flags.GetOptionalString("value")
 
 	v, err := h.GetAttributeValue(id)
@@ -194,7 +194,7 @@ func policy_unsafeDeleteAttributeValue(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
-	id := c.Flags.GetRequiredString("id")
+	id := c.Flags.GetRequiredID("id")
 
 	v, err := h.GetAttributeValue(id)
 	if err != nil {
