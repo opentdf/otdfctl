@@ -19,3 +19,12 @@ setup() {
       run sh -c "./otdfctl $HOST $WITH_CREDS policy attributes values $*"
     }
 }
+
+teardown_file() {
+  # clear out all test env vars
+  unset HOST WITH_CREDS
+}
+
+@test "Create an attribute value" {
+    run_otdfctl_av create 
+}
