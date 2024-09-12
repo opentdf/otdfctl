@@ -11,14 +11,14 @@ import (
 )
 
 var (
-	runningInLinux         = runtime.GOOS == "linux"
-	runningInLinuxTestMode = runningInLinux && config.TestMode == "true"
+	runningInLinux    = runtime.GOOS == "linux"
+	runningInTestMode = config.TestMode == "true"
 )
 
 var profileCmd = &cobra.Command{
 	Use:    "profile",
 	Short:  "Manage profiles (experimental)",
-	Hidden: runningInLinux && !runningInLinuxTestMode,
+	Hidden: runningInLinux && !runningInTestMode,
 }
 
 var profileCreateCmd = &cobra.Command{
