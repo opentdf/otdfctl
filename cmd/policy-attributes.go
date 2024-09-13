@@ -132,6 +132,7 @@ func policy_deactivateAttribute(cmd *cobra.Command, args []string) {
 	defer h.Close()
 
 	id := c.Flags.GetRequiredID("id")
+	force := c.Flags.GetOptionalBool("force")
 
 	attr, err := h.GetAttribute(id)
 	if err != nil {
@@ -139,7 +140,9 @@ func policy_deactivateAttribute(cmd *cobra.Command, args []string) {
 		cli.ExitWithError(errMsg, err)
 	}
 
-	cli.ConfirmAction(cli.ActionDeactivate, "attribute", attr.GetName(), false)
+	if !force {
+		cli.ConfirmAction(cli.ActionDeactivate, "attribute", attr.GetName(), false)
+	}
 
 	attr, err = h.DeactivateAttribute(id)
 	if err != nil {
@@ -370,6 +373,11 @@ func init() {
 		deactivateDoc.GetDocFlag("id").Shorthand,
 		deactivateDoc.GetDocFlag("id").Default,
 		deactivateDoc.GetDocFlag("id").Description,
+	)
+	deactivateDoc.Flags().Bool(
+		deactivateDoc.GetDocFlag("force").Name,
+		false,
+		deactivateDoc.GetDocFlag("force").Description,
 	)
 
 	// unsafe actions on attributes
