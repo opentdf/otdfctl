@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"connectrpc.com/connect"
 	"github.com/opentdf/platform/protocol/go/common"
 	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/opentdf/platform/protocol/go/policy/subjectmapping"
@@ -16,42 +17,46 @@ const (
 var SubjectMappingOperatorEnumChoices = []string{SubjectMappingOperatorIn, SubjectMappingOperatorNotIn, SubjectMappingOperatorUnspecified}
 
 func (h Handler) GetSubjectMapping(id string) (*policy.SubjectMapping, error) {
-	resp, err := h.sdk.SubjectMapping.GetSubjectMapping(h.ctx, &subjectmapping.GetSubjectMappingRequest{
-		Id: id,
-	})
-	return resp.GetSubjectMapping(), err
+	resp, err := h.sdk.SubjectMapping.GetSubjectMapping(h.ctx, &connect.Request[subjectmapping.GetSubjectMappingRequest]{
+		Msg: &subjectmapping.GetSubjectMappingRequest{
+			Id: id,
+		}})
+	return resp.Msg.GetSubjectMapping(), err
 }
 
 func (h Handler) ListSubjectMappings() ([]*policy.SubjectMapping, error) {
-	resp, err := h.sdk.SubjectMapping.ListSubjectMappings(h.ctx, &subjectmapping.ListSubjectMappingsRequest{})
+	resp, err := h.sdk.SubjectMapping.ListSubjectMappings(h.ctx, &connect.Request[subjectmapping.ListSubjectMappingsRequest]{
+		Msg: &subjectmapping.ListSubjectMappingsRequest{}})
 
-	return resp.GetSubjectMappings(), err
+	return resp.Msg.GetSubjectMappings(), err
 }
 
 // Creates and returns the created subject mapping
 func (h Handler) CreateNewSubjectMapping(attrValId string, actions []*policy.Action, existingSCSId string, newScs *subjectmapping.SubjectConditionSetCreate, m *common.MetadataMutable) (*policy.SubjectMapping, error) {
-	resp, err := h.sdk.SubjectMapping.CreateSubjectMapping(h.ctx, &subjectmapping.CreateSubjectMappingRequest{
-		AttributeValueId:              attrValId,
-		Actions:                       actions,
-		ExistingSubjectConditionSetId: existingSCSId,
-		NewSubjectConditionSet:        newScs,
-		Metadata:                      m,
-	})
+	resp, err := h.sdk.SubjectMapping.CreateSubjectMapping(h.ctx, &connect.Request[subjectmapping.CreateSubjectMappingRequest]{
+		Msg: &subjectmapping.CreateSubjectMappingRequest{
+			AttributeValueId:              attrValId,
+			Actions:                       actions,
+			ExistingSubjectConditionSetId: existingSCSId,
+			NewSubjectConditionSet:        newScs,
+			Metadata:                      m,
+		}})
 	if err != nil {
 		return nil, err
 	}
-	return h.GetSubjectMapping(resp.GetSubjectMapping().GetId())
+	return h.GetSubjectMapping(resp.Msg.GetSubjectMapping().GetId())
 }
 
 // Updates and returns the updated subject mapping
 func (h Handler) UpdateSubjectMapping(id string, updatedSCSId string, updatedActions []*policy.Action, metadata *common.MetadataMutable, metadataBehavior common.MetadataUpdateEnum) (*policy.SubjectMapping, error) {
-	_, err := h.sdk.SubjectMapping.UpdateSubjectMapping(h.ctx, &subjectmapping.UpdateSubjectMappingRequest{
-		Id:                     id,
-		SubjectConditionSetId:  updatedSCSId,
-		Actions:                updatedActions,
-		MetadataUpdateBehavior: metadataBehavior,
-		Metadata:               metadata,
-	})
+	_, err := h.sdk.SubjectMapping.UpdateSubjectMapping(h.ctx, &connect.Request[subjectmapping.UpdateSubjectMappingRequest]{
+		Msg: &subjectmapping.UpdateSubjectMappingRequest{
+			Id:                     id,
+			SubjectConditionSetId:  updatedSCSId,
+			Actions:                updatedActions,
+			MetadataUpdateBehavior: metadataBehavior,
+			Metadata:               metadata,
+		}})
 	if err != nil {
 		return nil, err
 	}
@@ -59,10 +64,11 @@ func (h Handler) UpdateSubjectMapping(id string, updatedSCSId string, updatedAct
 }
 
 func (h Handler) DeleteSubjectMapping(id string) (*policy.SubjectMapping, error) {
-	resp, err := h.sdk.SubjectMapping.DeleteSubjectMapping(h.ctx, &subjectmapping.DeleteSubjectMappingRequest{
-		Id: id,
-	})
-	return resp.GetSubjectMapping(), err
+	resp, err := h.sdk.SubjectMapping.DeleteSubjectMapping(h.ctx, &connect.Request[subjectmapping.DeleteSubjectMappingRequest]{
+		Msg: &subjectmapping.DeleteSubjectMappingRequest{
+			Id: id,
+		}})
+	return resp.Msg.GetSubjectMapping(), err
 }
 
 func GetSubjectMappingOperatorFromChoice(readable string) policy.SubjectMappingOperatorEnum {
