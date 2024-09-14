@@ -96,7 +96,7 @@ func getPlatformConfiguration(endpoint, publicClientID string, tlsNoVerify bool)
 	if normalized.Scheme == "http" {
 		opts = append(opts, sdk.WithInsecurePlaintextConn())
 	}
-
+	// issue creating new sdk
 	s, err := sdk.New(normalized.String(), opts...)
 	if err != nil {
 		return c, err

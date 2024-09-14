@@ -2,6 +2,11 @@ module github.com/opentdf/otdfctl
 
 go 1.22.7
 
+replace (
+	github.com/opentdf/platform/protocol/go => ../platform/protocol/go
+	github.com/opentdf/platform/sdk => ../platform/sdk
+)
+
 require (
 	github.com/adrg/frontmatter v0.2.0
 	github.com/charmbracelet/bubbles v0.18.0
@@ -30,6 +35,7 @@ require (
 
 require (
 	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.34.2-20240508200655-46a4cf4ba109.2 // indirect
+	connectrpc.com/connect v1.16.2 // indirect
 	github.com/BurntSushi/toml v0.3.1 // indirect
 	github.com/alecthomas/chroma/v2 v2.8.0 // indirect
 	github.com/alessio/shellescape v1.4.1 // indirect

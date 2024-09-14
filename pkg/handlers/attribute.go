@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 
+	"connectrpc.com/connect"
 	"github.com/opentdf/platform/protocol/go/common"
 	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/opentdf/platform/protocol/go/policy/attributes"
@@ -32,22 +33,24 @@ func (e *CreateAttributeError) Error() string {
 }
 
 func (h Handler) GetAttribute(id string) (*policy.Attribute, error) {
-	resp, err := h.sdk.Attributes.GetAttribute(h.ctx, &attributes.GetAttributeRequest{
-		Id: id,
-	})
+	resp, err := h.sdk.Attributes.GetAttribute(h.ctx, &connect.Request[attributes.GetAttributeRequest]{
+		Msg: &attributes.GetAttributeRequest{
+			Id: id,
+		}})
 	if err != nil {
 		return nil, err
 	}
 
-	return resp.GetAttribute(), nil
+	return resp.Msg.GetAttribute(), nil
 }
 
 func (h Handler) ListAttributes(state common.ActiveStateEnum) ([]*policy.Attribute, error) {
-	resp, err := h.sdk.Attributes.ListAttributes(h.ctx, &attributes.ListAttributesRequest{State: state})
+	resp, err := h.sdk.Attributes.ListAttributes(h.ctx, &connect.Request[attributes.ListAttributesRequest]{
+		Msg: &attributes.ListAttributesRequest{State: state}})
 	if err != nil {
 		return nil, err
 	}
-	return resp.GetAttributes(), err
+	return resp.Msg.GetAttributes(), err
 }
 
 // Creates and returns the created attribute
@@ -65,12 +68,12 @@ func (h Handler) CreateAttribute(name string, rule string, namespace string, val
 		Values:      values,
 	}
 
-	resp, err := h.sdk.Attributes.CreateAttribute(h.ctx, attrReq)
+	resp, err := h.sdk.Attributes.CreateAttribute(h.ctx, &connect.Request[attributes.CreateAttributeRequest]{Msg: attrReq})
 	if err != nil {
 		return nil, err
 	}
 
-	return h.GetAttribute(resp.GetAttribute().GetId())
+	return h.GetAttribute(resp.Msg.GetAttribute().GetId())
 }
 
 // Updates and returns updated attribute
@@ -79,11 +82,12 @@ func (h *Handler) UpdateAttribute(
 	metadata *common.MetadataMutable,
 	behavior common.MetadataUpdateEnum,
 ) (*policy.Attribute, error) {
-	_, err := h.sdk.Attributes.UpdateAttribute(h.ctx, &attributes.UpdateAttributeRequest{
-		Id:                     id,
-		Metadata:               metadata,
-		MetadataUpdateBehavior: behavior,
-	})
+	_, err := h.sdk.Attributes.UpdateAttribute(h.ctx, &connect.Request[attributes.UpdateAttributeRequest]{
+		Msg: &attributes.UpdateAttributeRequest{
+			Id:                     id,
+			Metadata:               metadata,
+			MetadataUpdateBehavior: behavior,
+		}})
 	if err != nil {
 		return nil, err
 	}
@@ -92,9 +96,10 @@ func (h *Handler) UpdateAttribute(
 
 // Deactivates and returns deactivated attribute
 func (h Handler) DeactivateAttribute(id string) (*policy.Attribute, error) {
-	_, err := h.sdk.Attributes.DeactivateAttribute(h.ctx, &attributes.DeactivateAttributeRequest{
-		Id: id,
-	})
+	_, err := h.sdk.Attributes.DeactivateAttribute(h.ctx, &connect.Request[attributes.DeactivateAttributeRequest]{
+		Msg: &attributes.DeactivateAttributeRequest{
+			Id: id,
+		}})
 	if err != nil {
 		return nil, err
 	}
@@ -103,9 +108,10 @@ func (h Handler) DeactivateAttribute(id string) (*policy.Attribute, error) {
 
 // Reactivates and returns reactivated attribute
 func (h Handler) UnsafeReactivateAttribute(id string) (*policy.Attribute, error) {
-	_, err := h.sdk.Unsafe.UnsafeReactivateAttribute(h.ctx, &unsafe.UnsafeReactivateAttributeRequest{
-		Id: id,
-	})
+	_, err := h.sdk.Unsafe.UnsafeReactivateAttribute(h.ctx, &connect.Request[unsafe.UnsafeReactivateAttributeRequest]{
+		Msg: &unsafe.UnsafeReactivateAttributeRequest{
+			Id: id,
+		}})
 	if err != nil {
 		return nil, err
 	}
@@ -114,10 +120,11 @@ func (h Handler) UnsafeReactivateAttribute(id string) (*policy.Attribute, error)
 
 // Deletes and returns error if deletion failed
 func (h Handler) UnsafeDeleteAttribute(id, fqn string) error {
-	_, err := h.sdk.Unsafe.UnsafeDeleteAttribute(h.ctx, &unsafe.UnsafeDeleteAttributeRequest{
-		Id:  id,
-		Fqn: fqn,
-	})
+	_, err := h.sdk.Unsafe.UnsafeDeleteAttribute(h.ctx, &connect.Request[unsafe.UnsafeDeleteAttributeRequest]{
+		Msg: &unsafe.UnsafeDeleteAttributeRequest{
+			Id:  id,
+			Fqn: fqn,
+		}})
 	return err
 }
 
@@ -139,7 +146,7 @@ func (h Handler) UnsafeUpdateAttribute(id, name, rule string, values_order []str
 		req.ValuesOrder = values_order
 	}
 
-	_, err := h.sdk.Unsafe.UnsafeUpdateAttribute(h.ctx, req)
+	_, err := h.sdk.Unsafe.UnsafeUpdateAttribute(h.ctx, &connect.Request[unsafe.UnsafeUpdateAttributeRequest]{Msg: req})
 	return err
 }
 
