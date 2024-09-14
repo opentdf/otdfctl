@@ -1,29 +1,33 @@
 package handlers
 
 import (
+	"connectrpc.com/connect"
 	"github.com/opentdf/platform/protocol/go/common"
 	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/opentdf/platform/protocol/go/policy/kasregistry"
 )
 
 func (h Handler) GetKasRegistryEntry(id string) (*policy.KeyAccessServer, error) {
-	resp, err := h.sdk.KeyAccessServerRegistry.GetKeyAccessServer(h.ctx, &kasregistry.GetKeyAccessServerRequest{
-		Id: id,
+	resp, err := h.sdk.KeyAccessServerRegistry.GetKeyAccessServer(h.ctx, &connect.Request[kasregistry.GetKeyAccessServerRequest]{
+		Msg: &kasregistry.GetKeyAccessServerRequest{
+			Id: id,
+		}})
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.Msg.GetKeyAccessServer(), nil
+}
+
+func (h Handler) ListKasRegistryEntries() ([]*policy.KeyAccessServer, error) {
+	resp, err := h.sdk.KeyAccessServerRegistry.ListKeyAccessServers(h.ctx, &connect.Request[kasregistry.ListKeyAccessServersRequest]{
+		Msg: &kasregistry.ListKeyAccessServersRequest{},
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	return resp.GetKeyAccessServer(), nil
-}
-
-func (h Handler) ListKasRegistryEntries() ([]*policy.KeyAccessServer, error) {
-	resp, err := h.sdk.KeyAccessServerRegistry.ListKeyAccessServers(h.ctx, &kasregistry.ListKeyAccessServersRequest{})
-	if err != nil {
-		return nil, err
-	}
-
-	return resp.GetKeyAccessServers(), nil
+	return resp.Msg.GetKeyAccessServers(), nil
 }
 
 // Creates the KAS registry and then returns the KAS
@@ -34,23 +38,24 @@ func (h Handler) CreateKasRegistryEntry(uri string, publicKey *policy.PublicKey,
 		Metadata:  metadata,
 	}
 
-	resp, err := h.sdk.KeyAccessServerRegistry.CreateKeyAccessServer(h.ctx, req)
+	resp, err := h.sdk.KeyAccessServerRegistry.CreateKeyAccessServer(h.ctx, &connect.Request[kasregistry.CreateKeyAccessServerRequest]{Msg: req})
 	if err != nil {
 		return nil, err
 	}
 
-	return h.GetKasRegistryEntry(resp.GetKeyAccessServer().GetId())
+	return h.GetKasRegistryEntry(resp.Msg.GetKeyAccessServer().GetId())
 }
 
 // Updates the KAS registry and then returns the KAS
 func (h Handler) UpdateKasRegistryEntry(id string, uri string, publickey *policy.PublicKey, metadata *common.MetadataMutable, behavior common.MetadataUpdateEnum) (*policy.KeyAccessServer, error) {
-	_, err := h.sdk.KeyAccessServerRegistry.UpdateKeyAccessServer(h.ctx, &kasregistry.UpdateKeyAccessServerRequest{
-		Id:                     id,
-		Uri:                    uri,
-		PublicKey:              publickey,
-		Metadata:               metadata,
-		MetadataUpdateBehavior: behavior,
-	})
+	_, err := h.sdk.KeyAccessServerRegistry.UpdateKeyAccessServer(h.ctx, &connect.Request[kasregistry.UpdateKeyAccessServerRequest]{
+		Msg: &kasregistry.UpdateKeyAccessServerRequest{
+			Id:                     id,
+			Uri:                    uri,
+			PublicKey:              publickey,
+			Metadata:               metadata,
+			MetadataUpdateBehavior: behavior,
+		}})
 	if err != nil {
 		return nil, err
 	}
@@ -64,10 +69,10 @@ func (h Handler) DeleteKasRegistryEntry(id string) (*policy.KeyAccessServer, err
 		Id: id,
 	}
 
-	resp, err := h.sdk.KeyAccessServerRegistry.DeleteKeyAccessServer(h.ctx, req)
+	resp, err := h.sdk.KeyAccessServerRegistry.DeleteKeyAccessServer(h.ctx, &connect.Request[kasregistry.DeleteKeyAccessServerRequest]{Msg: req})
 	if err != nil {
 		return nil, err
 	}
 
-	return resp.GetKeyAccessServer(), nil
+	return resp.Msg.GetKeyAccessServer(), nil
 }
