@@ -132,13 +132,16 @@ func policy_createSubjectMapping(cmd *cobra.Command, args []string) {
 			}
 		}
 	}
+	if existingSCSId == "" && newScsJSON == "" {
+		cli.ExitWithError("At least one Subject Condition Set flag [--subject-condition-set-id, --subject-condition-set-new] must be provided", nil)
+	}
 
 	actions := getFullActionsList(actionsStandard, actionsCustom)
 
-	var ss []*policy.SubjectSet
 	var scs *subjectmapping.SubjectConditionSetCreate
 	if newScsJSON != "" {
-		if err := json.Unmarshal([]byte(newScsJSON), &ss); err != nil {
+		ss, err := unmarshalSubjectSetsProto([]byte(newScsJSON))
+		if err != nil {
 			cli.ExitWithError("Error unmarshalling subject sets", err)
 		}
 		scs = &subjectmapping.SubjectConditionSetCreate{
