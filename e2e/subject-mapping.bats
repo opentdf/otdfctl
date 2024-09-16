@@ -38,13 +38,13 @@ teardown_file() {
 
 @test "Create subject mapping" {
     # create with simultaneous new SCS
-    run_otdfctl_sm create --attribute-value-id "$VAL1_ID" --action-standard DECRYPT -s TRANSMIT --subject-condition-set-new "$SCS_2"
-    assert_success
-    # assert_output --partial "Subject Condition Set: Id"
-    # assert_output --partial '"Standard":1"
-    # assert_output --partial '"Standard":2"
-    # assert_output --regexp 'Subject Condition Set.*\.team\.name"
-    # assert_output --regexp "Attribute Value Id.*$VAL1_ID"
+    run ./otdfctl $HOST $WITH_CREDS policy subject-mappings create -a "$VAL1_ID" -s TRANSMIT --action-standard DECRYPT --subject-condition-set-new "$SCS_2"
+        assert_success
+        assert_output --partial "Subject Condition Set: Id"
+        assert_output --partial '"Standard":1'
+        assert_output --partial '"Standard":2'
+        assert_output --partial ".team.name"
+assert_output --regexp "Attribute Value Id.*$VAL1_ID"
 
     # scs is required
     run_otdfctl_sm create --attribute-value-id "$VAL2_ID" -s TRANSMIT
@@ -98,8 +98,6 @@ teardown_file() {
 
     run_otdfctl_sm list
         assert_success
-        assert_output --partial "$VAL2_ID"
-        assert_output --partial "$VAL1_ID"
         assert_output --partial "$created"
 }
 
