@@ -6,7 +6,7 @@ command:
     - g
   flags:
     - name: id
-      description: The ID of the resource mapping to get.
+      description: The ID of the resource mapping to get
       default: ""
 ---
 

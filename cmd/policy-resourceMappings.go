@@ -137,8 +137,11 @@ func policy_deleteResourceMapping(cmd *cobra.Command, args []string) {
 	defer h.Close()
 
 	id := c.Flags.GetRequiredID("id")
+	force := c.Flags.GetOptionalBool("force")
 
-	cli.ConfirmAction(cli.ActionDelete, "resource-mapping", id, false)
+	if !force {
+		cli.ConfirmAction(cli.ActionDelete, "resource-mapping", id, false)
+	}
 
 	resourceMapping, err := h.DeleteResourceMapping(id)
 	if err != nil {
@@ -212,6 +215,11 @@ func init() {
 		deleteDoc.GetDocFlag("id").Name,
 		deleteDoc.GetDocFlag("id").Default,
 		deleteDoc.GetDocFlag("id").Description,
+	)
+	deleteDoc.Flags().Bool(
+		deleteDoc.GetDocFlag("force").Name,
+		false,
+		deleteDoc.GetDocFlag("force").Description,
 	)
 
 	doc := man.Docs.GetCommand("policy/resource-mappings",
