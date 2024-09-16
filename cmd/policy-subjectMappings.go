@@ -185,6 +185,7 @@ func policy_deleteSubjectMapping(cmd *cobra.Command, args []string) {
 	defer h.Close()
 
 	id := c.Flags.GetRequiredID("id")
+	force := c.Flags.GetOptionalBool("force")
 
 	sm, err := h.GetSubjectMapping(id)
 	if err != nil {
@@ -192,7 +193,9 @@ func policy_deleteSubjectMapping(cmd *cobra.Command, args []string) {
 		cli.ExitWithError(errMsg, err)
 	}
 
-	cli.ConfirmAction(cli.ActionDelete, "subject mapping", sm.GetId(), false)
+	if !force {
+		cli.ConfirmAction(cli.ActionDelete, "subject mapping", sm.GetId(), false)
+	}
 
 	deleted, err := h.DeleteSubjectMapping(id)
 	if err != nil {
@@ -365,6 +368,11 @@ func init() {
 		deleteDoc.GetDocFlag("id").Shorthand,
 		deleteDoc.GetDocFlag("id").Default,
 		deleteDoc.GetDocFlag("id").Description,
+	)
+	deleteDoc.Flags().Bool(
+		deleteDoc.GetDocFlag("force").Name,
+		false,
+		deleteDoc.GetDocFlag("force").Description,
 	)
 
 	doc := man.Docs.GetCommand("policy/subject-mappings",
