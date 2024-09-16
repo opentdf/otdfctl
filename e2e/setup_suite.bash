@@ -8,15 +8,15 @@ setup_suite(){
 
     bats_require_minimum_version 1.7.0
 
-    if [[ $(which bats) == *"homebrew"* ]]; then
+    if [[ "$(which bats)" == *"homebrew"* ]]; then
         BATS_LIB_PATH=$(brew --prefix)/lib
     fi
 
     # Check if BATS_LIB_PATH environment variable exists
     if [ -z "${BATS_LIB_PATH}" ]; then
     # Check if bats bin has homebrew in path name
-    if [[ $(which bats) == *"homebrew"* ]]; then
-        BATS_LIB_PATH=$(dirname $(which bats))/../lib
+    if [[ "$(which bats)" == *"homebrew"* ]]; then
+        BATS_LIB_PATH=$(dirname "$(which bats)")/../lib
     elif [ -d "/usr/lib/bats-support" ]; then
         BATS_LIB_PATH="/usr/lib"
     elif [ -d "/usr/local/lib/bats-support" ]; then
