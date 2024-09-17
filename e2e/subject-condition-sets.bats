@@ -32,6 +32,8 @@ setup() {
 teardown_file() {
   # clear out all test env vars
   unset HOST WITH_CREDS NS_NAME NS_ID ATTR_NAME_RANDOM
+
+  rm scs.json
 }
 
 @test "Create a Subject Condition Set (SCS) - from file" {
