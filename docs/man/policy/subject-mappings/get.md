@@ -1,5 +1,5 @@
 ---
-title: Get a subject mapping by id
+title: Get a subject mapping
 command:
   name: get
   aliases:
@@ -9,10 +9,8 @@ command:
       description: The ID of the subject mapping to get
       shorthand: i
       required: true
-      default: ""
+      default: ''
 ---
-
-# Get a subject mapping
 
 Retrieve the specifics of a Subject Mapping.
 

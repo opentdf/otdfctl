@@ -8,6 +8,4 @@ command:
       default: ''
 ---
 
-# Delete a resource mapping
-
 For more information about resource mappings, see the `resource-mappings` subcommand.

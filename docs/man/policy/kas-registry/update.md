@@ -27,8 +27,6 @@ command:
       default: false
 ---
 
-# Update a registered KAS
-
 Update the `uri`, `metadata`, or key material (remote/cached) for a KAS registered to the platform.
 
 If resource data has been TDFd utilizing key splits from the registered KAS, deletion from

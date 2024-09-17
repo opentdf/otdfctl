@@ -10,8 +10,6 @@ command:
       default: ''
 ---
 
-# Delete a subject mapping
-
 Delete a Subject Mapping to remove entitlement of an entity (via Subject Condition Set) to an Attribute Value.
 
 For more information about subject mappings, see the `subject-mappings` subcommand.

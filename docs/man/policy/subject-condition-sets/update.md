@@ -28,8 +28,6 @@ command:
       default: false
 ---
 
-# Update a subject condition set
-
 Replace the existing conditional logic within an SCS with new conditional logic, passing either JSON directly or a JSON file.
 
 For more information about subject condition sets, see the `subject-condition-sets` subcommand.

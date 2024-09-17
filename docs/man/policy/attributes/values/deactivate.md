@@ -8,8 +8,6 @@ command:
       description: The ID of the attribute value to deactivate
 ---
 
-# Deactivate an attribute value
-
 Deactivation preserves uniqueness of the attribute value within policy and all existing relations, essentially reserving it.
 
 However, a deactivation of an attribute value means it cannot be entitled in an access decision.

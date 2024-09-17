@@ -27,8 +27,6 @@ command:
       default: false
 ---
 
-# Create a Subject Condition Set
-
 ### Example Subject Condition Sets
 
 `--subject-sets` example input:

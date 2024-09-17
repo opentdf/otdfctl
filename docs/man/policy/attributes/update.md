@@ -1,5 +1,5 @@
 ---
-title: Update an attribute
+title: Update an attribute definition
 command:
   name: update
   aliases:
@@ -17,8 +17,6 @@ command:
       description: Destructively replace entire set of existing metadata 'labels' with any provided to this command
       default: false
 ---
-
-# Update an attribute
 
 Attribute Definition changes can be dangerous, so this command is for updates considered "safe" (currently just mutations to metadata `labels`).
 

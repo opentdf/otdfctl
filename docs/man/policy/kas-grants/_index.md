@@ -8,8 +8,6 @@ command:
     - kas-grant
 ---
 
-## Background
-
 Once Key Access Servers (KASs) have been registered within a platform's policy,
 they can be assigned grants to various attribute objects (namespaces, definitions, values).
 

@@ -18,8 +18,6 @@ command:
       default: false
 ---
 
-# Update an Attribute Namespace
-
 Attribute Namespace changes can be dangerous, so this command is for updates considered "safe" (currently just mutations to metadata `labels`).
 
 For unsafe updates, see the dedicated `unsafe update` command. For more general information, see the `namespaces` subcommand.

@@ -1,5 +1,5 @@
 ---
-title: List attributes
+title: List attribute definitions
 command:
   name: list
   aliases:
@@ -14,8 +14,6 @@ command:
         - any
       default: active
 ---
-
-# List the known attributes
 
 By default, the list will only provide `active` attributes if unspecified, but the filter can be controlled with the `--state` flag.
 
