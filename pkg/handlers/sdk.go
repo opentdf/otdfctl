@@ -96,8 +96,7 @@ func New(opts ...handlerOptsFunc) (Handler, error) {
 	if u.Scheme == "http" {
 		o.sdkOpts = append(o.sdkOpts, sdk.WithInsecurePlaintextConn())
 	}
-
-	s, err := sdk.New(u.Host, o.sdkOpts...)
+	s, err := sdk.New(u.String(), o.sdkOpts...)
 	if err != nil {
 		return Handler{}, err
 	}
