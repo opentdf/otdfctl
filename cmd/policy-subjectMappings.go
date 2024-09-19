@@ -132,13 +132,16 @@ func policy_createSubjectMapping(cmd *cobra.Command, args []string) {
 			}
 		}
 	}
+	if existingSCSId == "" && newScsJSON == "" {
+		cli.ExitWithError("At least one Subject Condition Set flag [--subject-condition-set-id, --subject-condition-set-new] must be provided", nil)
+	}
 
 	actions := getFullActionsList(actionsStandard, actionsCustom)
 
-	var ss []*policy.SubjectSet
 	var scs *subjectmapping.SubjectConditionSetCreate
 	if newScsJSON != "" {
-		if err := json.Unmarshal([]byte(newScsJSON), &ss); err != nil {
+		ss, err := unmarshalSubjectSetsProto([]byte(newScsJSON))
+		if err != nil {
 			cli.ExitWithError("Error unmarshalling subject sets", err)
 		}
 		scs = &subjectmapping.SubjectConditionSetCreate{
@@ -185,6 +188,7 @@ func policy_deleteSubjectMapping(cmd *cobra.Command, args []string) {
 	defer h.Close()
 
 	id := c.Flags.GetRequiredID("id")
+	force := c.Flags.GetOptionalBool("force")
 
 	sm, err := h.GetSubjectMapping(id)
 	if err != nil {
@@ -192,7 +196,9 @@ func policy_deleteSubjectMapping(cmd *cobra.Command, args []string) {
 		cli.ExitWithError(errMsg, err)
 	}
 
-	cli.ConfirmAction(cli.ActionDelete, "subject mapping", sm.GetId(), false)
+	if !force {
+		cli.ConfirmAction(cli.ActionDelete, "subject mapping", sm.GetId(), false)
+	}
 
 	deleted, err := h.DeleteSubjectMapping(id)
 	if err != nil {
@@ -365,6 +371,11 @@ func init() {
 		deleteDoc.GetDocFlag("id").Shorthand,
 		deleteDoc.GetDocFlag("id").Default,
 		deleteDoc.GetDocFlag("id").Description,
+	)
+	deleteDoc.Flags().Bool(
+		deleteDoc.GetDocFlag("force").Name,
+		false,
+		deleteDoc.GetDocFlag("force").Description,
 	)
 
 	doc := man.Docs.GetCommand("policy/subject-mappings",

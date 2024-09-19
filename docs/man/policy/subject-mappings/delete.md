@@ -8,6 +8,8 @@ command:
       shorthand: i
       required: true
       default: ''
+    - name: force
+      description: Force deletion without interactive confirmation (dangerous)
 ---
 
 # Delete a subject mapping
