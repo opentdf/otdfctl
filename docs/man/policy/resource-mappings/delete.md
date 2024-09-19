@@ -4,8 +4,10 @@ command:
   name: delete
   flags:
     - name: id
-      description: The ID of the resource mapping to delete.
+      description: The ID of the resource mapping to delete
       default: ''
+    - name: force
+      description: Force deletion without interactive confirmation (dangerous)
 ---
 
 # Delete a resource mapping

@@ -124,7 +124,7 @@ func HandleSuccess(command *cobra.Command, id string, t table.Model, policyObjec
 func injectLabelFlags(cmd *cobra.Command, isUpdate bool) {
 	cmd.Flags().StringSliceVarP(&metadataLabels, "label", "l", []string{}, "Optional metadata 'labels' in the format: key=value")
 	if isUpdate {
-		cmd.Flags().BoolVar(&forceReplaceMetadataLabels, "force-replace-labels", false, "Destructively replace entire set of existing metadata 'labels' with any provided to this command.")
+		cmd.Flags().BoolVar(&forceReplaceMetadataLabels, "force-replace-labels", false, "Destructively replace entire set of existing metadata 'labels' with any provided to this command")
 	}
 }
 
