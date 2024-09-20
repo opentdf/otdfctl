@@ -21,7 +21,7 @@ func policy_createResourceMapping(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
-	attrId := c.Flags.GetRequiredString("attribute-value-id")
+	attrId := c.Flags.GetRequiredID("attribute-value-id")
 	terms = c.Flags.GetStringSlice("terms", terms, cli.FlagsStringSliceOptions{
 		Min: 1,
 	})
@@ -49,7 +49,7 @@ func policy_getResourceMapping(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
-	id := c.Flags.GetRequiredString("id")
+	id := c.Flags.GetRequiredID("id")
 
 	resourceMapping, err := h.GetResourceMapping(id)
 	if err != nil {
@@ -100,7 +100,7 @@ func policy_listResourceMappings(cmd *cobra.Command, args []string) {
 			"updated_at":    metadata["Updated At"],
 		}))
 	}
-	t.WithRows(rows)
+	t = t.WithRows(rows)
 	HandleSuccess(cmd, "", t, rmList)
 }
 
@@ -109,8 +109,8 @@ func policy_updateResourceMapping(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
-	id := c.Flags.GetRequiredString("id")
-	attrValueId := c.Flags.GetOptionalString("attribute-value-id")
+	id := c.Flags.GetRequiredID("id")
+	attrValueId := c.Flags.GetOptionalID("attribute-value-id")
 	terms = c.Flags.GetStringSlice("terms", terms, cli.FlagsStringSliceOptions{})
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
@@ -136,9 +136,12 @@ func policy_deleteResourceMapping(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
-	id := c.Flags.GetRequiredString("id")
+	id := c.Flags.GetRequiredID("id")
+	force := c.Flags.GetOptionalBool("force")
 
-	cli.ConfirmAction(cli.ActionDelete, "resource-mapping", id, false)
+	if !force {
+		cli.ConfirmAction(cli.ActionDelete, "resource-mapping", id, false)
+	}
 
 	resourceMapping, err := h.DeleteResourceMapping(id)
 	if err != nil {
@@ -212,6 +215,11 @@ func init() {
 		deleteDoc.GetDocFlag("id").Name,
 		deleteDoc.GetDocFlag("id").Default,
 		deleteDoc.GetDocFlag("id").Description,
+	)
+	deleteDoc.Flags().Bool(
+		deleteDoc.GetDocFlag("force").Name,
+		false,
+		deleteDoc.GetDocFlag("force").Description,
 	)
 
 	doc := man.Docs.GetCommand("policy/resource-mappings",

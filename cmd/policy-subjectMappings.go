@@ -25,7 +25,7 @@ func policy_getSubjectMapping(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
-	id := c.Flags.GetRequiredString("id")
+	id := c.Flags.GetRequiredID("id")
 
 	mapping, err := h.GetSubjectMapping(id)
 	if err != nil {
@@ -112,11 +112,11 @@ func policy_createSubjectMapping(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
-	attrValueId := c.Flags.GetRequiredString("attribute-value-id")
+	attrValueId := c.Flags.GetRequiredID("attribute-value-id")
 	actionsStandard = c.Flags.GetStringSlice("action-standard", actionsStandard, cli.FlagsStringSliceOptions{Min: 0})
 	actionsCustom = c.Flags.GetStringSlice("action-custom", actionsCustom, cli.FlagsStringSliceOptions{Min: 0})
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
-	existingSCSId := c.Flags.GetOptionalString("subject-condition-set-id")
+	existingSCSId := c.Flags.GetOptionalID("subject-condition-set-id")
 	// NOTE: labels within a new Subject Condition Set created on a SM creation are not supported
 	newScsJSON := c.Flags.GetOptionalString("subject-condition-set-new")
 
@@ -132,13 +132,16 @@ func policy_createSubjectMapping(cmd *cobra.Command, args []string) {
 			}
 		}
 	}
+	if existingSCSId == "" && newScsJSON == "" {
+		cli.ExitWithError("At least one Subject Condition Set flag [--subject-condition-set-id, --subject-condition-set-new] must be provided", nil)
+	}
 
 	actions := getFullActionsList(actionsStandard, actionsCustom)
 
-	var ss []*policy.SubjectSet
 	var scs *subjectmapping.SubjectConditionSetCreate
 	if newScsJSON != "" {
-		if err := json.Unmarshal([]byte(newScsJSON), &ss); err != nil {
+		ss, err := unmarshalSubjectSetsProto([]byte(newScsJSON))
+		if err != nil {
 			cli.ExitWithError("Error unmarshalling subject sets", err)
 		}
 		scs = &subjectmapping.SubjectConditionSetCreate{
@@ -184,7 +187,8 @@ func policy_deleteSubjectMapping(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
-	id := c.Flags.GetRequiredString("id")
+	id := c.Flags.GetRequiredID("id")
+	force := c.Flags.GetOptionalBool("force")
 
 	sm, err := h.GetSubjectMapping(id)
 	if err != nil {
@@ -192,7 +196,9 @@ func policy_deleteSubjectMapping(cmd *cobra.Command, args []string) {
 		cli.ExitWithError(errMsg, err)
 	}
 
-	cli.ConfirmAction(cli.ActionDelete, "subject mapping", sm.GetId(), false)
+	if !force {
+		cli.ConfirmAction(cli.ActionDelete, "subject mapping", sm.GetId(), false)
+	}
 
 	deleted, err := h.DeleteSubjectMapping(id)
 	if err != nil {
@@ -212,10 +218,10 @@ func policy_updateSubjectMapping(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
-	id := c.Flags.GetRequiredString("id")
+	id := c.Flags.GetRequiredID("id")
 	actionsStandard = c.Flags.GetStringSlice("action-standard", actionsStandard, cli.FlagsStringSliceOptions{Min: 0})
 	actionsCustom = c.Flags.GetStringSlice("action-custom", actionsCustom, cli.FlagsStringSliceOptions{Min: 0})
-	scsId := c.Flags.GetOptionalString("subject-condition-set-id")
+	scsId := c.Flags.GetOptionalID("subject-condition-set-id")
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
 	if len(actionsStandard) > 0 {
@@ -365,6 +371,11 @@ func init() {
 		deleteDoc.GetDocFlag("id").Shorthand,
 		deleteDoc.GetDocFlag("id").Default,
 		deleteDoc.GetDocFlag("id").Description,
+	)
+	deleteDoc.Flags().Bool(
+		deleteDoc.GetDocFlag("force").Name,
+		false,
+		deleteDoc.GetDocFlag("force").Description,
 	)
 
 	doc := man.Docs.GetCommand("policy/subject-mappings",

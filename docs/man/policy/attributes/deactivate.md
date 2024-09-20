@@ -7,6 +7,8 @@ command:
       shorthand: i
       description: ID of the attribute
       required: true
+    - name: force
+      description: Force deactivation without interactive confirmation (dangerous)
 ---
 
 # Deactivate an attribute definition

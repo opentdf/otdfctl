@@ -10,9 +10,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var (
+	runningInLinux    = runtime.GOOS == "linux"
+	runningInTestMode = config.TestMode == "true"
+)
+
 var profileCmd = &cobra.Command{
-	Use:   "profile",
-	Short: "Manage profiles (experimental)",
+	Use:    "profile",
+	Short:  "Manage profiles (experimental)",
+	Hidden: runningInLinux && !runningInTestMode,
 }
 
 var profileCreateCmd = &cobra.Command{
@@ -164,11 +170,6 @@ var profileSetEndpointCmd = &cobra.Command{
 }
 
 func init() {
-	// Profiles are not supported on Linux (unless mocked in test mode)
-	if runtime.GOOS == "linux" && config.TestMode != "true" {
-		return
-	}
-
 	profileCreateCmd.Flags().Bool("set-default", false, "Set the profile as default")
 	profileCreateCmd.Flags().Bool("tls-no-verify", false, "Disable TLS verification")
 

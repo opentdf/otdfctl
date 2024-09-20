@@ -37,6 +37,10 @@ teardown_file() {
   assert_output --partial "Id"
   assert_output --partial "Created At"
   assert_output --regexp "Updated At"
+
+  # cleanup
+  created_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
+  run_otdfctl_ns unsafe delete --id $created_id --force
 }
 
 @test "Create a namespace - Bad" {
@@ -65,11 +69,24 @@ teardown_file() {
   assert_output --regexp "Id.*$NS_ID"
   assert_output --regexp "Name.*$NS_NAME"
 
-  echo $NS_ID
   run_otdfctl_ns get "$NS_ID_FLAG" --json
   assert_success
   [ "$(echo "$output" | jq -r '.id')" = "$NS_ID" ]
   [ "$(echo "$output" | jq -r '.name')" = "$NS_NAME" ]
+}
+
+@test "Get a namespace - Bad" {
+  run_otdfctl_ns get
+  assert_failure
+  assert_output --partial "Flag '--id' is required"
+
+  run_otdfctl_ns get --id 'example.com'
+  assert_failure
+  assert_output --partial "Flag '--id' received value 'example.com' must be a valid UUID"
+
+  run_otdfctl_ns get --id 'demo.com' --json
+  assert_failure
+  assert_output --partial "Flag '--id' received value 'demo.com' must be a valid UUID"
 }
 
 @test "List namespaces - when active" {

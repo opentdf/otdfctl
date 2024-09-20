@@ -83,9 +83,9 @@ func GetClientCreds(endpoint string, file string, credsJSON []byte) (ClientCrede
 func getPlatformConfiguration(endpoint, publicClientID string, tlsNoVerify bool) (platformConfiguration, error) {
 	c := platformConfiguration{}
 
-	e, err := utils.NormalizeEndpoint(endpoint)
+	normalized, err := utils.NormalizeEndpoint(endpoint)
 	if err != nil {
-		return c, errors.Join(ErrProfileCredentialsNotFound, err)
+		return c, err
 	}
 
 	opts := []sdk.Option{}
@@ -93,42 +93,41 @@ func getPlatformConfiguration(endpoint, publicClientID string, tlsNoVerify bool)
 		opts = append(opts, sdk.WithInsecureSkipVerifyConn())
 	}
 
-	if e.Scheme == "http" {
+	if normalized.Scheme == "http" {
 		opts = append(opts, sdk.WithInsecurePlaintextConn())
 	}
 
-	s, err := sdk.New(e.String(), opts...)
+	s, err := sdk.New(normalized.String(), opts...)
 	if err != nil {
-		return c, errors.Join(ErrProfileCredentialsNotFound, err)
+		return c, err
 	}
 
-	errs := []error{}
-	c.issuer, err = s.PlatformConfiguration.Issuer()
-	if err != nil {
-		errs = append(errs, errors.Join(err, sdk.ErrPlatformIssuerNotFound))
+	var e error
+	c.issuer, e = s.PlatformConfiguration.Issuer()
+	if e != nil {
+		err = errors.Join(err, sdk.ErrPlatformIssuerNotFound)
 	}
 
-	c.authzEndpoint, err = s.PlatformConfiguration.AuthzEndpoint()
-	if err != nil {
-		errs = append(errs, errors.Join(err, sdk.ErrPlatformAuthzEndpointNotFound))
+	c.authzEndpoint, e = s.PlatformConfiguration.AuthzEndpoint()
+	if e != nil {
+		err = errors.Join(err, sdk.ErrPlatformAuthzEndpointNotFound)
 	}
 
-	c.tokenEndpoint, err = s.PlatformConfiguration.TokenEndpoint()
-	if err != nil {
-		errs = append(errs, errors.Join(err, sdk.ErrPlatformTokenEndpointNotFound))
+	c.tokenEndpoint, e = s.PlatformConfiguration.TokenEndpoint()
+	if e != nil {
+		err = errors.Join(err, sdk.ErrPlatformTokenEndpointNotFound)
 	}
 
 	c.publicClientID = publicClientID
 	if c.publicClientID == "" {
-		c.publicClientID, err = s.PlatformConfiguration.PublicClientID()
-		if err != nil {
-			errs = append(errs, errors.Join(err, sdk.ErrPlatformPublicClientIDNotFound))
+		c.publicClientID, e = s.PlatformConfiguration.PublicClientID()
+		if e != nil {
+			err = errors.Join(err, sdk.ErrPlatformPublicClientIDNotFound)
 		}
 	}
 
-	if len(errs) > 0 {
-		errs = append([]error{ErrProfileCredentialsNotFound}, errs...)
-		return c, errors.Join(errs...)
+	if err != nil {
+		return c, errors.Join(err, ErrProfileCredentialsNotFound)
 	}
 
 	return c, nil
@@ -303,6 +302,9 @@ func newOidcRelyingParty(ctx context.Context, endpoint string, tlsNoVerify bool,
 
 	pc, err := getPlatformConfiguration(endpoint, pcClient, tlsNoVerify)
 	if err != nil {
+		if errors.Is(err, sdk.ErrPlatformConfigFailed) {
+			return nil, ErrPlatformConfigNotFound
+		}
 		return nil, err
 	}
 

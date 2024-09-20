@@ -62,7 +62,7 @@ func policy_getAttribute(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
-	id := c.Flags.GetRequiredString("id")
+	id := c.Flags.GetRequiredID("id")
 
 	attr, err := h.GetAttribute(id)
 	if err != nil {
@@ -131,7 +131,8 @@ func policy_deactivateAttribute(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
-	id := c.Flags.GetRequiredString("id")
+	id := c.Flags.GetRequiredID("id")
+	force := c.Flags.GetOptionalBool("force")
 
 	attr, err := h.GetAttribute(id)
 	if err != nil {
@@ -139,7 +140,9 @@ func policy_deactivateAttribute(cmd *cobra.Command, args []string) {
 		cli.ExitWithError(errMsg, err)
 	}
 
-	cli.ConfirmAction(cli.ActionDeactivate, "attribute", attr.GetName(), false)
+	if !force {
+		cli.ConfirmAction(cli.ActionDeactivate, "attribute", attr.GetName(), false)
+	}
 
 	attr, err = h.DeactivateAttribute(id)
 	if err != nil {
@@ -166,7 +169,7 @@ func policy_updateAttribute(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
-	id := c.Flags.GetRequiredString("id")
+	id := c.Flags.GetRequiredID("id")
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
 	if a, err := h.UpdateAttribute(id, getMetadataMutable(metadataLabels), getMetadataUpdateBehavior()); err != nil {
@@ -189,7 +192,7 @@ func policy_unsafeReactivateAttribute(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
-	id := c.Flags.GetRequiredString("id")
+	id := c.Flags.GetRequiredID("id")
 
 	a, err := h.GetAttribute(id)
 	if err != nil {
@@ -221,7 +224,7 @@ func policy_unsafeUpdateAttribute(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
-	id := c.Flags.GetRequiredString("id")
+	id := c.Flags.GetRequiredID("id")
 	name := c.Flags.GetOptionalString("name")
 	rule := c.Flags.GetOptionalString("rule")
 	valuesOrder = c.Flags.GetStringSlice("values-order", valuesOrder, cli.FlagsStringSliceOptions{})
@@ -267,7 +270,7 @@ func policy_unsafeDeleteAttribute(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
-	id := c.Flags.GetRequiredString("id")
+	id := c.Flags.GetRequiredID("id")
 
 	a, err := h.GetAttribute(id)
 	if err != nil {
@@ -370,6 +373,11 @@ func init() {
 		deactivateDoc.GetDocFlag("id").Shorthand,
 		deactivateDoc.GetDocFlag("id").Default,
 		deactivateDoc.GetDocFlag("id").Description,
+	)
+	deactivateDoc.Flags().Bool(
+		deactivateDoc.GetDocFlag("force").Name,
+		false,
+		deactivateDoc.GetDocFlag("force").Description,
 	)
 
 	// unsafe actions on attributes
