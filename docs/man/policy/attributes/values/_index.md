@@ -7,8 +7,6 @@ command:
     - value
 ---
 
-# Manage attribute values 
-
 Attribute values are the individual units tagged on TDFs containing Resource Data.
 
 They are mapped to entitle person and non-person entities through Subject Mappings, to varied terms for tagging providers
@@ -26,6 +24,7 @@ Giving data multiple Attribute Values across the same or multiple Definitions/Na
 by an Entity's mapped Entitlements to result in key release, decryption, and resulting access to TDF'd data.
 
 For more information on:
+
 - values, see the `attributes values` subcommand
 - attribute definitions, see the `attributes` subcommand
 - namespaces, see the `attributes namespaces` subcommand

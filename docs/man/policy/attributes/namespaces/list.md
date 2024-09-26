@@ -11,6 +11,4 @@ command:
       description: Filter by state [active, inactive, any]
 ---
 
-# List attribute namespaces
-
 For more general information, see the `namespaces` subcommand.

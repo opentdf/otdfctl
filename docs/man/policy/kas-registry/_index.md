@@ -7,8 +7,6 @@ command:
     - kas-registries
 ---
 
-# Manage Key Access Servers registered to the platform
-
 The Key Access Server (KAS) registry is a record of KASes safeguarding access and maintaining public keys.
 
 The registry contains critical information like each server's uri, its public key (which can be

@@ -19,8 +19,6 @@ command:
       default: ''
 ---
 
-# Create an attribute value
-
 Add a single new value underneath an existing attribute.
 
 For a hierarchical attribute, a new value is added in lowest hierarchy (last).

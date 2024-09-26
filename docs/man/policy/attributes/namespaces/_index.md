@@ -7,8 +7,6 @@ command:
     - namespace
 ---
 
-# Manage attribute namespaces
-
 A namespace is the root (parent) of a set of platform policy. Like an owner or an authority, it fully qualifies attributes and their values,
 resource mapping groups, etc. As the various mappings of a platform are to attributes or values, a namespace effectively "owns" the
 mappings as well (transitively if not directly).

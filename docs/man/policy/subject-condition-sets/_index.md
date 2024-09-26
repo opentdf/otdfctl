@@ -8,8 +8,6 @@ command:
     - subject-condition-set
 ---
 
-# Manage subject condition sets
-
 Subject Condition Sets (SCSs) are the logical resolvers of entitlement to attributes.
 
 An SCS contains AND/OR groups of conditions with IN/NOT_IN/CONTAINS logic to be applied against

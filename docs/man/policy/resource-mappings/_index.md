@@ -8,8 +8,6 @@ command:
     - resource-mapping
 ---
 
-# Manage Resource Mappings
-
 Resource mappings are used to map resources to their respective attribute values based on the terms
 that are related to the data. Alone, this service is not very useful, but when combined with a PEP
 or PDP that can use the resource mappings it becomes a powerful tool for automating access control.

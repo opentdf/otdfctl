@@ -1,5 +1,5 @@
 ---
-title: Get an attribute
+title: Get an attribute definition
 command:
   name: get
   aliases:
@@ -9,8 +9,6 @@ command:
       shorthand: i
       description: ID of the attribute
 ---
-
-# Get an attribute
 
 Retrieve an attribute along with its metadata, rule, and values.
 

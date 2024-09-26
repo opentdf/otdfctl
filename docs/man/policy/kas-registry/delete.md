@@ -11,8 +11,6 @@ command:
       description: Force deletion without interactive confirmation (dangerous)
 ---
 
-# Delete a registered KAS
-
 Removes knowledge of a KAS (registration) from a platform's policy.
 
 If resource data has been TDFd utilizing key splits from the registered KAS, deletion from
