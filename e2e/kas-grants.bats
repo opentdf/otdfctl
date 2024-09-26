@@ -28,6 +28,9 @@ setup() {
 }
 
 teardown_file() {
+  ./otdfctl $HOST $WITH_CREDS policy attributes namespaces unsafe delete --id "$NS_ID" --force
+  ./otdfctl $HOST $WITH_CREDS policy kas-registry delete --id "$KAS_ID" --force
+
   # clear out all test env vars
   unset HOST WITH_CREDS KAS_ID KAS_ID_FLAG KAS_URI NS_ID NS_ID_FLAG ATTR_ID ATTR_ID_FLAG VAL_ID VAL_ID_FLAG
 }
