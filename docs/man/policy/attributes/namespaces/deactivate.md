@@ -11,8 +11,6 @@ command:
       description: Force deactivation without interactive confirmation (dangerous)
 ---
 
-# Deactivate an attribute namespace
-
 Deactivating an Attribute Namespace will make the namespace name inactive as well as any attribute definitions and values beneath.
 
 Deactivation of a Namespace renders any existing TDFs of those attributes inaccessible.

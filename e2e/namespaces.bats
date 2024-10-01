@@ -37,6 +37,10 @@ teardown_file() {
   assert_output --partial "Id"
   assert_output --partial "Created At"
   assert_output --regexp "Updated At"
+
+  # cleanup
+  created_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
+  run_otdfctl_ns unsafe delete --id $created_id --force
 }
 
 @test "Create a namespace - Bad" {

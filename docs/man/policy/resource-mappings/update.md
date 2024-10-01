@@ -7,23 +7,21 @@ command:
   flags:
     - name: id
       description: The ID of the resource mapping to update.
-      default: ""
-    - name: attribute-value-id  
+      default: ''
+    - name: attribute-value-id
       description: The ID of the attribute value to map to the resource.
-      default: ""
+      default: ''
     - name: terms
       description: The synonym terms to match for the resource mapping.
-      default: ""
+      default: ''
     - name: label
       description: "Optional metadata 'labels' in the format: key=value"
       shorthand: l
-      default: ""
+      default: ''
     - name: force-replace-labels
       description: Destructively replace entire set of existing metadata 'labels' with any provided to this command
       default: false
 ---
-
-# Update a resource mapping
 
 Alter the attribute value associated with a resource mapping's terms, or fully replace the terms in a given resource mapping.
 

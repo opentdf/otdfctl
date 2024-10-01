@@ -11,6 +11,4 @@ command:
       required: true
 ---
 
-# Get a registered Key Access Server
-
 For more information about registration of Key Access Servers, see the manual for `kas-registry`.

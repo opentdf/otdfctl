@@ -1,5 +1,5 @@
 ---
-title: Deactivate an attribute
+title: Deactivate an attribute definition
 command:
   name: deactivate
   flags:
@@ -10,8 +10,6 @@ command:
     - name: force
       description: Force deactivation without interactive confirmation (dangerous)
 ---
-
-# Deactivate an attribute definition
 
 Deactivation preserves uniqueness of the attribute and values underneath within policy and all existing relations,
 essentially reserving them.

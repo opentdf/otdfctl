@@ -10,5 +10,4 @@ command:
       description: ID of the attribute namespace
 ---
 
-# Get an attribute namespace
-
+For more information, see the `namespaces` subcommand.

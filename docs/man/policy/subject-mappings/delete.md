@@ -8,9 +8,9 @@ command:
       shorthand: i
       required: true
       default: ''
+    - name: force
+      description: Force deletion without interactive confirmation (dangerous)
 ---
-
-# Delete a subject mapping
 
 Delete a Subject Mapping to remove entitlement of an entity (via Subject Condition Set) to an Attribute Value.
 

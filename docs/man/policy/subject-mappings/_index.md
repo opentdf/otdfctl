@@ -9,8 +9,6 @@ command:
     - subject-mapping
 ---
 
-# Manage subject mappings
-
 As data is bound to fully qualified Attribute Values when encrypted within a TDF, Entities are entitled to Attribute Values through a mechanism called Subject Mappings.
 
 A Subject Mapping (SM) is the relation of a Subject Condition Set (SCS, see `subject-condition-sets` command)

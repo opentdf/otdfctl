@@ -8,8 +8,6 @@ command:
       required: false
 ---
 
-# Unsafe Changes to Attribute Definitions
-
 Unsafe changes are dangerous mutations to Policy that can significantly change access behavior around existing attributes
 and entitlement.
 

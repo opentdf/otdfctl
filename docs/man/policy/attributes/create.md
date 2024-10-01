@@ -1,5 +1,5 @@
 ---
-title: Create an attribute
+title: Create an attribute definition
 command:
   name: create
   aliases:
@@ -32,8 +32,6 @@ command:
       shorthand: l
       default: ''
 ---
-
-# Create an attribute definition
 
 Under a namespace, create an attribute with a rule.
 

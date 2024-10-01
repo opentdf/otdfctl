@@ -23,8 +23,6 @@ command:
       default: ''
 ---
 
-# Create a KAS registration
-
 Public keys can be stored as either `remote` or `cached` under the following JSON structure.
 
 ### Remote
@@ -36,19 +34,19 @@ can be retrieved for the registered KAS under the `remote` key, such as `https:/
 
 ```json5
 {
-  "cached": {
+  cached: {
     // One or more known public keys for the KAS
-    "keys":[
+    keys: [
       {
         // x509 ASN.1 content in PEM envelope, usually
-        "pem": "<your PEM certificate>",
-        // key identifier 
-        "kid": "<your key id>",
+        pem: '<your PEM certificate>',
+        // key identifier
+        kid: '<your key id>',
         // key algorithm (see table below)
-        "alg": 1
-      }
-    ]
-  }
+        alg: 1,
+      },
+    ],
+  },
 }
 ```
 
