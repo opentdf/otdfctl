@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.14.0](https://github.com/opentdf/otdfctl/compare/v0.13.0...v0.14.0) (2024-10-01)
+
+
+### Features
+
+* **ci:** add e2e tests for subject mappings, support for --force delete ([#388](https://github.com/opentdf/otdfctl/issues/388)) ([c1f544b](https://github.com/opentdf/otdfctl/commit/c1f544b1079f52bfccb96c4c9e0b579a6854ad58))
+* **ci:** add tests for subject condition sets, and --force delete flag ([#389](https://github.com/opentdf/otdfctl/issues/389)) ([c6d2abc](https://github.com/opentdf/otdfctl/commit/c6d2abcd4afe78d92fd285e5c77fecdfe806ed5d)), closes [#331](https://github.com/opentdf/otdfctl/issues/331)
+* **ci:** e2e attribute definitions tests ([#384](https://github.com/opentdf/otdfctl/issues/384)) ([2894391](https://github.com/opentdf/otdfctl/commit/28943915f19e0fb565cfb38cfebdd6fde21c019a)), closes [#327](https://github.com/opentdf/otdfctl/issues/327)
+* **core:** export manual functions for CLI wrappers to consume ([#397](https://github.com/opentdf/otdfctl/issues/397)) ([aa0bf95](https://github.com/opentdf/otdfctl/commit/aa0bf95a39dfc0aec4155e498a2096cbd158efdd))
+* **core:** resource mappings LIST fix, delete --force support, and e2e tests ([#387](https://github.com/opentdf/otdfctl/issues/387)) ([326e74b](https://github.com/opentdf/otdfctl/commit/326e74b37d0abfb4ad50deadaa1ed46ecf9f8a5d)), closes [#386](https://github.com/opentdf/otdfctl/issues/386)
+
+
+### Bug Fixes
+
+* **core:** remove duplicate titling of help manual ([#391](https://github.com/opentdf/otdfctl/issues/391)) ([cb8db69](https://github.com/opentdf/otdfctl/commit/cb8db69ec4df42c7f230fbd87142bfbcd2d3940f))
+
 ## [0.13.0](https://github.com/opentdf/otdfctl/compare/v0.12.2...v0.13.0) (2024-09-12)
 
 
