@@ -248,13 +248,16 @@ func policy_deleteSubjectConditionSet(cmd *cobra.Command, args []string) {
 	defer h.Close()
 
 	id := c.Flags.GetRequiredID("id")
+	force := c.Flags.GetOptionalBool("force")
 
 	scs, err := h.GetSubjectConditionSet(id)
 	if err != nil {
 		cli.ExitWithError(fmt.Sprintf("Subject Condition Set with id %s not found", id), err)
 	}
 
-	cli.ConfirmAction(cli.ActionDelete, "Subject Condition Set", id, false)
+	if !force {
+		cli.ConfirmAction(cli.ActionDelete, "Subject Condition Set", id, false)
+	}
 
 	if err := h.DeleteSubjectConditionSet(id); err != nil {
 		cli.ExitWithError(fmt.Sprintf("Subject Condition Set with id %s not found", id), err)
@@ -344,6 +347,11 @@ func init() {
 		deleteDoc.GetDocFlag("id").Shorthand,
 		deleteDoc.GetDocFlag("id").Default,
 		deleteDoc.GetDocFlag("id").Description,
+	)
+	deleteDoc.Flags().Bool(
+		deleteDoc.GetDocFlag("force").Name,
+		false,
+		deleteDoc.GetDocFlag("force").Description,
 	)
 
 	doc := man.Docs.GetCommand("policy/subject-condition-sets",
