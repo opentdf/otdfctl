@@ -120,6 +120,7 @@ func (m Manual) GetCommand(cmd string, opts ...CommandOpts) *Doc {
 	return d
 }
 
+//nolint:mnd,gocritic // allow file separator counts to be hardcoded
 func ProcessEmbeddedDocs(manFiles embed.FS) {
 	err := fs.WalkDir(manFiles, ".", func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
@@ -185,7 +186,6 @@ func ProcessEmbeddedDocs(manFiles embed.FS) {
 	}
 }
 
-//nolint:mnd,gocritic // allow file separator counts to be hardcoded
 func init() {
 	slog.Debug("Loading docs from embed")
 	Docs = Manual{
