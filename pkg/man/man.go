@@ -1,6 +1,7 @@
 package man
 
 import (
+	"embed"
 	"fmt"
 	"io/fs"
 	"log/slog"
@@ -120,15 +121,8 @@ func (m Manual) GetCommand(cmd string, opts ...CommandOpts) *Doc {
 }
 
 //nolint:mnd,gocritic // allow file separator counts to be hardcoded
-func init() {
-	slog.Debug("Loading docs from embed")
-	Docs = Manual{
-		Docs: make(map[string]*Doc),
-		En:   make(map[string]*Doc),
-		Fr:   make(map[string]*Doc),
-	}
-
-	err := fs.WalkDir(docsEmbed.ManFiles, ".", func(path string, d fs.DirEntry, err error) error {
+func ProcessEmbeddedDocs(manFiles embed.FS) {
+	err := fs.WalkDir(manFiles, ".", func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
@@ -165,12 +159,12 @@ func init() {
 		}
 
 		slog.Debug("Found doc", slog.String("cmd", cmd), slog.String("lang", lang))
-		c, err := docsEmbed.ManFiles.ReadFile(path)
+		c, err := manFiles.ReadFile(path)
 		if err != nil {
 			return fmt.Errorf("could not read file, %s: %s ", path, err.Error())
 		}
 
-		doc, err := processDoc(string(c))
+		doc, err := ProcessDoc(string(c))
 		if err != nil {
 			return fmt.Errorf("could not process doc, %s: %s", path, err.Error())
 		}
@@ -192,7 +186,18 @@ func init() {
 	}
 }
 
-func processDoc(doc string) (*Doc, error) {
+func init() {
+	slog.Debug("Loading docs from embed")
+	Docs = Manual{
+		Docs: make(map[string]*Doc),
+		En:   make(map[string]*Doc),
+		Fr:   make(map[string]*Doc),
+	}
+
+	ProcessEmbeddedDocs(docsEmbed.ManFiles)
+}
+
+func ProcessDoc(doc string) (*Doc, error) {
 	if len(doc) == 0 {
 		return nil, fmt.Errorf("empty document")
 	}
