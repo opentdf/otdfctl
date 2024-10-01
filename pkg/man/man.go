@@ -1,6 +1,7 @@
 package man
 
 import (
+	"embed"
 	"fmt"
 	"io/fs"
 	"log/slog"
@@ -119,7 +120,7 @@ func (m Manual) GetCommand(cmd string, opts ...CommandOpts) *Doc {
 	return d
 }
 
-func ProcessEmbeddedDocs(manFiles fs.FS) {
+func ProcessEmbeddedDocs(manFiles embed.FS) {
 	err := fs.WalkDir(manFiles, ".", func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
@@ -157,7 +158,7 @@ func ProcessEmbeddedDocs(manFiles fs.FS) {
 		}
 
 		slog.Debug("Found doc", slog.String("cmd", cmd), slog.String("lang", lang))
-		c, err := docsEmbed.ManFiles.ReadFile(path)
+		c, err := manFiles.ReadFile(path)
 		if err != nil {
 			return fmt.Errorf("could not read file, %s: %s ", path, err.Error())
 		}
