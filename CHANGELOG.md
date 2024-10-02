@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.15.0](https://github.com/opentdf/otdfctl/compare/v0.14.0...v0.15.0) (2024-10-02)
+
+
+### Features
+
+* **core:** Update Resource Mapping delete to use get before delete for cli output ([#398](https://github.com/opentdf/otdfctl/issues/398)) ([79f2a42](https://github.com/opentdf/otdfctl/commit/79f2a423380cbd3f4a7805c4ec35d4657a9c0d5c))
+
 ## [0.14.0](https://github.com/opentdf/otdfctl/compare/v0.13.0...v0.14.0) (2024-10-01)
 
 
