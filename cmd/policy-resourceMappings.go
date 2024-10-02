@@ -143,7 +143,12 @@ func policy_deleteResourceMapping(cmd *cobra.Command, args []string) {
 		cli.ConfirmAction(cli.ActionDelete, "resource-mapping", id, false)
 	}
 
-	resourceMapping, err := h.DeleteResourceMapping(id)
+	resourceMapping, err := h.GetResourceMapping(id)
+	if err != nil {
+		cli.ExitWithError(fmt.Sprintf("Failed to get resource mapping for delete (%s)", id), err)
+	}
+
+	_, err = h.DeleteResourceMapping(id)
 	if err != nil {
 		cli.ExitWithError(fmt.Sprintf("Failed to delete resource mapping (%s)", id), err)
 	}
