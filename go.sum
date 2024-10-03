@@ -220,6 +220,10 @@ github.com/opentdf/platform/lib/fixtures v0.2.7 h1:2LxWmLBBISONVJnVDH8yMsV72VHQy
 github.com/opentdf/platform/lib/fixtures v0.2.7/go.mod h1:8yCSe+oUzW9jbM573r9qgE68rjwDMNzktObiGVsO/W8=
 github.com/opentdf/platform/lib/ocrypto v0.1.5 h1:Gv5dAmZEVQeD9w1Fg9fix8gdZIsPDHJ96jG9GdtnYhc=
 github.com/opentdf/platform/lib/ocrypto v0.1.5/go.mod h1:ne+l8Q922OdzA0xesK3XJmfECBnn5vLSGYU3/3OhiHM=
+github.com/opentdf/platform/protocol/go v0.2.18-0.20241001221102-48ef2192b594 h1:RlR9mYJ7CIOL85Bsel0+XCYgLyIOqbh4wOvszWimoaY=
+github.com/opentdf/platform/protocol/go v0.2.18-0.20241001221102-48ef2192b594/go.mod h1:WqDcnFQJb0v8ivRQPidbehcL8ils5ZSZYXkuv0nyvsI=
+github.com/opentdf/platform/sdk v0.3.13-0.20241001221102-48ef2192b594 h1:XxFnL88hN7P8szdA7McsabnRO0fLrZgpS6VRGQPQBNs=
+github.com/opentdf/platform/sdk v0.3.13-0.20241001221102-48ef2192b594/go.mod h1:1DsmqdPp26Odvme8veBO11uzwPYKjkhF9PMdHU1ezbA=
 github.com/opentracing/opentracing-go v1.2.0 h1:uEJPy/1a5RIPAJ0Ov+OIO8OxWu77jEv+1B0VhjKrZUs=
 github.com/opentracing/opentracing-go v1.2.0/go.mod h1:GxEUsuufX4nBwe+T+Wl9TAgYrxe9dPLANfrWvHYVTgc=
 github.com/pelletier/go-toml/v2 v2.2.2 h1:aYUidT7k73Pcl9nb2gScu7NSrKCSHIDE89b3+6Wq+LM=
