@@ -15,8 +15,8 @@ require (
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.6.0
 	github.com/itchyny/gojq v0.12.16
-	github.com/opentdf/platform/protocol/go v0.2.14
-	github.com/opentdf/platform/sdk v0.3.12
+	github.com/opentdf/platform/protocol/go v0.2.18-0.20241004172811-c36624cbefd8
+	github.com/opentdf/platform/sdk v0.3.14-0.20241004172811-c36624cbefd8
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.9.0
@@ -82,7 +82,7 @@ require (
 	github.com/muesli/termenv v0.15.2 // indirect
 	github.com/muhlemmer/gu v0.3.1 // indirect
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
-	github.com/opentdf/platform/lib/ocrypto v0.1.5 // indirect
+	github.com/opentdf/platform/lib/ocrypto v0.1.6 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.2 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
