@@ -15,8 +15,8 @@ require (
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.6.0
 	github.com/itchyny/gojq v0.12.16
-	github.com/opentdf/platform/protocol/go v0.2.18-0.20241004231327-204a25623d28
-	github.com/opentdf/platform/sdk v0.3.14-0.20241004231327-204a25623d28
+	github.com/opentdf/platform/protocol/go v0.2.18-0.20241007212026-b4d7f38bb4cf
+	github.com/opentdf/platform/sdk v0.3.14-0.20241007212026-b4d7f38bb4cf
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.9.0
