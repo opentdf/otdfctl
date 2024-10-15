@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.15.0](https://github.com/opentdf/otdfctl/compare/v0.14.0...v0.15.0) (2024-10-15)
+
+
+### Features
+
+* **core:** DSP-51 - deprecate PublicKey local field  ([#400](https://github.com/opentdf/otdfctl/issues/400)) ([1955800](https://github.com/opentdf/otdfctl/commit/1955800fcd63c4d5044517ec0355a82c0e687f1b))
+* **core:** Update Resource Mapping delete to use get before delete for cli output ([#398](https://github.com/opentdf/otdfctl/issues/398)) ([79f2a42](https://github.com/opentdf/otdfctl/commit/79f2a423380cbd3f4a7805c4ec35d4657a9c0d5c))
+
+
+### Bug Fixes
+
+* **core:** build with latest opentdf releases ([#404](https://github.com/opentdf/otdfctl/issues/404)) ([969b82b](https://github.com/opentdf/otdfctl/commit/969b82b5cf90405002ac2da4a31b022dca9dfa37))
+
 ## [0.14.0](https://github.com/opentdf/otdfctl/compare/v0.13.0...v0.14.0) (2024-10-01)
 
 
