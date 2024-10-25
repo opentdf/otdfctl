@@ -38,7 +38,6 @@ func dev_tdfEncryptCmd(cmd *cobra.Command, args []string) {
 
 	out := c.Flags.GetOptionalString("out")
 	fileMimeType := c.Flags.GetOptionalString("mime-type")
-	assertions := c.Flags.GetOptionalString("with-assertions")
 	attrValues = c.Flags.GetStringSlice("attr", attrValues, cli.FlagsStringSliceOptions{Min: 0})
 	tdfType := c.Flags.GetOptionalString("tdf-type")
 	if tdfType == "" {
