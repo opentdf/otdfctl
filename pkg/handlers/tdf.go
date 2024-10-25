@@ -24,8 +24,6 @@ func (h Handler) EncryptBytes(b []byte, values []string, mimeType string, kasUrl
 	var encrypted []byte
 	enc := bytes.NewBuffer(encrypted)
 
-	print("Hello world---")
-	fmt.Println(assertions)
 	var assertionConfigs []sdk.AssertionConfig
 	if assertions != "" {
 		err := json.Unmarshal([]byte(assertions), &assertionConfigs)
@@ -34,10 +32,6 @@ func (h Handler) EncryptBytes(b []byte, values []string, mimeType string, kasUrl
 		}
 	}
 
-	fmt.Println("Heelo")
-	fmt.Println(assertionConfigs)
-
-	print("Hello world")
 	// TODO: validate values are FQNs or return an error [https://github.com/opentdf/platform/issues/515]
 	_, err := h.sdk.CreateTDF(enc, bytes.NewReader(b),
 		sdk.WithDataAttributes(values...),
@@ -47,7 +41,6 @@ func (h Handler) EncryptBytes(b []byte, values []string, mimeType string, kasUrl
 		sdk.WithAssertions(assertionConfigs...),
 		sdk.WithMimeType(mimeType),
 	)
-
 	if err != nil {
 		return nil, err
 	}
