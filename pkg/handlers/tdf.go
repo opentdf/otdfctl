@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -15,21 +16,38 @@ var (
 	ErrTDFInspectFailNotInspectable       = errors.New("file or input is not inspectable")
 	ErrTDFUnableToReadAttributes          = errors.New("unable to read attributes from TDF")
 	ErrTDFUnableToReadUnencryptedMetadata = errors.New("unable to read unencrypted metadata from TDF")
+	ErrTDFUnableToReadAssertions          = errors.New("unable to read assertions")
 	minBytesLength                        = 3
 )
 
-func (h Handler) EncryptBytes(b []byte, values []string, mimeType string, kasUrlPath string) (*bytes.Buffer, error) {
+func (h Handler) EncryptBytes(b []byte, values []string, mimeType string, kasUrlPath string, assertions string) (*bytes.Buffer, error) {
 	var encrypted []byte
 	enc := bytes.NewBuffer(encrypted)
 
+	print("Hello world---")
+	fmt.Println(assertions)
+	var assertionConfigs []sdk.AssertionConfig
+	if assertions != "" {
+		err := json.Unmarshal([]byte(assertions), &assertionConfigs)
+		if err != nil {
+			return nil, errors.Join(ErrTDFUnableToReadAssertions, err)
+		}
+	}
+
+	fmt.Println("Heelo")
+	fmt.Println(assertionConfigs)
+
+	print("Hello world")
 	// TODO: validate values are FQNs or return an error [https://github.com/opentdf/platform/issues/515]
 	_, err := h.sdk.CreateTDF(enc, bytes.NewReader(b),
 		sdk.WithDataAttributes(values...),
 		sdk.WithKasInformation(sdk.KASInfo{
 			URL: h.platformEndpoint + kasUrlPath,
 		}),
+		sdk.WithAssertions(assertionConfigs...),
 		sdk.WithMimeType(mimeType),
 	)
+
 	if err != nil {
 		return nil, err
 	}

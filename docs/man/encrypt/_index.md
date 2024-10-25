@@ -24,6 +24,8 @@ command:
     - name: kas-url-path
       description: URL path to the KAS service at the platform endpoint domain. Leading slash is required if needed.
       default: /kas
+    - name: with-assertions
+      description: JSON string containing list of assertions to be applied during encryption
 ---
 
 Build a Trusted Data Format (TDF) with encrypted content from a specified file or input from stdin utilizing OpenTDF platform.

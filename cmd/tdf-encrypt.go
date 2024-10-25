@@ -22,6 +22,7 @@ const (
 )
 
 var attrValues []string
+var assertions string
 
 func dev_tdfEncryptCmd(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
@@ -37,6 +38,7 @@ func dev_tdfEncryptCmd(cmd *cobra.Command, args []string) {
 
 	out := c.Flags.GetOptionalString("out")
 	fileMimeType := c.Flags.GetOptionalString("mime-type")
+	assertions := c.Flags.GetOptionalString("with-assertions")
 	attrValues = c.Flags.GetStringSlice("attr", attrValues, cli.FlagsStringSliceOptions{Min: 0})
 	tdfType := c.Flags.GetOptionalString("tdf-type")
 	if tdfType == "" {
@@ -94,7 +96,7 @@ func dev_tdfEncryptCmd(cmd *cobra.Command, args []string) {
 	var err error
 	switch tdfType {
 	case TDF3:
-		encrypted, err = h.EncryptBytes(bytesSlice, attrValues, fileMimeType, kasURLPath)
+		encrypted, err = h.EncryptBytes(bytesSlice, attrValues, fileMimeType, kasURLPath, assertions)
 	case NANO:
 		ecdsaBinding := c.Flags.GetOptionalBool("ecdsa-binding")
 		encrypted, err = h.EncryptNanoBytes(bytesSlice, attrValues, kasURLPath, ecdsaBinding)
@@ -144,6 +146,13 @@ func init() {
 		encryptCmd.GetDocFlag("attr").Shorthand,
 		[]string{},
 		encryptCmd.GetDocFlag("attr").Description,
+	)
+	encryptCmd.Flags().StringVarP(
+		&assertions,
+		encryptCmd.GetDocFlag("with-assertions").Name,
+		encryptCmd.GetDocFlag("with-assertions").Shorthand,
+		"",
+		encryptCmd.GetDocFlag("with-assertions").Description,
 	)
 	encryptCmd.Flags().String(
 		encryptCmd.GetDocFlag("mime-type").Name,
