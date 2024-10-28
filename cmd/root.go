@@ -58,7 +58,7 @@ func InitProfile(c *cli.Cli, onlyNew bool) (*profiles.Profile, *profiles.Profile
 		profileName = profile.GetGlobalConfig().GetDefaultProfile()
 	}
 
-	c.Printf(fmt.Sprintf("Using profile: %s", profileName))
+	c.Printf(fmt.Sprintf("Using profile [%s]\n", profileName))
 
 	// load profile
 	cp, err := profile.UseProfile(profileName)
