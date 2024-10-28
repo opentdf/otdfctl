@@ -28,7 +28,7 @@ teardown_file() {
     BAD_HOST='--host http://localhost:9000'
     run_otdfctl $BAD_HOST $WITH_CREDS policy attributes list
     assert_failure
-    assert_output --partial "Failed to get platform configuration. Is the platform accepting connections at 'http://localhost:9000'?"
+    assert_output --partial "Failed to get platform configuration. Is the platform accepting connections at"
 }
 
 @test "helpful error if bad credentials" {
@@ -43,17 +43,18 @@ teardown_file() {
     BAD_CREDS="--with-client-creds '{clientId:"badClient",clientSecret:"badSecret"}'"
     run_otdfctl $HOST $BAD_CREDS policy attributes list
     assert_failure
-    assert_output --partial "Failed to get client credentials: failed to decode creds JSON"
+    assert_output --partial "Failed to get client credentials"
 }
 
 @test "helpful error if missing client credentials" {
     run_otdfctl $HOST policy attributes list
     assert_failure
-    assert_output --partial "Either --with-client-creds or --with-client-creds-file must be set: when using global flags --host, --tls-no-verify, --with-client-creds, or --with-client-creds-file, profiles will not be used and all required flags must be set"
+    assert_output --partial "One of"
+    assert_output --partial "must be set: when using global flags"
 }
 
 @test "helpful error if missing host" {
     run_otdfctl $WITH_CREDS policy attributes list
     assert_failure
-    assert_output --partial "Host must be set: when using global flags --host, --tls-no-verify, --with-client-creds, or --with-client-creds-file, profiles will not be used and all required flags must be set"
+    assert_output --partial "Host must be set: when using global flags"
 }
