@@ -41,7 +41,7 @@ func InitProfile(c *cli.Cli, onlyNew bool) (*profiles.Profile, *profiles.Profile
 
 	profile, err = profiles.New()
 	if err != nil || profile == nil {
-		c.ExitWithError(fmt.Sprintf("Failed to initialize profile store: %v", err), err)
+		c.ExitWithError("Failed to initialize profile store", err)
 	}
 
 	// short circuit if onlyNew is set to enable creating a new profile
