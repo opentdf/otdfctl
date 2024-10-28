@@ -51,7 +51,7 @@ func InitProfile(c *cli.Cli, onlyNew bool) (*profiles.Profile, *profiles.Profile
 
 	// check if there exists a default profile and warn if not with steps to create one
 	if profile.GetGlobalConfig().GetDefaultProfile() == "" {
-		c.ExitWithWarning(fmt.Sprintf("No default profile found. Please create one using %s", config.AppName))
+		c.ExitWithWarning(fmt.Sprintf("No default profile set. Use `%s profile create <profile> <endpoint>` to create a default profile.", config.AppName))
 	}
 
 	if profileName == "" {
