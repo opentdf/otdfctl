@@ -2,8 +2,9 @@
 title: Selectors
 command:
   name: selectors
+  aliaes:
+    - sel
 ---
 
-Commands to develop selectors, with [jq syntax](https://jqlang.github.io/jq/manual/) for utilization
-within Subject Condition Sets to parse some external Subject Context into mapped Attribute
-Values.
+Commands to generate and test selectors on Subject Entity Representations. For more information, see the help manual for each subcommand
+or additional context within Subject Condition Sets.
