@@ -1,16 +1,13 @@
-/*
-Copyright © 2023 NAME HERE <EMAIL ADDRESS>
-*/
 package cmd
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/opentdf/otdfctl/pkg/auth"
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/config"
 	"github.com/opentdf/otdfctl/pkg/handlers"
-	"github.com/opentdf/otdfctl/pkg/i18n"
 	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/opentdf/otdfctl/pkg/profiles"
 	"github.com/spf13/cobra"
@@ -44,7 +41,7 @@ func InitProfile(c *cli.Cli, onlyNew bool) (*profiles.Profile, *profiles.Profile
 
 	profile, err = profiles.New()
 	if err != nil || profile == nil {
-		c.ExitWithError(i18n.MsgFailedToInitializeProfileStore.String(), err)
+		c.ExitWithError(fmt.Sprintf("Failed to initialize profile store: %v", err), err)
 	}
 
 	// short circuit if onlyNew is set to enable creating a new profile
@@ -54,19 +51,19 @@ func InitProfile(c *cli.Cli, onlyNew bool) (*profiles.Profile, *profiles.Profile
 
 	// check if there exists a default profile and warn if not with steps to create one
 	if profile.GetGlobalConfig().GetDefaultProfile() == "" {
-		c.ExitWithWarning(i18n.MsgNoDefaultProfile.String(config.AppName))
+		c.ExitWithWarning(fmt.Sprintf("No default profile found. Please create one using %s", config.AppName))
 	}
 
 	if profileName == "" {
 		profileName = profile.GetGlobalConfig().GetDefaultProfile()
 	}
 
-	c.Printf(i18n.MsgUsingProfile.String(profileName))
+	c.Printf(fmt.Sprintf("Using profile: %s", profileName))
 
 	// load profile
 	cp, err := profile.UseProfile(profileName)
 	if err != nil {
-		c.ExitWithError(i18n.MsgFailedToLoadProfile.String(profileName), err)
+		c.ExitWithError(fmt.Sprintf("Failed to load profile: %s", profileName), err)
 	}
 
 	return profile, cp
@@ -94,11 +91,11 @@ func NewHandler(c *cli.Cli) handlers.Handler {
 
 	//nolint:nestif // nested if statements are necessary for validation
 	if hasNonProfileFlags {
-		err := errors.New(i18n.MsgMixedAuthFlags.String(cli.PrettyList(nonProfileFlags)))
+		err := fmt.Errorf("when using global flags %s, profiles will not be used and all required flags must be set", cli.PrettyList(nonProfileFlags))
 
 		// host must be set
 		if host == "" {
-			cli.ExitWithError(i18n.MsgHostMustBeSet.String(), err)
+			cli.ExitWithError("Host must be set", err)
 		}
 
 		authFlagsCounter := 0
@@ -112,32 +109,32 @@ func NewHandler(c *cli.Cli) handlers.Handler {
 			authFlagsCounter++
 		}
 		if authFlagsCounter == 0 {
-			cli.ExitWithError(i18n.MsgOneAuthFlagMustBeSet.String(cli.PrettyList(authFlags)), err)
+			cli.ExitWithError(fmt.Sprintf("One of %s must be set", cli.PrettyList(authFlags)), err)
 		} else if authFlagsCounter > 1 {
-			cli.ExitWithError(i18n.MsgOnlyOneAuthFlagMustBeSet.String(cli.PrettyList(authFlags)), err)
+			cli.ExitWithError(fmt.Sprintf("Only one of %s must be set", cli.PrettyList(authFlags)), err)
 		}
 
 		inMemoryProfile = true
 		profile, err = profiles.New(profiles.WithInMemoryStore())
 		if err != nil || profile == nil {
-			cli.ExitWithError(i18n.MsgFailedToInitializeInMemoryProfile.String(), err)
+			cli.ExitWithError(fmt.Sprintf("Failed to initialize in-memory profile: %v", err), err)
 		}
 
 		if err := profile.AddProfile("temp", host, tlsNoVerify, true); err != nil {
-			cli.ExitWithError(i18n.MsgFailedToCreateInMemoryProfile.String(), err)
+			cli.ExitWithError(fmt.Sprintf("Failed to create in-memory profile: %v", err), err)
 		}
 
 		// add credentials to the temporary profile
 		cp, err = profile.UseProfile("temp")
 		if err != nil {
-			cli.ExitWithError(i18n.MsgFailedToLoadInMemoryProfile.String(), err)
+			cli.ExitWithError(fmt.Sprintf("Failed to load in-memory profile: %v", err), err)
 		}
 
 		// get credentials from flags
 		if withAccessToken != "" {
 			claims, err := auth.ParseClaimsJWT(withAccessToken)
 			if err != nil {
-				cli.ExitWithError(i18n.MsgFailedToGetAccessToken.String(), err)
+				cli.ExitWithError(fmt.Sprintf("Failed to get access token: %v", err), err)
 			}
 
 			if err := cp.SetAuthCredentials(profiles.AuthCredentials{
@@ -147,7 +144,7 @@ func NewHandler(c *cli.Cli) handlers.Handler {
 					Expiration:  claims.Expiration,
 				},
 			}); err != nil {
-				cli.ExitWithError(i18n.MsgFailedToSetAccessToken.String(), err)
+				cli.ExitWithError(fmt.Sprintf("Failed to set access token: %v", err), err)
 			}
 		} else {
 			var cc auth.ClientCredentials
@@ -157,7 +154,7 @@ func NewHandler(c *cli.Cli) handlers.Handler {
 				cc, err = auth.GetClientCredsFromFile(withClientCredsFile)
 			}
 			if err != nil {
-				cli.ExitWithError(i18n.MsgFailedToGetAccessToken.String(), err)
+				cli.ExitWithError(fmt.Sprintf("Failed to get client credentials: %v", err), err)
 			}
 
 			// add credentials to the temporary profile
@@ -166,11 +163,11 @@ func NewHandler(c *cli.Cli) handlers.Handler {
 				ClientId:     cc.ClientId,
 				ClientSecret: cc.ClientSecret,
 			}); err != nil {
-				cli.ExitWithError(i18n.MsgFailedToSetClientCreds.String(), err)
+				cli.ExitWithError(fmt.Sprintf("Failed to set client credentials: %v", err), err)
 			}
 		}
 		if err := cp.Save(); err != nil {
-			cli.ExitWithError(i18n.MsgFailedToSaveProfile.String(), err)
+			cli.ExitWithError(fmt.Sprintf("Failed to save profile: %v", err), err)
 		}
 	} else {
 		profile, cp = InitProfile(c, false)
@@ -178,27 +175,27 @@ func NewHandler(c *cli.Cli) handlers.Handler {
 
 	if err := auth.ValidateProfileAuthCredentials(c.Context(), cp); err != nil {
 		if errors.Is(err, auth.ErrPlatformConfigNotFound) {
-			cli.ExitWithError(i18n.MsgPlatformConfigNotFound.String(cp.GetEndpoint()), nil)
+			cli.ExitWithError(fmt.Sprintf("Platform configuration not found for endpoint: %s", cp.GetEndpoint()), nil)
 		}
 		if inMemoryProfile {
-			cli.ExitWithError(i18n.MsgFailedToAuthenticate.String(), err)
+			cli.ExitWithError(fmt.Sprintf("Failed to authenticate: %v", err), err)
 		}
 		if errors.Is(err, auth.ErrProfileCredentialsNotFound) {
-			cli.ExitWithWarning(i18n.MsgProfileMissingCreds.String())
+			cli.ExitWithWarning("Profile missing credentials")
 		}
 
 		if errors.Is(err, auth.ErrAccessTokenExpired) {
-			cli.ExitWithWarning(i18n.MsgAccessTokenExpired.String())
+			cli.ExitWithWarning("Access token expired. Please login or add flag-provided credentials.")
 		}
 		if errors.Is(err, auth.ErrAccessTokenNotFound) {
-			cli.ExitWithWarning(i18n.MsgAccessTokenNotFound.String())
+			cli.ExitWithWarning("No access token found. Please login or add flag-provided credentials.")
 		}
-		cli.ExitWithError(i18n.MsgFailedToGetAccessToken.String(), err)
+		cli.ExitWithError(fmt.Sprintf("Failed to get access token: %v", err), err)
 	}
 
 	h, err := handlers.New(handlers.WithProfile(cp))
 	if err != nil {
-		cli.ExitWithError(i18n.MsgFailedToCreateHandler.String(), err)
+		cli.ExitWithError(fmt.Sprintf("Unexpected error: %v", err), err)
 	}
 	return h
 }
@@ -215,7 +212,7 @@ func init() {
 				BuildTime: config.BuildTime,
 			}
 
-			c.Println(config.AppName + " version " + config.Version + " (" + config.BuildTime + ") " + config.CommitSha)
+			c.Println(fmt.Sprintf("%s version %s (%s) %s", config.AppName, config.Version, config.BuildTime, config.CommitSha))
 			c.ExitWithJSON(v)
 			return
 		}
