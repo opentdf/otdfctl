@@ -10,6 +10,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/go-jose/go-jose/v3/jwt"
 	"github.com/google/uuid"
 	"github.com/opentdf/otdfctl/pkg/profiles"
 	"github.com/opentdf/otdfctl/pkg/utils"
@@ -44,6 +45,10 @@ type oidcClientCredentials struct {
 	isPublic     bool
 }
 
+type JWTClaims struct {
+	Expiration int64 `json:"exp"`
+}
+
 // Retrieves credentials by reading specified file
 func GetClientCredsFromFile(filepath string) (ClientCredentials, error) {
 	creds := ClientCredentials{}
@@ -68,16 +73,6 @@ func GetClientCredsFromJSON(credsJSON []byte) (ClientCredentials, error) {
 	}
 
 	return creds, nil
-}
-
-func GetClientCreds(endpoint string, file string, credsJSON []byte) (ClientCredentials, error) {
-	if file != "" {
-		return GetClientCredsFromFile(file)
-	}
-	if len(credsJSON) > 0 {
-		return GetClientCredsFromJSON(credsJSON)
-	}
-	return ClientCredentials{}, errors.New("no client credentials provided")
 }
 
 func getPlatformConfiguration(endpoint, publicClientID string, tlsNoVerify bool) (platformConfiguration, error) {
@@ -139,6 +134,20 @@ func buildToken(c *profiles.AuthCredentials) *oauth2.Token {
 		Expiry:       time.Unix(c.AccessToken.Expiration, 0),
 		RefreshToken: c.AccessToken.RefreshToken,
 	}
+}
+
+func ParseClaimsJWT(accessToken string) (JWTClaims, error) {
+	c := struct {
+		Expiration int64 `json:"exp"`
+	}{}
+	jwt, err := jwt.ParseSigned(accessToken)
+	if err != nil {
+		return c, errors.Join(ErrParsingAccessToken, err)
+	}
+	if err := jwt.UnsafeClaimsWithoutVerification(&c); err != nil {
+		return c, errors.Join(ErrParsingAccessToken, err)
+	}
+	return c, nil
 }
 
 func GetSDKAuthOptionFromProfile(profile *profiles.ProfileStore) (sdk.Option, error) {

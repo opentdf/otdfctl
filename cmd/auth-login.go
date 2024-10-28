@@ -10,7 +10,7 @@ import (
 
 func auth_codeLogin(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
-	cp := InitProfile(c, false)
+	_, cp := InitProfile(c, false)
 
 	c.Print("Initiating login...")
 	tok, publicClientID, err := auth.LoginWithPKCE(
