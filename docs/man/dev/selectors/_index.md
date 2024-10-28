@@ -2,7 +2,7 @@
 title: Selectors
 command:
   name: selectors
-  aliaes:
+  aliases:
     - sel
 ---
 
