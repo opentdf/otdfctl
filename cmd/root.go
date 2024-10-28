@@ -117,24 +117,24 @@ func NewHandler(c *cli.Cli) handlers.Handler {
 		inMemoryProfile = true
 		profile, err = profiles.New(profiles.WithInMemoryStore())
 		if err != nil || profile == nil {
-			cli.ExitWithError(fmt.Sprintf("Failed to initialize in-memory profile: %v", err), err)
+			cli.ExitWithError("Failed to initialize in-memory profile", err)
 		}
 
 		if err := profile.AddProfile("temp", host, tlsNoVerify, true); err != nil {
-			cli.ExitWithError(fmt.Sprintf("Failed to create in-memory profile: %v", err), err)
+			cli.ExitWithError("Failed to create in-memory profile", err)
 		}
 
 		// add credentials to the temporary profile
 		cp, err = profile.UseProfile("temp")
 		if err != nil {
-			cli.ExitWithError(fmt.Sprintf("Failed to load in-memory profile: %v", err), err)
+			cli.ExitWithError("Failed to load in-memory profile", err)
 		}
 
 		// get credentials from flags
 		if withAccessToken != "" {
 			claims, err := auth.ParseClaimsJWT(withAccessToken)
 			if err != nil {
-				cli.ExitWithError(fmt.Sprintf("Failed to get access token: %v", err), err)
+				cli.ExitWithError("Failed to get access token", err)
 			}
 
 			if err := cp.SetAuthCredentials(profiles.AuthCredentials{
@@ -144,7 +144,7 @@ func NewHandler(c *cli.Cli) handlers.Handler {
 					Expiration:  claims.Expiration,
 				},
 			}); err != nil {
-				cli.ExitWithError(fmt.Sprintf("Failed to set access token: %v", err), err)
+				cli.ExitWithError("Failed to set access token", err)
 			}
 		} else {
 			var cc auth.ClientCredentials
@@ -154,7 +154,7 @@ func NewHandler(c *cli.Cli) handlers.Handler {
 				cc, err = auth.GetClientCredsFromFile(withClientCredsFile)
 			}
 			if err != nil {
-				cli.ExitWithError(fmt.Sprintf("Failed to get client credentials: %v", err), err)
+				cli.ExitWithError("Failed to get client credentials", err)
 			}
 
 			// add credentials to the temporary profile
@@ -163,11 +163,11 @@ func NewHandler(c *cli.Cli) handlers.Handler {
 				ClientId:     cc.ClientId,
 				ClientSecret: cc.ClientSecret,
 			}); err != nil {
-				cli.ExitWithError(fmt.Sprintf("Failed to set client credentials: %v", err), err)
+				cli.ExitWithError("Failed to set client credentials", err)
 			}
 		}
 		if err := cp.Save(); err != nil {
-			cli.ExitWithError(fmt.Sprintf("Failed to save profile: %v", err), err)
+			cli.ExitWithError("Failed to save profile", err)
 		}
 	} else {
 		profile, cp = InitProfile(c, false)
@@ -175,13 +175,13 @@ func NewHandler(c *cli.Cli) handlers.Handler {
 
 	if err := auth.ValidateProfileAuthCredentials(c.Context(), cp); err != nil {
 		if errors.Is(err, auth.ErrPlatformConfigNotFound) {
-			cli.ExitWithError(fmt.Sprintf("Platform configuration not found for endpoint: %s", cp.GetEndpoint()), nil)
+			cli.ExitWithError(fmt.Sprintf("Failed to get platform configuration. Is the platform accepting connections at '%s'?", cp.GetEndpoint()), nil)
 		}
 		if inMemoryProfile {
-			cli.ExitWithError(fmt.Sprintf("Failed to authenticate: %v", err), err)
+			cli.ExitWithError("Failed to authenticate with flag-provided client credentials.", err)
 		}
 		if errors.Is(err, auth.ErrProfileCredentialsNotFound) {
-			cli.ExitWithWarning("Profile missing credentials")
+			cli.ExitWithWarning("Profile missing credentials. Please login or add client credentials.")
 		}
 
 		if errors.Is(err, auth.ErrAccessTokenExpired) {
@@ -190,12 +190,12 @@ func NewHandler(c *cli.Cli) handlers.Handler {
 		if errors.Is(err, auth.ErrAccessTokenNotFound) {
 			cli.ExitWithWarning("No access token found. Please login or add flag-provided credentials.")
 		}
-		cli.ExitWithError(fmt.Sprintf("Failed to get access token: %v", err), err)
+		cli.ExitWithError("Failed to get access token.", err)
 	}
 
 	h, err := handlers.New(handlers.WithProfile(cp))
 	if err != nil {
-		cli.ExitWithError(fmt.Sprintf("Unexpected error: %v", err), err)
+		cli.ExitWithError("Unexpected error", err)
 	}
 	return h
 }
