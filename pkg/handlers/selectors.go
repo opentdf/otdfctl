@@ -11,7 +11,7 @@ import (
 
 func ParseSubjectString(subject string) (map[string]interface{}, error) {
 	var value map[string]interface{}
-	// If fails to unmarshal, may be a JWT, so swallow the error
+	//nolint:errcheck // if fails to unmarshal, may be a JWT, so swallow the error
 	json.Unmarshal([]byte(subject), &value)
 
 	if value == nil {
