@@ -137,9 +137,7 @@ func buildToken(c *profiles.AuthCredentials) *oauth2.Token {
 }
 
 func ParseClaimsJWT(accessToken string) (JWTClaims, error) {
-	c := struct {
-		Expiration int64 `json:"exp"`
-	}{}
+	c := JWTClaims{}
 	jwt, err := jwt.ParseSigned(accessToken)
 	if err != nil {
 		return c, errors.Join(ErrParsingAccessToken, err)
