@@ -8,6 +8,7 @@ var (
 	ErrClientCredentialsNotFound = errors.New("client credentials not found")
 	ErrInvalidAuthType           = errors.New("invalid auth type")
 	ErrUnauthenticated           = errors.New("not logged in")
+	ErrParsingAccessToken        = errors.New("failed to parse access token")
 )
 
 var (

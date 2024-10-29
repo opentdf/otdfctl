@@ -15,7 +15,7 @@ var clientCredentialsCmd = man.Docs.GetCommand("auth/client-credentials",
 
 func auth_clientCredentials(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
-	cp := InitProfile(c, false)
+	_, cp := InitProfile(c, false)
 
 	var clientId string
 	var clientSecret string
