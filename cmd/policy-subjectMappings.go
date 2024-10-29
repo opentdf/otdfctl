@@ -7,6 +7,7 @@ import (
 
 	"github.com/evertras/bubble-table/table"
 	"github.com/opentdf/otdfctl/pkg/cli"
+	"github.com/opentdf/otdfctl/pkg/handlers"
 	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/opentdf/platform/protocol/go/policy/subjectmapping"
@@ -253,6 +254,73 @@ func policy_updateSubjectMapping(cmd *cobra.Command, args []string) {
 	HandleSuccess(cmd, id, t, updated)
 }
 
+func policy_matchSubjectMappings(cmd *cobra.Command, args []string) {
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
+	defer h.Close()
+
+	subject := c.Flags.GetOptionalString("subject")
+	selectors = c.Flags.GetStringSlice("selector", selectors, cli.FlagsStringSliceOptions{Min: 0})
+
+	if len(selectors) > 0 && subject != "" {
+		cli.ExitWithError("Must provide either '--subject' or '--selector' flag values, not both", nil)
+	}
+
+	if subject != "" {
+		flattened, err := handlers.FlattenSubjectContext(subject)
+		if err != nil {
+			cli.ExitWithError("Could not process '--subject' value", err)
+		}
+		for _, item := range flattened {
+			selectors = append(selectors, item.Key)
+		}
+	}
+
+	matched, err := h.MatchSubjectMappings(selectors)
+	if err != nil {
+		cli.ExitWithError(fmt.Sprintf("Failed to match subject mappings with selectors %v", selectors), err)
+	}
+
+	t := cli.NewTable(
+		cli.NewUUIDColumn(),
+		table.NewFlexColumn("subject_attrval_id", "Subject AttrVal: Id", cli.FlexColumnWidthFour),
+		table.NewFlexColumn("subject_attrval_value", "Subject AttrVal: Value", cli.FlexColumnWidthThree),
+		table.NewFlexColumn("actions", "Actions", cli.FlexColumnWidthTwo),
+		table.NewFlexColumn("subject_condition_set_id", "Subject Condition Set: Id", cli.FlexColumnWidthFour),
+		table.NewFlexColumn("subject_condition_set", "Subject Condition Set", cli.FlexColumnWidthThree),
+		table.NewFlexColumn("labels", "Labels", cli.FlexColumnWidthOne),
+		table.NewFlexColumn("created_at", "Created At", cli.FlexColumnWidthOne),
+		table.NewFlexColumn("updated_at", "Updated At", cli.FlexColumnWidthOne),
+	)
+	rows := []table.Row{}
+	for _, sm := range matched {
+		var actionsJSON []byte
+		if actionsJSON, err = json.Marshal(sm.GetActions()); err != nil {
+			cli.ExitWithError("Error marshalling subject mapping actions", err)
+		}
+
+		var subjectSetsJSON []byte
+		if subjectSetsJSON, err = json.Marshal(sm.GetSubjectConditionSet().GetSubjectSets()); err != nil {
+			cli.ExitWithError("Error marshalling subject condition set", err)
+		}
+		metadata := cli.ConstructMetadata(sm.GetMetadata())
+
+		rows = append(rows, table.NewRow(table.RowData{
+			"id":                       sm.GetId(),
+			"subject_attrval_id":       sm.GetAttributeValue().GetId(),
+			"subject_attrval_value":    sm.GetAttributeValue().GetValue(),
+			"actions":                  string(actionsJSON),
+			"subject_condition_set_id": sm.GetSubjectConditionSet().GetId(),
+			"subject_condition_set":    string(subjectSetsJSON),
+			"labels":                   metadata["Labels"],
+			"created_at":               metadata["Created At"],
+			"updated_at":               metadata["Updated At"],
+		}))
+	}
+	t = t.WithRows(rows)
+	HandleSuccess(cmd, "", t, matched)
+}
+
 func getSubjectMappingMappingActionEnumFromChoice(readable string) policy.Action_StandardAction {
 	switch readable {
 	case actionStandardDecrypt:
@@ -378,6 +446,23 @@ func init() {
 		deleteDoc.GetDocFlag("force").Description,
 	)
 
+	matchDoc := man.Docs.GetCommand("policy/subject-mappings/match",
+		man.WithRun(policy_matchSubjectMappings),
+	)
+	matchDoc.Flags().StringP(
+		matchDoc.GetDocFlag("subject").Name,
+		matchDoc.GetDocFlag("subject").Shorthand,
+		matchDoc.GetDocFlag("subject").Default,
+		matchDoc.GetDocFlag("subject").Description,
+	)
+	matchDoc.Flags().StringSliceVarP(
+		&selectors,
+		matchDoc.GetDocFlag("selector").Name,
+		matchDoc.GetDocFlag("selector").Shorthand,
+		[]string{},
+		matchDoc.GetDocFlag("selector").Description,
+	)
+
 	doc := man.Docs.GetCommand("policy/subject-mappings",
 		man.WithSubcommands(
 			createDoc,
@@ -385,6 +470,7 @@ func init() {
 			listDoc,
 			updateDoc,
 			deleteDoc,
+			matchDoc,
 		),
 	)
 	policy_subjectMappingCmd := &doc.Command

@@ -15,6 +15,7 @@ require (
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.6.0
 	github.com/itchyny/gojq v0.12.16
+	github.com/opentdf/platform/lib/flattening v0.1.1
 	github.com/opentdf/platform/protocol/go v0.2.18
 	github.com/opentdf/platform/sdk v0.3.15
 	github.com/spf13/cobra v1.8.1
