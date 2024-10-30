@@ -21,6 +21,7 @@ this command will parse all possible valid selectors and check those for presenc
 Given a set of selectors (`--selector`), this command will look for any Subject Mappings with Subject Condition Sets containing those same selectors.
 
 > [!NOTE]
-> The values of the selectors and any IN/NOT_IN/IN_CONTAINS logic of Subject Condition Sets is irrelevant to this command. Evaluation of any matched conditions
-> is handled by the Authorization Service to determine entitlements. This command is specifically for management of policy - to facilitate lookup of current
-> conditions driven by known selectors as a precondition for administration of entitlement given the logical *operators* of the matched conditions and their relations.
+> The values of the selectors and any `IN`/`NOT_IN`/`IN_CONTAINS` logic of Subject Condition Sets is irrelevant to this command.
+> Evaluation of any matched conditions is handled by the Authorization Service to determine entitlements. This command
+> is specifically for management of policy - to facilitate lookup of current conditions driven by known selectors as a
+> precondition for administration of entitlement given the logical *operators* of the matched conditions and their relations.
