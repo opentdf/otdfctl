@@ -83,7 +83,10 @@ func (h Handler) DecryptBytes(toDecrypt []byte) (*bytes.Buffer, error) {
 	out := &bytes.Buffer{}
 	pt := io.Writer(out)
 	ec := bytes.NewReader(toDecrypt)
-	switch sdk.GetTdfType(ec) {
+	tdfType := sdk.GetTdfType(ec)
+	// reset the reader to the beginning
+	ec.Reset(toDecrypt)
+	switch tdfType {
 	case sdk.Nano:
 		if _, err := h.sdk.ReadNanoTDF(pt, ec); err != nil {
 			return nil, err
