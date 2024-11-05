@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"bytes"
 	"fmt"
 	"io"
 	"log/slog"
@@ -16,15 +15,16 @@ import (
 )
 
 const (
-	TDF3     = "tdf3"
-	NANO     = "nano"
-	Size_1MB = 1024 * 1024
+	TDFTYPE_ZTDF = "ztdf"
+	TDF3         = "tdf3"
+	NANO         = "nano"
+	Size_1MB     = 1024 * 1024
 )
 
 var attrValues []string
 
 func dev_tdfEncryptCmd(cmd *cobra.Command, args []string) {
-	c := cli.New(cmd, args)
+	c := cli.New(cmd, args, cli.WithPrintJson())
 	h := NewHandler(c)
 	defer h.Close()
 
@@ -39,9 +39,6 @@ func dev_tdfEncryptCmd(cmd *cobra.Command, args []string) {
 	fileMimeType := c.Flags.GetOptionalString("mime-type")
 	attrValues = c.Flags.GetStringSlice("attr", attrValues, cli.FlagsStringSliceOptions{Min: 0})
 	tdfType := c.Flags.GetOptionalString("tdf-type")
-	if tdfType == "" {
-		tdfType = TDF3
-	}
 	kasURLPath := c.Flags.GetOptionalString("kas-url-path")
 
 	piped := readPipedStdin()
@@ -90,17 +87,7 @@ func dev_tdfEncryptCmd(cmd *cobra.Command, args []string) {
 	)
 
 	// Do the encryption
-	var encrypted *bytes.Buffer
-	var err error
-	switch tdfType {
-	case TDF3:
-		encrypted, err = h.EncryptBytes(bytesSlice, attrValues, fileMimeType, kasURLPath)
-	case NANO:
-		ecdsaBinding := c.Flags.GetOptionalBool("ecdsa-binding")
-		encrypted, err = h.EncryptNanoBytes(bytesSlice, attrValues, kasURLPath, ecdsaBinding)
-	default:
-		cli.ExitWithError("Failed to encrypt", fmt.Errorf("unrecognized tdf-type: %s", tdfType))
-	}
+	encrypted, err := h.EncryptBytes(tdfType, bytesSlice, attrValues, fileMimeType, kasURLPath, c.Flags.GetOptionalBool("ecdsa-binding"))
 	if err != nil {
 		cli.ExitWithError("Failed to encrypt", err)
 	}

@@ -18,44 +18,89 @@ var (
 	minBytesLength                        = 3
 )
 
-func (h Handler) EncryptBytes(b []byte, values []string, mimeType string, kasUrlPath string) (*bytes.Buffer, error) {
-	var encrypted []byte
-	enc := bytes.NewBuffer(encrypted)
-
-	// TODO: validate values are FQNs or return an error [https://github.com/opentdf/platform/issues/515]
-	_, err := h.sdk.CreateTDF(enc, bytes.NewReader(b),
-		sdk.WithDataAttributes(values...),
-		sdk.WithKasInformation(sdk.KASInfo{
-			URL: h.platformEndpoint + kasUrlPath,
-		}),
-		sdk.WithMimeType(mimeType),
-	)
-	if err != nil {
-		return nil, err
-	}
-	return enc, nil
-}
-
-func (h Handler) DecryptTDF(toDecrypt []byte) (*bytes.Buffer, error) {
-	tdfreader, err := h.sdk.LoadTDF(bytes.NewReader(toDecrypt))
-	if err != nil {
-		return nil, err
-	}
-
-	buf := new(bytes.Buffer)
-	_, err = io.Copy(buf, tdfreader)
-	//nolint:errorlint // callers intended to test error equality directly
-	if err != nil && err != io.EOF {
-		return nil, err
-	}
-	return buf, nil
-}
+const (
+	TDF_TYPE_ZTDF = "ztdf"
+	TDF_TYPE_TDF3 = "tdf3" // alias for TDF
+	TDF_TYPE_NANO = "nano"
+)
 
 type TDFInspect struct {
 	NanoHeader          *sdk.NanoTDFHeader
 	ZTDFManifest        *sdk.Manifest
 	Attributes          []string
 	UnencryptedMetadata []byte
+}
+
+func (h Handler) EncryptBytes(tdfType string, b []byte, values []string, mimeType string, kasUrlPath string, ecdsaBinding bool) (*bytes.Buffer, error) {
+	var encrypted []byte
+	enc := bytes.NewBuffer(encrypted)
+
+	switch tdfType {
+
+	// Encrypt the data as a ZTDF
+	case "", TDF_TYPE_TDF3, TDF_TYPE_ZTDF:
+		if ecdsaBinding {
+			return nil, errors.New("ECDSA policy binding is not supported for ZTDF")
+		}
+
+		_, err := h.sdk.CreateTDF(enc, bytes.NewReader(b),
+			sdk.WithDataAttributes(values...),
+			sdk.WithKasInformation(sdk.KASInfo{
+				URL: h.platformEndpoint + kasUrlPath,
+			}),
+			sdk.WithMimeType(mimeType),
+		)
+		return enc, err
+
+	// Encrypt the data as a Nano TDF
+	case TDF_TYPE_NANO:
+		nanoTDFConfig, err := h.sdk.NewNanoTDFConfig()
+		if err != nil {
+			return nil, err
+		}
+		// set the KAS URL
+		if err = nanoTDFConfig.SetKasURL(h.platformEndpoint + kasUrlPath); err != nil {
+			return nil, err
+		}
+		// set the attributes
+		if err = nanoTDFConfig.SetAttributes(values); err != nil {
+			return nil, err
+		}
+		// enable ECDSA policy binding
+		if ecdsaBinding {
+			nanoTDFConfig.EnableECDSAPolicyBinding()
+		}
+		// create the nano TDF
+		if _, err = h.sdk.CreateNanoTDF(enc, bytes.NewReader(b), *nanoTDFConfig); err != nil {
+			return nil, err
+		}
+		return enc, nil
+	default:
+		return nil, errors.New("unknown TDF type")
+	}
+}
+
+func (h Handler) DecryptBytes(toDecrypt []byte) (*bytes.Buffer, error) {
+	out := &bytes.Buffer{}
+	pt := io.Writer(out)
+	ec := bytes.NewReader(toDecrypt)
+	switch sdk.GetTdfType(ec) {
+	case sdk.Nano:
+		if _, err := h.sdk.ReadNanoTDF(pt, ec); err != nil {
+			return nil, err
+		}
+	case sdk.Standard:
+		r, err := h.sdk.LoadTDF(ec)
+		if err != nil {
+			return nil, err
+		}
+		if _, err = io.Copy(pt, r); err != nil && err != io.EOF {
+			return nil, err
+		}
+	default:
+		return nil, errors.New("unknown TDF type")
+	}
+	return out, nil
 }
 
 func (h Handler) InspectTDF(toInspect []byte) (TDFInspect, []error) {

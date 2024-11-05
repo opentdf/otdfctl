@@ -9,4 +9,13 @@ command:
       default: false
 ---
 
-Retrieves a new OIDC Access Token using the client credentials from the OS-specific keychain and prints to stdout if found.
+> [!NOTE]
+> Requires experimental profiles feature.
+>
+> | OS | Keychain | State |
+> | --- | --- | --- |
+> | macOS | Keychain | Stable |
+> | Windows | Credential Manager | Alpha |
+> | Linux | Secret Service | Not yet supported |
+
+Retrieves a new OIDC Access Token using the client credentials and prints to stdout if found.
