@@ -14,7 +14,7 @@ command:
 >
 > | OS | Keychain | State |
 > | --- | --- | --- |
-> | macOS | Keychain | Stable |
+> | MacOS | Keychain | Stable |
 > | Windows | Credential Manager | Alpha |
 > | Linux | Secret Service | Not yet supported |
 
