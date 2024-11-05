@@ -36,7 +36,6 @@ func (h Handler) EncryptBytes(tdfType string, b []byte, values []string, mimeTyp
 	enc := bytes.NewBuffer(encrypted)
 
 	switch tdfType {
-
 	// Encrypt the data as a ZTDF
 	case "", TDF_TYPE_TDF3, TDF_TYPE_ZTDF:
 		if ecdsaBinding {
@@ -94,9 +93,12 @@ func (h Handler) DecryptBytes(toDecrypt []byte) (*bytes.Buffer, error) {
 		if err != nil {
 			return nil, err
 		}
+		//nolint:errorlint // callers intended to test error equality directly
 		if _, err = io.Copy(pt, r); err != nil && err != io.EOF {
 			return nil, err
 		}
+	case sdk.Invalid:
+		return nil, errors.New("invalid TDF")
 	default:
 		return nil, errors.New("unknown TDF type")
 	}
