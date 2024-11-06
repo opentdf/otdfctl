@@ -142,10 +142,9 @@ func (f *FileStore) Delete() error {
 
 // getEncryptionKey retrieves the encryption key from the keyring or generates it if absent
 func (f *FileStore) getEncryptionKey() ([]byte, error) {
-	urnNamespace := fmt.Sprintf(URNNamespaceTemplate, f.key)
 
 	// Try retrieving the key as a string from the keyring
-	keyStr, err := keyring.Get(urnNamespace, f.key)
+	keyStr, err := keyring.Get(URNNamespaceTemplate, f.key)
 	if err == keyring.ErrNotFound {
 		// Generate a new key if not found
 		key := make([]byte, 32) // AES-256 key length
@@ -154,7 +153,7 @@ func (f *FileStore) getEncryptionKey() ([]byte, error) {
 		}
 
 		// Convert key to string for storage in the keyring
-		if err := keyring.Set(urnNamespace, f.key, string(key)); err != nil {
+		if err := keyring.Set(URNNamespaceTemplate, f.key, string(key)); err != nil {
 			return nil, err
 		}
 
