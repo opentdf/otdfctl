@@ -12,11 +12,12 @@ require (
 	github.com/creasty/defaults v1.8.0
 	github.com/evertras/bubble-table v0.16.1
 	github.com/gabriel-vasile/mimetype v1.4.5
+	github.com/go-jose/go-jose/v3 v3.0.3
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.6.0
 	github.com/opentdf/platform/lib/flattening v0.1.1
 	github.com/opentdf/platform/protocol/go v0.2.18
-	github.com/opentdf/platform/sdk v0.3.15
+	github.com/opentdf/platform/sdk v0.3.17
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.9.0
@@ -49,7 +50,6 @@ require (
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
-	github.com/go-jose/go-jose/v3 v3.0.3 // indirect
 	github.com/go-jose/go-jose/v4 v4.0.4 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect

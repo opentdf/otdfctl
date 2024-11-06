@@ -14,6 +14,9 @@ command:
         - tdf3
         - nano
       default: tdf3
+    - name: no-verify-assertions
+      description: disable verification of assertions
+      default: false
 ---
 
 Decrypt a Trusted Data Format (TDF) file and output the contents to stdout or a file in the current working directory.
