@@ -9,7 +9,7 @@ import (
 )
 
 // URN-based namespace template without UUID, using only profile name for uniqueness
-const URNNamespaceTemplate = "urn:opentdf:otdfctl:profile:v1:%s" // e.g., urn:opentdf:otdfctl:profile:v1:<profileName>
+const URNNamespaceTemplate = "urn:opentdf:otdfctl:profile:v1" // e.g., urn:opentdf:otdfctl:profile:v1:<profileName>
 
 // ProfileStore manages profile configurations and handles storage
 type ProfileStore struct {
@@ -83,7 +83,7 @@ func (p *ProfileStore) Delete() error {
 
 // Generate a unique namespace for a profile using only the profile name
 func (p *ProfileConfig) GetNamespace() string {
-	return fmt.Sprintf(URNNamespaceTemplate, p.Name)
+	return URNNamespaceTemplate
 }
 
 // GetProfileName retrieves the profile name
