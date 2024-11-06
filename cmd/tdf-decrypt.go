@@ -20,6 +20,7 @@ func dev_tdfDecryptCmd(cmd *cobra.Command, args []string) {
 
 	output := c.Flags.GetOptionalString("out")
 	tdfType := c.Flags.GetOptionalString("tdf-type")
+	disableAssertionVerification := c.Flags.GetOptionalBool("no-verify-assertions")
 	if tdfType == "" {
 		tdfType = TDF3
 	}
@@ -43,7 +44,7 @@ func dev_tdfDecryptCmd(cmd *cobra.Command, args []string) {
 	var err error
 	switch tdfType {
 	case TDF3:
-		decrypted, err = h.DecryptTDF(bytesToDecrypt)
+		decrypted, err = h.DecryptTDF(bytesToDecrypt, disableAssertionVerification)
 	case NANO:
 		decrypted, err = h.DecryptNanoTDF(bytesToDecrypt)
 	default:
@@ -86,6 +87,12 @@ func init() {
 		decryptCmd.GetDocFlag("tdf-type").Default,
 		decryptCmd.GetDocFlag("tdf-type").Description,
 	)
+	decryptCmd.Flags().Bool(
+		decryptCmd.GetDocFlag("no-verify-assertions").Name,
+		decryptCmd.GetDocFlag("no-verify-assertions").DefaultAsBool(),
+		decryptCmd.GetDocFlag("no-verify-assertions").Description,
+	)
+
 	decryptCmd.Command.GroupID = TDF
 
 	RootCmd.AddCommand(&decryptCmd.Command)
