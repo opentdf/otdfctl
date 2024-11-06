@@ -26,6 +26,7 @@ type ProfileConfig struct {
 	Attributes      map[string]interface{} `json:"attributes"`      // Flexible map of additional attributes
 	CreatedAt       time.Time              `json:"createdAt"`       // Timestamp for profile creation
 	UpdatedAt       time.Time              `json:"updatedAt"`       // Timestamp for last profile update
+	Version         string                 `json:"version"`         // profile version
 }
 
 // NewProfileStore creates a new profile store with flexible attributes and timestamps
@@ -48,6 +49,7 @@ func NewProfileStore(newStore NewStoreInterface, profileName string, endpoint st
 			Attributes:  make(map[string]interface{}), // Empty map for flexible attributes
 			CreatedAt:   time.Now(),                   // Set creation time
 			UpdatedAt:   time.Now(),                   // Set initial update time
+			Version:     URNNamespaceTemplate,         // Set profile version to URN-based namespace template
 		},
 	}
 	return p, nil

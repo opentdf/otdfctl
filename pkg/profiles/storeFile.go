@@ -28,6 +28,7 @@ type FileMetadata struct {
 	ProfileName   string `json:"profile_name"`
 	CreatedAt     string `json:"created_at"`
 	EncryptionAlg string `json:"encryption_alg"`
+	Version       string `json:"version"`
 }
 
 // Generates a safe, hashed filename from namespace and key
@@ -213,6 +214,7 @@ func (f *FileStore) SaveMetadata(profileName string) error {
 		ProfileName:   profileName,
 		CreatedAt:     time.Now().Format(time.RFC3339),
 		EncryptionAlg: "AES-256-GCM",
+		Version:       URNNamespaceTemplate,
 	}
 
 	data, err := json.MarshalIndent(metadata, "", "  ")
