@@ -4,11 +4,13 @@ import (
 	"errors"
 )
 
-// TODO:
-// - add a version
-// - add a migration path
-
+// Define constants for the different storage drivers and store keys
 const (
+	PROFILE_DRIVER_KEYRING   ProfileDriver = "keyring"
+	PROFILE_DRIVER_IN_MEMORY ProfileDriver = "in-memory"
+	PROFILE_DRIVER_FILE      ProfileDriver = "file"
+	PROFILE_DRIVER_DEFAULT                 = PROFILE_DRIVER_FILE
+
 	STORE_KEY_PROFILE = "profile"
 	STORE_KEY_GLOBAL  = "global"
 )
@@ -24,17 +26,7 @@ type Profile struct {
 	currentProfileStore *ProfileStore
 }
 
-type CurrentProfileStore struct {
-	StoreInterface
-	ProfileConfig
-}
-
-const (
-	PROFILE_DRIVER_KEYRING   ProfileDriver = "keyring"
-	PROFILE_DRIVER_IN_MEMORY ProfileDriver = "in-memory"
-	PROFILE_DRIVER_DEFAULT                 = PROFILE_DRIVER_KEYRING
-)
-
+// Variadic functions to set different storage drivers
 type (
 	profileConfigVariadicFunc func(profileConfig) profileConfig
 	ProfileDriver             string
@@ -54,25 +46,30 @@ func WithKeyringStore() profileConfigVariadicFunc {
 	}
 }
 
+func WithFileStore() profileConfigVariadicFunc {
+	return func(c profileConfig) profileConfig {
+		c.driver = PROFILE_DRIVER_FILE
+		return c
+	}
+}
+
+// newStoreFactory returns a storage interface based on the configured driver
 func newStoreFactory(driver ProfileDriver) NewStoreInterface {
 	switch driver {
 	case PROFILE_DRIVER_KEYRING:
 		return NewKeyringStore
 	case PROFILE_DRIVER_IN_MEMORY:
 		return NewMemoryStore
+	case PROFILE_DRIVER_FILE:
+		return NewFileStore
 	default:
 		return nil
 	}
 }
 
-// create a new profile and load global config
+// New creates a new Profile with the specified configuration options
 func New(opts ...profileConfigVariadicFunc) (*Profile, error) {
 	var err error
-
-	newStoreFactory("hello")
-	if testProfile != nil {
-		return testProfile, nil
-	}
 
 	config := profileConfig{
 		driver: PROFILE_DRIVER_DEFAULT,
@@ -81,7 +78,7 @@ func New(opts ...profileConfigVariadicFunc) (*Profile, error) {
 		config = opt(config)
 	}
 
-	// check if the store driver is valid
+	// Validate and initialize the store
 	newStore := newStoreFactory(config.driver)
 	if newStore == nil {
 		return nil, errors.New("invalid store driver")
@@ -91,7 +88,7 @@ func New(opts ...profileConfigVariadicFunc) (*Profile, error) {
 		config: config,
 	}
 
-	// load global config
+	// Load global configuration
 	p.globalStore, err = LoadGlobalConfig(newStore)
 	if err != nil {
 		return nil, err
@@ -100,14 +97,16 @@ func New(opts ...profileConfigVariadicFunc) (*Profile, error) {
 	return p, nil
 }
 
+// GetGlobalConfig returns the global configuration
 func (p *Profile) GetGlobalConfig() *GlobalStore {
 	return p.globalStore
 }
 
-func (p *Profile) AddProfile(profileName string, endpoint string, tlsNoVerify bool, setDefault bool) error {
+// AddProfile adds a new profile to the current configuration
+func (p *Profile) AddProfile(profileName, endpoint string, tlsNoVerify, setDefault bool) error {
 	var err error
 
-	// check if profile already exists
+	// Check if the profile already exists
 	if p.globalStore.ProfileExists(profileName) {
 		return errors.New("profile already exists")
 	}
@@ -121,7 +120,7 @@ func (p *Profile) AddProfile(profileName string, endpoint string, tlsNoVerify bo
 		return err
 	}
 
-	// add profile to global config
+	// Add profile to global configuration
 	if err := p.globalStore.AddProfile(profileName); err != nil {
 		return err
 	}
@@ -133,80 +132,76 @@ func (p *Profile) AddProfile(profileName string, endpoint string, tlsNoVerify bo
 	return nil
 }
 
+// GetCurrentProfile retrieves the current profile store
 func (p *Profile) GetCurrentProfile() (*ProfileStore, error) {
 	if p.currentProfileStore == nil {
 		return nil, errors.New("no current profile set")
 	}
-
 	return p.currentProfileStore, nil
 }
 
+// GetProfile retrieves a specified profile
 func (p *Profile) GetProfile(profileName string) (*ProfileStore, error) {
 	if !p.globalStore.ProfileExists(profileName) {
 		return nil, errors.New("profile does not exist")
 	}
-
 	return LoadProfileStore(newStoreFactory(p.config.driver), profileName)
 }
 
+// ListProfiles returns a list of profile names
 func (p *Profile) ListProfiles() []string {
 	return p.globalStore.ListProfiles()
 }
 
+// UseProfile sets the current profile to the specified profile name
 func (p *Profile) UseProfile(profileName string) (*ProfileStore, error) {
 	var err error
 
-	// check if current profile is already set
-	if p.currentProfileStore != nil {
-		if p.currentProfileStore.config.Name == profileName {
-			return p.currentProfileStore, nil
-		}
+	// If current profile is already set to this, return it
+	if p.currentProfileStore != nil && p.currentProfileStore.config.Name == profileName {
+		return p.currentProfileStore, nil
 	}
 
-	// set current profile
+	// Set current profile
 	p.currentProfileStore, err = p.GetProfile(profileName)
 	return p.currentProfileStore, err
 }
 
+// UseDefaultProfile sets the current profile to the default profile
 func (p *Profile) UseDefaultProfile() (*ProfileStore, error) {
 	defaultProfile := p.globalStore.GetDefaultProfile()
 	if defaultProfile == "" {
 		return nil, errors.New("no default profile set")
 	}
-
 	return p.UseProfile(defaultProfile)
 }
 
+// SetDefaultProfile sets a specified profile as the default profile
 func (p *Profile) SetDefaultProfile(profileName string) error {
 	if !p.globalStore.ProfileExists(profileName) {
 		return errors.New("profile does not exist")
 	}
-
 	return p.globalStore.SetDefaultProfile(profileName)
 }
 
+// DeleteProfile removes a profile from storage
 func (p *Profile) DeleteProfile(profileName string) error {
-	// check if profile exists
+	// Check if the profile exists
 	if !p.globalStore.ProfileExists(profileName) {
 		return errors.New("profile does not exist")
 	}
 
-	// get profile
+	// Retrieve the profile
 	profile, err := LoadProfileStore(newStoreFactory(p.config.driver), profileName)
 	if err != nil {
 		return err
 	}
 
-	// remove profile from global config (will error if profile is default)
+	// Remove profile from global configuration
 	if err := p.globalStore.RemoveProfile(profileName); err != nil {
 		return err
 	}
 
-	// delete profile config
-	err = profile.Delete()
-	if err != nil {
-		return err
-	}
-
-	return nil
+	// Delete profile configuration
+	return profile.Delete()
 }

@@ -39,4 +39,11 @@ command:
     - name: debug
       description: enable debug output
       default: false
+    - name: profile-driver
+      description: storage driver for managing profiles [keyring, in-memory, file]
+      enum:
+        - keyring
+        - in-memory
+        - file
+      default: keyring
 ---
