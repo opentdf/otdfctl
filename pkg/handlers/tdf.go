@@ -38,7 +38,7 @@ func (h Handler) EncryptBytes(b []byte, values []string, mimeType string, kasUrl
 
 func (h Handler) DecryptTDF(toDecrypt []byte, disableAssertionVerification bool) (*bytes.Buffer, error) {
 	tdfreader, err := h.sdk.LoadTDF(bytes.NewReader(toDecrypt),
-	 sdk.WithDisableAssertionVerification(disableAssertionVerification)
+		sdk.WithDisableAssertionVerification(disableAssertionVerification),
 	)
 	if err != nil {
 		return nil, err
