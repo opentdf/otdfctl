@@ -117,6 +117,9 @@ func (h Handler) DecryptBytes(toDecrypt []byte, disableAssertionCheck bool) (*by
 	return out, nil
 }
 
+// TODO: Rename. Not sure what this value is at present
+const inspectTDFEighteen = 18
+
 func (h Handler) InspectTDF(toInspect []byte) (TDFInspect, []error) {
 	b := bytes.NewReader(toInspect)
 	switch sdk.GetTdfType(b) {
@@ -156,9 +159,8 @@ func (h Handler) InspectTDF(toInspect []byte) (TDFInspect, []error) {
 		r := TDFInspect{
 			NanoHeader: &header,
 		}
-		remainder := uint32(len(toInspect) - int(size))
-		eighteen := uint32(18) // TODO: Rename. Not sure what this value is at present
-		if remainder < eighteen {
+		remainder := len(toInspect) - int(size)
+		if remainder < inspectTDFEighteen {
 			return r, []error{ErrTDFInspectFailNotValidTDF}
 		}
 		return r, nil
