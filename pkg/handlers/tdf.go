@@ -156,8 +156,9 @@ func (h Handler) InspectTDF(toInspect []byte) (TDFInspect, []error) {
 		r := TDFInspect{
 			NanoHeader: &header,
 		}
-		remainder := uint32(len(toInspect)) - size
-		if remainder < 18 {
+		remainder := uint32(len(toInspect) - int(size))
+		eighteen := uint32(18) // TODO: Rename. Not sure what this value is at present
+		if remainder < eighteen {
 			return r, []error{ErrTDFInspectFailNotValidTDF}
 		}
 		return r, nil
