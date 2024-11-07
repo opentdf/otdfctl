@@ -14,12 +14,12 @@ command:
       description: The MIME type of the input data. If not provided, the MIME type is inferred from the input data.
     - name: tdf-type
       shorthand: t
-      description: The type of tdf to encrypt as. TDF3 supports structured manifests and larger payloads. Nano has a smaller footprint and more performant, but does not support structured manifests or large payloads.
+      description: The type of tdf to encrypt as. ZTDF supports structured manifests and larger payloads. NanoTDF has a smaller footprint and more performant, but does not support structured manifests or large payloads. (tdf3 is an alias for ztdf)
       enum:
-        - tdf3
         - ztdf
+        - tdf3
         - nano
-      default: tdf3
+      default: ztdf
     - name: ecdsa-binding
       description: For nano type containers only, enables ECDSA policy binding
     - name: kas-url-path
@@ -27,7 +27,7 @@ command:
       default: /kas
     - name: with-assertions
       description: >
-        EXPERIMENTAL: JSON string containing list of assertions to be applied during encryption. example - '[{"id":"assertion1","type":"handling","scope":"tdo","appliesToState":"encrypted","statement":{"format":"json+stanag5636","schema":"urn:nato:stanag:5636:A:1:elements:json","value":"{\"ocl\":\"2024-10-21T20:47:36Z\"}"}}]'
+        EXPERIMENTAL: JSON string of assertions to bind metadata to the TDF. See examples for more information.
 ---
 
 Build a Trusted Data Format (TDF) with encrypted content from a specified file or input from stdin utilizing OpenTDF platform.
@@ -82,4 +82,16 @@ support structured manifests or large payloads.
 ```shell
 # output to nano.tdf
 otdfctl encrypt hello.txt --tdf-type nano --out hello.txt.tdf
+```
+
+## ZTDF Assertions (experimental)
+
+Assertions are a way to bind metadata to the TDF data object in a cryptographically secure way. 
+
+### STANAG 5636
+
+The following example demonstrates how to bind a STANAG 5636 metadata assertion to the TDF data object.
+
+```shell
+otdfctl encrypt hello.txt --out hello.txt.tdf --with-assertions '[{"id":"assertion1","type":"handling","scope":"tdo","appliesToState":"encrypted","statement":{"format":"json+stanag5636","schema":"urn:nato:stanag:5636:A:1:elements:json","value":"{\"ocl\":\"2024-10-21T20:47:36Z\"}"}}]'
 ```
