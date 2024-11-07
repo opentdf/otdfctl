@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -15,7 +16,7 @@ var (
 	ErrTDFInspectFailNotInspectable       = errors.New("file or input is not inspectable")
 	ErrTDFUnableToReadAttributes          = errors.New("unable to read attributes from TDF")
 	ErrTDFUnableToReadUnencryptedMetadata = errors.New("unable to read unencrypted metadata from TDF")
-	minBytesLength                        = 3
+	ErrTDFUnableToReadAssertions          = errors.New("unable to read assertions")
 )
 
 const (
@@ -31,7 +32,7 @@ type TDFInspect struct {
 	UnencryptedMetadata []byte
 }
 
-func (h Handler) EncryptBytes(tdfType string, b []byte, values []string, mimeType string, kasUrlPath string, ecdsaBinding bool) (*bytes.Buffer, error) {
+func (h Handler) EncryptBytes(tdfType string, b []byte, values []string, mimeType string, kasUrlPath string, ecdsaBinding bool, assertions string) (*bytes.Buffer, error) {
 	var encrypted []byte
 	enc := bytes.NewBuffer(encrypted)
 
@@ -42,13 +43,24 @@ func (h Handler) EncryptBytes(tdfType string, b []byte, values []string, mimeTyp
 			return nil, errors.New("ECDSA policy binding is not supported for ZTDF")
 		}
 
-		_, err := h.sdk.CreateTDF(enc, bytes.NewReader(b),
+		opts := []sdk.TDFOption{
 			sdk.WithDataAttributes(values...),
 			sdk.WithKasInformation(sdk.KASInfo{
 				URL: h.platformEndpoint + kasUrlPath,
 			}),
 			sdk.WithMimeType(mimeType),
-		)
+		}
+
+		var assertionConfigs []sdk.AssertionConfig
+		if assertions != "" {
+			err := json.Unmarshal([]byte(assertions), &assertionConfigs)
+			if err != nil {
+				return nil, errors.Join(ErrTDFUnableToReadAssertions, err)
+			}
+			opts = append(opts, sdk.WithAssertions(assertionConfigs...))
+		}
+
+		_, err := h.sdk.CreateTDF(enc, bytes.NewReader(b), opts...)
 		return enc, err
 
 	// Encrypt the data as a Nano TDF
@@ -83,10 +95,7 @@ func (h Handler) DecryptBytes(toDecrypt []byte) (*bytes.Buffer, error) {
 	out := &bytes.Buffer{}
 	pt := io.Writer(out)
 	ec := bytes.NewReader(toDecrypt)
-	tdfType := sdk.GetTdfType(ec)
-	// reset the reader to the beginning
-	ec.Reset(toDecrypt)
-	switch tdfType {
+	switch sdk.GetTdfType(ec) {
 	case sdk.Nano:
 		if _, err := h.sdk.ReadNanoTDF(pt, ec); err != nil {
 			return nil, err
@@ -109,60 +118,49 @@ func (h Handler) DecryptBytes(toDecrypt []byte) (*bytes.Buffer, error) {
 }
 
 func (h Handler) InspectTDF(toInspect []byte) (TDFInspect, []error) {
-	if len(toInspect) < minBytesLength {
-		return TDFInspect{}, []error{fmt.Errorf("tdf too small [%d] bytes", len(toInspect))}
-	}
-	switch {
-	case bytes.Equal([]byte("PK"), toInspect[0:2]):
-		return h.InspectZTDF(toInspect)
-	case bytes.Equal([]byte("L1L"), toInspect[0:3]):
-		return h.InspectNanoTDF(toInspect)
+	b := bytes.NewReader(toInspect)
+	switch sdk.GetTdfType(b) {
+	case sdk.Standard:
+		// grouping errors so we don't impact the piping of the data
+		errs := []error{}
+
+		tdfreader, err := h.sdk.LoadTDF(bytes.NewReader(toInspect))
+		if err != nil {
+			if strings.Contains(err.Error(), "zip: not a valid zip file") {
+				return TDFInspect{}, []error{ErrTDFInspectFailNotInspectable}
+			}
+			return TDFInspect{}, []error{errors.Join(ErrTDFInspectFailNotValidTDF, err)}
+		}
+
+		attributes, err := tdfreader.DataAttributes()
+		if err != nil {
+			errs = append(errs, errors.Join(ErrTDFUnableToReadAttributes, err))
+		}
+
+		unencryptedMetadata, err := tdfreader.UnencryptedMetadata()
+		if err != nil {
+			errs = append(errs, errors.Join(ErrTDFUnableToReadUnencryptedMetadata, err))
+		}
+
+		m := tdfreader.Manifest()
+		return TDFInspect{
+			ZTDFManifest:        &m,
+			Attributes:          attributes,
+			UnencryptedMetadata: unencryptedMetadata,
+		}, errs
+	case sdk.Nano:
+		header, size, err := sdk.NewNanoTDFHeaderFromReader(b)
+		if err != nil {
+			return TDFInspect{}, []error{errors.Join(ErrTDFInspectFailNotValidTDF, err)}
+		}
+		r := TDFInspect{
+			NanoHeader: &header,
+		}
+		remainder := uint32(len(toInspect)) - size
+		if remainder < 18 {
+			return r, []error{ErrTDFInspectFailNotValidTDF}
+		}
+		return r, nil
 	}
 	return TDFInspect{}, []error{fmt.Errorf("tdf format unrecognized")}
-}
-
-func (h Handler) InspectZTDF(toInspect []byte) (TDFInspect, []error) {
-	// grouping errors so we don't impact the piping of the data
-	errs := []error{}
-
-	tdfreader, err := h.sdk.LoadTDF(bytes.NewReader(toInspect))
-	if err != nil {
-		if strings.Contains(err.Error(), "zip: not a valid zip file") {
-			return TDFInspect{}, []error{ErrTDFInspectFailNotInspectable}
-		}
-		return TDFInspect{}, []error{errors.Join(ErrTDFInspectFailNotValidTDF, err)}
-	}
-
-	attributes, err := tdfreader.DataAttributes()
-	if err != nil {
-		errs = append(errs, errors.Join(ErrTDFUnableToReadAttributes, err))
-	}
-
-	unencryptedMetadata, err := tdfreader.UnencryptedMetadata()
-	if err != nil {
-		errs = append(errs, errors.Join(ErrTDFUnableToReadUnencryptedMetadata, err))
-	}
-
-	m := tdfreader.Manifest()
-	return TDFInspect{
-		ZTDFManifest:        &m,
-		Attributes:          attributes,
-		UnencryptedMetadata: unencryptedMetadata,
-	}, errs
-}
-
-//nolint:gosec,mnd // SDK should secure lengths of inputs/outputs
-func (h Handler) InspectNanoTDF(toInspect []byte) (TDFInspect, []error) {
-	header, size, err := sdk.NewNanoTDFHeaderFromReader(bytes.NewReader(toInspect))
-	if err != nil {
-		return TDFInspect{}, []error{errors.Join(ErrTDFInspectFailNotValidTDF, err)}
-	}
-	r := TDFInspect{
-		NanoHeader: &header,
-	}
-	remainder := uint32(len(toInspect)) - size
-	if remainder < 18 {
-		return r, []error{ErrTDFInspectFailNotValidTDF}
-	}
-	return r, nil
 }
