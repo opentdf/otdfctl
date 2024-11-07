@@ -161,6 +161,9 @@ func (h Handler) InspectTDF(toInspect []byte) (TDFInspect, []error) {
 			return r, []error{ErrTDFInspectFailNotValidTDF}
 		}
 		return r, nil
+	case sdk.Invalid:
+		return TDFInspect{}, []error{ErrTDFInspectFailNotValidTDF}
+	default:
+		return TDFInspect{}, []error{fmt.Errorf("tdf format unrecognized")}
 	}
-	return TDFInspect{}, []error{fmt.Errorf("tdf format unrecognized")}
 }
