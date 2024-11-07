@@ -76,7 +76,7 @@ otdfctl encrypt hello.txt --out hello.txt.tdf --attr https://example.com/attr/at
 
 ## NanoTDF
 
-NanoTDF is a lightweight TDF format that is more performant and has a smaller footprint than TDF3. NanoTDF does not
+NanoTDF is a lightweight TDF format that is more performant and has a smaller footprint than ZTDF. NanoTDF does not
 support structured manifests or large payloads.
 
 ```shell
