@@ -22,6 +22,7 @@ const (
 )
 
 var attrValues []string
+var assertions string
 
 func dev_tdfEncryptCmd(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args, cli.WithPrintJson())
@@ -87,7 +88,7 @@ func dev_tdfEncryptCmd(cmd *cobra.Command, args []string) {
 	)
 
 	// Do the encryption
-	encrypted, err := h.EncryptBytes(tdfType, bytesSlice, attrValues, fileMimeType, kasURLPath, c.Flags.GetOptionalBool("ecdsa-binding"))
+	encrypted, err := h.EncryptBytes(tdfType, bytesSlice, attrValues, fileMimeType, kasURLPath, c.Flags.GetOptionalBool("ecdsa-binding"), assertions)
 	if err != nil {
 		cli.ExitWithError("Failed to encrypt", err)
 	}
@@ -131,6 +132,13 @@ func init() {
 		encryptCmd.GetDocFlag("attr").Shorthand,
 		[]string{},
 		encryptCmd.GetDocFlag("attr").Description,
+	)
+	encryptCmd.Flags().StringVarP(
+		&assertions,
+		encryptCmd.GetDocFlag("with-assertions").Name,
+		encryptCmd.GetDocFlag("with-assertions").Shorthand,
+		"",
+		encryptCmd.GetDocFlag("with-assertions").Description,
 	)
 	encryptCmd.Flags().String(
 		encryptCmd.GetDocFlag("mime-type").Name,

@@ -91,7 +91,7 @@ func (h Handler) EncryptBytes(tdfType string, b []byte, values []string, mimeTyp
 	}
 }
 
-func (h Handler) DecryptBytes(toDecrypt []byte) (*bytes.Buffer, error) {
+func (h Handler) DecryptBytes(toDecrypt []byte, disableAssertionCheck bool) (*bytes.Buffer, error) {
 	out := &bytes.Buffer{}
 	pt := io.Writer(out)
 	ec := bytes.NewReader(toDecrypt)
@@ -101,7 +101,7 @@ func (h Handler) DecryptBytes(toDecrypt []byte) (*bytes.Buffer, error) {
 			return nil, err
 		}
 	case sdk.Standard:
-		r, err := h.sdk.LoadTDF(ec)
+		r, err := h.sdk.LoadTDF(ec, sdk.WithDisableAssertionVerification(disableAssertionCheck))
 		if err != nil {
 			return nil, err
 		}

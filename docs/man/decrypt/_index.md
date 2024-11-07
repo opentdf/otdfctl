@@ -10,7 +10,9 @@ command:
     - name: tdf-type
       shorthand: t
       description: Deprecated. TDF type is now auto-detected.
-      default: ''
+    - name: no-verify-assertions
+      description: disable verification of assertions
+      default: false
 ---
 
 Decrypt a Trusted Data Format (TDF) file and output the contents to stdout or a file in the current working directory.

@@ -18,6 +18,7 @@ func dev_tdfDecryptCmd(cmd *cobra.Command, args []string) {
 	defer h.Close()
 
 	output := c.Flags.GetOptionalString("out")
+	disableAssertionVerification := c.Flags.GetOptionalBool("no-verify-assertions")
 
 	// check for piped input
 	piped := readPipedStdin()
@@ -34,7 +35,7 @@ func dev_tdfDecryptCmd(cmd *cobra.Command, args []string) {
 		cli.ExitWithError("Must provide ONE of the following to decrypt: [file argument, stdin input]", errors.New("no input provided"))
 	}
 
-	decrypted, err := h.DecryptBytes(bytesToDecrypt)
+	decrypted, err := h.DecryptBytes(bytesToDecrypt, disableAssertionVerification)
 	if err != nil {
 		cli.ExitWithError("Failed to decrypt file", err)
 	}
@@ -73,6 +74,12 @@ func init() {
 		decryptCmd.GetDocFlag("tdf-type").Default,
 		decryptCmd.GetDocFlag("tdf-type").Description,
 	)
+	decryptCmd.Flags().Bool(
+		decryptCmd.GetDocFlag("no-verify-assertions").Name,
+		decryptCmd.GetDocFlag("no-verify-assertions").DefaultAsBool(),
+		decryptCmd.GetDocFlag("no-verify-assertions").Description,
+	)
+
 	decryptCmd.Command.GroupID = TDF
 
 	RootCmd.AddCommand(&decryptCmd.Command)

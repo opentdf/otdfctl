@@ -78,6 +78,7 @@ localhost
 namespace
 namespaces
 nano
+no-verify-assertions
 ns
 otdfctl
 performant
@@ -110,3 +111,8 @@ with-client-creds-file
 yaml
 ZTDF
 ztdf
+tdo
+appliesToState
+stanag
+nato
+ocl
