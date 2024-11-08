@@ -110,7 +110,8 @@ func (h Handler) DecryptBytes(toDecrypt []byte, disableAssertionCheck bool) (*by
 			return nil, err
 		}
 	case sdk.Invalid:
-		return nil, errors.New("invalid TDF")
+		_, err := sdk.IsValidTdf(ec)
+		return nil, fmt.Errorf("invalid TDF: %w", err)
 	default:
 		return nil, errors.New("unknown TDF type")
 	}
