@@ -22,6 +22,7 @@ NPM
 Namespace
 namespace's
 Nano
+NanoTDF
 OIDC
 OpenTDF
 OpenID
@@ -108,8 +109,11 @@ uri
 with-client-creds
 with-client-creds-file
 yaml
+ZTDF
+ztdf
 tdo
 appliesToState
 stanag
 nato
 ocl
+cryptographically

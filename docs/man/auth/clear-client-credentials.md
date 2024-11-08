@@ -9,4 +9,5 @@ command:
       default: false
 ---
 
-This command has been deprecated. Use the `profile` subcommand to manage profiles and credentials.
+> [!WARNING]
+> Deprecated. Use the `profile` subcommand to manage profiles and credentials.
