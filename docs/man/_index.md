@@ -45,5 +45,5 @@ command:
         - keyring
         - in-memory
         - file
-      default: keyring
+      default: file
 ---
