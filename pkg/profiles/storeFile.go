@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/zalando/go-keyring"
@@ -32,8 +33,8 @@ type FileMetadata struct {
 }
 
 // Generates a safe, hashed filename from namespace and key
-func hashNamespaceAndKey(namespace, key string) string {
-	hash := sha256.Sum256([]byte(namespace + "_" + key))
+func hashNamespaceAndKey(namespace string, key string) string {
+	hash := sha256.Sum256([]byte(namespace + ":" + key))
 	return hex.EncodeToString(hash[:])
 }
 
@@ -67,8 +68,9 @@ var NewFileStore NewStoreInterface = func(namespace string, key string) StoreInt
 		panic(fmt.Sprintf("unable to delete temp file in profiles directory %s: please ensure delete permissions are granted", baseDir))
 	}
 
-	// Generate the filename from namespace and key, hashed for uniqueness
-	fileName := hashNamespaceAndKey(namespace, key)
+	// Generate the filename hashed for uniqueness
+	// Note: other stores use the config.AppName, but want to rely on something more resilient like the namespace
+	fileName := hashNamespaceAndKey(URNNamespaceTemplate, key)
 	filePath := filepath.Join(baseDir, fileName+".enc")
 
 	return &FileStore{
@@ -137,7 +139,8 @@ func (f *FileStore) Delete() error {
 		return err
 	}
 
-	metadataFilePath := f.filePath + ".nfo"
+	// Remove the extension from filePath and add .nfo for the metadata file
+	metadataFilePath := strings.TrimSuffix(f.filePath, filepath.Ext(f.filePath)) + ".nfo"
 	return os.Remove(metadataFilePath)
 }
 
@@ -184,7 +187,12 @@ func encryptData(key, data []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	return aesGCM.Seal(nonce, nonce, data, nil), nil
+	// Encrypt the data with a separate destination buffer
+	ciphertext := aesGCM.Seal(nil, nonce, data, nil)
+
+	// Prepend the nonce to the ciphertext
+	result := append(nonce, ciphertext...)
+	return result, nil
 }
 
 // decryptData decrypts data using AES-GCM
@@ -222,13 +230,13 @@ func (f *FileStore) SaveMetadata(profileName string) error {
 		return err
 	}
 
-	metadataFilePath := f.filePath + ".nfo"
+	metadataFilePath := strings.TrimSuffix(f.filePath, filepath.Ext(f.filePath)) + ".nfo"
 	return os.WriteFile(metadataFilePath, data, 0600)
 }
 
 // LoadMetadata loads and parses metadata from a .nfo file
 func (f *FileStore) LoadMetadata() (*FileMetadata, error) {
-	metadataFilePath := f.filePath + ".nfo"
+	metadataFilePath := strings.TrimSuffix(f.filePath, filepath.Ext(f.filePath)) + ".nfo"
 	data, err := os.ReadFile(metadataFilePath)
 	if err != nil {
 		return nil, err

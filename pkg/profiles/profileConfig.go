@@ -47,8 +47,8 @@ func NewProfileStore(newStore NewStoreInterface, profileName string, endpoint st
 			Endpoint:    u.String(),
 			TlsNoVerify: tlsNoVerify,
 			Attributes:  make(map[string]interface{}), // Empty map for flexible attributes
-			CreatedAt:   time.Now(),                   // Set creation time
-			UpdatedAt:   time.Now(),                   // Set initial update time
+			CreatedAt:   time.Now().UTC(),             // Set creation time
+			UpdatedAt:   time.Now().UTC(),             // Set initial update time
 			Version:     URNNamespaceTemplate,         // Set profile version to URN-based namespace template
 		},
 	}
@@ -74,7 +74,7 @@ func (p *ProfileStore) Get() error {
 
 // Save saves the current profile configuration to storage and updates UpdatedAt timestamp
 func (p *ProfileStore) Save() error {
-	p.config.UpdatedAt = time.Now()
+	p.config.UpdatedAt = time.Now().UTC()
 	return p.store.Set(p.config)
 }
 
