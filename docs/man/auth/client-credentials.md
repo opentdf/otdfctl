@@ -26,11 +26,11 @@ in the OS keyring for future use.
 Authenticate with client credentials (secret provided interactively)
 
 ```shell
-opentdf auth client-credentials --client-id <client-id>
+otdfctl auth client-credentials --client-id <client-id>
 ```
 
 Authenticate with client credentials (secret provided as argument)
 
 ```shell
-opentdf auth client-credentials --client-id <client-id> --client-secret <client-secret>
+otdfctl auth client-credentials --client-id <client-id> --client-secret <client-secret>
 ```
