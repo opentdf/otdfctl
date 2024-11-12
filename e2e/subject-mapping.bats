@@ -44,7 +44,7 @@ teardown_file() {
         assert_output --partial '"Standard":1'
         assert_output --partial '"Standard":2'
         assert_output --partial ".team.name"
-assert_output --regexp "Attribute Value Id.*$VAL1_ID"
+        assert_output --regexp "Attribute Value Id.*$VAL1_ID"
 
     # scs is required
     run_otdfctl_sm create --attribute-value-id "$VAL2_ID" -s TRANSMIT
@@ -55,6 +55,38 @@ assert_output --regexp "Attribute Value Id.*$VAL1_ID"
     run_otdfctl_sm create -a "$VAL1_ID" --subject-condition-set-new "$SCS_2"
     assert_failure
     assert_output --partial "At least one Standard or Custom Action [--action-standard, --action-custom] is required"
+}
+
+@test "Match subject mapping" {
+    # create with simultaneous new SCS
+    NEW_SCS='[{"condition_groups":[{"conditions":[{"operator":1,"subject_external_values":["sales"],"subject_external_selector_value":".department"}],"boolean_operator":2}]}]'
+    NEW_SM_ID=$(./otdfctl $HOST $WITH_CREDS policy subject-mappings create -a "$VAL2_ID" --action-standard DECRYPT --subject-condition-set-new "$NEW_SCS" --json | jq -r '.id')
+
+    run ./otdfctl $HOST $WITH_CREDS policy sm match -x '.department'
+    assert_success
+    assert_output --partial "$NEW_SM_ID"
+
+    run ./otdfctl $HOST $WITH_CREDS policy sm match --subject '{"department":"any_department"}'
+    assert_success
+    assert_output --partial "$NEW_SM_ID"
+
+    # JWT includes 'department' in token claims
+    run ./otdfctl $HOST $WITH_CREDS policy sm match -s 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkZXBhcnRtZW50Ijoibm93aGVyZV9zcGVjaWFsIn0.784uXYtfOv4tdM6JRgBMua4bBNDjUGbcr89QQKzCXfU'
+    assert_success
+    assert_output --partial "$NEW_SM_ID"
+
+    run ./otdfctl $HOST $WITH_CREDS policy subject-mappings match --selector '.not_found'
+    assert_success
+    refute_output --partial "$NEW_SM_ID"
+
+    run ./otdfctl $HOST $WITH_CREDS policy sm match -s '{"dept":"nope"}'
+    assert_success
+    refute_output --partial "$NEW_SM_ID"
+
+    # JWT lacks 'department' in token claims
+    run ./otdfctl $HOST $WITH_CREDS policy sm match -s 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhYmMiOiJub3doZXJlX3NwZWNpYWwifQ.H39TXi1gYWRhXIRkfxFJwrZz42eE4y8V5BQX-mg8JAo'
+    assert_success
+    assert_output --partial "$NEW_SM_ID"
 }
 
 @test "Get subject mapping" {
