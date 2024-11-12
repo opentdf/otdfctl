@@ -53,6 +53,7 @@ require (
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/goccy/go-json v0.10.3 // indirect
 	github.com/godbus/dbus/v5 v5.1.0 // indirect
+	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/gorilla/css v1.0.0 // indirect
 	github.com/gorilla/securecookie v1.1.2 // indirect
 	github.com/gowebpki/jcs v1.0.1 // indirect
@@ -80,6 +81,7 @@ require (
 	github.com/muesli/termenv v0.15.2 // indirect
 	github.com/muhlemmer/gu v0.3.1 // indirect
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
+	github.com/opentdf/platform/lib/flattening v0.1.1 // indirect
 	github.com/opentdf/platform/lib/ocrypto v0.1.6 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.2 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
