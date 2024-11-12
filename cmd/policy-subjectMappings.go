@@ -288,9 +288,6 @@ func policy_matchSubjectMappings(cmd *cobra.Command, args []string) {
 		table.NewFlexColumn("actions", "Actions", cli.FlexColumnWidthTwo),
 		table.NewFlexColumn("subject_condition_set_id", "Subject Condition Set: Id", cli.FlexColumnWidthFour),
 		table.NewFlexColumn("subject_condition_set", "Subject Condition Set", cli.FlexColumnWidthThree),
-		table.NewFlexColumn("labels", "Labels", cli.FlexColumnWidthOne),
-		table.NewFlexColumn("created_at", "Created At", cli.FlexColumnWidthOne),
-		table.NewFlexColumn("updated_at", "Updated At", cli.FlexColumnWidthOne),
 	)
 	rows := []table.Row{}
 	for _, sm := range matched {
