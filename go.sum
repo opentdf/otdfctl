@@ -229,6 +229,8 @@ github.com/opentdf/platform/sdk v0.3.17 h1:Uo/kTMneB18i0gZNfTRtvw34bGLFUc8BEnA/B
 github.com/opentdf/platform/sdk v0.3.17/go.mod h1:c2+nrsRLvLf2OOryXnNy0iGZN/TScc21Pul7uqKVXIs=
 github.com/opentdf/platform/sdk v0.3.18 h1:IY6fNrOfQD9lF/hZp9ewZsH0PMuLe17HlSE1A5kyIWc=
 github.com/opentdf/platform/sdk v0.3.18/go.mod h1:u+XZhVRsMq5blukCFCHcjk6HLCp4Y5mmIQu7GhtKQ3E=
+github.com/opentdf/platform/sdk v0.3.19 h1:4Ign6HPrxOH6ZllLO/cI6joSuqz8CqPlpxpTKunpMQs=
+github.com/opentdf/platform/sdk v0.3.19/go.mod h1:u+XZhVRsMq5blukCFCHcjk6HLCp4Y5mmIQu7GhtKQ3E=
 github.com/opentracing/opentracing-go v1.2.0 h1:uEJPy/1a5RIPAJ0Ov+OIO8OxWu77jEv+1B0VhjKrZUs=
 github.com/opentracing/opentracing-go v1.2.0/go.mod h1:GxEUsuufX4nBwe+T+Wl9TAgYrxe9dPLANfrWvHYVTgc=
 github.com/pelletier/go-toml/v2 v2.2.2 h1:aYUidT7k73Pcl9nb2gScu7NSrKCSHIDE89b3+6Wq+LM=
