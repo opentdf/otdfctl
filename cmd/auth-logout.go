@@ -10,7 +10,7 @@ import (
 
 func auth_logout(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
-	cp := InitProfile(c, false)
+	_, cp := InitProfile(c, false)
 	c.Println("Initiating logout...")
 
 	// we can only revoke access tokens stored for the code login flow, not client credentials

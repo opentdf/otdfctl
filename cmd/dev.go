@@ -74,18 +74,6 @@ func getMetadataRows(m *common.Metadata) [][]string {
 	return nil
 }
 
-// TODO can we use it or remove it?
-// func unMarshalMetadata(m string) *common.MetadataMutable {
-// 	if m != "" {
-// 		metadata := &common.MetadataMutable{}
-// 		if err := json.Unmarshal([]byte(m), metadata); err != nil {
-// 			cli.ExitWithError("Failed to unmarshal metadata", err)
-// 		}
-// 		return metadata
-// 	}
-// 	return nil
-// }
-
 const keyValLength = 2
 
 func getMetadataMutable(labels []string) *common.MetadataMutable {

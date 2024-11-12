@@ -13,7 +13,7 @@ var auth_printAccessTokenCmd = man.Docs.GetCommand("auth/print-access-token",
 
 func auth_printAccessToken(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
-	cp := InitProfile(c, false)
+	_, cp := InitProfile(c, false)
 
 	ac := cp.GetAuthCredentials()
 	switch ac.AuthType {

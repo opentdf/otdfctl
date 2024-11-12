@@ -22,6 +22,7 @@ NPM
 Namespace
 namespace's
 Nano
+NanoTDF
 OIDC
 OpenTDF
 OpenID
@@ -45,6 +46,7 @@ TODO
 TUI
 URI
 Unassign
+abc
 acmeco
 args
 attr
@@ -77,6 +79,7 @@ localhost
 namespace
 namespaces
 nano
+no-verify-assertions
 ns
 otdfctl
 performant
@@ -86,6 +89,7 @@ quickstart
 resm
 resolvers
 scs
+sel
 sm
 stdin
 stdout
@@ -106,3 +110,11 @@ uri
 with-client-creds
 with-client-creds-file
 yaml
+ZTDF
+ztdf
+tdo
+appliesToState
+stanag
+nato
+ocl
+cryptographically

@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"os"
@@ -14,15 +13,12 @@ import (
 var TDF = "tdf"
 
 func dev_tdfDecryptCmd(cmd *cobra.Command, args []string) {
-	c := cli.New(cmd, args)
+	c := cli.New(cmd, args, cli.WithPrintJson())
 	h := NewHandler(c)
 	defer h.Close()
 
 	output := c.Flags.GetOptionalString("out")
-	tdfType := c.Flags.GetOptionalString("tdf-type")
-	if tdfType == "" {
-		tdfType = TDF3
-	}
+	disableAssertionVerification := c.Flags.GetOptionalBool("no-verify-assertions")
 
 	// check for piped input
 	piped := readPipedStdin()
@@ -39,16 +35,7 @@ func dev_tdfDecryptCmd(cmd *cobra.Command, args []string) {
 		cli.ExitWithError("Must provide ONE of the following to decrypt: [file argument, stdin input]", errors.New("no input provided"))
 	}
 
-	var decrypted *bytes.Buffer
-	var err error
-	switch tdfType {
-	case TDF3:
-		decrypted, err = h.DecryptTDF(bytesToDecrypt)
-	case NANO:
-		decrypted, err = h.DecryptNanoTDF(bytesToDecrypt)
-	default:
-		cli.ExitWithError("Failed to decrypt", fmt.Errorf("unrecognized tdf-type: %s", tdfType))
-	}
+	decrypted, err := h.DecryptBytes(bytesToDecrypt, disableAssertionVerification)
 	if err != nil {
 		cli.ExitWithError("Failed to decrypt file", err)
 	}
@@ -80,12 +67,19 @@ func init() {
 		decryptCmd.GetDocFlag("out").Default,
 		decryptCmd.GetDocFlag("out").Description,
 	)
+	// deprecated flag
 	decryptCmd.Flags().StringP(
 		decryptCmd.GetDocFlag("tdf-type").Name,
 		decryptCmd.GetDocFlag("tdf-type").Shorthand,
 		decryptCmd.GetDocFlag("tdf-type").Default,
 		decryptCmd.GetDocFlag("tdf-type").Description,
 	)
+	decryptCmd.Flags().Bool(
+		decryptCmd.GetDocFlag("no-verify-assertions").Name,
+		decryptCmd.GetDocFlag("no-verify-assertions").DefaultAsBool(),
+		decryptCmd.GetDocFlag("no-verify-assertions").Description,
+	)
+
 	decryptCmd.Command.GroupID = TDF
 
 	RootCmd.AddCommand(&decryptCmd.Command)

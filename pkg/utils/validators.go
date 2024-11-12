@@ -3,6 +3,7 @@ package utils
 import (
 	"errors"
 	"net/url"
+	"strings"
 )
 
 func NormalizeEndpoint(endpoint string) (*url.URL, error) {
@@ -24,6 +25,9 @@ func NormalizeEndpoint(endpoint string) (*url.URL, error) {
 		}
 	default:
 		return nil, errors.New("invalid scheme")
+	}
+	for strings.HasSuffix(u.Path, "/") {
+		u.Path = strings.TrimSuffix(u.Path, "/")
 	}
 	return u, nil
 }

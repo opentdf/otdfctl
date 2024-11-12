@@ -12,12 +12,10 @@ require (
 	github.com/creasty/defaults v1.8.0
 	github.com/evertras/bubble-table v0.16.1
 	github.com/gabriel-vasile/mimetype v1.4.5
-	github.com/golang-jwt/jwt v3.2.2+incompatible
+	github.com/go-jose/go-jose/v3 v3.0.3
 	github.com/google/uuid v1.6.0
-	github.com/itchyny/gojq v0.12.16
-	github.com/opentdf/platform/lib/flattening v0.1.1
-	github.com/opentdf/platform/protocol/go v0.2.18
-	github.com/opentdf/platform/sdk v0.3.15
+	github.com/opentdf/platform/protocol/go v0.2.20
+	github.com/opentdf/platform/sdk v0.3.18
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.9.0
@@ -62,7 +60,6 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.20.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-	github.com/itchyny/timefmt-go v0.1.6 // indirect
 	github.com/lestrrat-go/blackmagic v1.0.2 // indirect
 	github.com/lestrrat-go/httpcc v1.0.1 // indirect
 	github.com/lestrrat-go/httprc v1.0.6 // indirect

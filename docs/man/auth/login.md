@@ -10,6 +10,15 @@ command:
       required: false
 ---
 
+> [!NOTE]
+> Requires experimental profiles feature.
+>
+> | OS | Keychain | State |
+> | --- | --- | --- |
+> | MacOS | Keychain | Stable |
+> | Windows | Credential Manager | Alpha |
+> | Linux | Secret Service | Not yet supported |
+
 Authenticate for use of the OpenTDF Platform through a browser (required).
 
 Provide a specific public 'client-id' known to support the Auth Code PKCE flow and recognized

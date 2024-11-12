@@ -22,7 +22,8 @@ func NewProfileStore(newStore NewStoreInterface, profileName string, endpoint st
 	if err := validateProfileName(profileName); err != nil {
 		return nil, err
 	}
-	if _, err := utils.NormalizeEndpoint(endpoint); err != nil {
+	u, err := utils.NormalizeEndpoint(endpoint)
+	if err != nil {
 		return nil, err
 	}
 
@@ -30,7 +31,7 @@ func NewProfileStore(newStore NewStoreInterface, profileName string, endpoint st
 		store: newStore(config.AppName, getStoreKey(profileName)),
 		config: ProfileConfig{
 			Name:        profileName,
-			Endpoint:    endpoint,
+			Endpoint:    u.String(),
 			TlsNoVerify: tlsNoVerify,
 		},
 	}
@@ -71,10 +72,11 @@ func (p *ProfileStore) GetEndpoint() string {
 }
 
 func (p *ProfileStore) SetEndpoint(endpoint string) error {
-	if _, err := utils.NormalizeEndpoint(endpoint); err != nil {
+	u, err := utils.NormalizeEndpoint(endpoint)
+	if err != nil {
 		return err
 	}
-	p.config.Endpoint = endpoint
+	p.config.Endpoint = u.String()
 	return p.Save()
 }
 
