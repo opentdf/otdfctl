@@ -66,7 +66,8 @@ teardown_file() {
     assert_success
     assert_output --partial "$NEW_SM_ID"
 
-    run_otdfctl_sm match --subject '{"department":"any_department"}'
+    matched_subject='{"department":"any_department"}'
+    run ./otdfctl policy sm match --subject "$matched_subject" $HOST $WITH_CREDS
     assert_success
     assert_output --partial "$NEW_SM_ID"
 
@@ -79,7 +80,8 @@ teardown_file() {
     assert_success
     refute_output --partial "$NEW_SM_ID"
 
-    run_otdfctl_sm match -s '{"dept":"nope"}'
+    unmatched_subject='{"dept":"nope"}'
+    run ./otdfctl policy sm match -s "$unmatched_subject" $HOST $WITH_CREDS
     assert_success
     refute_output --partial "$NEW_SM_ID"
 
