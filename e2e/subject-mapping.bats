@@ -62,31 +62,31 @@ teardown_file() {
     NEW_SCS='[{"condition_groups":[{"conditions":[{"operator":1,"subject_external_values":["sales"],"subject_external_selector_value":".department"}],"boolean_operator":2}]}]'
     NEW_SM_ID=$(./otdfctl $HOST $WITH_CREDS policy subject-mappings create -a "$VAL2_ID" --action-standard DECRYPT --subject-condition-set-new "$NEW_SCS" --json | jq -r '.id')
 
-    run ./otdfctl $HOST $WITH_CREDS policy sm match -x '.department'
+    run_otdfctl_sm match -x '.department'
     assert_success
     assert_output --partial "$NEW_SM_ID"
 
-    run ./otdfctl $HOST $WITH_CREDS policy sm match --subject '{"department":"any_department"}'
+    run_otdfctl_sm match --subject '{"department":"any_department"}'
     assert_success
     assert_output --partial "$NEW_SM_ID"
 
     # JWT includes 'department' in token claims
-    run ./otdfctl $HOST $WITH_CREDS policy sm match -s 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkZXBhcnRtZW50Ijoibm93aGVyZV9zcGVjaWFsIn0.784uXYtfOv4tdM6JRgBMua4bBNDjUGbcr89QQKzCXfU'
+    run_otdfctl_sm match -s 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkZXBhcnRtZW50Ijoibm93aGVyZV9zcGVjaWFsIn0.784uXYtfOv4tdM6JRgBMua4bBNDjUGbcr89QQKzCXfU'
     assert_success
     assert_output --partial "$NEW_SM_ID"
 
-    run ./otdfctl $HOST $WITH_CREDS policy subject-mappings match --selector '.not_found'
+    run_otdfctl_sm match --selector '.not_found'
     assert_success
     refute_output --partial "$NEW_SM_ID"
 
-    run ./otdfctl $HOST $WITH_CREDS policy sm match -s '{"dept":"nope"}'
+    run_otdfctl_sm match -s '{"dept":"nope"}'
     assert_success
     refute_output --partial "$NEW_SM_ID"
 
     # JWT lacks 'department' in token claims
-    run ./otdfctl $HOST $WITH_CREDS policy sm match -s 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhYmMiOiJub3doZXJlX3NwZWNpYWwifQ.H39TXi1gYWRhXIRkfxFJwrZz42eE4y8V5BQX-mg8JAo'
+    run_otdfctl_sm match -s 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhYmMiOiJub3doZXJlX3NwZWNpYWwifQ.H39TXi1gYWRhXIRkfxFJwrZz42eE4y8V5BQX-mg8JAo'
     assert_success
-    assert_output --partial "$NEW_SM_ID"
+    refute_output --partial "$NEW_SM_ID"
 }
 
 @test "Get subject mapping" {
