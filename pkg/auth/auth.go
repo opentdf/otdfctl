@@ -239,14 +239,12 @@ func Login(ctx context.Context, platformEndpoint, tokenURL, authURL, publicClien
 		},
 	}
 
-	cookiehandler := httphelper.NewCookieHandler(hashKey, encryptKey,
-		func() httphelper.CookieHandlerOpt {
-			if tlsNoVerify {
-				return httphelper.WithUnsecure()
-			}
-			return func(c *httphelper.CookieHandler) {} // No-op function if tlsNoVerify is false
-		}(),
-	)
+	var cookieOpts []httphelper.CookieHandlerOpt
+	if tlsNoVerify {
+		cookieOpts = append(cookieOpts, httphelper.WithUnsecure())
+	}
+
+	cookiehandler := httphelper.NewCookieHandler(hashKey, encryptKey, cookieOpts...)
 
 	relyingParty, err := oidcrp.NewRelyingPartyOAuth(conf,
 		// respect tlsNoVerify
