@@ -240,7 +240,6 @@ func parseKASRegistryPublicKey(keyStr string) (*policy.PublicKey, error) {
 	cachedKeys := new(policy.PublicKey)
 
 	if !json.Valid([]byte(keyStr)) {
-		fmt.Print(keyStr)
 		return nil, errors.New("invalid JSON")
 	}
 
