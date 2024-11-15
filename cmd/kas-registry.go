@@ -1,6 +1,9 @@
 package cmd
 
 import (
+	"encoding/json"
+	"encoding/pem"
+	"errors"
 	"fmt"
 
 	"github.com/evertras/bubble-table/table"
@@ -112,12 +115,11 @@ func policy_createKeyAccessRegistry(cmd *cobra.Command, args []string) {
 			e := fmt.Errorf("only one public key is allowed. Please pass either a cached or remote public key but not both")
 			cli.ExitWithError("Issue with create flags 'public-keys' and 'public-key-remote'", e)
 		}
-		cached := new(policy.PublicKey)
-		err := protojson.Unmarshal([]byte(cachedJSON), cached)
+		var err error
+		key, err = parseKASRegistryPublicKey(cachedJSON)
 		if err != nil {
-			cli.ExitWithError("Failed to unmarshal cached public key JSON", err)
+			cli.ExitWithError("KAS registry key is invalid, see help for examples", err)
 		}
-		key = cached
 	} else {
 		keyType = keyRemote
 		key.PublicKey = &policy.PublicKey_Remote{Remote: remote}
@@ -172,12 +174,11 @@ func policy_updateKeyAccessRegistry(cmd *cobra.Command, args []string) {
 		e := fmt.Errorf("only one public key is allowed. Please pass either a cached or remote public key but not both")
 		cli.ExitWithError("Issue with update flags 'public-keys' and 'public-key-remote': ", e)
 	} else if cachedJSON != "" {
-		cached := new(policy.PublicKey)
-		err := protojson.Unmarshal([]byte(cachedJSON), cached)
+		var err error
+		pubKey, err = parseKASRegistryPublicKey(cachedJSON)
 		if err != nil {
-			cli.ExitWithError("Failed to unmarshal cached public key JSON", err)
+			cli.ExitWithError("KAS registry key is invalid, see help for examples", err)
 		}
-		pubKey = cached
 	} else if remote != "" {
 		pubKey = &policy.PublicKey{PublicKey: &policy.PublicKey_Remote{Remote: remote}}
 	}
@@ -232,6 +233,35 @@ func policy_deleteKeyAccessRegistry(cmd *cobra.Command, args []string) {
 	)
 
 	HandleSuccess(cmd, kas.GetId(), t, kas)
+}
+
+// TODO remove this when the data is structured
+func parseKASRegistryPublicKey(keyStr string) (*policy.PublicKey, error) {
+	cachedKeys := new(policy.PublicKey)
+
+	if !json.Valid([]byte(keyStr)) {
+		fmt.Print(keyStr)
+		return nil, errors.New("invalid JSON")
+	}
+
+	if err := protojson.Unmarshal([]byte(keyStr), cachedKeys); err != nil {
+		return nil, errors.New("invalid shape")
+	}
+
+	// Validate all PEMs
+	keyErrs := []error{}
+	for i, k := range cachedKeys.GetCached().GetKeys() {
+		block, _ := pem.Decode([]byte(k.GetPem()))
+		if block == nil {
+			keyErrs = append(keyErrs, fmt.Errorf("error in key[%d] with KID \"%s\": PEM is invalid", i, k.GetKid()))
+		}
+	}
+
+	if len(keyErrs) != 0 {
+		return nil, errors.Join(keyErrs...)
+	}
+
+	return cachedKeys, nil
 }
 
 func init() {
