@@ -154,9 +154,9 @@ func (f *FileStore) getEncryptionKey() ([]byte, error) {
 
 	// Try retrieving the key as a string from the keyring
 	keyStr, err := keyring.Get(URNNamespaceTemplate, f.key)
-	if err == keyring.ErrNotFound {
+	if errors.Is(err, keyring.ErrNotFound) {
 		// Generate a new key if not found
-		key := make([]byte, 32) // AES-256 key length
+		key := make([]byte, aes256KeyLength)
 		if _, err := rand.Read(key); err != nil {
 			return nil, err
 		}
