@@ -214,7 +214,7 @@ const (
 
 // Facilitates an auth code PKCE flow to obtain OIDC tokens.
 // Spawns a local server to handle the callback and opens a browser window in each respective OS.
-func Login(ctx context.Context, platformEndpoint, tokenURL, authURL, publicClientID string, tlsNoVerify bool) (*oauth2.Token, error) {
+func Login(ctx context.Context, platformEndpoint, tokenURL, authURL, publicClientID string) (*oauth2.Token, error) {
 	// Generate random hash and encryption keys for cookie handling
 	hashKey := make([]byte, keyLength)
 	encryptKey := make([]byte, keyLength)
@@ -239,16 +239,9 @@ func Login(ctx context.Context, platformEndpoint, tokenURL, authURL, publicClien
 		},
 	}
 
-	var cookieOpts []httphelper.CookieHandlerOpt
-	if tlsNoVerify {
-		cookieOpts = append(cookieOpts, httphelper.WithUnsecure())
-	}
-
-	cookiehandler := httphelper.NewCookieHandler(hashKey, encryptKey, cookieOpts...)
+	cookiehandler := httphelper.NewCookieHandler(hashKey, encryptKey)
 
 	relyingParty, err := oidcrp.NewRelyingPartyOAuth(conf,
-		// respect tlsNoVerify
-		oidcrp.WithHTTPClient(utils.NewHttpClient(tlsNoVerify)),
 		// allow cookie handling for PKCE
 		oidcrp.WithCookieHandler(cookiehandler),
 		// use PKCE
@@ -278,7 +271,7 @@ func LoginWithPKCE(ctx context.Context, host, publicClientID string, tlsNoVerify
 		return nil, "", fmt.Errorf("failed to get platform configuration: %w", err)
 	}
 
-	tok, err := Login(ctx, host, pc.tokenEndpoint, pc.authzEndpoint, pc.publicClientID, tlsNoVerify)
+	tok, err := Login(ctx, host, pc.tokenEndpoint, pc.authzEndpoint, pc.publicClientID)
 	if err != nil {
 		return nil, "", fmt.Errorf("failed to login: %w", err)
 	}

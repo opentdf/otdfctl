@@ -6,39 +6,28 @@ import (
 	"strings"
 )
 
-// NormalizeEndpoint validates, defaults, and standardizes an endpoint URL by setting default scheme/port and removing trailing slashes.
 func NormalizeEndpoint(endpoint string) (*url.URL, error) {
 	if endpoint == "" {
 		return nil, errors.New("endpoint is required")
 	}
-
-	// Add default scheme if missing
-	if !strings.Contains(endpoint, "://") {
-		endpoint = "https://" + endpoint
-	}
-
-	// Parse the URL
 	u, err := url.Parse(endpoint)
 	if err != nil {
 		return nil, err
 	}
-
-	// Validate scheme and set default ports for http/https
 	switch u.Scheme {
 	case "http":
 		if u.Port() == "" {
-			u.Host = u.Hostname() + ":80"
+			u.Host += ":80"
 		}
 	case "https":
 		if u.Port() == "" {
-			u.Host = u.Hostname() + ":443"
+			u.Host += ":443"
 		}
 	default:
-		return nil, errors.New("invalid scheme: only http and https are supported")
+		return nil, errors.New("invalid scheme")
 	}
-
-	// Trim trailing slashes from path
-	u.Path = strings.TrimRight(u.Path, "/")
-
+	for strings.HasSuffix(u.Path, "/") {
+		u.Path = strings.TrimSuffix(u.Path, "/")
+	}
 	return u, nil
 }

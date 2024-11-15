@@ -65,7 +65,10 @@ teardown() {
 @test "profile create" {
   run_otdfctl profile create test http://localhost:8080
   assert_output --regexp "Creating profile .* ok"
-  
+
+  run_otdfctl profile create test localhost:8080
+  assert_output --regexp "Failed .* invalid scheme"
+
   # TODO figure out how to test the case where the profile already exists
 }
 

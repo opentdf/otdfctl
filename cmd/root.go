@@ -279,11 +279,5 @@ func init() {
 		rootCmd.GetDocFlag("with-access-token").Default,
 		rootCmd.GetDocFlag("with-access-token").Description,
 	)
-
-	RootCmd.PersistentFlags().String(
-		rootCmd.GetDocFlag("profile-driver").Name,
-		rootCmd.GetDocFlag("profile-driver").Default,
-		rootCmd.GetDocFlag("profile-driver").Description,
-	)
 	RootCmd.AddGroup(&cobra.Group{ID: TDF})
 }
