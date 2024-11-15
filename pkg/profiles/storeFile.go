@@ -128,9 +128,9 @@ func (f *FileStore) Set(value interface{}) error {
 		return err
 	}
 
-	// Write the encrypted profile file with 0600 permissions
-	if err := os.WriteFile(f.filePath, encryptedData, 0600); err != nil {
-		return fmt.Errorf("failed to write encrypted profile to %s: %v", f.filePath, err)
+	// Write the encrypted profile file with proper permissions
+	if err := os.WriteFile(f.filePath, encryptedData, ownerPermissionsRW); err != nil {
+		return fmt.Errorf("failed to write encrypted profile to %s: %w", f.filePath, err)
 	}
 
 	// Save metadata as well
