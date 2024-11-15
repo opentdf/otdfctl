@@ -32,7 +32,7 @@ type TDFInspect struct {
 	UnencryptedMetadata []byte
 }
 
-func (h Handler) EncryptBytes(tdfType string, b []byte, values []string, mimeType string, kasUrlPath string, ecdsaBinding bool, assertions string) (*bytes.Buffer, error) {
+func (h Handler) EncryptBytes(tdfType string, unencrypted []byte, attrValues []string, mimeType string, kasUrlPath string, ecdsaBinding bool, assertions string) (*bytes.Buffer, error) {
 	var encrypted []byte
 	enc := bytes.NewBuffer(encrypted)
 
@@ -44,7 +44,7 @@ func (h Handler) EncryptBytes(tdfType string, b []byte, values []string, mimeTyp
 		}
 
 		opts := []sdk.TDFOption{
-			sdk.WithDataAttributes(values...),
+			sdk.WithDataAttributes(attrValues...),
 			sdk.WithKasInformation(sdk.KASInfo{
 				URL: h.platformEndpoint + kasUrlPath,
 			}),
@@ -60,7 +60,7 @@ func (h Handler) EncryptBytes(tdfType string, b []byte, values []string, mimeTyp
 			opts = append(opts, sdk.WithAssertions(assertionConfigs...))
 		}
 
-		_, err := h.sdk.CreateTDF(enc, bytes.NewReader(b), opts...)
+		_, err := h.sdk.CreateTDF(enc, bytes.NewReader(unencrypted), opts...)
 		return enc, err
 
 	// Encrypt the data as a Nano TDF
@@ -74,7 +74,7 @@ func (h Handler) EncryptBytes(tdfType string, b []byte, values []string, mimeTyp
 			return nil, err
 		}
 		// set the attributes
-		if err = nanoTDFConfig.SetAttributes(values); err != nil {
+		if err = nanoTDFConfig.SetAttributes(attrValues); err != nil {
 			return nil, err
 		}
 		// enable ECDSA policy binding
@@ -82,7 +82,7 @@ func (h Handler) EncryptBytes(tdfType string, b []byte, values []string, mimeTyp
 			nanoTDFConfig.EnableECDSAPolicyBinding()
 		}
 		// create the nano TDF
-		if _, err = h.sdk.CreateNanoTDF(enc, bytes.NewReader(b), *nanoTDFConfig); err != nil {
+		if _, err = h.sdk.CreateNanoTDF(enc, bytes.NewReader(unencrypted), *nanoTDFConfig); err != nil {
 			return nil, err
 		}
 		return enc, nil
