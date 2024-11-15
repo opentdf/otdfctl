@@ -236,7 +236,7 @@ func (f *FileStore) SaveMetadata(profileName string) error {
 	}
 
 	metadataFilePath := strings.TrimSuffix(f.filePath, filepath.Ext(f.filePath)) + ".nfo"
-	return os.WriteFile(metadataFilePath, data, 0600)
+	return os.WriteFile(metadataFilePath, data, ownerPermissionsRW)
 }
 
 // LoadMetadata loads and parses metadata from a .nfo file
