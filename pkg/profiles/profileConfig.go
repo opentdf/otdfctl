@@ -9,7 +9,7 @@ import (
 )
 
 // URN-based namespace template without UUID, using only profile name for uniqueness
-const URNNamespaceTemplate = "urn:opentdf:otdfctl:profile:v1" // e.g., urn:opentdf:otdfctl:profile:v1:<profileName>
+var URNNamespaceTemplate = fmt.Sprintf("urn:opentdf:%s:profile:v1", config.AppName) // e.g., urn:opentdf:otdfctl:profile:v1:<profileName>
 
 // ProfileStore manages profile configurations and handles storage
 type ProfileStore struct {
