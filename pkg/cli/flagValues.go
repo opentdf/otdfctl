@@ -52,18 +52,11 @@ func (f flagHelper) GetOptionalID(idFlag string) string {
 }
 
 func (f flagHelper) GetOptionalString(flag string) string {
-	return f.GetOptionalStringWithDefault(flag, "")
-}
-
-// GetOptionalStringWithDefault retrieves a string flag, or returns the default value if the flag is not set
-func (f flagHelper) GetOptionalStringWithDefault(flagName string, defaultValue string) string {
-	if f.cmd.Flags().Changed(flagName) {
-		value, err := f.cmd.Flags().GetString(flagName)
-		if err == nil {
-			return value
-		}
+	p := f.cmd.Flag(flag)
+	if p == nil {
+		return ""
 	}
-	return defaultValue
+	return p.Value.String()
 }
 
 func (f flagHelper) GetStringSlice(flag string, v []string, opts FlagsStringSliceOptions) []string {
@@ -89,18 +82,8 @@ func (f flagHelper) GetRequiredInt32(flag string) int32 {
 }
 
 func (f flagHelper) GetOptionalBool(flag string) bool {
-	return f.GetOptionalBoolWithDefault(flag, false)
-}
-
-// GetOptionalBoolWithDefault retrieves a boolean flag, or returns the default value if the flag is not set
-func (f flagHelper) GetOptionalBoolWithDefault(flagName string, defaultValue bool) bool {
-	if f.cmd.Flags().Changed(flagName) {
-		value, err := f.cmd.Flags().GetBool(flagName)
-		if err == nil {
-			return value
-		}
-	}
-	return defaultValue
+	v, _ := f.cmd.Flags().GetBool(flag)
+	return v
 }
 
 func (f flagHelper) GetRequiredBool(flag string) bool {

@@ -16,41 +16,23 @@ mkdir -p "$output_dir"
 
 # Create a checksums file
 checksums_file="$output_dir/${build_semver}_checksums.txt"
-touch "$checksums_file"
-
-# Define a lock file for parallel-safe writing to checksums
-checksums_lockfile="${checksums_file}.lock"
+touch $checksums_file
 
 # Iterate over each binary file
 for binary_file in "$binary_dir"/*; do
-    (
-        compressed=""
-        if [[ $binary_file == *.exe ]]; then
-            # If the file is a Windows binary, zip it
-            filename=$(basename "$binary_file")
-            compressed="${filename%.exe}.zip"
-            zip -j "$output_dir/$compressed" "$binary_file"
-        else
-            # For other binaries, tar and gzip them
-            filename=$(basename "$binary_file")
-            compressed="${filename}.tar.gz"
-            tar -czf "$output_dir/$compressed" "$binary_file"
-        fi
+    compressed=""
+    if [[ $binary_file == *.exe ]]; then
+        # If the file is a Windows binary, zip it
+        filename=$(basename "$binary_file")
+        compressed="${filename%.exe}.zip"
+        zip -j "$output_dir/$compressed" "$binary_file"
+    else
+        # For other binaries, tar and gzip them
+        filename=$(basename "$binary_file")
+        compressed="${filename}.tar.gz"
+        tar -czf "$output_dir/$compressed" "$binary_file"
+    fi
 
-        # Compute checksum and append it to the checksums file using a lock
-        checksum="$(shasum -a 256 "$output_dir/$compressed" | awk '{print $1}')"
-        (
-            flock -x 200
-            echo "$checksum $compressed" >> "$checksums_file"
-        ) 200>"$checksums_lockfile"
-
-    ) &
+    # Append checksums to the file
+    echo "$(cat "$output_dir/$compressed" | shasum -a 256) $compressed" >> $checksums_file
 done
-
-# Echo message indicating background tasks are running
-echo "All zip and tar processes started. Waiting for them to finish..."
-
-# Wait for all background processes to complete
-wait
-
-echo "All compression and checksum operations completed."

@@ -13,16 +13,11 @@ func auth_codeLogin(cmd *cobra.Command, args []string) {
 	_, cp := InitProfile(c, false)
 
 	c.Print("Initiating login...")
-
-	// Use profile values as defaults, with command-line overrides
-	tlsNoVerify := c.FlagHelper.GetOptionalBoolWithDefault("tls-no-verify", cp.GetTLSNoVerify())
-	clientId := c.FlagHelper.GetOptionalStringWithDefault("client-id", cp.GetAuthCredentials().ClientId)
-
 	tok, publicClientID, err := auth.LoginWithPKCE(
 		cmd.Context(),
 		cp.GetEndpoint(),
-		clientId,
-		tlsNoVerify,
+		c.FlagHelper.GetOptionalString("client-id"),
+		c.FlagHelper.GetOptionalBool("tls-no-verify"),
 	)
 	if err != nil {
 		c.Println("failed")
