@@ -57,8 +57,8 @@ var NewFileStore NewStoreInterface = func(namespace string, key string) StoreInt
 		baseDir = filepath.Join(execDir, "profiles")
 	}
 
-	// Ensure the base directory exists with owner-only access (0700)
-	if err := os.MkdirAll(baseDir, 0700); err != nil {
+	// Ensure the base directory exists with owner-only access including execute
+	if err := os.MkdirAll(baseDir, ownerPermissionsRWX); err != nil {
 		panic(fmt.Sprintf("failed to create profiles directory %s: please check directory permissions", baseDir))
 	}
 
