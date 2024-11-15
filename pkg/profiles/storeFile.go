@@ -196,7 +196,9 @@ func encryptData(key, data []byte) ([]byte, error) {
 	ciphertext := aesGCM.Seal(nil, nonce, data, nil)
 
 	// Prepend the nonce to the ciphertext
-	result := append(nonce, ciphertext...)
+	result := make([]byte, len(nonce)+len(ciphertext))
+	copy(result, nonce)
+	copy(result[len(nonce):], ciphertext)
 	return result, nil
 }
 
