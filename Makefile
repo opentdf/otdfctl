@@ -58,10 +58,10 @@ build-%:
 	go build $(GO_BUILD_FLAGS) \
 		-o $(GO_BUILD_PREFIX)-$(word 1,$(subst -, ,$*))-$(word 2,$(subst -, ,$*))$(word 3,$(subst -, ,$*))
 
-zip-builds:
+zip-builds: $(addprefix build-,$(PLATFORMS))
 	./.github/scripts/zip-builds.sh $(BINARY_NAME)-$(CURR_VERSION) $(TARGET_DIR) $(OUTPUT_DIR)
 
-verify-checksums:
+verify-checksums: zip-builds
 	./.github/scripts/verify-checksums.sh $(OUTPUT_DIR) $(BINARY_NAME)-$(CURR_VERSION)_checksums.txt 
 
 # Target for running the project (adjust as necessary for your project)
@@ -93,3 +93,4 @@ test-bats: build-test
 .PHONY: clean
 clean:
 	rm -rf $(TARGET_DIR)
+	rm -rf $(OUTPUT_DIR)
