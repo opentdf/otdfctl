@@ -31,6 +31,11 @@ type FileMetadata struct {
 	EncryptionAlg string `json:"encryption_alg"`
 	Version       string `json:"version"`
 }
+const (
+	aes256KeyLength     = 32
+	ownerPermissionsRW  = 0o600
+	ownerPermissionsRWX = 0o700
+)
 
 // Generates a safe, hashed filename from namespace and key
 func hashNamespaceAndKey(namespace string, key string) string {
