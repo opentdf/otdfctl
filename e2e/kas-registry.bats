@@ -32,9 +32,11 @@ teardown() {
 
 @test "create registration of a KAS with remote key" {
     URI="https://testing-create-remote.co"
-    run_otdfctl_kasr create --uri "$URI" -r "$REMOTE_KEY" --json
+    NAME="my_kas_name"
+    run_otdfctl_kasr create --uri "$URI" -r "$REMOTE_KEY" -n "$NAME" --json
         assert_output --partial "$REMOTE_KEY"
         assert_output --partial "$URI"
+        assert_output --partial "$NAME"
     export CREATED="$output"
 }
 
@@ -60,23 +62,29 @@ teardown() {
 
 @test "update registered KAS" {
     URI="https://testing-update.net"
-    export CREATED=$(./otdfctl $HOST $DEBUG_LEVEL $WITH_CREDS policy kas-registry create --uri "$URI" -c "$CACHED_KEY" --json)
+    NAME="new-kas-testing-update"
+    export CREATED=$(./otdfctl $HOST $DEBUG_LEVEL $WITH_CREDS policy kas-registry create --uri "$URI" -c "$CACHED_KEY" -n "$NAME" --json)
     ID=$(echo "$CREATED" | jq -r '.id')
-    run_otdfctl_kasr update --id "$ID" -u "https://newuri.com" --public-key-remote "$REMOTE_KEY" --json
+    run_otdfctl_kasr update --id "$ID" -u "https://newuri.com" -n "newer-name" --public-key-remote "$REMOTE_KEY" --json
         assert_output --partial "$ID"
         assert_output --partial "https://newuri.com"
         assert_output --partial "$REMOTE_KEY"
+        assert_output --partial "newer-name"
         assert_output --partial "uri"
         refute_output --partial "pem"
+        refute_output --partial "$NAME"
         refute_output --partial "cached"
 }
 
 @test "list registered KASes" {
     URI="https://testing-list.io"
-    export CREATED=$(./otdfctl $HOST $DEBUG_LEVEL $WITH_CREDS policy kas-registry create --uri "$URI" -c "$CACHED_KEY" --json)
+    NAME="listed-kas"
+    export CREATED=$(./otdfctl $HOST $DEBUG_LEVEL $WITH_CREDS policy kas-registry create --uri "$URI" -c "$CACHED_KEY" -n "$NAME" --json)
     ID=$(echo "$CREATED" | jq -r '.id')
     run_otdfctl_kasr list --json
     assert_output --partial "$ID"
     assert_output --partial "uri"
     assert_output --partial "$URI"
+    assert_output --partial "name"
+    assert_output --partial "$NAME"
 }

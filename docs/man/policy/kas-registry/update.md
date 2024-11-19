@@ -18,6 +18,9 @@ command:
     - name: public-key-remote
       shorthand: r
       description: URI of the public key of the Key Access Server
+    - name: name
+      shorthand: n
+      description: Optional name of the registered KAS (must be unique within policy)
     - name: label
       description: "Optional metadata 'labels' in the format: key=value"
       shorthand: l

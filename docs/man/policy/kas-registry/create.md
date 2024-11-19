@@ -18,6 +18,10 @@ command:
       shorthand: r
       description: Remote URI where the public key can be retrieved for the KAS
     - name: label
+    - name: name
+      shorthand: n
+      description: Optional name of the registered KAS (must be unique within policy)
+    - name: label
       description: "Optional metadata 'labels' in the format: key=value"
       shorthand: l
       default: ''
