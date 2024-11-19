@@ -65,6 +65,19 @@ func (h Handler) DeleteSubjectMapping(id string) (*policy.SubjectMapping, error)
 	return resp.GetSubjectMapping(), err
 }
 
+func (h Handler) MatchSubjectMappings(selectors []string) ([]*policy.SubjectMapping, error) {
+	subjectProperties := make([]*policy.SubjectProperty, len(selectors))
+	for i, selector := range selectors {
+		subjectProperties[i] = &policy.SubjectProperty{
+			ExternalSelectorValue: selector,
+		}
+	}
+	resp, err := h.sdk.SubjectMapping.MatchSubjectMappings(h.ctx, &subjectmapping.MatchSubjectMappingsRequest{
+		SubjectProperties: subjectProperties,
+	})
+	return resp.GetSubjectMappings(), err
+}
+
 func GetSubjectMappingOperatorFromChoice(readable string) policy.SubjectMappingOperatorEnum {
 	switch readable {
 	case SubjectMappingOperatorIn:

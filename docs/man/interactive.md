@@ -1,5 +1,5 @@
 ---
-title: Interactive Mode
+title: Interactive Mode (experimental)
 
 command:
   name: interactive
