@@ -6,7 +6,7 @@ command:
     - g
   flags:
     - name: id
-      long: id
+      shorthand: i
       description: ID of the Key Access Server registration
       required: true
 ---

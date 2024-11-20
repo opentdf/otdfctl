@@ -107,7 +107,7 @@ teardown() {
         assert_output --partial "$PEM"
         assert_output --partial "$KID"
 
-    run_otdfctl_kasr get --id "$ID" --json
+    run_otdfctl_kasr get -i "$ID" --json
         assert_output --partial "$ID"
         assert_output --partial "$URI"
         assert_output --partial "uri"
