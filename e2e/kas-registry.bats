@@ -40,7 +40,7 @@ teardown() {
     export CREATED="$output"
 }
 
-@test "create KAS registration with invalid URI" {
+@test "create KAS registration with invalid URI - fails" {
     BAD_URIS=(
         "no-scheme.co"
         "localhost"
@@ -58,7 +58,7 @@ teardown() {
     done
 }
 
-@test "create KAS registration with invalid name" {
+@test "create KAS registration with invalid name - fails" {
     BAD_NAMES=(
         "-bad-name"
         "bad-name-"
@@ -113,7 +113,7 @@ teardown() {
         refute_output --partial "cached"
 }
 
-@test "update registered KAS with invalid URI" {
+@test "update registered KAS with invalid URI - fails" {
     export CREATED=$(./otdfctl $HOST $DEBUG_LEVEL $WITH_CREDS policy kas-registry create --uri "https://bad-update.uri.kas" -c "$CACHED_KEY" --json)
     ID=$(echo "$CREATED" | jq -r '.id')
     BAD_URIS=(
@@ -134,7 +134,7 @@ teardown() {
     done
 }
 
-@test "update registered KAS with invalid name" {
+@test "update registered KAS with invalid name - fails" {
     export CREATED=$(./otdfctl $HOST $DEBUG_LEVEL $WITH_CREDS policy kas-registry create --uri "https://bad-update.name.kas" -c "$REMOTE_KEY" --json)
     ID=$(echo "$CREATED" | jq -r '.id')
     BAD_NAMES=(
