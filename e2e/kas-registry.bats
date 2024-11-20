@@ -44,7 +44,7 @@ teardown() {
     BAD_URIS=(
         "no-scheme.co"
         "localhost"
-        "http://exa$mple.com"
+        "http://exa#mple.com"
         "https://example!.com"
         "http://example.com:abc"
         "http://example. com"
@@ -66,7 +66,7 @@ teardown() {
         "bad_name_"
         "name with spaces"
         "name@with!special#chars"
-        "$(printf 'a%.0s' {1..253})" # Generates a string of 253 'a' characters
+        "$(printf 'a%.0s' {1..254})" # Generates a string of 254 'a' characters
     )
 
     for NAME in "${BAD_NAMES[@]}"; do
@@ -119,7 +119,7 @@ teardown() {
     BAD_URIS=(
         "no-scheme.co"
         "localhost"
-        "http://exa$mple.com"
+        "http://exa#mple.com"
         "https://example!.com"
         "http://example.com:abc"
         "http://example. com"
@@ -144,7 +144,7 @@ teardown() {
         "bad_name_"
         "name with spaces"
         "name@with!special#chars"
-        "$(printf 'a%.0s' {1..253})" # Generates a string of 253 'a' characters
+        "$(printf 'a%.0s' {1..254})" # Generates a string of 254 'a' characters
     )
 
     for NAME in "${BAD_NAMES[@]}"; do
