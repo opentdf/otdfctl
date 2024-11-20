@@ -4,6 +4,7 @@ package man
 import (
 	"github.com/charmbracelet/glamour"
 	"github.com/charmbracelet/glamour/ansi"
+	"github.com/charmbracelet/glamour/styles"
 	"golang.org/x/term"
 )
 
@@ -22,7 +23,7 @@ func styleDoc(doc string) string {
 	}
 	// Set up a new glamour instance
 	// with some options
-	ds := glamour.DarkStyleConfig
+	ds := styles.DarkStyleConfig
 	// ls := glamour.DefaultStyles["light"]
 
 	ds.Document.Margin = uintPtr(0)
