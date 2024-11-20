@@ -56,6 +56,26 @@ teardown() {
     done
 }
 
+@test "create KAS registration with duplicate URI - fails" {
+    URI="https://testing-duplication.io"
+    run_otdfctl_kasr create --uri "$URI" -r "$REMOTE_KEY"
+        assert_success
+    run_otdfctl_kasr create --uri "$URI" -r "$REMOTE_KEY"
+        assert_failure
+        assert_output --partial "Failed to create Registered KAS entry"
+        assert_output --partial "AlreadyExists"
+}
+
+@test "create KAS registration with duplicate name - fails" {
+    NAME="duplicate_name_kas"
+    run_otdfctl_kasr create --uri "https://testing-duplication.name.io" -r "$REMOTE_KEY" -n "$NAME"
+        assert_success
+    run_otdfctl_kasr create --uri "https://testing-duplication.name.net" -r "$REMOTE_KEY" -n "$NAME"
+        assert_failure
+        assert_output --partial "Failed to create Registered KAS entry"
+        assert_output --partial "AlreadyExists"
+}
+
 @test "create KAS registration with invalid name - fails" {
     URI="http://creating.kas.invalid.name/kas"
     BAD_NAMES=(
