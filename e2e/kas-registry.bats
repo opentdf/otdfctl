@@ -45,7 +45,7 @@ teardown() {
         "no-scheme.co"
         "localhost"
         "http://example.com:abc"
-        "http://example. com"
+        "http:// example . com"
     )
 
     for URI in "${BAD_URIS[@]}"; do
@@ -57,6 +57,7 @@ teardown() {
 }
 
 @test "create KAS registration with invalid name - fails" {
+    URI="http://creating.kas.invalid.name/kas"
     BAD_NAMES=(
         "-bad-name"
         "bad-name-"
@@ -118,7 +119,7 @@ teardown() {
         "no-scheme.co"
         "localhost"
         "http://example.com:abc"
-        "http://example. com"
+        "http:// example . com"
     )
 
     for URI in "${BAD_URIS[@]}"; do
