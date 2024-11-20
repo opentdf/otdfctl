@@ -32,10 +32,68 @@ teardown() {
 
 @test "create registration of a KAS with remote key" {
     URI="https://testing-create-remote.co"
-    run_otdfctl_kasr create --uri "$URI" -r "$REMOTE_KEY" --json
+    NAME="my_kas_name"
+    run_otdfctl_kasr create --uri "$URI" -r "$REMOTE_KEY" -n "$NAME" --json
         assert_output --partial "$REMOTE_KEY"
         assert_output --partial "$URI"
+        assert_output --partial "$NAME"
     export CREATED="$output"
+}
+
+@test "create KAS registration with invalid URI - fails" {
+    BAD_URIS=(
+        "no-scheme.co"
+        "localhost"
+        "http://example.com:abc"
+        "https ://example.com"
+    )
+
+    for URI in "${BAD_URIS[@]}"; do
+        run_otdfctl_kasr create --uri "$URI" -r "$REMOTE_KEY"
+            assert_failure
+            assert_output --partial "Failed to create Registered KAS"
+            assert_output --partial "uri: "
+    done
+}
+
+@test "create KAS registration with duplicate URI - fails" {
+    URI="https://testing-duplication.io"
+    run_otdfctl_kasr create --uri "$URI" -r "$REMOTE_KEY"
+        assert_success
+    run_otdfctl_kasr create --uri "$URI" -r "$REMOTE_KEY"
+        assert_failure
+        assert_output --partial "Failed to create Registered KAS entry"
+        assert_output --partial "AlreadyExists"
+}
+
+@test "create KAS registration with duplicate name - fails" {
+    NAME="duplicate_name_kas"
+    run_otdfctl_kasr create --uri "https://testing-duplication.name.io" -r "$REMOTE_KEY" -n "$NAME"
+        assert_success
+    run_otdfctl_kasr create --uri "https://testing-duplication.name.net" -r "$REMOTE_KEY" -n "$NAME"
+        assert_failure
+        assert_output --partial "Failed to create Registered KAS entry"
+        assert_output --partial "AlreadyExists"
+}
+
+@test "create KAS registration with invalid name - fails" {
+    URI="http://creating.kas.invalid.name/kas"
+    BAD_NAMES=(
+        "-bad-name"
+        "bad-name-"
+        "_bad_name"
+        "bad_name_"
+        "name@with!special#chars"
+        "$(printf 'a%.0s' {1..254})" # Generates a string of 254 'a' characters
+    )
+
+    for NAME in "${BAD_NAMES[@]}"; do
+        echo "testing $NAME"
+        run_otdfctl_kasr create --uri "$URI" -r "$REMOTE_KEY" -n "$NAME"
+            assert_failure
+            assert_output --partial "Failed to create Registered KAS"
+            assert_output --partial "name: "
+    done
 }
 
 @test "create KAS with cached key then get it" {
@@ -60,23 +118,68 @@ teardown() {
 
 @test "update registered KAS" {
     URI="https://testing-update.net"
-    export CREATED=$(./otdfctl $HOST $DEBUG_LEVEL $WITH_CREDS policy kas-registry create --uri "$URI" -c "$CACHED_KEY" --json)
+    NAME="new-kas-testing-update"
+    export CREATED=$(./otdfctl $HOST $DEBUG_LEVEL $WITH_CREDS policy kas-registry create --uri "$URI" -c "$CACHED_KEY" -n "$NAME" --json)
     ID=$(echo "$CREATED" | jq -r '.id')
-    run_otdfctl_kasr update --id "$ID" -u "https://newuri.com" --public-key-remote "$REMOTE_KEY" --json
+    run_otdfctl_kasr update --id "$ID" -u "https://newuri.com" -n "newer-name" --public-key-remote "$REMOTE_KEY" --json
         assert_output --partial "$ID"
         assert_output --partial "https://newuri.com"
         assert_output --partial "$REMOTE_KEY"
+        assert_output --partial "newer-name"
         assert_output --partial "uri"
         refute_output --partial "pem"
+        refute_output --partial "$NAME"
         refute_output --partial "cached"
+}
+
+@test "update registered KAS with invalid URI - fails" {
+    export CREATED=$(./otdfctl $HOST $DEBUG_LEVEL $WITH_CREDS policy kas-registry create --uri "https://bad-update.uri.kas" -c "$CACHED_KEY" --json)
+    ID=$(echo "$CREATED" | jq -r '.id')
+    BAD_URIS=(
+        "no-scheme.co"
+        "localhost"
+        "http://example.com:abc"
+        "https ://example.com"
+    )
+
+    for URI in "${BAD_URIS[@]}"; do
+        run_otdfctl_kasr update -i "$ID" --uri "$URI"
+            assert_failure
+            assert_output --partial "$ID"
+            assert_output --partial "Failed to update Registered KAS entry"
+            assert_output --partial "uri: "
+    done
+}
+
+@test "update registered KAS with invalid name - fails" {
+    export CREATED=$(./otdfctl $HOST $DEBUG_LEVEL $WITH_CREDS policy kas-registry create --uri "https://bad-update.name.kas" -r "$REMOTE_KEY" --json)
+    ID=$(echo "$CREATED" | jq -r '.id')
+    BAD_NAMES=(
+        "-bad-name"
+        "bad-name-"
+        "_bad_name"
+        "bad_name_"
+        "name@with!special#chars"
+        "$(printf 'a%.0s' {1..254})" # Generates a string of 254 'a' characters
+    )
+
+    for NAME in "${BAD_NAMES[@]}"; do
+        run_otdfctl_kasr update --name "$NAME" -r "$REMOTE_KEY" --id "$ID"
+            assert_failure
+            assert_output --partial "Failed to update Registered KAS"
+            assert_output --partial "name: "
+    done
 }
 
 @test "list registered KASes" {
     URI="https://testing-list.io"
-    export CREATED=$(./otdfctl $HOST $DEBUG_LEVEL $WITH_CREDS policy kas-registry create --uri "$URI" -c "$CACHED_KEY" --json)
+    NAME="listed-kas"
+    export CREATED=$(./otdfctl $HOST $DEBUG_LEVEL $WITH_CREDS policy kas-registry create --uri "$URI" -c "$CACHED_KEY" -n "$NAME" --json)
     ID=$(echo "$CREATED" | jq -r '.id')
     run_otdfctl_kasr list --json
     assert_output --partial "$ID"
     assert_output --partial "uri"
     assert_output --partial "$URI"
+    assert_output --partial "name"
+    assert_output --partial "$NAME"
 }
