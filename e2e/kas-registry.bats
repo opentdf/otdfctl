@@ -164,7 +164,7 @@ teardown() {
     )
 
     for NAME in "${BAD_NAMES[@]}"; do
-        run_otdfctl_kasr update --name "$NAME" -r "$REMOTE_KEY" --id "$ID"
+        run_otdfctl_kasr update --name "$NAME" -c "$CACHED_KEY" --id "$ID"
             assert_failure
             assert_output --partial "Failed to update Registered KAS"
             assert_output --partial "name: "
