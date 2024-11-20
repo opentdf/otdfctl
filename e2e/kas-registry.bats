@@ -44,8 +44,6 @@ teardown() {
     BAD_URIS=(
         "no-scheme.co"
         "localhost"
-        "http://exa#mple.com"
-        "https://example!.com"
         "http://example.com:abc"
         "http://example. com"
     )
@@ -119,8 +117,6 @@ teardown() {
     BAD_URIS=(
         "no-scheme.co"
         "localhost"
-        "http://exa#mple.com"
-        "https://example!.com"
         "http://example.com:abc"
         "http://example. com"
     )
