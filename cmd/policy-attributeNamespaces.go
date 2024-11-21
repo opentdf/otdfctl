@@ -114,7 +114,6 @@ func policy_deactivateAttributeNamespace(cmd *cobra.Command, args []string) {
 	}
 
 	cli.ConfirmAction(cli.ActionDeactivate, "namespace", ns.GetName(), force)
-	
 
 	d, err := h.DeactivateNamespace(id)
 	if err != nil {
