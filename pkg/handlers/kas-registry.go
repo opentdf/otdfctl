@@ -44,12 +44,12 @@ func (h Handler) CreateKasRegistryEntry(uri string, publicKey *policy.PublicKey,
 }
 
 // Updates the KAS registry and then returns the KAS
-func (h Handler) UpdateKasRegistryEntry(id, uri, name string, publickey *policy.PublicKey, metadata *common.MetadataMutable, behavior common.MetadataUpdateEnum) (*policy.KeyAccessServer, error) {
+func (h Handler) UpdateKasRegistryEntry(id, uri, name string, pubKey *policy.PublicKey, metadata *common.MetadataMutable, behavior common.MetadataUpdateEnum) (*policy.KeyAccessServer, error) {
 	_, err := h.sdk.KeyAccessServerRegistry.UpdateKeyAccessServer(h.ctx, &kasregistry.UpdateKeyAccessServerRequest{
 		Id:                     id,
 		Uri:                    uri,
 		Name:                   name,
-		PublicKey:              publickey,
+		PublicKey:              pubKey,
 		Metadata:               metadata,
 		MetadataUpdateBehavior: behavior,
 	})

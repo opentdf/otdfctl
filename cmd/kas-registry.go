@@ -100,18 +100,16 @@ func policy_createKeyAccessRegistry(cmd *cobra.Command, args []string) {
 		cli.ExitWithError("Issue with create flags 'public-keys' and 'public-key-remote'", e)
 	}
 
-	key := &policy.PublicKey{}
+	key := new(policy.PublicKey)
 	if cachedJSON != "" {
 		if remote != "" {
 			e := fmt.Errorf("only one public key is allowed. Please pass either a cached or remote public key but not both")
 			cli.ExitWithError("Issue with create flags 'public-keys' and 'public-key-remote'", e)
 		}
-		cached := new(policy.PublicKey)
-		err := protojson.Unmarshal([]byte(cachedJSON), cached)
+		err := protojson.Unmarshal([]byte(cachedJSON), key)
 		if err != nil {
-			cli.ExitWithError("Failed to unmarshal cached public key JSON", err)
+			cli.ExitWithError(fmt.Sprintf("Failed to unmarshal cached public key JSON: '%s'", cachedJSON), err)
 		}
-		key = cached
 	} else {
 		key.PublicKey = &policy.PublicKey_Remote{Remote: remote}
 	}
@@ -159,20 +157,18 @@ func policy_updateKeyAccessRegistry(cmd *cobra.Command, args []string) {
 		cli.ExitWithError("No values were passed to update. Please pass at least one value to update (E.G. 'uri', 'name', 'public-keys', 'public-key-remote', 'label')", nil)
 	}
 
-	var pubKey *policy.PublicKey
-	//nolint:gocritic // this is more readable than a switch statement
+	pubKey := new(policy.PublicKey)
 	if cachedJSON != "" && remote != "" {
 		e := fmt.Errorf("only one public key is allowed. Please pass either a cached or remote public key but not both")
 		cli.ExitWithError("Issue with update flags 'public-keys' and 'public-key-remote'", e)
-	} else if cachedJSON != "" {
-		cached := new(policy.PublicKey)
-		err := protojson.Unmarshal([]byte(cachedJSON), cached)
+	}
+	if cachedJSON != "" {
+		err := protojson.Unmarshal([]byte(cachedJSON), pubKey)
 		if err != nil {
-			cli.ExitWithError("Failed to unmarshal cached public key JSON", err)
+			cli.ExitWithError(fmt.Sprintf("Failed to unmarshal cached public key JSON: '%s'", cachedJSON), err)
 		}
-		pubKey = cached
 	} else if remote != "" {
-		pubKey = &policy.PublicKey{PublicKey: &policy.PublicKey_Remote{Remote: remote}}
+		pubKey.PublicKey = &policy.PublicKey_Remote{Remote: remote}
 	}
 
 	updated, err := h.UpdateKasRegistryEntry(
