@@ -1,5 +1,5 @@
 ---
-title: Prune (delete all unmapped Subject Condition Sets)
+title: Prune (delete all un-mapped Subject Condition Sets)
 
 command:
   name: prune
