@@ -124,3 +124,23 @@ teardown_file() {
   assert_success
   assert_output --partial "$CREATED_ID"
 }
+
+@test "Prune SCS - deletes unmapped SCS alone" {
+  echo -n "$SCS_1" > scs.json
+
+  UNMAPPED_ID=$(./otdfctl policy scs create --subject-sets-file-json scs.json $HOST $WITH_CREDS --json | jq -r '.id')
+  MAPPED_ID=$(./otdfctl policy scs create --subject-sets "$SCS_2" $HOST $WITH_CREDS --json | jq -r '.id')
+
+  # create a namespace, definition, value, sm to the value with the MAPPED_ID SCS
+  NS_ID=$(./otdfctl policy attributes namespaces create -n 'scs.net' $HOST $WITH_CREDS --json | jq -r '.id')
+  ATTR_ID=$(./otdfctl policy attributes create -n 'my_attr' --namespace "$NS_ID" -r "ANY_OF" $HOST $WITH_CREDS --json | jq -r '.id')
+  VAL_ID=$(./otdfctl policy attributes values create -v 'my_value' -a "$ATTR_ID" $HOST $WITH_CREDS --json | jq -r '.id')
+
+  run ./otdfctl policy sm create -s 'DECRYPT' -a "$VAL_ID" --subject-condition-set-id "$MAPPED_ID"
+    assert_success
+
+  run ./otdfctl policy scs prune --force
+    assert_success
+    assert_output --partial "$UNMAPPED_ID"
+    refute_output --partial "$MAPPED_ID"
+}
