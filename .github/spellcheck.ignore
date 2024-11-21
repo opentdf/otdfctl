@@ -46,8 +46,10 @@ TODO
 TUI
 URI
 Unassign
+ZTDF
 abc
 acmeco
+appliesToState
 args
 attr
 auth
@@ -55,6 +57,7 @@ cli
 clientId
 clientSecret
 config
+cryptographically
 data-centric
 decrypt
 decryptable
@@ -79,8 +82,10 @@ localhost
 namespace
 namespaces
 nano
+nato
 no-verify-assertions
 ns
+ocl
 otdfctl
 performant
 poc
@@ -91,6 +96,7 @@ resolvers
 scs
 sel
 sm
+stanag
 stdin
 stdout
 stdout
@@ -98,6 +104,7 @@ subcommand
 subcs
 subm
 submap
+tdo
 tdf
 tdf-type
 tls
@@ -105,16 +112,10 @@ tls-no-verify
 txt
 unassign
 unassignment
+un-mapped
 upsert
 uri
 with-client-creds
 with-client-creds-file
 yaml
-ZTDF
 ztdf
-tdo
-appliesToState
-stanag
-nato
-ocl
-cryptographically
