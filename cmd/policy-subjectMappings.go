@@ -70,14 +70,11 @@ func policy_listSubjectMappings(cmd *cobra.Command, args []string) {
 	}
 	t := cli.NewTable(
 		cli.NewUUIDColumn(),
-		table.NewFlexColumn("subject_attrval_id", "Subject AttrVal: Id", cli.FlexColumnWidthFour),
-		table.NewFlexColumn("subject_attrval_value", "Subject AttrVal: Value", cli.FlexColumnWidthThree),
+		table.NewFlexColumn("value_id", "Attribute Value Id", cli.FlexColumnWidthFour),
+		table.NewFlexColumn("value_fqn", "Attibribute Value FQN", cli.FlexColumnWidthFour),
 		table.NewFlexColumn("actions", "Actions", cli.FlexColumnWidthTwo),
 		table.NewFlexColumn("subject_condition_set_id", "Subject Condition Set: Id", cli.FlexColumnWidthFour),
 		table.NewFlexColumn("subject_condition_set", "Subject Condition Set", cli.FlexColumnWidthThree),
-		table.NewFlexColumn("labels", "Labels", cli.FlexColumnWidthOne),
-		table.NewFlexColumn("created_at", "Created At", cli.FlexColumnWidthOne),
-		table.NewFlexColumn("updated_at", "Updated At", cli.FlexColumnWidthOne),
 	)
 	rows := []table.Row{}
 	for _, sm := range list {
@@ -90,18 +87,14 @@ func policy_listSubjectMappings(cmd *cobra.Command, args []string) {
 		if subjectSetsJSON, err = json.Marshal(sm.GetSubjectConditionSet().GetSubjectSets()); err != nil {
 			cli.ExitWithError("Error marshalling subject condition set", err)
 		}
-		metadata := cli.ConstructMetadata(sm.GetMetadata())
 
 		rows = append(rows, table.NewRow(table.RowData{
 			"id":                       sm.GetId(),
-			"subject_attrval_id":       sm.GetAttributeValue().GetId(),
-			"subject_attrval_value":    sm.GetAttributeValue().GetValue(),
+			"value_id":                 sm.GetAttributeValue().GetId(),
+			"value_fqn":                sm.GetAttributeValue().GetFqn(),
 			"actions":                  string(actionsJSON),
 			"subject_condition_set_id": sm.GetSubjectConditionSet().GetId(),
 			"subject_condition_set":    string(subjectSetsJSON),
-			"labels":                   metadata["Labels"],
-			"created_at":               metadata["Created At"],
-			"updated_at":               metadata["Updated At"],
 		}))
 	}
 	t = t.WithRows(rows)
