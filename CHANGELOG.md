@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.16.0](https://github.com/opentdf/otdfctl/compare/v0.15.0...v0.16.0) (2024-11-20)
+
+
+### Features
+
+* assertion verification disable ([#419](https://github.com/opentdf/otdfctl/issues/419)) ([acf5702](https://github.com/opentdf/otdfctl/commit/acf57028f1481f432b6b0c3c7a3e2c2261ac739f))
+* **core:** add `subject-mappings match` to CLI ([#413](https://github.com/opentdf/otdfctl/issues/413)) ([bc56c19](https://github.com/opentdf/otdfctl/commit/bc56c199a73b12b8c90045d1b6f9cc6fdec16c54))
+* **core:** add optional name to kas registry CRUD commands ([#429](https://github.com/opentdf/otdfctl/issues/429)) ([f675d86](https://github.com/opentdf/otdfctl/commit/f675d86c83205232db407d6609e80fa865a3998e))
+* **core:** adds assertions to encrypt subcommand ([#408](https://github.com/opentdf/otdfctl/issues/408)) ([8f0e906](https://github.com/opentdf/otdfctl/commit/8f0e906c1dfe99fe6aa5f2ff43d02f0da90474cf))
+* **core:** adds storeFile to save encrypted profiles to disk and updates auth to propagate tlsNoVerify ([#420](https://github.com/opentdf/otdfctl/issues/420)) ([f709e01](https://github.com/opentdf/otdfctl/commit/f709e014bf3f82a2808eae5df76b3667730c36ef))
+* refactor encrypt and decrypt + CLI examples ([#418](https://github.com/opentdf/otdfctl/issues/418)) ([e681823](https://github.com/opentdf/otdfctl/commit/e681823ad54ddf70f4aa2215438d69a3d02cf6eb))
+* support --with-access-token for auth ([#409](https://github.com/opentdf/otdfctl/issues/409)) ([856efa4](https://github.com/opentdf/otdfctl/commit/856efa4d61bb24b05f3a98943b94600ff77536fa))
+
+
+### Bug Fixes
+
+* **core:** dev selectors employ flattening from platform instead of jq ([#411](https://github.com/opentdf/otdfctl/issues/411)) ([57966ff](https://github.com/opentdf/otdfctl/commit/57966ffadcc61e1611869171bd3fc85723492fb7))
+* **core:** improve readability of TDF methods ([#424](https://github.com/opentdf/otdfctl/issues/424)) ([a88d386](https://github.com/opentdf/otdfctl/commit/a88d386b3dfe6e7bf210c632c92eb54069c1c5b8))
+* **core:** remove trailing slashes on host/platformEndpoint ([#415](https://github.com/opentdf/otdfctl/issues/415)) ([2ffd3c7](https://github.com/opentdf/otdfctl/commit/2ffd3c7707aa5c610f952d3499a7bfc76e8feca8)), closes [#414](https://github.com/opentdf/otdfctl/issues/414)
+* **core:** revert profiles file system storage last commit ([#427](https://github.com/opentdf/otdfctl/issues/427)) ([79f2079](https://github.com/opentdf/otdfctl/commit/79f2079342bfbf210e07ce7cc6714deafea12b29))
+* updates sdk to 0.3.19 with GetTdfType fixes ([#425](https://github.com/opentdf/otdfctl/issues/425)) ([0a9adfe](https://github.com/opentdf/otdfctl/commit/0a9adfe416b966b09db4b9ee60fa379db93ede76))
+
 ## [0.15.0](https://github.com/opentdf/otdfctl/compare/v0.14.0...v0.15.0) (2024-10-15)
 
 
