@@ -136,10 +136,10 @@ teardown_file() {
   ATTR_ID=$(./otdfctl policy attributes create -n 'my_attr' --namespace "$NS_ID" -r "ANY_OF" $HOST $WITH_CREDS --json | jq -r '.id')
   VAL_ID=$(./otdfctl policy attributes values create -v 'my_value' -a "$ATTR_ID" $HOST $WITH_CREDS --json | jq -r '.id')
 
-  run ./otdfctl policy sm create -s 'DECRYPT' -a "$VAL_ID" --subject-condition-set-id "$MAPPED_ID"
+  run ./otdfctl policy sm create -s 'DECRYPT' -a "$VAL_ID" --subject-condition-set-id "$MAPPED_ID" $HOST $WITH_CREDS
     assert_success
 
-  run ./otdfctl policy scs prune --force
+  run_otdfctl_scs prune --force
     assert_success
     assert_output --partial "$UNMAPPED_ID"
     refute_output --partial "$MAPPED_ID"
