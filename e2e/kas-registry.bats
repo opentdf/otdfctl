@@ -40,6 +40,21 @@ teardown() {
     export CREATED="$output"
 }
 
+@test "create KAS registration with invalid key - fails" {
+    BAD_CACHED=(
+        '{"cached":{"keys":[{"pem":"bad"}]}}'
+        '{"cached":[]}'
+        '{"cached":{"keys":[{]}}'
+    )
+
+    for BAD_KEY in "${BAD_CACHED[@]}"; do
+        URI='https://bad.pem/kas'
+        run_otdfctl_kasr create --uri "$URI" --public-keys "$BAD_KEY"
+            assert_failure
+            assert_output --partial "KAS registry key is invalid"
+    done
+}
+
 @test "create KAS registration with invalid URI - fails" {
     BAD_URIS=(
         "no-scheme.co"
@@ -60,6 +75,7 @@ teardown() {
     URI="https://testing-duplication.io"
     run_otdfctl_kasr create --uri "$URI" -r "$REMOTE_KEY"
         assert_success
+    export CREATED="$output"
     run_otdfctl_kasr create --uri "$URI" -r "$REMOTE_KEY"
         assert_failure
         assert_output --partial "Failed to create Registered KAS entry"
