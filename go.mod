@@ -17,7 +17,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/opentdf/platform/lib/flattening v0.1.1
 	github.com/opentdf/platform/protocol/go v0.2.20
-	github.com/opentdf/platform/sdk v0.3.19
+	github.com/opentdf/platform/sdk v0.3.21
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.9.0
@@ -79,11 +79,10 @@ require (
 	github.com/muesli/reflow v0.3.0 // indirect
 	github.com/muesli/termenv v0.15.3-0.20240618155329-98d742f6907a // indirect
 	github.com/muhlemmer/gu v0.3.1 // indirect
-	github.com/opentdf/platform/lib/ocrypto v0.1.6 // indirect
+	github.com/opentdf/platform/lib/ocrypto v0.1.7 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.2 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
-	github.com/rogpeppe/go-internal v1.12.0 // indirect
 	github.com/sagikazarmark/locafero v0.4.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
 	github.com/sahilm/fuzzy v0.1.1-0.20230530133925-c48e322e2a8f // indirect
