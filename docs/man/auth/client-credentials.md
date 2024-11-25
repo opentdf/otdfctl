@@ -23,14 +23,20 @@ in the OS keyring for future use.
 
 ## Examples
 
+Authenticate with client credentials (id and secret provided interactively)
+
+```shell
+otdfctl auth client-credentials
+```
+
 Authenticate with client credentials (secret provided interactively)
 
 ```shell
-otdfctl auth client-credentials --client-id <client-id>
+otdfctl auth client-credentials <client-id>
 ```
 
 Authenticate with client credentials (secret provided as argument)
 
 ```shell
-otdfctl auth client-credentials --client-id <client-id> --client-secret <client-secret>
+otdfctl auth client-credentials <client-id> <client-secret>
 ```
