@@ -22,9 +22,6 @@ command:
       description: "Optional metadata 'labels' in the format: key=value"
       shorthand: l
       default: ''
-    - name: force-replace-labels
-      description: Destructively replace entire set of existing metadata 'labels' with any provided to this command
-      default: false
 ---
 
 ### Example Subject Condition Sets
