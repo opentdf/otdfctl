@@ -139,9 +139,7 @@ func policy_deleteResourceMapping(cmd *cobra.Command, args []string) {
 	id := c.Flags.GetRequiredID("id")
 	force := c.Flags.GetOptionalBool("force")
 
-	if !force {
-		cli.ConfirmAction(cli.ActionDelete, "resource-mapping", id, false)
-	}
+	cli.ConfirmAction(cli.ActionDelete, "resource-mapping", id, force)
 
 	resourceMapping, err := h.GetResourceMapping(id)
 	if err != nil {

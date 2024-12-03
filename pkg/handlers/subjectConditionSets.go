@@ -59,3 +59,11 @@ func (h Handler) DeleteSubjectConditionSet(id string) error {
 	})
 	return err
 }
+
+func (h Handler) PruneSubjectConditionSets() ([]*policy.SubjectConditionSet, error) {
+	rsp, err := h.sdk.SubjectMapping.DeleteAllUnmappedSubjectConditionSets(h.ctx, &subjectmapping.DeleteAllUnmappedSubjectConditionSetsRequest{})
+	if err != nil {
+		return nil, err
+	}
+	return rsp.GetSubjectConditionSets(), nil
+}

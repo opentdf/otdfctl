@@ -255,9 +255,7 @@ func policy_deleteSubjectConditionSet(cmd *cobra.Command, args []string) {
 		cli.ExitWithError(fmt.Sprintf("Subject Condition Set with id %s not found", id), err)
 	}
 
-	if !force {
-		cli.ConfirmAction(cli.ActionDelete, "Subject Condition Set", id, false)
-	}
+	cli.ConfirmAction(cli.ActionDelete, "Subject Condition Sets", "all unmapped", force)
 
 	if err := h.DeleteSubjectConditionSet(id); err != nil {
 		cli.ExitWithError(fmt.Sprintf("Subject Condition Set with id %s not found", id), err)
@@ -279,6 +277,34 @@ func policy_deleteSubjectConditionSet(cmd *cobra.Command, args []string) {
 
 	t := cli.NewTabular(rows...)
 	HandleSuccess(cmd, scs.GetId(), t, scs)
+}
+
+func policy_pruneSubjectConditionSet(cmd *cobra.Command, args []string) {
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
+	defer h.Close()
+
+	force := c.Flags.GetOptionalBool("force")
+
+	cli.ConfirmAction(cli.ActionDelete, "all unmapped Subject Condition Sets", "", force)
+
+	pruned, err := h.PruneSubjectConditionSets()
+	if err != nil {
+		cli.ExitWithError("Failed to prune unmapped Subject Condition Sets", err)
+	}
+
+	rows := []table.Row{}
+	for _, scs := range pruned {
+		rows = append(rows, table.NewRow(table.RowData{
+			"id": scs.GetId(),
+		}))
+	}
+
+	t := cli.NewTable(
+		cli.NewUUIDColumn(),
+	)
+	t = t.WithRows(rows)
+	HandleSuccess(cmd, "", t, pruned)
 }
 
 var policy_subjectConditionSetsCmd *cobra.Command
@@ -354,6 +380,16 @@ func init() {
 		deleteDoc.GetDocFlag("force").Description,
 	)
 
+	pruneDoc := man.Docs.GetCommand(
+		"policy/subject-condition-sets/prune",
+		man.WithRun(policy_pruneSubjectConditionSet),
+	)
+	pruneDoc.Flags().Bool(
+		pruneDoc.GetDocFlag("force").Name,
+		false,
+		pruneDoc.GetDocFlag("force").Description,
+	)
+
 	doc := man.Docs.GetCommand("policy/subject-condition-sets",
 		man.WithSubcommands(
 			createDoc,
@@ -361,6 +397,7 @@ func init() {
 			listDoc,
 			updateDoc,
 			deleteDoc,
+			pruneDoc,
 		),
 	)
 	policy_subjectConditionSetsCmd = &doc.Command
