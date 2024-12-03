@@ -1,6 +1,9 @@
 package cmd
 
 import (
+	"encoding/json"
+	"encoding/pem"
+	"errors"
 	"fmt"
 
 	"github.com/evertras/bubble-table/table"
@@ -96,22 +99,18 @@ func policy_createKeyAccessRegistry(cmd *cobra.Command, args []string) {
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
 	if cachedJSON == "" && remote == "" {
-		e := fmt.Errorf("a public key is required. Please pass either a cached or remote public key")
-		cli.ExitWithError("Issue with create flags 'public-keys' and 'public-key-remote'", e)
+		cli.ExitWithError("Empty flags 'public-keys' and 'public-key-remote'", errors.New("error: a public key is required"))
 	}
 
-	key := &policy.PublicKey{}
+	key := new(policy.PublicKey)
 	if cachedJSON != "" {
 		if remote != "" {
-			e := fmt.Errorf("only one public key is allowed. Please pass either a cached or remote public key but not both")
-			cli.ExitWithError("Issue with create flags 'public-keys' and 'public-key-remote'", e)
+			cli.ExitWithError("Found values for both flags 'public-keys' and 'public-key-remote'", errors.New("error: only one public key is allowed"))
 		}
-		cached := new(policy.PublicKey)
-		err := protojson.Unmarshal([]byte(cachedJSON), cached)
+		err := unmarshalKASPublicKey(cachedJSON, key)
 		if err != nil {
-			cli.ExitWithError("Failed to unmarshal cached public key JSON", err)
+			cli.ExitWithError(fmt.Sprintf("KAS registry key is invalid: '%s', see help for examples", cachedJSON), err)
 		}
-		key = cached
 	} else {
 		key.PublicKey = &policy.PublicKey_Remote{Remote: remote}
 	}
@@ -159,20 +158,18 @@ func policy_updateKeyAccessRegistry(cmd *cobra.Command, args []string) {
 		cli.ExitWithError("No values were passed to update. Please pass at least one value to update (E.G. 'uri', 'name', 'public-keys', 'public-key-remote', 'label')", nil)
 	}
 
-	var pubKey *policy.PublicKey
-	//nolint:gocritic // this is more readable than a switch statement
+	pubKey := new(policy.PublicKey)
 	if cachedJSON != "" && remote != "" {
 		e := fmt.Errorf("only one public key is allowed. Please pass either a cached or remote public key but not both")
-		cli.ExitWithError("Issue with update flags 'public-keys' and 'public-key-remote'", e)
-	} else if cachedJSON != "" {
-		cached := new(policy.PublicKey)
-		err := protojson.Unmarshal([]byte(cachedJSON), cached)
+		cli.ExitWithError("Issue with update flags 'public-keys' and 'public-key-remote': ", e)
+	}
+	if cachedJSON != "" {
+		err := unmarshalKASPublicKey(cachedJSON, pubKey)
 		if err != nil {
-			cli.ExitWithError("Failed to unmarshal cached public key JSON", err)
+			cli.ExitWithError(fmt.Sprintf("KAS registry key is invalid: '%s', see help for examples", cachedJSON), err)
 		}
-		pubKey = cached
 	} else if remote != "" {
-		pubKey = &policy.PublicKey{PublicKey: &policy.PublicKey_Remote{Remote: remote}}
+		pubKey.PublicKey = &policy.PublicKey_Remote{Remote: remote}
 	}
 
 	updated, err := h.UpdateKasRegistryEntry(
@@ -229,6 +226,32 @@ func policy_deleteKeyAccessRegistry(cmd *cobra.Command, args []string) {
 	)
 
 	HandleSuccess(cmd, kas.GetId(), t, kas)
+}
+
+// TODO: remove this when the data is structured
+func unmarshalKASPublicKey(keyStr string, key *policy.PublicKey) error {
+	if !json.Valid([]byte(keyStr)) {
+		return errors.New("invalid JSON")
+	}
+
+	if err := protojson.Unmarshal([]byte(keyStr), key); err != nil {
+		return errors.New("invalid shape")
+	}
+
+	// Validate all PEMs
+	keyErrs := []error{}
+	for i, k := range key.GetCached().GetKeys() {
+		block, _ := pem.Decode([]byte(k.GetPem()))
+		if block == nil {
+			keyErrs = append(keyErrs, fmt.Errorf("error in key[%d] with KID \"%s\": PEM is invalid", i, k.GetKid()))
+		}
+	}
+
+	if len(keyErrs) != 0 {
+		return errors.Join(keyErrs...)
+	}
+
+	return nil
 }
 
 func init() {

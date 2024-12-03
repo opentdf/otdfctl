@@ -10,9 +10,9 @@ setup_file() {
   export DEBUG_LEVEL="--log-level debug"
 
   export REMOTE_KEY='https://hello.world/pubkey'
-  export PEM='LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUMvVENDQWVXZ0F3SUJBZ0lVTXU4bzhXaDJIVEE2VEFlTENqQzJmVjlwSWVJd0RRWUpLb1pJaHZjTkFRRUwKQlFBd0RqRU1NQW9HQTFVRUF3d0RhMkZ6TUI0WERUSTBNRFl4T0RFNE16WXlOMW9YRFRJMU1EWXhPREU0TXpZeQpOMW93RGpFTU1Bb0dBMVVFQXd3RGEyRnpNSUlCSWpBTkJna3Foa2lHOXcwQkFRRUZBQU9DQVE4QU1JSUJDZ0tDCkFRRUFyMXBRam83cGlPdlBDVHRkSUVOZkc4eVZpK1dWMUZVTi82eFREcXJMeFpUdEFrWjE0M3VIVGZQOWExdXEKaFcxSW9heUpPVWpuWXNuUUh6dUVCZGtaNEh1d3pkeTZ3Um5lT1RSY2o3TitEd25aS21EcTF1YWZ6bEdzdG8vQgpoZnRtaWxVRjRZbm5GY0ROK3ZxajJlcDNhYlVramhrbUlRVDhwcjI1YkZ4TGFpd3dPbmx5TTVWUWM4bmFoZ2xuCjBNMGdOV0tJV0ZFSndoajBab2poMUw0ZGptenFVaU9tTkhCUDRRelNwNyswK3RXb3hJb1AyT2Fqa0p5MEljWkgKcS9OOWlTelZiZzFLL2tLZytkdS9QbWRqUCtqNTZsa0pPU1J6ZXpoK2R5NytHaHJCVDNVc21QbmNWM2NXVk1pOApFc1lDS2NUNUVNSGhhTmFHMFhEakptRzI4d0lEQVFBQm8xTXdVVEFkQmdOVkhRNEVGZ1FVZ1BUTkZjemQ5ajBFClgzN3A2SGh3UFJpY0JqOHdId1lEVlIwakJCZ3dGb0FVZ1BUTkZjemQ5ajBFWDM3cDZIaHdQUmljQmo4d0R3WUQKVlIwVEFRSC9CQVV3QXdFQi96QU5CZ2txaGtpRzl3MEJBUXNGQUFPQ0FRRUFDS2VxRkswSlcyYTVzS2JPQnl3WgppazB5MmpyRHJaUG5mMG9kTjVIbThtZWVuQnhteW9CeVZWRm9uUGVDaG1uWUZTdERtMlFJUTZnWVBtdEFhQ3VKCnRVeU5zNkxPQm1wR2JKaFRnNXljZXFXWnhYY3NmVkZ3ZHFxVXQ2NnRXdmNPeFZUQmdrN3h6RFFPbkxnRkxqZDYKSlZIeE16RkxXVFEwa00yVXJOOGd0T2RMazRhZUJhSzdiVHdaUEZ0RnR1YUZlYlFUbTRLY2ZSNXpzZkxTKzhpRgp1MWZGOVpKWkg2ZzZibENUeE50d3Z2eVMxVTMvS1AwVlQ5WVB3OTVmcElWMlNLT2QzejNZMGRKOUE5TGQ5TUkzCkwvWS8rNW05NEZCMTdTSWtERXpZM2d2TkxDSVZxODh2WHlnK2doVEhzSHNjYzNWcUUwK0x6cmZkemltbzMxRWQKTkE9PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0t'
+  PEM='-----BEGIN CERTIFICATE-----\nMIIC/TCCAeWgAwIBAgIUMu8o8Wh2HTA6TAeLCjC2f\n9pIeIwDQYJKoZIhvcNAQEL\nBQAwDjEMMAoGA1UEAwwDa2FzMB4XDTI0MDYxODE4M\nYyN1oXDTI1MDYxODE4MzYy\nN1owDjEMMAoGA1UEAwwDa2FzMIIBIjANBgkqhkiG9\n0BAQEFAAOCAQ8AMIIBCgKC\nAQEAr1pQjo7piOvPCTtdIENfG8yVi+WV1FUN/6xTD\nrLxZTtAkZ143uHTfP9a1uq\nhW1IoayJOUjnYsnQHzuEBdkZ4Huwzdy6wRneOTRcj\nN+DwnZKmDq1uafzlGsto/B\nhftmilUF4YnnFcDN+vqj2ep3abUkjhkmIQT8pr25b\nxLaiwwOnlyM5VQc8nahgln\n0M0gNWKIWFEJwhj0Zojh1L4djmzqUiOmNHBP4QzSp\n+0+tWoxIoP2OajkJy0IcZH\nq/N9iSzVbg1K/kKg+du/PmdjP+j56lkJOSRzezh+d\n7+GhrBT3UsmPncV3cWVMi8\nEsYCKcT5EMHhaNaG0XDjJmG28wIDAQABo1MwUTAdB\nNVHQ4EFgQUgPTNFczd9j0E\nX37p6HhwPRicBj8wHwYDVR0jBBgwFoAUgPTNFczd9\n0EX37p6HhwPRicBj8wDwYD\nVR0TAQH/BAUwAwEB/zANBgkqhkiG9w0BAQsFAAOCA\nEACKeqFK0JW2a5sKbOBywZ\nik0y2jrDrZPnf0odN5Hm8meenBxmyoByVVFonPeCh\nnYFStDm2QIQ6gYPmtAaCuJ\ntUyNs6LOBmpGbJhTg5yceqWZxXcsfVFwdqqUt66tW\ncOxVTBgk7xzDQOnLgFLjd6\nJVHxMzFLWTQ0kM2UrN8gtOdLk4aeBaK7bTwZPFtFt\naFebQTm4KcfR5zsfLS+8iF\nu1fF9ZJZH6g6blCTxNtwvvyS1U3/KP0VT9YPw95fp\nV2SKOd3z3Y0dJ9A9Ld9MI3\nL/Y/+5m94FB17SIkDEzY3gvNLCIVq88vXyg+ghTHs\nscc3VqE0+Lzrfdzimo31Ed\nNA==\n-----END CERTIFICATE-----'
   export KID='my_key_123'
-  export CACHED_KEY="{\"cached\":{\"keys\":[{\"pem\":\"$PEM\",\"kid\":\"$KID\",\"alg\":1}]}}"
+  export CACHED_KEY=$(printf '{"cached":{"keys":[{"kid":"%s","alg":1,"pem":"%s"}]}}' "$KID" "$PEM" )
 }
 
 setup() {
@@ -40,6 +40,21 @@ teardown() {
     export CREATED="$output"
 }
 
+@test "create KAS registration with invalid key - fails" {
+    BAD_CACHED=(
+        '{"cached":{"keys":[{"pem":"bad"}]}}'
+        '{"cached":[]}'
+        '{"cached":{"keys":[{]}}'
+    )
+
+    for BAD_KEY in "${BAD_CACHED[@]}"; do
+        URI='https://bad.pem/kas'
+        run_otdfctl_kasr create --uri "$URI" --public-keys "$BAD_KEY"
+            assert_failure
+            assert_output --partial "KAS registry key is invalid"
+    done
+}
+
 @test "create KAS registration with invalid URI - fails" {
     BAD_URIS=(
         "no-scheme.co"
@@ -60,6 +75,7 @@ teardown() {
     URI="https://testing-duplication.io"
     run_otdfctl_kasr create --uri "$URI" -r "$REMOTE_KEY"
         assert_success
+    export CREATED="$output"
     run_otdfctl_kasr create --uri "$URI" -r "$REMOTE_KEY"
         assert_failure
         assert_output --partial "Failed to create Registered KAS entry"
@@ -107,7 +123,7 @@ teardown() {
         assert_output --partial "$PEM"
         assert_output --partial "$KID"
 
-    run_otdfctl_kasr get --id "$ID" --json
+    run_otdfctl_kasr get -i "$ID" --json
         assert_output --partial "$ID"
         assert_output --partial "$URI"
         assert_output --partial "uri"
@@ -119,17 +135,19 @@ teardown() {
 @test "update registered KAS" {
     URI="https://testing-update.net"
     NAME="new-kas-testing-update"
-    export CREATED=$(./otdfctl $HOST $DEBUG_LEVEL $WITH_CREDS policy kas-registry create --uri "$URI" -c "$CACHED_KEY" -n "$NAME" --json)
+    export CREATED=$(./otdfctl $HOST $DEBUG_LEVEL $WITH_CREDS policy kas-registry create --uri "$URI" -r "$REMOTE_KEY" -n "$NAME" --json)
     ID=$(echo "$CREATED" | jq -r '.id')
-    run_otdfctl_kasr update --id "$ID" -u "https://newuri.com" -n "newer-name" --public-key-remote "$REMOTE_KEY" --json
+    run_otdfctl_kasr update --id "$ID" -u "https://newuri.com" -n "newer-name" -c '"$CACHED_KEY"' --json
         assert_output --partial "$ID"
         assert_output --partial "https://newuri.com"
-        assert_output --partial "$REMOTE_KEY"
+        assert_output --partial "kid"
+        assert_output --partial "pem"
+        assert_output --partial "alg"
         assert_output --partial "newer-name"
-        assert_output --partial "uri"
-        refute_output --partial "pem"
         refute_output --partial "$NAME"
-        refute_output --partial "cached"
+        refute_output --partial "$URI"
+        refute_output --partial "remote"
+        refute_output --partial "$REMOTE_KEY"
 }
 
 @test "update registered KAS with invalid URI - fails" {
@@ -143,7 +161,7 @@ teardown() {
     )
 
     for URI in "${BAD_URIS[@]}"; do
-        run_otdfctl_kasr update -i "$ID" --uri "$URI"
+        run_otdfctl_kasr update -i "$ID" -r "$REMOTE_KEY" --uri "$URI"
             assert_failure
             assert_output --partial "$ID"
             assert_output --partial "Failed to update Registered KAS entry"
@@ -164,7 +182,7 @@ teardown() {
     )
 
     for NAME in "${BAD_NAMES[@]}"; do
-        run_otdfctl_kasr update --name "$NAME" -r "$REMOTE_KEY" --id "$ID"
+        run_otdfctl_kasr update -c '"$CACHED_KEY"' --id "$ID" --name "$NAME"
             assert_failure
             assert_output --partial "Failed to update Registered KAS"
             assert_output --partial "name: "
