@@ -281,6 +281,7 @@ func init() {
 		listCmd.GetDocFlag("state").Default,
 		listCmd.GetDocFlag("state").Description,
 	)
+	injectListPaginationFlags(listCmd)
 
 	createDoc := man.Docs.GetCommand("policy/attributes/namespaces/create",
 		man.WithRun(policy_createAttributeNamespace),

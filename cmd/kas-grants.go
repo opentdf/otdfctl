@@ -304,6 +304,8 @@ func init() {
 		listCmd.GetDocFlag("kas").Default,
 		listCmd.GetDocFlag("kas").Description,
 	)
+	injectListPaginationFlags(listCmd)
+	
 	cmd := man.Docs.GetCommand("policy/kas-grants",
 		man.WithSubcommands(assignCmd, unassignCmd, listCmd),
 	)

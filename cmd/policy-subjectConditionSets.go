@@ -340,6 +340,7 @@ func init() {
 	listDoc := man.Docs.GetCommand("policy/subject-condition-sets/list",
 		man.WithRun(policy_listSubjectConditionSets),
 	)
+	injectListPaginationFlags(listDoc)
 
 	updateDoc := man.Docs.GetCommand("policy/subject-condition-sets/update",
 		man.WithRun(policy_updateSubjectConditionSet),

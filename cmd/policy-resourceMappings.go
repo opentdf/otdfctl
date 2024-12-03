@@ -189,6 +189,7 @@ func init() {
 	listDoc := man.Docs.GetCommand("policy/resource-mappings/list",
 		man.WithRun(policy_listResourceMappings),
 	)
+	injectListPaginationFlags(listDoc)
 
 	updateDoc := man.Docs.GetCommand("policy/resource-mappings/update",
 		man.WithRun(policy_updateResourceMapping),

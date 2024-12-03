@@ -268,6 +268,7 @@ func init() {
 	listDoc := man.Docs.GetCommand("policy/kas-registry/list",
 		man.WithRun(policy_listKeyAccessRegistries),
 	)
+	injectListPaginationFlags(listDoc)
 
 	createDoc := man.Docs.GetCommand("policy/kas-registry/create",
 		man.WithRun(policy_createKeyAccessRegistry),

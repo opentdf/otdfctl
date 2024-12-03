@@ -18,7 +18,11 @@ import (
 // devCmd is the command for playground-style development
 var devCmd = man.Docs.GetCommand("dev")
 
-var metadataLabels []string
+var (
+	metadataLabels        []string
+	defaultListFlagLimit  int32 = 300
+	defaultListFlagOffset int32 = 0
+)
 
 func dev_designSystem(cmd *cobra.Command, args []string) {
 	fmt.Print("Design system\n=============\n\n")
@@ -114,6 +118,22 @@ func injectLabelFlags(cmd *cobra.Command, isUpdate bool) {
 	if isUpdate {
 		cmd.Flags().BoolVar(&forceReplaceMetadataLabels, "force-replace-labels", false, "Destructively replace entire set of existing metadata 'labels' with any provided to this command")
 	}
+}
+
+// Adds reusable limit/offset flags to a Policy LIST command
+func injectListPaginationFlags(listDoc *man.Doc) {
+	listDoc.Flags().Int32P(
+		listDoc.GetDocFlag("limit").Name,
+		listDoc.GetDocFlag("limit").Shorthand,
+		defaultListFlagLimit,
+		listDoc.GetDocFlag("limit").Description,
+	)
+	listDoc.Flags().Int32P(
+		listDoc.GetDocFlag("offset").Name,
+		listDoc.GetDocFlag("offset").Shorthand,
+		defaultListFlagOffset,
+		listDoc.GetDocFlag("offset").Description,
+	)
 }
 
 // Read bytes from stdin without blocking by checking size first

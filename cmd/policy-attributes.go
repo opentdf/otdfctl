@@ -349,6 +349,7 @@ func init() {
 		listDoc.GetDocFlag("state").Default,
 		listDoc.GetDocFlag("state").Description,
 	)
+	injectListPaginationFlags(listDoc)
 
 	// Update an attribute
 	updateDoc := man.Docs.GetCommand("policy/attributes/update",

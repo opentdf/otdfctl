@@ -264,6 +264,7 @@ func init() {
 		listCmd.GetDocFlag("state").Default,
 		listCmd.GetDocFlag("state").Description,
 	)
+	injectListPaginationFlags(listCmd)
 
 	updateCmd := man.Docs.GetCommand("policy/attributes/values/update",
 		man.WithRun(policy_updateAttributeValue),

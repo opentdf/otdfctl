@@ -353,6 +353,7 @@ func init() {
 	listDoc := man.Docs.GetCommand("policy/subject-mappings/list",
 		man.WithRun(policy_listSubjectMappings),
 	)
+	injectListPaginationFlags(listDoc)
 
 	createDoc := man.Docs.GetCommand("policy/subject-mappings/create",
 		man.WithRun(policy_createSubjectMapping),
