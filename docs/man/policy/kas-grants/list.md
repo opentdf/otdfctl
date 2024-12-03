@@ -12,10 +12,10 @@ command:
       description: The optional ID or URI of a KAS to filter the list
     - name: limit
       shorthand: l
-      description: Limit retrieved count (default set by platform if not provided)
+      description: Limit retrieved count (default 300 if not provided)
     - name: offset
       shorthand: o
-      description: Offset quantity from start of the list (page)
+      description: Offset (page) quantity from start of the list
 ---
 
 List the Grants of Registered Key Access Servers (KASes) to attribute namespaces, definitions,

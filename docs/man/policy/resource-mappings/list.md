@@ -7,10 +7,10 @@ command:
   flags:
     - name: limit
       shorthand: l
-      description: Limit retrieved count (default set by platform if not provided)
+      description: Limit retrieved count (default 300 if not provided)
     - name: offset
       shorthand: o
-      description: Offset quantity from start of the list (page)
+      description: Offset (page) quantity from start of the list
 ---
 
 For more information about resource mappings, see the `resource-mappings` subcommand.

@@ -15,10 +15,10 @@ command:
       default: active
     - name: limit
       shorthand: l
-      description: Limit retrieved count (default set by platform if not provided)
+      description: Limit retrieved count (default 300 if not provided)
     - name: offset
       shorthand: o
-      description: Offset quantity from start of the list (page)
+      description: Offset (page) quantity from start of the list
 ---
 
 By default, the list will only provide `active` attributes if unspecified, but the filter can be controlled with the `--state` flag.
