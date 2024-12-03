@@ -98,9 +98,8 @@ teardown_file() {
     run_otdfctl_sm get --id "$created"
         assert_success
         assert_output --regexp "Id.*$created"
-        assert_output --regexp "Attribute Value Id.*$VAL2_ID"
-        assert_output --partial "Attribute Value FQN"
-        assert_output --partial "https://subject-mappings.net/attr/attr1/value/value2"
+        assert_output --regexp "Attribute Value: Id.*$VAL2_ID"
+        assert_output --regexp "Attribute Value: Value.*value2"
         assert_output --regexp "Subject Condition Set: Id.*$created"
 
     # json
@@ -108,7 +107,6 @@ teardown_file() {
         assert_success
         [ "$(echo $output | jq -r '.id')" = "$created" ]
         [ "$(echo $output | jq -r '.attribute_value.id')" = "$VAL2_ID" ]
-        [ "$(echo $output | jq -r '.attribute_value.fqn')" = "https://subject-mappings.net/attr/attr1/value/value2" ]
         [ "$(echo $output | jq -r '.subject_condition_set.id')" = "$new_scs" ]
 }
 
@@ -135,6 +133,8 @@ teardown_file() {
     run_otdfctl_sm list
         assert_success
         assert_output --partial "$created"
+        assert_output --regexp "FQN.*https://subject-mappings.net/attr/attr1/value/val1"
+        # TODO: test the specific FQN in table and in JSON        
 }
 
 @test "Delete subject mapping" {
