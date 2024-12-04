@@ -135,7 +135,7 @@ teardown_file() {
   run_otdfctl_ns deactivate "$NS_ID_FLAG" --force
   assert_success
   assert_line --regexp "Id.*$NS_ID"
-  assert_line --regexp "Id.*$NS_NAME_UPDATE"
+  assert_line --regexp "Name.*$NS_NAME_UPDATE"
 }
 
 @test "List namespaces - when inactive" {
@@ -177,7 +177,7 @@ teardown_file() {
   run_otdfctl_ns unsafe delete "$NS_ID_FLAG" --force
   assert_success
   assert_line --regexp "Id.*$NS_ID"
-  assert_line --regexp "Id.*$NS_NAME_UPDATE"
+  assert_line --regexp "Name.*$NS_NAME_UPDATE"
 }
 
 @test "List namespaces - when deleted" {
