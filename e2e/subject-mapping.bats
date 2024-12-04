@@ -100,7 +100,7 @@ teardown_file() {
         assert_line --regexp "Id.*$created"
         assert_line --regexp "Attribute Value: Id.*$VAL2_ID"
         assert_line --regexp "Attribute Value: Value.*value2"
-        assert_line --regexp "Subject Condition Set: Id.*$created"
+        assert_line --regexp "Subject Condition Set: Id.*$new_scs"
 
     # json
     run_otdfctl_sm get --id "$created" --json
