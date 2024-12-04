@@ -91,7 +91,10 @@ func policy_listAttributes(cmd *cobra.Command, args []string) {
 	defer h.Close()
 
 	state := cli.GetState(cmd)
-	attrs, err := h.ListAttributes(state)
+	limit := c.Flags.GetRequiredInt32("limit")
+	offset := c.Flags.GetRequiredInt32("offset")
+
+	attrs, page, err := h.ListAttributes(state, limit, offset)
 	if err != nil {
 		cli.ExitWithError("Failed to list attributes", err)
 	}
@@ -124,6 +127,7 @@ func policy_listAttributes(cmd *cobra.Command, args []string) {
 	}
 	t = t.WithRows(rows)
 	HandleSuccess(cmd, "", t, attrs)
+	printListPaginationTable(page)
 }
 
 func policy_deactivateAttribute(cmd *cobra.Command, args []string) {

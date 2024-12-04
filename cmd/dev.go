@@ -12,6 +12,7 @@ import (
 	"github.com/opentdf/otdfctl/pkg/config"
 	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/opentdf/platform/protocol/go/common"
+	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/spf13/cobra"
 )
 
@@ -61,6 +62,19 @@ func renderDSTable() string {
 
 func renderDSMessages() string {
 	return cli.SuccessMessage("Success message") + "\n" + cli.ErrorMessage("Error message", nil)
+}
+
+func printListPaginationTable(p *policy.PageResponse) {
+	rows := [][]string{
+		{"Current Offset", fmt.Sprintf("%d", p.GetCurrentOffset())},
+	}
+	if p.GetNextOffset() > 0 {
+		rows = append(rows, []string{"Next Offset", fmt.Sprintf("%d", p.GetNextOffset())})
+	}
+	rows = append(rows, []string{"Total", fmt.Sprintf("%d", p.GetTotal())})
+	for _, r := range rows {
+		fmt.Printf("%-20s %s\n", r[0], r[1])
+	}
 }
 
 func getMetadataRows(m *common.Metadata) [][]string {

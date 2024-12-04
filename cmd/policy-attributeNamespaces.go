@@ -45,7 +45,10 @@ func policy_listAttributeNamespaces(cmd *cobra.Command, args []string) {
 	defer h.Close()
 
 	state := cli.GetState(cmd)
-	list, err := h.ListNamespaces(state)
+	limit := c.Flags.GetRequiredInt32("limit")
+	offset := c.Flags.GetRequiredInt32("offset")
+
+	list, page, err := h.ListNamespaces(state, limit, offset)
 	if err != nil {
 		cli.ExitWithError("Failed to list namespaces", err)
 	}
@@ -73,6 +76,7 @@ func policy_listAttributeNamespaces(cmd *cobra.Command, args []string) {
 	}
 	t = t.WithRows(rows)
 	HandleSuccess(cmd, "", t, list)
+	printListPaginationTable(page)
 }
 
 func policy_createAttributeNamespace(cmd *cobra.Command, args []string) {

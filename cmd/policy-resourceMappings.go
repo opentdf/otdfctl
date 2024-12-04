@@ -73,7 +73,10 @@ func policy_listResourceMappings(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
-	rmList, err := h.ListResourceMappings()
+	limit := c.Flags.GetRequiredInt32("limit")
+	offset := c.Flags.GetRequiredInt32("offset")
+
+	rmList, page, err := h.ListResourceMappings(limit, offset)
 	if err != nil {
 		cli.ExitWithError("Failed to list resource mappings", err)
 	}
@@ -102,6 +105,7 @@ func policy_listResourceMappings(cmd *cobra.Command, args []string) {
 	}
 	t = t.WithRows(rows)
 	HandleSuccess(cmd, "", t, rmList)
+	printListPaginationTable(page)
 }
 
 func policy_updateResourceMapping(cmd *cobra.Command, args []string) {

@@ -64,7 +64,10 @@ func policy_listSubjectMappings(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
-	list, err := h.ListSubjectMappings()
+	limit := c.Flags.GetRequiredInt32("limit")
+	offset := c.Flags.GetRequiredInt32("offset")
+
+	list, page, err := h.ListSubjectMappings(limit, offset)
 	if err != nil {
 		cli.ExitWithError("Failed to get subject mappings", err)
 	}
@@ -99,6 +102,7 @@ func policy_listSubjectMappings(cmd *cobra.Command, args []string) {
 	}
 	t = t.WithRows(rows)
 	HandleSuccess(cmd, "", t, list)
+	printListPaginationTable(page)
 }
 
 func policy_createSubjectMapping(cmd *cobra.Command, args []string) {

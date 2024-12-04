@@ -11,7 +11,7 @@ import (
 
 type AttributeList struct {
 	list list.Model
-	sdk  handlers.Handler
+	h    handlers.Handler
 }
 
 type AttributeItem struct {
@@ -31,10 +31,14 @@ func (m AttributeItem) Description() string {
 	return m.id
 }
 
-func InitAttributeList(id string, sdk handlers.Handler) (tea.Model, tea.Cmd) {
+func InitAttributeList(id string, h handlers.Handler) (tea.Model, tea.Cmd) {
 	l := list.New([]list.Item{}, list.NewDefaultDelegate(), constants.WindowSize.Width, constants.WindowSize.Height)
-	// TODO: handle and return error view
-	res, _ := sdk.ListAttributes(common.ActiveStateEnum_ACTIVE_STATE_ENUM_ANY)
+	// TODO: handle and return error view and use real command flags limit/offset
+	var (
+		limit  int32 = 100
+		offset int32 = 0
+	)
+	res, _, _ := h.ListAttributes(common.ActiveStateEnum_ACTIVE_STATE_ENUM_ANY, limit, offset)
 	var attrs []list.Item
 	selectIdx := 0
 	for i, attr := range res {
@@ -56,7 +60,7 @@ func InitAttributeList(id string, sdk handlers.Handler) (tea.Model, tea.Cmd) {
 	l.Title = "Attributes"
 	l.SetItems(attrs)
 	l.Select(selectIdx)
-	m := AttributeList{sdk: sdk, list: l}
+	m := AttributeList{h: h, list: l}
 	return m.Update(WindowMsg())
 }
 
@@ -89,7 +93,7 @@ func (m AttributeList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c", "q":
 			return m, tea.Quit
 		case "ctrl+[", "backspace":
-			am, _ := InitAppMenu(m.sdk)
+			am, _ := InitAppMenu(m.h)
 			// make enum for Attributes idx in AppMenu
 			am.list.Select(0)
 			return am.Update(WindowMsg())
@@ -97,7 +101,7 @@ func (m AttributeList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// create new attribute
 		// return InitAttributeView(m.list.Items(), len(m.list.Items()))
 		case "enter", "e":
-			return InitAttributeView(m.list.Items()[m.list.Index()].(AttributeItem).id, m.sdk)
+			return InitAttributeView(m.list.Items()[m.list.Index()].(AttributeItem).id, m.h)
 			// case "ctrl+d":
 			// 	m.list.RemoveItem(m.list.Index())
 			// 	newIndex := m.list.Index() - 1

@@ -162,6 +162,8 @@ func policy_listKasGrants(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 	kasF := c.Flags.GetOptionalString("kas")
+	limit := c.Flags.GetRequiredInt32("limit")
+	offset := c.Flags.GetRequiredInt32("offset")
 	var (
 		kasID  string
 		kasURI string
@@ -177,7 +179,7 @@ func policy_listKasGrants(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	grants, err := h.ListKasGrants(cmd.Context(), kasID, kasURI)
+	grants, page, err := h.ListKasGrants(cmd.Context(), kasID, kasURI, limit, offset)
 	if err != nil {
 		cli.ExitWithError("Failed to list assigned KAS Grants", err)
 	}
@@ -229,6 +231,7 @@ func policy_listKasGrants(cmd *cobra.Command, args []string) {
 	// with no individual ID.
 	cmd.Use = ""
 	HandleSuccess(cmd, "", t, grants)
+	printListPaginationTable(page)
 }
 
 func init() {

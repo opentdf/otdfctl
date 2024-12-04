@@ -143,7 +143,10 @@ func policy_listSubjectConditionSets(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
-	scsList, err := h.ListSubjectConditionSets()
+	limit := c.Flags.GetRequiredInt32("limit")
+	offset := c.Flags.GetRequiredInt32("offset")
+
+	scsList, page, err := h.ListSubjectConditionSets(limit, offset)
 	if err != nil {
 		cli.ExitWithError("Error listing subject condition sets", err)
 	}
@@ -172,6 +175,7 @@ func policy_listSubjectConditionSets(cmd *cobra.Command, args []string) {
 	}
 	t = t.WithRows(rows)
 	HandleSuccess(cmd, "", t, scsList)
+	printListPaginationTable(page)
 }
 
 func policy_updateSubjectConditionSet(cmd *cobra.Command, args []string) {

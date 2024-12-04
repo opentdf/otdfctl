@@ -53,9 +53,13 @@ func policy_listAttributeValue(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
 	defer h.Close()
+
 	attrId := c.FlagHelper.GetRequiredID("attribute-id")
 	state := cli.GetState(cmd)
-	vals, err := h.ListAttributeValues(attrId, state)
+	limit := c.Flags.GetRequiredInt32("limit")
+	offset := c.Flags.GetRequiredInt32("offset")
+
+	vals, page, err := h.ListAttributeValues(attrId, state, limit, offset)
 	if err != nil {
 		cli.ExitWithError("Failed to list attribute values", err)
 	}
@@ -81,6 +85,7 @@ func policy_listAttributeValue(cmd *cobra.Command, args []string) {
 	}
 	t = t.WithRows(rows)
 	HandleSuccess(cmd, "", t, vals)
+	printListPaginationTable(page)
 }
 
 func policy_updateAttributeValue(cmd *cobra.Command, args []string) {
