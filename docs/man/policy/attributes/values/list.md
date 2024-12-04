@@ -19,7 +19,7 @@ command:
       default: active
     - name: limit
       shorthand: l
-      description: Limit retrieved count (default 300 if not provided)
+      description: Limit retrieved count
     - name: offset
       shorthand: o
       description: Offset (page) quantity from start of the list
