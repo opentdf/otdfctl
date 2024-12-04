@@ -110,6 +110,8 @@ teardown_file() {
         assert_output --partial "$RM1_ID"
         assert_output --partial "$VAL1_ID"
         assert_output --partial "valueone, valuefirst, first"
+        assert_output --partial "Total"
+        assert_output --regexp "Current Offset       0"
 }
 
 @test "Delete resource mapping" {

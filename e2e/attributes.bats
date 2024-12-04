@@ -111,14 +111,20 @@ teardown_file() {
   run_otdfctl_attr list
   assert_success
   assert_output --partial "$ATTR_ID"
+  assert_output --partial "Total"
+  assert_output --regexp "Current Offset       0"
 
   run_otdfctl_attr list --state active
   assert_success
   assert_output --partial "$ATTR_ID"
+  assert_output --partial "Total"
+  assert_output --regexp "Current Offset       0"
 
   run_otdfctl_attr list --state inactive
   assert_success
   refute_output --partial "$ATTR_ID"
+  assert_output --partial "Total"
+  assert_output --regexp "Current Offset       0"
 }
 
 @test "Deactivate then unsafe reactivate an attribute definition" {

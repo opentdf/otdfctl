@@ -106,23 +106,25 @@ teardown_file() {
   CREATED_ID=$(./otdfctl $HOST $WITH_CREDS policy scs create --subject-sets "$SCS_2" -l fromfile=false --json | jq -r '.id')
 
   run_otdfctl_scs list
-  assert_success
-  assert_output --partial "$CREATED_ID"
+    assert_success
+    assert_output --partial "$CREATED_ID"
+    assert_output --partial "Total"
+    assert_output --regexp "Current Offset       0"
 
   run_otdfctl_scs list --json
-  assert_success
-  assert_output --partial ".department"
-  assert_output --partial ".emailAddress"
-  assert_output --partial ".team.name"
-  assert_output --partial ".org.name"
-  [ $(echo "$output" | jq -r '.[-1].subject_sets[0].condition_groups[0].conditions[0].subject_external_values[0]') = "piedpiper.com" ]
-  [ $(echo "$output" | jq -r '.[-1].id') = "$CREATED_ID" ]
-  [ $(echo "$output" | jq -r '.[-1].metadata.labels.fromfile') = "false" ]
+    assert_success
+    assert_output --partial ".department"
+    assert_output --partial ".emailAddress"
+    assert_output --partial ".team.name"
+    assert_output --partial ".org.name"
+    [ $(echo "$output" | jq -r '.[-1].subject_sets[0].condition_groups[0].conditions[0].subject_external_values[0]') = "piedpiper.com" ]
+    [ $(echo "$output" | jq -r '.[-1].id') = "$CREATED_ID" ]
+    [ $(echo "$output" | jq -r '.[-1].metadata.labels.fromfile') = "false" ]
 
   # validate deletion
   run_delete_scs "$CREATED_ID"
-  assert_success
-  assert_output --partial "$CREATED_ID"
+    assert_success
+    assert_output --partial "$CREATED_ID"
 }
 
 @test "Prune SCS - deletes unmapped SCS alone" {

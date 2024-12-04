@@ -133,6 +133,8 @@ teardown_file() {
     run_otdfctl_sm list
         assert_success
         assert_output --partial "$created"
+        assert_output --partial "Total"
+        assert_output --regexp "Current Offset       0"
 
     run_otdfctl_sm list --json
         [ "$(echo $output | jq -r ".[] | select(.id == \"$created\") | .attribute_value.fqn")"  == "https://subject-mappings.net/attr/attr1/value/val1" ]     

@@ -140,10 +140,12 @@ teardown_file() {
       # unfiltered
         # json
           run_otdfctl_kasg list --json
-          refute_output --partial "$ATTR_ID"
+            refute_output --partial "$ATTR_ID"
         # table
           run_otdfctl_kasg list
-          refute_output --regexp "$KAS_URI.*Definition.*$ATTR_ID"
+            refute_output --regexp "$KAS_URI.*Definition.*$ATTR_ID"
+            assert_output --partial "Total"
+            assert_output --regexp "Current Offset       0"
 }
 
 @test "value: assign grant then unassign it" {

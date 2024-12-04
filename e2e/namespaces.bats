@@ -94,10 +94,13 @@ teardown_file() {
   echo $output | jq --arg id "$NS_ID" '.[] | select(.[]? | type == "object" and .id == $id)'
 
   run_otdfctl_ns list --state inactive --json
-  echo $output | refute_output --partial "$NS_ID"
+  refute_output --partial "$NS_ID"
 
   run_otdfctl_ns list --state active
-  echo $output | assert_output --partial "$NS_ID"
+  assert_output --partial "$NS_ID"
+  assert_output --partial "Total"
+  assert_output --regexp "Current Offset       0"
+  
 }
 
 @test "Update namespace - Safe" {
