@@ -45,7 +45,7 @@ teardown_file() {
   assert_output --partial "SubjectSets"
   assert_output --partial ".org.name"
   assert_output --partial "SUBJECT_MAPPING_OPERATOR_ENUM_IN"
-  assert_output --regexp "fromfile: true"
+  assert_line --regexp "fromfile: true"
 }
 
 @test "Create a Subject Condition Set (SCS) - from flag value JSON" {
@@ -61,7 +61,7 @@ teardown_file() {
   CREATED_ID=$(./otdfctl $HOST $WITH_CREDS policy scs add -s "$SCS_3" -l hello=world --json | jq -r '.id')
   run_otdfctl_scs get --id "$CREATED_ID"
   assert_success
-  assert_output --regexp "Id.*$CREATED_ID"
+  assert_line --regexp "Id.*$CREATED_ID"
   assert_output --partial "Labels"
   assert_output --partial "hello: world"
   assert_output --partial "Created At"
@@ -109,7 +109,7 @@ teardown_file() {
     assert_success
     assert_output --partial "$CREATED_ID"
     assert_output --partial "Total"
-    assert_output --regexp "Current Offset       0"
+    assert_line --regexp "Current Offset.*0"
 
   run_otdfctl_scs list --json
     assert_success

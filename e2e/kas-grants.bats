@@ -55,9 +55,9 @@ teardown_file() {
           assert_output --partial "$NS_ID"
         # table
           run_otdfctl_kasg list --kas $KAS_ID
-          assert_output --regexp "$KAS_URI.*Namespace.*$NS_ID"
+          assert_line --regexp "$KAS_URI.*Namespace.*$NS_ID"
           run_otdfctl_kasg list --kas $KAS_URI
-          assert_output --regexp "$KAS_URI.*Namespace.*$NS_ID"
+          assert_line --regexp "$KAS_URI.*Namespace.*$NS_ID"
 
 
       # unfiltered (all KASes)
@@ -66,7 +66,7 @@ teardown_file() {
           assert_output --partial "$NS_ID"
         # table
           run_otdfctl_kasg list
-          assert_output --regexp "$KAS_URI.*Namespace.*$NS_ID"
+          assert_line --regexp "$KAS_URI.*Namespace.*$NS_ID"
 
     # unassign the namespace grant
     run_otdfctl_kasg unassign $NS_ID_FLAG $KAS_ID_FLAG --force
@@ -113,16 +113,16 @@ teardown_file() {
           assert_output --partial "$ATTR_ID"
         # table
           run_otdfctl_kasg list --kas $KAS_URI
-          assert_output --regexp "$KAS_URI.*Definition.*$ATTR_ID"
+          assert_line --regexp "$KAS_URI.*Definition.*$ATTR_ID"
           run_otdfctl_kasg list --kas $KAS_ID
-          assert_output --regexp "$KAS_URI.*Definition.*$ATTR_ID"
+          assert_line --regexp "$KAS_URI.*Definition.*$ATTR_ID"
       # unfiltered
         # json
           run_otdfctl_kasg list --json
           assert_output --partial "$ATTR_ID"
         # table
           run_otdfctl_kasg list
-          assert_output --regexp "$KAS_URI.*Definition.*$ATTR_ID"
+          assert_line --regexp "$KAS_URI.*Definition.*$ATTR_ID"
 
     run_otdfctl_kasg unassign $ATTR_ID_FLAG $KAS_ID_FLAG --force
       assert_output --partial "SUCCESS"
@@ -145,7 +145,7 @@ teardown_file() {
           run_otdfctl_kasg list
             refute_output --regexp "$KAS_URI.*Definition.*$ATTR_ID"
             assert_output --partial "Total"
-            assert_output --regexp "Current Offset       0"
+            assert_line --regexp "Current Offset.*0"
 }
 
 @test "value: assign grant then unassign it" {
@@ -166,9 +166,9 @@ teardown_file() {
             assert_output --partial "$VAL_ID"
         # table
           run_otdfctl_kasg list --kas $KAS_ID
-            assert_output --regexp "$KAS_URI.*Value.*$VAL_ID"
+            assert_line --regexp "$KAS_URI.*Value.*$VAL_ID"
           run_otdfctl_kasg list --kas $KAS_URI
-            assert_output --regexp "$KAS_URI.*Value.*$VAL_ID"
+            assert_line --regexp "$KAS_URI.*Value.*$VAL_ID"
 
       # unfiltered
         # json
@@ -176,7 +176,7 @@ teardown_file() {
             assert_output --partial "$VAL_ID"
         # table
           run_otdfctl_kasg list
-            assert_output --regexp "$KAS_URI.*Value.*$VAL_ID"
+            assert_line --regexp "$KAS_URI.*Value.*$VAL_ID"
 
     run_otdfctl_kasg unassign $VAL_ID_FLAG $KAS_ID_FLAG --force
       assert_output --partial "SUCCESS"

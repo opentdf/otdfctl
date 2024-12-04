@@ -33,10 +33,10 @@ teardown_file() {
 @test "Create a namespace - Good" {
   run_otdfctl_ns create --name throwaway.test
   assert_output --partial "SUCCESS"
-  assert_output --regexp "Name.*throwaway.test"
+  assert_line --regexp "Name.*throwaway.test"
   assert_output --partial "Id"
   assert_output --partial "Created At"
-  assert_output --regexp "Updated At"
+  assert_line --partial "Updated At"
 
   # cleanup
   created_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
@@ -66,8 +66,8 @@ teardown_file() {
 @test "Get a namespace - Good" {
   run_otdfctl_ns get "$NS_ID_FLAG"
   assert_success
-  assert_output --regexp "Id.*$NS_ID"
-  assert_output --regexp "Name.*$NS_NAME"
+  assert_line --regexp "Id.*$NS_ID"
+  assert_line --regexp "Name.*$NS_NAME"
 
   run_otdfctl_ns get "$NS_ID_FLAG" --json
   assert_success
@@ -99,7 +99,7 @@ teardown_file() {
   run_otdfctl_ns list --state active
   assert_output --partial "$NS_ID"
   assert_output --partial "Total"
-  assert_output --regexp "Current Offset       0"
+  assert_line --regexp "Current Offset.*0"
   
 }
 
@@ -107,17 +107,17 @@ teardown_file() {
   # extend labels
   run_otdfctl_ns update "$NS_ID_FLAG" -l key=value --label test=true
   assert_success
-  assert_output --regexp "Id.*$NS_ID"
-  assert_output --regexp "Name.*$NS_NAME"
-  assert_output --regexp "Labels.*key: value"
-  assert_output --regexp "Labels.*test: true"
+  assert_line --regexp "Id.*$NS_ID"
+  assert_line --regexp "Name.*$NS_NAME"
+  assert_line --regexp "Labels.*key: value"
+  assert_line --regexp "Labels.*test: true"
 
   # force replace labels
   run_otdfctl_ns update "$NS_ID_FLAG" -l key=other --force-replace-labels
   assert_success
-  assert_output --regexp "Id.*$NS_ID"
-  assert_output --regexp "Name.*$NS_NAME"
-  assert_output --regexp "Labels.*key: other"
+  assert_line --regexp "Id.*$NS_ID"
+  assert_line --regexp "Name.*$NS_NAME"
+  assert_line --regexp "Labels.*key: other"
   refute_output --regexp "Labels.*key: value"
   refute_output --regexp "Labels.*test: true"
 }
@@ -125,17 +125,17 @@ teardown_file() {
 @test "Update namespace - Unsafe" {
   run_otdfctl_ns unsafe update "$NS_ID_FLAG" -n "$NS_NAME_UPDATE" --force
   assert_success
-  assert_output --regexp "Id.*$NS_ID"
+  assert_line --regexp "Id.*$NS_ID"
   run_otdfctl_ns get "$NS_ID_FLAG"
-  assert_output --regexp "Name.*$NS_NAME_UPDATE"
+  assert_line --regexp "Name.*$NS_NAME_UPDATE"
   refute_output --regexp "Name.*$NS_NAME"
 }
 
 @test "Deactivate namespace" {
   run_otdfctl_ns deactivate "$NS_ID_FLAG" --force
   assert_success
-  assert_output --regexp "Id.*$NS_ID"
-  assert_output --regexp "Id.*$NS_NAME_UPDATE"
+  assert_line --regexp "Id.*$NS_ID"
+  assert_line --regexp "Id.*$NS_NAME_UPDATE"
 }
 
 @test "List namespaces - when inactive" {
@@ -159,7 +159,7 @@ teardown_file() {
 @test "Unsafe reactivate namespace" {
   run_otdfctl_ns unsafe reactivate "$NS_ID_FLAG" --force
   assert_success
-  assert_output --regexp "Id.*$NS_ID"
+  assert_line --regexp "Id.*$NS_ID"
 }
 
 @test "List namespaces - when reactivated" {
@@ -176,8 +176,8 @@ teardown_file() {
 @test "Unsafe delete namespace" {
   run_otdfctl_ns unsafe delete "$NS_ID_FLAG" --force
   assert_success
-  assert_output --regexp "Id.*$NS_ID"
-  assert_output --regexp "Id.*$NS_NAME_UPDATE"
+  assert_line --regexp "Id.*$NS_ID"
+  assert_line --regexp "Id.*$NS_NAME_UPDATE"
 }
 
 @test "List namespaces - when deleted" {

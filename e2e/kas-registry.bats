@@ -203,5 +203,5 @@ teardown() {
 
     run_otdfctl_kasr list
         assert_output --partial "Total"
-        assert_output --regexp "Current Offset       0"
+        assert_line --regexp "Current Offset.*0"
 }

@@ -44,7 +44,7 @@ teardown_file() {
         assert_output --partial '"Standard":1'
         assert_output --partial '"Standard":2'
         assert_output --partial ".team.name"
-        assert_output --regexp "Attribute Value Id.*$VAL1_ID"
+        assert_line --regexp "Attribute Value Id.*$VAL1_ID"
 
     # scs is required
     run_otdfctl_sm create --attribute-value-id "$VAL2_ID" -s TRANSMIT
@@ -97,10 +97,10 @@ teardown_file() {
     # table
     run_otdfctl_sm get --id "$created"
         assert_success
-        assert_output --regexp "Id.*$created"
-        assert_output --regexp "Attribute Value: Id.*$VAL2_ID"
-        assert_output --regexp "Attribute Value: Value.*value2"
-        assert_output --regexp "Subject Condition Set: Id.*$created"
+        assert_line --regexp "Id.*$created"
+        assert_line --regexp "Attribute Value: Id.*$VAL2_ID"
+        assert_line --regexp "Attribute Value: Value.*value2"
+        assert_line --regexp "Subject Condition Set: Id.*$created"
 
     # json
     run_otdfctl_sm get --id "$created" --json
@@ -134,7 +134,7 @@ teardown_file() {
         assert_success
         assert_output --partial "$created"
         assert_output --partial "Total"
-        assert_output --regexp "Current Offset       0"
+        assert_line --regexp "Current Offset.*0"
 
     run_otdfctl_sm list --json
         [ "$(echo $output | jq -r ".[] | select(.id == \"$created\") | .attribute_value.fqn")"  == "https://subject-mappings.net/attr/attr1/value/val1" ]     
@@ -145,5 +145,5 @@ teardown_file() {
     # --force to avoid indefinite hang waiting for confirmation
     run_otdfctl_sm delete --id "$first_listed" --force
         assert_success
-        assert_output --regexp "Id.*$first_listed"
+        assert_line --regexp "Id.*$first_listed"
 }
