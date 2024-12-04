@@ -104,8 +104,8 @@ func policy_listResourceMappings(cmd *cobra.Command, args []string) {
 		}))
 	}
 	t = t.WithRows(rows)
+	t = cli.WithListPaginationFooter(t, page)
 	HandleSuccess(cmd, "", t, rmList)
-	printListPaginationTable(page)
 }
 
 func policy_updateResourceMapping(cmd *cobra.Command, args []string) {

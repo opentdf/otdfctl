@@ -126,8 +126,9 @@ func policy_listAttributes(cmd *cobra.Command, args []string) {
 		}))
 	}
 	t = t.WithRows(rows)
-	HandleSuccess(cmd, "", t, attrs)
-	printListPaginationTable(page)
+	footer := cli.WithListPaginationFooter(t, page)
+	HandleSuccess(cmd, "", t, attrs, footer)
+	// cli.WithListPaginationFooter(t, page)
 }
 
 func policy_deactivateAttribute(cmd *cobra.Command, args []string) {

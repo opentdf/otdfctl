@@ -12,7 +12,6 @@ import (
 	"github.com/opentdf/otdfctl/pkg/config"
 	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/opentdf/platform/protocol/go/common"
-	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/spf13/cobra"
 )
 
@@ -64,20 +63,6 @@ func renderDSMessages() string {
 	return cli.SuccessMessage("Success message") + "\n" + cli.ErrorMessage("Error message", nil)
 }
 
-// Prints out the page information in simplified aligned format
-func printListPaginationTable(p *policy.PageResponse) {
-	rows := [][]string{
-		{"Current Offset", fmt.Sprintf("%d", p.GetCurrentOffset())},
-	}
-	if p.GetNextOffset() > 0 {
-		rows = append(rows, []string{"Next Offset", fmt.Sprintf("%d", p.GetNextOffset())})
-	}
-	rows = append(rows, []string{"Total", fmt.Sprintf("%d", p.GetTotal())})
-	for _, r := range rows {
-		fmt.Printf("%-20s %s\n", r[0], r[1])
-	}
-}
-
 func getMetadataRows(m *common.Metadata) [][]string {
 	if m != nil {
 		metadata := cli.ConstructMetadata(m)
@@ -119,12 +104,14 @@ func getMetadataUpdateBehavior() common.MetadataUpdateEnum {
 }
 
 // HandleSuccess prints a success message according to the configured format (styled table or JSON)
-func HandleSuccess(command *cobra.Command, id string, t table.Model, policyObject interface{}) {
+func HandleSuccess(command *cobra.Command, id string, t table.Model, policyObject interface{}, joinable ...table.Model) {
 	c := cli.New(command, []string{})
 	if OtdfctlCfg.Output.Format == config.OutputJSON || configFlagOverrides.OutputFormatJSON {
 		c.ExitWithJSON(policyObject)
 	}
-	cli.PrintSuccessTable(command, id, t)
+	tables := []table.Model{t}
+	tables = append(tables, joinable...)
+	cli.PrintSuccessTable(command, id, tables...)
 }
 
 // Adds reusable create/update label flags to a Policy command and the optional force-replace-labels flag for updates only

@@ -174,8 +174,8 @@ func policy_listSubjectConditionSets(cmd *cobra.Command, args []string) {
 		}))
 	}
 	t = t.WithRows(rows)
+	t = cli.WithListPaginationFooter(t, page)
 	HandleSuccess(cmd, "", t, scsList)
-	printListPaginationTable(page)
 }
 
 func policy_updateSubjectConditionSet(cmd *cobra.Command, args []string) {

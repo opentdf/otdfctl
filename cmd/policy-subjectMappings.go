@@ -101,8 +101,8 @@ func policy_listSubjectMappings(cmd *cobra.Command, args []string) {
 		}))
 	}
 	t = t.WithRows(rows)
+	t = cli.WithListPaginationFooter(t, page)
 	HandleSuccess(cmd, "", t, list)
-	printListPaginationTable(page)
 }
 
 func policy_createSubjectMapping(cmd *cobra.Command, args []string) {

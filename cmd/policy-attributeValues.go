@@ -84,8 +84,8 @@ func policy_listAttributeValue(cmd *cobra.Command, args []string) {
 		}))
 	}
 	t = t.WithRows(rows)
+	t = cli.WithListPaginationFooter(t, page)
 	HandleSuccess(cmd, "", t, vals)
-	printListPaginationTable(page)
 }
 
 func policy_updateAttributeValue(cmd *cobra.Command, args []string) {

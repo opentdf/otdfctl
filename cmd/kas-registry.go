@@ -87,8 +87,8 @@ func policy_listKeyAccessRegistries(cmd *cobra.Command, args []string) {
 		}))
 	}
 	t = t.WithRows(rows)
+	t = cli.WithListPaginationFooter(t, page)
 	HandleSuccess(cmd, "", t, list)
-	printListPaginationTable(page)
 }
 
 func policy_createKeyAccessRegistry(cmd *cobra.Command, args []string) {

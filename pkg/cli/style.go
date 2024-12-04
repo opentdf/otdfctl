@@ -340,7 +340,8 @@ var styleTableBorder = lipgloss.CompleteAdaptiveColor{
 	Dark:  colorIndigo.Background.Light,
 }
 
-var styleTable = lipgloss.NewStyle().
+var styleTable = lipgloss.
+	NewStyle().
 	Foreground(lipgloss.CompleteAdaptiveColor{
 		Light: colorBlack.Foreground.Light,
 		Dark:  colorWhite.Foreground.Dark,
@@ -350,14 +351,16 @@ var styleTable = lipgloss.NewStyle().
 // Text
 
 //lint:ignore U1000 // not used yet
-var styleText = lipgloss.NewStyle().
+var styleText = lipgloss.
+	NewStyle().
 	Foreground(lipgloss.CompleteAdaptiveColor{
 		Light: colorBlack.Foreground.Light,
 		Dark:  colorWhite.Foreground.Dark,
 	})
 
 //lint:ignore U1000 // not used yet
-var styleTextBold = lipgloss.NewStyle().
+var styleTextBold = lipgloss.
+	NewStyle().
 	Foreground(lipgloss.CompleteAdaptiveColor{
 		Light: colorBlack.Foreground.Light,
 		Dark:  colorWhite.Foreground.Dark,
