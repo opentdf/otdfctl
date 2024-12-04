@@ -64,6 +64,7 @@ func renderDSMessages() string {
 	return cli.SuccessMessage("Success message") + "\n" + cli.ErrorMessage("Error message", nil)
 }
 
+// Prints out the page information in simplified aligned format
 func printListPaginationTable(p *policy.PageResponse) {
 	rows := [][]string{
 		{"Current Offset", fmt.Sprintf("%d", p.GetCurrentOffset())},
