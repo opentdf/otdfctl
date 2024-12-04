@@ -39,13 +39,18 @@ func (h *Handler) GetResourceMapping(id string) (*policy.ResourceMapping, error)
 	return res.GetResourceMapping(), nil
 }
 
-func (h *Handler) ListResourceMappings() ([]*policy.ResourceMapping, error) {
-	res, err := h.sdk.ResourceMapping.ListResourceMappings(context.Background(), &resourcemapping.ListResourceMappingsRequest{})
+func (h *Handler) ListResourceMappings(limit, offset int32) ([]*policy.ResourceMapping, *policy.PageResponse, error) {
+	res, err := h.sdk.ResourceMapping.ListResourceMappings(context.Background(), &resourcemapping.ListResourceMappingsRequest{
+		Pagination: &policy.PageRequest{
+			Limit:  limit,
+			Offset: offset,
+		},
+	})
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return res.GetResourceMappings(), nil
+	return res.GetResourceMappings(), res.GetPagination(), nil
 }
 
 // TODO: verify updation behavior

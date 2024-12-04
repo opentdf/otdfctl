@@ -42,12 +42,18 @@ func (h Handler) GetAttribute(id string) (*policy.Attribute, error) {
 	return resp.GetAttribute(), nil
 }
 
-func (h Handler) ListAttributes(state common.ActiveStateEnum) ([]*policy.Attribute, error) {
-	resp, err := h.sdk.Attributes.ListAttributes(h.ctx, &attributes.ListAttributesRequest{State: state})
+func (h Handler) ListAttributes(state common.ActiveStateEnum, limit, offset int32) ([]*policy.Attribute, *policy.PageResponse, error) {
+	resp, err := h.sdk.Attributes.ListAttributes(h.ctx, &attributes.ListAttributesRequest{
+		State: state,
+		Pagination: &policy.PageRequest{
+			Limit:  limit,
+			Offset: offset,
+		},
+	})
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return resp.GetAttributes(), err
+	return resp.GetAttributes(), resp.GetPagination(), nil
 }
 
 // Creates and returns the created attribute
