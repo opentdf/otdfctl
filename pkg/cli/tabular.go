@@ -47,7 +47,7 @@ func getJSONHelper(command string) string {
 	return fmt.Sprintf("Use '%s --json' to see all properties", command)
 }
 
-func PrintSuccessTable(cmd *cobra.Command, id string, joinableTables ...table.Model) {
+func PrintSuccessTable(cmd *cobra.Command, id string, t table.Model) {
 	parent := cmd.Parent()
 	resourceShort := parent.Use
 	resource := parent.Use
@@ -88,18 +88,11 @@ func PrintSuccessTable(cmd *cobra.Command, id string, joinableTables ...table.Mo
 	successMessage := SuccessMessage(msg.verb)
 	jsonDirections := FooterMessage(msg.helper)
 
-	if len(joinableTables) == 0 {
+	ts := t.View()
+	if ts == "" {
 		fmt.Println(lipgloss.JoinVertical(lipgloss.Top, successMessage, jsonDirections))
 		return
 	}
 
-	printable := []string{
-		successMessage,
-	}
-	for _, t := range joinableTables {
-		printable = append(printable, t.View())
-	}
-	printable = append(printable, jsonDirections)
-
-	fmt.Println(lipgloss.JoinVertical(lipgloss.Top, printable...))
+	fmt.Println(lipgloss.JoinVertical(lipgloss.Top, successMessage, ts, jsonDirections))
 }

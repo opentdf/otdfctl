@@ -104,14 +104,12 @@ func getMetadataUpdateBehavior() common.MetadataUpdateEnum {
 }
 
 // HandleSuccess prints a success message according to the configured format (styled table or JSON)
-func HandleSuccess(command *cobra.Command, id string, t table.Model, policyObject interface{}, joinable ...table.Model) {
+func HandleSuccess(command *cobra.Command, id string, t table.Model, policyObject interface{}) {
 	c := cli.New(command, []string{})
 	if OtdfctlCfg.Output.Format == config.OutputJSON || configFlagOverrides.OutputFormatJSON {
 		c.ExitWithJSON(policyObject)
 	}
-	tables := []table.Model{t}
-	tables = append(tables, joinable...)
-	cli.PrintSuccessTable(command, id, tables...)
+	cli.PrintSuccessTable(command, id, t)
 }
 
 // Adds reusable create/update label flags to a Policy command and the optional force-replace-labels flag for updates only
