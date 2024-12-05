@@ -39,8 +39,8 @@ func (h *Handler) GetResourceMapping(id string) (*policy.ResourceMapping, error)
 	return res.GetResourceMapping(), nil
 }
 
-func (h *Handler) ListResourceMappings(limit, offset int32) ([]*policy.ResourceMapping, *policy.PageResponse, error) {
-	res, err := h.sdk.ResourceMapping.ListResourceMappings(context.Background(), &resourcemapping.ListResourceMappingsRequest{
+func (h *Handler) ListResourceMappings(ctx context.Context, limit, offset int32) ([]*policy.ResourceMapping, *policy.PageResponse, error) {
+	res, err := h.sdk.ResourceMapping.ListResourceMappings(ctx, &resourcemapping.ListResourceMappingsRequest{
 		Pagination: &policy.PageRequest{
 			Limit:  limit,
 			Offset: offset,

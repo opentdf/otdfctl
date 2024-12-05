@@ -76,7 +76,7 @@ func policy_listResourceMappings(cmd *cobra.Command, args []string) {
 	limit := c.Flags.GetRequiredInt32("limit")
 	offset := c.Flags.GetRequiredInt32("offset")
 
-	rmList, page, err := h.ListResourceMappings(limit, offset)
+	rmList, page, err := h.ListResourceMappings(cmd.Context(), limit, offset)
 	if err != nil {
 		cli.ExitWithError("Failed to list resource mappings", err)
 	}
