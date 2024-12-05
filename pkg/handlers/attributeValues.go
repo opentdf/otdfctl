@@ -7,12 +7,19 @@ import (
 	"github.com/opentdf/platform/protocol/go/policy/unsafe"
 )
 
-func (h *Handler) ListAttributeValues(attributeId string, state common.ActiveStateEnum) ([]*policy.Value, error) {
-	resp, err := h.sdk.Attributes.ListAttributeValues(h.ctx, &attributes.ListAttributeValuesRequest{AttributeId: attributeId, State: state})
+func (h *Handler) ListAttributeValues(attributeId string, state common.ActiveStateEnum, limit, offset int32) ([]*policy.Value, *policy.PageResponse, error) {
+	resp, err := h.sdk.Attributes.ListAttributeValues(h.ctx, &attributes.ListAttributeValuesRequest{
+		AttributeId: attributeId,
+		State:       state,
+		Pagination: &policy.PageRequest{
+			Limit:  limit,
+			Offset: offset,
+		},
+	})
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return resp.GetValues(), err
+	return resp.GetValues(), resp.GetPagination(), err
 }
 
 // Creates and returns the created value

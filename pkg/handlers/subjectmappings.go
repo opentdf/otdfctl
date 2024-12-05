@@ -22,10 +22,17 @@ func (h Handler) GetSubjectMapping(id string) (*policy.SubjectMapping, error) {
 	return resp.GetSubjectMapping(), err
 }
 
-func (h Handler) ListSubjectMappings() ([]*policy.SubjectMapping, error) {
-	resp, err := h.sdk.SubjectMapping.ListSubjectMappings(h.ctx, &subjectmapping.ListSubjectMappingsRequest{})
-
-	return resp.GetSubjectMappings(), err
+func (h Handler) ListSubjectMappings(limit, offset int32) ([]*policy.SubjectMapping, *policy.PageResponse, error) {
+	resp, err := h.sdk.SubjectMapping.ListSubjectMappings(h.ctx, &subjectmapping.ListSubjectMappingsRequest{
+		Pagination: &policy.PageRequest{
+			Limit:  limit,
+			Offset: offset,
+		},
+	})
+	if err != nil {
+		return nil, nil, err
+	}
+	return resp.GetSubjectMappings(), resp.GetPagination(), err
 }
 
 // Creates and returns the created subject mapping

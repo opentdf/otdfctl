@@ -57,7 +57,10 @@ func policy_listKeyAccessRegistries(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
-	list, err := h.ListKasRegistryEntries()
+	limit := c.Flags.GetRequiredInt32("limit")
+	offset := c.Flags.GetRequiredInt32("offset")
+
+	list, page, err := h.ListKasRegistryEntries(limit, offset)
 	if err != nil {
 		cli.ExitWithError("Failed to list Registered KAS entries", err)
 	}
@@ -84,6 +87,7 @@ func policy_listKeyAccessRegistries(cmd *cobra.Command, args []string) {
 		}))
 	}
 	t = t.WithRows(rows)
+	t = cli.WithListPaginationFooter(t, page)
 	HandleSuccess(cmd, "", t, list)
 }
 
@@ -268,6 +272,7 @@ func init() {
 	listDoc := man.Docs.GetCommand("policy/kas-registry/list",
 		man.WithRun(policy_listKeyAccessRegistries),
 	)
+	injectListPaginationFlags(listDoc)
 
 	createDoc := man.Docs.GetCommand("policy/kas-registry/create",
 		man.WithRun(policy_createKeyAccessRegistry),

@@ -1,6 +1,8 @@
 package cli
 
-import "github.com/charmbracelet/lipgloss"
+import (
+	"github.com/charmbracelet/lipgloss"
+)
 
 func SuccessMessage(msg string) string {
 	return lipgloss.JoinHorizontal(lipgloss.Left, styleSuccessStatusBar.Render("SUCCESS"), msg)

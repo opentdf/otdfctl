@@ -64,10 +64,10 @@ teardown() {
 
 @test "profile create" {
   run_otdfctl profile create test http://localhost:8080
-  assert_output --regexp "Creating profile .* ok"
+  assert_line --regexp "Creating profile .* ok"
 
   run_otdfctl profile create test localhost:8080
-  assert_output --regexp "Failed .* invalid scheme"
+  assert_line --regexp "Failed .* invalid scheme"
 
   # TODO figure out how to test the case where the profile already exists
 }
@@ -90,8 +90,8 @@ teardown() {
   set_test_config "test2" $(set_test_profile "test" "http://localhost:8080") $(set_test_profile "test2" "http://localhost:8081")
   run_otdfctl profile get test
   assert_line --index 8 --regexp "Profile\s+|\s*test\s*"
-  assert_output --regexp "Endpoint\s+|\s*http://localhost:8080"
-  assert_output --regexp "default\s+|\s*false"
+  assert_line --regexp "Endpoint\s+|\s*http://localhost:8080"
+  assert_line --regexp "default\s+|\s*false"
   # TODO check auth
 }
 

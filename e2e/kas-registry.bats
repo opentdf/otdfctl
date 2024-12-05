@@ -195,9 +195,13 @@ teardown() {
     export CREATED=$(./otdfctl $HOST $DEBUG_LEVEL $WITH_CREDS policy kas-registry create --uri "$URI" -c "$CACHED_KEY" -n "$NAME" --json)
     ID=$(echo "$CREATED" | jq -r '.id')
     run_otdfctl_kasr list --json
-    assert_output --partial "$ID"
-    assert_output --partial "uri"
-    assert_output --partial "$URI"
-    assert_output --partial "name"
-    assert_output --partial "$NAME"
+        assert_output --partial "$ID"
+        assert_output --partial "uri"
+        assert_output --partial "$URI"
+        assert_output --partial "name"
+        assert_output --partial "$NAME"
+
+    run_otdfctl_kasr list
+        assert_output --partial "Total"
+        assert_line --regexp "Current Offset.*0"
 }

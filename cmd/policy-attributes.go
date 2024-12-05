@@ -91,7 +91,10 @@ func policy_listAttributes(cmd *cobra.Command, args []string) {
 	defer h.Close()
 
 	state := cli.GetState(cmd)
-	attrs, err := h.ListAttributes(state)
+	limit := c.Flags.GetRequiredInt32("limit")
+	offset := c.Flags.GetRequiredInt32("offset")
+
+	attrs, page, err := h.ListAttributes(state, limit, offset)
 	if err != nil {
 		cli.ExitWithError("Failed to list attributes", err)
 	}
@@ -123,6 +126,7 @@ func policy_listAttributes(cmd *cobra.Command, args []string) {
 		}))
 	}
 	t = t.WithRows(rows)
+	t = cli.WithListPaginationFooter(t, page)
 	HandleSuccess(cmd, "", t, attrs)
 }
 
@@ -349,6 +353,7 @@ func init() {
 		listDoc.GetDocFlag("state").Default,
 		listDoc.GetDocFlag("state").Description,
 	)
+	injectListPaginationFlags(listDoc)
 
 	// Update an attribute
 	updateDoc := man.Docs.GetCommand("policy/attributes/update",

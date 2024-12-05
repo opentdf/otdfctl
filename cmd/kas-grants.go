@@ -162,6 +162,8 @@ func policy_listKasGrants(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 	kasF := c.Flags.GetOptionalString("kas")
+	limit := c.Flags.GetRequiredInt32("limit")
+	offset := c.Flags.GetRequiredInt32("offset")
 	var (
 		kasID  string
 		kasURI string
@@ -177,7 +179,7 @@ func policy_listKasGrants(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	grants, err := h.ListKasGrants(cmd.Context(), kasID, kasURI)
+	grants, page, err := h.ListKasGrants(cmd.Context(), kasID, kasURI, limit, offset)
 	if err != nil {
 		cli.ExitWithError("Failed to list assigned KAS Grants", err)
 	}
@@ -224,6 +226,7 @@ func policy_listKasGrants(cmd *cobra.Command, args []string) {
 		}
 	}
 	t = t.WithRows(rows)
+	t = cli.WithListPaginationFooter(t, page)
 
 	// Do not supporting printing the 'get --id=...' helper message as grants are atypical
 	// with no individual ID.
@@ -304,6 +307,8 @@ func init() {
 		listCmd.GetDocFlag("kas").Default,
 		listCmd.GetDocFlag("kas").Description,
 	)
+	injectListPaginationFlags(listCmd)
+
 	cmd := man.Docs.GetCommand("policy/kas-grants",
 		man.WithSubcommands(assignCmd, unassignCmd, listCmd),
 	)

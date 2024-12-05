@@ -10,6 +10,12 @@ command:
     - name: kas
       shorthand: k
       description: The optional ID or URI of a KAS to filter the list
+    - name: limit
+      shorthand: l
+      description: Limit retrieved count
+    - name: offset
+      shorthand: o
+      description: Offset (page) quantity from start of the list
 ---
 
 List the Grants of Registered Key Access Servers (KASes) to attribute namespaces, definitions,

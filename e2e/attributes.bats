@@ -67,10 +67,10 @@ teardown_file() {
 
    run_otdfctl_attr get --id "$ATTR_ID"
      assert_success
-     assert_output --regexp "Id.*$ATTR_ID"
-     assert_output --regexp "Name.*$LOWERED"
+     assert_line --regexp "Id.*$ATTR_ID"
+     assert_line --regexp "Name.*$LOWERED"
      assert_output --partial "ANY_OF"
-     assert_output --regexp "Namespace.*$NS_NAME"
+     assert_line --regexp "Namespace.*$NS_NAME"
 
   run_otdfctl_attr get --id "$ATTR_ID" --json
     assert_success
@@ -111,14 +111,47 @@ teardown_file() {
   run_otdfctl_attr list
   assert_success
   assert_output --partial "$ATTR_ID"
+  assert_output --partial "Total"
+  assert_line --regexp "Current Offset.*0"
 
   run_otdfctl_attr list --state active
   assert_success
   assert_output --partial "$ATTR_ID"
+  assert_output --partial "Total"
+  assert_line --regexp "Current Offset.*0"
 
   run_otdfctl_attr list --state inactive
   assert_success
   refute_output --partial "$ATTR_ID"
+  assert_output --partial "Total"
+  assert_line --regexp "Current Offset.*0"
+}
+
+@test "List - comprehensive pagination tests" {
+  # create 10 random attributes so we have confidence there are >= 10 attribute definitions
+  for i in {1..10}; do
+    random_name=$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 12)
+    run_otdfctl_attr create --name "$random_name" --namespace "$NS_ID" --rule ANY_OF
+    assert_success
+  done
+
+  run_otdfctl_attr list --limit 2
+    assert_success
+    assert_line --regexp "Current Offset.*0"
+    assert_line --regexp "Next Offset.*2"
+  
+  run_otdfctl_attr list --limit 5 --offset 2
+    assert_success
+    assert_line --regexp "Current Offset.*2"
+    assert_line --regexp "Next Offset.*7"
+
+  run_otdfctl_attr list --offset 2
+    assert_success
+    assert_line --regexp "Current Offset.*2"
+
+  run_otdfctl_attr list --limit 500
+    assert_success
+    refute_output --partial "Next Offset"
 }
 
 @test "Deactivate then unsafe reactivate an attribute definition" {

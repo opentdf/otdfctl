@@ -13,6 +13,12 @@ command:
         - inactive
         - any
       default: active
+    - name: limit
+      shorthand: l
+      description: Limit retrieved count
+    - name: offset
+      shorthand: o
+      description: Offset (page) quantity from start of the list
 ---
 
 By default, the list will only provide `active` attributes if unspecified, but the filter can be controlled with the `--state` flag.

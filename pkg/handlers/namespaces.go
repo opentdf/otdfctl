@@ -18,13 +18,19 @@ func (h Handler) GetNamespace(id string) (*policy.Namespace, error) {
 	return resp.GetNamespace(), nil
 }
 
-func (h Handler) ListNamespaces(state common.ActiveStateEnum) ([]*policy.Namespace, error) {
-	resp, err := h.sdk.Namespaces.ListNamespaces(h.ctx, &namespaces.ListNamespacesRequest{State: state})
+func (h Handler) ListNamespaces(state common.ActiveStateEnum, limit, offset int32) ([]*policy.Namespace, *policy.PageResponse, error) {
+	resp, err := h.sdk.Namespaces.ListNamespaces(h.ctx, &namespaces.ListNamespacesRequest{
+		State: state,
+		Pagination: &policy.PageRequest{
+			Limit:  limit,
+			Offset: offset,
+		},
+	})
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return resp.GetNamespaces(), nil
+	return resp.GetNamespaces(), resp.GetPagination(), nil
 }
 
 // Creates and returns the created n

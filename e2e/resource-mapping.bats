@@ -43,7 +43,7 @@ teardown_file() {
     assert_success
     assert_output --partial "second"
     assert_output --partial "TWO"
-    assert_output --regexp "Attribute Value Id.*$VAL2_ID"
+    assert_line --regexp "Attribute Value Id.*$VAL2_ID"
 
     # value id flag must be uuid
     run_otdfctl_rm create --attribute-value-id "val2" --terms "testing"
@@ -61,9 +61,9 @@ teardown_file() {
     # table
     run_otdfctl_rm get --id "$RM1_ID"
         assert_success
-        assert_output --regexp "Id.*$RM1_ID"
-        assert_output --regexp "Attribute Value Id.*$VAL1_ID"
-        assert_output --regexp "Terms.*$spaced_terms"
+        assert_line --regexp "Id.*$RM1_ID"
+        assert_line --regexp "Attribute Value Id.*$VAL1_ID"
+        assert_line --regexp "Terms.*$spaced_terms"
     
     # json
     run_otdfctl_rm get --id "$RM1_ID" --json
@@ -110,6 +110,8 @@ teardown_file() {
         assert_output --partial "$RM1_ID"
         assert_output --partial "$VAL1_ID"
         assert_output --partial "valueone, valuefirst, first"
+        assert_output --partial "Total"
+        assert_line --regexp "Current Offset.*0"
 }
 
 @test "Delete resource mapping" {
@@ -117,7 +119,7 @@ teardown_file() {
     # --force to avoid indefinite hang waiting for confirmation
     run_otdfctl_rm delete --id "$RM1_ID" --force
         assert_success
-        assert_output --regexp "Id.*$RM1_ID"
-        assert_output --regexp "Attribute Value Id.*$VAL1_ID"
-        assert_output --regexp "Terms.*$spaced_terms"
+        assert_line --regexp "Id.*$RM1_ID"
+        assert_line --regexp "Attribute Value Id.*$VAL1_ID"
+        assert_line --regexp "Terms.*$spaced_terms"
 }
