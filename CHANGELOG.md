@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.17.0](https://github.com/opentdf/otdfctl/compare/v0.16.0...v0.17.0) (2024-12-05)
+
+
+### Features
+
+* **core:** pagination of LIST commands ([#447](https://github.com/opentdf/otdfctl/issues/447)) ([673a064](https://github.com/opentdf/otdfctl/commit/673a06424d30e706798b9a1fa1bbfd9b4601e765))
+* **core:** subject condition set prune ([#439](https://github.com/opentdf/otdfctl/issues/439)) ([c4c8b8b](https://github.com/opentdf/otdfctl/commit/c4c8b8b276b2189df74e6cf30e14abac9369d97e))
+
+
+### Bug Fixes
+
+* **core:** kas registry get should allow -i 'id' flag shorthand ([#434](https://github.com/opentdf/otdfctl/issues/434)) ([bed3701](https://github.com/opentdf/otdfctl/commit/bed3701d89510ee78c3aed43b1a072e41ee3873f))
+* **core:** sm list should provide value fqn instead of just value string ([#438](https://github.com/opentdf/otdfctl/issues/438)) ([9a7cb72](https://github.com/opentdf/otdfctl/commit/9a7cb7242e0e39ccc2b54425028638fa0c5e3f9f))
+
 ## [0.16.0](https://github.com/opentdf/otdfctl/compare/v0.15.0...v0.16.0) (2024-11-20)
 
 
