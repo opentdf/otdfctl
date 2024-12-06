@@ -20,7 +20,7 @@ require (
 	github.com/opentdf/platform/sdk v0.3.23
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.19.0
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 	github.com/zalando/go-keyring v0.2.6
 	github.com/zitadel/oidc/v3 v3.33.1
 	golang.org/x/oauth2 v0.24.0
