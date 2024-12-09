@@ -61,11 +61,13 @@ func (h Handler) EncryptBytes(tdfType string, unencrypted []byte, attrValues []s
 				return nil, errors.Join(ErrTDFUnableToReadAssertions, err)
 			}
 			for i, config := range assertionConfigs {
-				correctedKey, err := correctKeyType(config.SigningKey.Alg, config.SigningKey.Key, false)
-				if err != nil {
-					return nil, fmt.Errorf("error with assertion signing key: %w", err)
+				if (config.SigningKey != sdk.AssertionKey{}) {
+					correctedKey, err := correctKeyType(config.SigningKey.Alg, config.SigningKey.Key, false)
+					if err != nil {
+						return nil, fmt.Errorf("error with assertion signing key: %w", err)
+					}
+					assertionConfigs[i].SigningKey.Key = correctedKey
 				}
-				assertionConfigs[i].SigningKey.Key = correctedKey
 			}
 			opts = append(opts, sdk.WithAssertions(assertionConfigs...))
 		}
