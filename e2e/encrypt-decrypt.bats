@@ -71,20 +71,22 @@ teardown_file(){
   ./otdfctl decrypt --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS $OUTFILE_TXT | grep "$SECRET_TEXT"
 }
 
-@test "roundtrip TDF3, assertions with HS265 keys and verificaion, stdin" {
-  run echo $SECRET_TEXT | ./otdfctl encrypt -o $OUT_TXT --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS -a $FQN --with-assertions "$SIGNED_ASSERTIONS_HS256"
+@test "roundtrip TDF3, assertions with HS265 keys and verificaion, file" {
+  run ./otdfctl encrypt -o $OUTFILE_GO_MOD --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS -a $FQN --with-assertions "$SIGNED_ASSERTIONS_HS256" --tdf-type tdf3 $INFILE_GO_MOD
   assert_success
-  run ./otdfctl decrypt --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --with-assertion-verification-keys "$SIGNED_ASSERTION_VERIFICATON_HS256" $OUTFILE_TXT
+  run ./otdfctl decrypt -o $RESULTFILE_GO_MOD --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --with-assertion-verification-keys "$SIGNED_ASSERTION_VERIFICATON_HS256" --tdf-type tdf3 $OUTFILE_GO_MOD
   assert_success
-  assert_output --partial "$SECRET_TEXT"
+  run diff $INFILE_GO_MOD $RESULTFILE_GO_MOD
+  assert_success
 }
 
-@test "roundtrip TDF3, assertions with RS256 keys and verificaion, stdin" {
-  output=$(echo $SECRET_TEXT | ./otdfctl encrypt -o $OUT_TXT --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS -a $FQN --with-assertions "$SIGNED_ASSERTIONS_RS256")
+@test "roundtrip TDF3, assertions with RS256 keys and verificaion, file" {
+  run ./otdfctl encrypt -o $OUTFILE_GO_MOD --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS -a $FQN --with-assertions "$SIGNED_ASSERTIONS_RS256" --tdf-type tdf3 $INFILE_GO_MOD
   assert_success
-  output=$(./otdfctl decrypt --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --with-assertion-verification-keys "$SIGNED_ASSERTION_VERIFICATON_RS256" $OUTFILE_TXT)
+  run ./otdfctl decrypt -o $RESULTFILE_GO_MOD --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --with-assertion-verification-keys "$SIGNED_ASSERTION_VERIFICATON_RS256" --tdf-type tdf3 $OUTFILE_GO_MOD
   assert_success
-  assert_contains "$output" "$SECRET_TEXT"
+  run diff $INFILE_GO_MOD $RESULTFILE_GO_MOD
+  assert_success
 }
 
 @test "roundtrip NANO, no attributes, file" {
