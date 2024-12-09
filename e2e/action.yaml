@@ -39,7 +39,7 @@ runs:
     - name: Run Bats tests
       shell: bash
       working-directory: otdfctl
-      run: bats e2e
+      run: bats e2e -f
       env:
         # Define 'bats' install location in ubuntu
         BATS_LIB_PATH: /usr/lib

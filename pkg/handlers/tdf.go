@@ -102,6 +102,7 @@ func (h Handler) EncryptBytes(tdfType string, unencrypted []byte, attrValues []s
 }
 
 func correctKeyType(alg sdk.AssertionKeyAlg, key interface{}, public bool) (interface{}, error) {
+	//nolint:nestif // nested its within switch mainly for error catching
 	if alg == sdk.AssertionKeyAlgHS256 {
 		// convert string to []byte
 		strKey, ok := key.(string)
