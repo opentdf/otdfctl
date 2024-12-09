@@ -47,6 +47,6 @@ hello world
 Assertion verification:
 ```shell
 # decrypt file and write to standard output
-otdfctl decrypt hello.txt.tdf --with-assertion-verification-keys '{"keys":{"assertion1":{ "alg":"HS256","key":"xxxx"},"assertion2":{ "alg":"RS256","key":"xxxx"}}}'
+otdfctl decrypt hello.txt.tdf --with-assertion-verification-keys '{"keys":{"assertion1":{ "alg":"HS256","key":"xxxx"},"assertion2":{ "alg":"RS256","key":"-----BEGIN PUBLIC KEY-----..."}}}'
 
 ```

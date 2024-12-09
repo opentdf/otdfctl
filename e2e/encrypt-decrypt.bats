@@ -23,9 +23,15 @@ setup_file() {
   # entitles opentdf client id for client credentials CLI user
   SCS='[{"condition_groups":[{"conditions":[{"operator":1,"subject_external_values":["opentdf"],"subject_external_selector_value":".clientId"}],"boolean_operator":2}]}]'
   HS256_KEY=$(openssl rand -base64 32)
+  openssl genpkey -algorithm RSA -out rs_private_key.pem -pkeyopt rsa_keygen_bits:2048
+  openssl rsa -pubout -in rs_private_key.pem -out rs_public_key.pem
+  RS256_PRIVATE_KEY=$(awk '{printf "%s\\n", $0}' rs_private_key.pem)
+  RS256_PUBLIC_KEY=$(awk '{printf "%s\\n", $0}' rs_public_key.pem)
   ASSERTIONS='[{"id":"assertion1","type":"handling","scope":"tdo","appliesToState":"encrypted","statement":{"format":"json+stanag5636","schema":"urn:nato:stanag:5636:A:1:elements:json","value":"{\"ocl\":\"2024-10-21T20:47:36Z\"}"}}]'
-  SIGNED_ASSERTIONS='[{"id":"assertion1","type":"handling","scope":"tdo","appliesToState":"encrypted","statement":{"format":"json+stanag5636","schema":"urn:nato:stanag:5636:A:1:elements:json","value":"{\"ocl\":\"2024-10-21T20:47:36Z\"}"},"signingKey":{"alg":"HS256","key":"'$HS256_KEY'"}}]'
-  SIGNED_ASSERTION_VERIFICATON='{"keys":{"assertion1":{"alg":"HS256","key":"'$HS256_KEY'"}}}'
+  SIGNED_ASSERTIONS_HS256='[{"id":"assertion1","type":"handling","scope":"tdo","appliesToState":"encrypted","statement":{"format":"json+stanag5636","schema":"urn:nato:stanag:5636:A:1:elements:json","value":"{\"ocl\":\"2024-10-21T20:47:36Z\"}"},"signingKey":{"alg":"HS256","key":"'$HS256_KEY'"}}]'
+  SIGNED_ASSERTION_VERIFICATON_HS256='{"keys":{"assertion1":{"alg":"HS256","key":"'$HS256_KEY'"}}}'
+  SIGNED_ASSERTIONS_RS256='[{"id":"assertion1","type":"handling","scope":"tdo","appliesToState":"encrypted","statement":{"format":"json+stanag5636","schema":"urn:nato:stanag:5636:A:1:elements:json","value":"{\"ocl\":\"2024-10-21T20:47:36Z\"}"},"signingKey":{"alg":"RS256","key":"'$RS256_PRIVATE_KEY'"}}]'
+  SIGNED_ASSERTION_VERIFICATON_RS256='{"keys":{"assertion1":{"alg":"RS256","key":"'$RS256_PUBLIC_KEY'"}}}'
   SM=$(./otdfctl --host $HOST $WITH_CREDS $DEBUG_LEVEL policy subject-mappings create --action-standard DECRYPT -a "$VAL_ID" --subject-condition-set-new "$SCS")
   export FQN="https://testing-enc-dec.io/attr/attr1/value/value1"
   export MIXED_CASE_FQN="https://Testing-Enc-Dec.io/attr/Attr1/value/VALUE1"
@@ -60,10 +66,14 @@ teardown_file(){
   ./otdfctl decrypt --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS $OUTFILE_TXT | grep "$SECRET_TEXT"
 }
 
-@test "roundtrip TDF3, assertions with keys and verificaion, stdin" {
-  echo $SECRET_TEXT | ./otdfctl encrypt -o $OUT_TXT --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS -a $FQN --with-assertions "$SIGNED_ASSERTIONS"
-  run ./otdfctl decrypt --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --with-assertion-verification-keys "$SIGNED_ASSERTION_VERIFICATON" $OUTFILE_TXT
-  [ "$status" -eq 0 ] || echo "Command failed: $output"
+@test "roundtrip TDF3, assertions with HS265 keys and verificaion, stdin" {
+  echo $SECRET_TEXT | ./otdfctl encrypt -o $OUT_TXT --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS -a $FQN --with-assertions "$SIGNED_ASSERTIONS_HS256"
+  run ./otdfctl decrypt --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --with-assertion-verification-keys "$SIGNED_ASSERTION_VERIFICATON_HS256" $OUTFILE_TXT | grep "$SECRET_TEXT"
+}
+
+@test "roundtrip TDF3, assertions with RS256 keys and verificaion, stdin" {
+  echo $SECRET_TEXT | ./otdfctl encrypt -o $OUT_TXT --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS -a $FQN --with-assertions "$SIGNED_ASSERTIONS_RS256"
+  run ./otdfctl decrypt --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --with-assertion-verification-keys "$SIGNED_ASSERTION_VERIFICATON_RS256" $OUTFILE_TXT | grep "$SECRET_TEXT"
 }
 
 @test "roundtrip NANO, no attributes, file" {

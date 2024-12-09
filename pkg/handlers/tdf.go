@@ -2,7 +2,10 @@ package handlers
 
 import (
 	"bytes"
+	"crypto/rsa"
+	"crypto/x509"
 	"encoding/json"
+	"encoding/pem"
 	"errors"
 	"fmt"
 	"io"
@@ -57,6 +60,13 @@ func (h Handler) EncryptBytes(tdfType string, unencrypted []byte, attrValues []s
 			if err != nil {
 				return nil, errors.Join(ErrTDFUnableToReadAssertions, err)
 			}
+			for i, config := range assertionConfigs {
+				correctedKey, err := correctKeyType(config.SigningKey.Alg, config.SigningKey.Key, false)
+				if err != nil {
+					return nil, fmt.Errorf("error with assertion signing key: %w", err)
+				}
+				assertionConfigs[i].SigningKey.Key = correctedKey
+			}
 			opts = append(opts, sdk.WithAssertions(assertionConfigs...))
 		}
 
@@ -91,6 +101,70 @@ func (h Handler) EncryptBytes(tdfType string, unencrypted []byte, attrValues []s
 	}
 }
 
+func correctKeyType(alg sdk.AssertionKeyAlg, key interface{}, public bool) (interface{}, error) {
+	if alg == sdk.AssertionKeyAlgHS256 {
+		// convert string to []byte
+		strKey, ok := key.(string)
+		if !ok {
+			return nil, errors.New("unable to convert HS256 assertion key to string")
+		}
+		return []byte(strKey), nil
+	} else if alg == sdk.AssertionKeyAlgRS256 {
+		// convert to rsa.PrivateKey
+		strKey, ok := key.(string)
+		if !ok {
+			return nil, errors.New("unable to convert RS256 assertion pem to string")
+		}
+		// Decode the PEM block
+		block, _ := pem.Decode([]byte(strKey))
+		if block == nil {
+			return nil, errors.New("failed to decode PEM block")
+		}
+
+		// Check the block type and parse accordingly
+		var privateKey *rsa.PrivateKey
+		var publicKey *rsa.PublicKey
+		var err error
+		switch block.Type {
+		case "RSA PRIVATE KEY":
+			privateKey, err = x509.ParsePKCS1PrivateKey(block.Bytes)
+			publicKey = &privateKey.PublicKey
+		case "PRIVATE KEY":
+			parsedKey, parseErr := x509.ParsePKCS8PrivateKey(block.Bytes)
+			if parseErr != nil {
+				return nil, fmt.Errorf("failed to parse PKCS#8 private key: %w", parseErr)
+			}
+			privateKey, ok = parsedKey.(*rsa.PrivateKey)
+			if !ok {
+				return nil, errors.New("parsed key is not an RSA private key")
+			}
+			publicKey = &privateKey.PublicKey
+		case "RSA PUBLIC KEY":
+			publicKey, err = x509.ParsePKCS1PublicKey(block.Bytes)
+		case "PUBLIC KEY":
+			parsedKey, parseErr := x509.ParsePKIXPublicKey(block.Bytes)
+			if parseErr != nil {
+				return nil, fmt.Errorf("failed to parse PKIX public key: %w", parseErr)
+			}
+			publicKey, ok = parsedKey.(*rsa.PublicKey)
+			if !ok {
+				return nil, errors.New("parsed key is not an RSA public key")
+			}
+		default:
+			return nil, fmt.Errorf("unsupported key type: %s", block.Type)
+		}
+
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse private key: %w", err)
+		}
+		if public {
+			return publicKey, nil
+		}
+		return privateKey, nil
+	}
+	return nil, fmt.Errorf("unsupported signing key alg: %v", alg)
+}
+
 func (h Handler) DecryptBytes(toDecrypt []byte, assertionVerification string, disableAssertionCheck bool) (*bytes.Buffer, error) {
 	out := &bytes.Buffer{}
 	pt := io.Writer(out)
@@ -107,6 +181,13 @@ func (h Handler) DecryptBytes(toDecrypt []byte, assertionVerification string, di
 			err := json.Unmarshal([]byte(assertionVerification), &assertionVerificationKeys)
 			if err != nil {
 				return nil, errors.Join(ErrTDFUnableToReadAssertions, err)
+			}
+			for assertionName, key := range assertionVerificationKeys.Keys {
+				correctedKey, err := correctKeyType(key.Alg, key.Key, true)
+				if err != nil {
+					return nil, fmt.Errorf("error with assertion signing key: %w", err)
+				}
+				assertionVerificationKeys.Keys[assertionName] = sdk.AssertionKey{Alg: key.Alg, Key: correctedKey}
 			}
 			opts = append(opts, sdk.WithAssertionVerificationKeys(assertionVerificationKeys))
 		}
