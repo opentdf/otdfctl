@@ -13,6 +13,9 @@ command:
     - name: no-verify-assertions
       description: disable verification of assertions
       default: false
+    - name: with-assertion-verification-keys
+      description: >
+        EXPERIMENTAL: JSON string of keys to verify signed assertions. See examples for more information.
 ---
 
 Decrypt a Trusted Data Format (TDF) file and output the contents to stdout or a file in the current working directory.
@@ -39,4 +42,11 @@ Advanced piping is supported
 ```shell
 $ echo "hello world" | otdfctl encrypt | otdfctl decrypt | cat
 hello world
+```
+
+Assertion verification:
+```shell
+# decrypt file and write to standard output
+otdfctl decrypt hello.txt.tdf --with-assertion-verification-keys '{"keys":{"assertion1":{ "alg":"HS256","key":"xxxx"},"assertion2":{ "alg":"RS256","key":"xxxx"}}}'
+
 ```

@@ -12,6 +12,8 @@ import (
 
 var TDF = "tdf"
 
+var assertionVerification string
+
 func dev_tdfDecryptCmd(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args, cli.WithPrintJson())
 	h := NewHandler(c)
@@ -35,7 +37,7 @@ func dev_tdfDecryptCmd(cmd *cobra.Command, args []string) {
 		cli.ExitWithError("Must provide ONE of the following to decrypt: [file argument, stdin input]", errors.New("no input provided"))
 	}
 
-	decrypted, err := h.DecryptBytes(bytesToDecrypt, disableAssertionVerification)
+	decrypted, err := h.DecryptBytes(bytesToDecrypt, assertionVerification, disableAssertionVerification)
 	if err != nil {
 		cli.ExitWithError("Failed to decrypt file", err)
 	}
@@ -73,6 +75,13 @@ func init() {
 		decryptCmd.GetDocFlag("tdf-type").Shorthand,
 		decryptCmd.GetDocFlag("tdf-type").Default,
 		decryptCmd.GetDocFlag("tdf-type").Description,
+	)
+	decryptCmd.Flags().StringVarP(
+		&assertionVerification,
+		decryptCmd.GetDocFlag("with-assertion-verification-keys").Name,
+		decryptCmd.GetDocFlag("with-assertion-verification-keys").Shorthand,
+		"",
+		decryptCmd.GetDocFlag("with-assertion-verification-keys").Description,
 	)
 	decryptCmd.Flags().Bool(
 		decryptCmd.GetDocFlag("no-verify-assertions").Name,

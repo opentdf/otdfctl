@@ -91,7 +91,7 @@ func (h Handler) EncryptBytes(tdfType string, unencrypted []byte, attrValues []s
 	}
 }
 
-func (h Handler) DecryptBytes(toDecrypt []byte, disableAssertionCheck bool) (*bytes.Buffer, error) {
+func (h Handler) DecryptBytes(toDecrypt []byte, assertionVerification string, disableAssertionCheck bool) (*bytes.Buffer, error) {
 	out := &bytes.Buffer{}
 	pt := io.Writer(out)
 	ec := bytes.NewReader(toDecrypt)
@@ -101,7 +101,16 @@ func (h Handler) DecryptBytes(toDecrypt []byte, disableAssertionCheck bool) (*by
 			return nil, err
 		}
 	case sdk.Standard:
-		r, err := h.sdk.LoadTDF(ec, sdk.WithDisableAssertionVerification(disableAssertionCheck))
+		opts := []sdk.TDFReaderOption{sdk.WithDisableAssertionVerification(disableAssertionCheck)}
+		var assertionVerificationKeys sdk.AssertionVerificationKeys
+		if assertionVerification != "" {
+			err := json.Unmarshal([]byte(assertionVerification), &assertionVerificationKeys)
+			if err != nil {
+				return nil, errors.Join(ErrTDFUnableToReadAssertions, err)
+			}
+			opts = append(opts, sdk.WithAssertionVerificationKeys(assertionVerificationKeys))
+		}
+		r, err := h.sdk.LoadTDF(ec, opts...)
 		if err != nil {
 			return nil, err
 		}
