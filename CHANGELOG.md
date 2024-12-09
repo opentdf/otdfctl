@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.17.1](https://github.com/opentdf/otdfctl/compare/v0.17.0...v0.17.1) (2024-12-09)
+
+
+### Bug Fixes
+
+* **core:** kasr creation JSON example ([#453](https://github.com/opentdf/otdfctl/issues/453)) ([192c7b2](https://github.com/opentdf/otdfctl/commit/192c7b2975a4ab6f648ab7924e20e70535ce04b2))
+
 ## [0.17.0](https://github.com/opentdf/otdfctl/compare/v0.16.0...v0.17.0) (2024-12-05)
 
 
