@@ -3,6 +3,12 @@
 # Tests for encrypt decrypt
 
 setup_file() {
+  export BATS_LIB_PATH="${BATS_LIB_PATH}:/usr/lib"
+  bats_load_library bats-support
+  bats_load_library bats-assert
+  bats_load_library bats-file
+  bats_load_library bats-detik/detik.bash
+
   export CREDSFILE=creds.json
   echo -n '{"clientId":"opentdf","clientSecret":"secret"}' > $CREDSFILE
   export WITH_CREDS="--with-client-creds-file $CREDSFILE"
@@ -78,7 +84,7 @@ teardown_file(){
 @test "roundtrip TDF3, assertions with RS256 keys and verificaion, stdin" {
   result=$(echo $SECRET_TEXT | ./otdfctl encrypt -o $OUT_TXT --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS -a $FQN --with-assertions "$SIGNED_ASSERTIONS_RS256")
   assert_success
-  result=$(run ./otdfctl decrypt --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --with-assertion-verification-keys "$SIGNED_ASSERTION_VERIFICATON_RS256" $OUTFILE_TXT)
+  result=$(./otdfctl decrypt --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --with-assertion-verification-keys "$SIGNED_ASSERTION_VERIFICATON_RS256" $OUTFILE_TXT)
   assert_success
   assert_contains "$result" "$SECRET_TEXT"
 }
