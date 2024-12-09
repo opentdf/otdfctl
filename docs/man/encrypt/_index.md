@@ -93,5 +93,6 @@ Assertions are a way to bind metadata to the TDF data object in a cryptographica
 The following example demonstrates how to bind a STANAG 5636 metadata assertion to the TDF data object.
 
 ```shell
-otdfctl encrypt hello.txt --out hello.txt.tdf --with-assertions '[{"id":"assertion1","type":"handling","scope":"tdo","appliesToState":"encrypted","statement":{"format":"json+stanag5636","schema":"urn:nato:stanag:5636:A:1:elements:json","value":"{\"ocl\":\"2024-10-21T20:47:36Z\"}"}}]'
+otdfctl encrypt hello.txt --out hello.txt.tdf --with-assertions '[{"id":"assertion1","type":"handling","scope":"tdo","appliesToState":"encrypted","statement":{"format":"json+stanag5636","schema":"urn:nato:stanag:5636:A:1:elements:json","value":"{\"ocl\":\"2024-10-21T20:47:36Z\"},"signingKey":{"alg":"RS256","key":"-----BEGIN PRIVATE KEY-----..."}}]
 ```
+Signing with HS256 is also available.
