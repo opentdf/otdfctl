@@ -51,5 +51,5 @@ otdfctl decrypt hello.txt.tdf --with-assertion-verification-keys my_assertion_ve
 ```
 Where my_assertion_verification_keys.json look like:
 ```json
-'{"keys":{"assertion1":{ "alg":"HS256","key":"xxxx"},"assertion2":{ "alg":"RS256","key":"-----BEGIN PUBLIC KEY-----..."}}}'
+{"keys":{"assertion1":{ "alg":"HS256","key":"xxxx"},"assertion2":{ "alg":"RS256","key":"-----BEGIN PUBLIC KEY-----..."}}}
 ```
