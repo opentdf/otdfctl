@@ -7,6 +7,7 @@ import (
 
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/man"
+	"github.com/opentdf/otdfctl/pkg/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -28,9 +29,11 @@ func dev_tdfDecryptCmd(cmd *cobra.Command, args []string) {
 	// Prefer file argument over piped input over default filename
 	bytesToDecrypt := piped
 	var tdfFile string
+	var err error
 	if len(args) > 0 {
 		tdfFile = args[0]
-		bytesToDecrypt = readBytesFromFile(tdfFile)
+		bytesToDecrypt, err = utils.ReadBytesFromFile(tdfFile)
+		cli.ExitWithError("Failed to read file:", err)
 	}
 
 	if len(bytesToDecrypt) == 0 {

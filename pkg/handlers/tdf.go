@@ -9,9 +9,9 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"os"
 	"strings"
 
+	"github.com/opentdf/otdfctl/pkg/utils"
 	"github.com/opentdf/platform/sdk"
 )
 
@@ -62,7 +62,7 @@ func (h Handler) EncryptBytes(tdfType string, unencrypted []byte, attrValues []s
 			err := json.Unmarshal([]byte(assertions), &assertionConfigs)
 			if err != nil {
 				// if unable to marshal to json, interpret as file string and try to read from file
-				assertionBytes, err := readBytesFromFile(assertions)
+				assertionBytes, err := utils.ReadBytesFromFile(assertions)
 				if err != nil {
 					return nil, errors.Join(ErrTDFUnableToReadAssertions, err)
 				}
@@ -114,7 +114,7 @@ func (h Handler) EncryptBytes(tdfType string, unencrypted []byte, attrValues []s
 	}
 }
 
-func (h Handler) DecryptBytes(toDecrypt []byte, assertionVerification string, disableAssertionCheck bool) (*bytes.Buffer, error) {
+func (h Handler) DecryptBytes(toDecrypt []byte, assertionVerificationKeysFile string, disableAssertionCheck bool) (*bytes.Buffer, error) {
 	out := &bytes.Buffer{}
 	pt := io.Writer(out)
 	ec := bytes.NewReader(toDecrypt)
@@ -126,9 +126,9 @@ func (h Handler) DecryptBytes(toDecrypt []byte, assertionVerification string, di
 	case sdk.Standard:
 		opts := []sdk.TDFReaderOption{sdk.WithDisableAssertionVerification(disableAssertionCheck)}
 		var assertionVerificationKeys sdk.AssertionVerificationKeys
-		if assertionVerification != "" {
+		if assertionVerificationKeysFile != "" {
 			// read the file
-			assertionVerificationBytes, err := readBytesFromFile(assertionVerification)
+			assertionVerificationBytes, err := utils.ReadBytesFromFile(assertionVerificationKeysFile)
 			if err != nil {
 				return nil, errors.Join(ErrTDFUnableToReadAssertionVerificationKeys, err)
 			}
@@ -213,20 +213,6 @@ func (h Handler) InspectTDF(toInspect []byte) (TDFInspect, []error) {
 	default:
 		return TDFInspect{}, []error{fmt.Errorf("tdf format unrecognized")}
 	}
-}
-
-func readBytesFromFile(filePath string) ([]byte, error) {
-	fileToEncrypt, err := os.Open(filePath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to open file at path %s: %w", filePath, err)
-	}
-	defer fileToEncrypt.Close()
-
-	bytes, err := io.ReadAll(fileToEncrypt)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read bytes from file at path %s: %w", filePath, err)
-	}
-	return bytes, nil
 }
 
 func correctKeyType(assertionKey sdk.AssertionKey, public bool) (interface{}, error) {
