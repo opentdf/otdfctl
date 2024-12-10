@@ -9,17 +9,19 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"os"
 	"strings"
 
 	"github.com/opentdf/platform/sdk"
 )
 
 var (
-	ErrTDFInspectFailNotValidTDF          = errors.New("file or input is not a valid TDF")
-	ErrTDFInspectFailNotInspectable       = errors.New("file or input is not inspectable")
-	ErrTDFUnableToReadAttributes          = errors.New("unable to read attributes from TDF")
-	ErrTDFUnableToReadUnencryptedMetadata = errors.New("unable to read unencrypted metadata from TDF")
-	ErrTDFUnableToReadAssertions          = errors.New("unable to read assertions")
+	ErrTDFInspectFailNotValidTDF                = errors.New("file or input is not a valid TDF")
+	ErrTDFInspectFailNotInspectable             = errors.New("file or input is not inspectable")
+	ErrTDFUnableToReadAttributes                = errors.New("unable to read attributes from TDF")
+	ErrTDFUnableToReadUnencryptedMetadata       = errors.New("unable to read unencrypted metadata from TDF")
+	ErrTDFUnableToReadAssertions                = errors.New("unable to read assertions")
+	ErrTDFUnableToReadAssertionVerificationKeys = errors.New("unable to read assertion verification keys")
 )
 
 const (
@@ -58,7 +60,15 @@ func (h Handler) EncryptBytes(tdfType string, unencrypted []byte, attrValues []s
 		if assertions != "" {
 			err := json.Unmarshal([]byte(assertions), &assertionConfigs)
 			if err != nil {
-				return nil, errors.Join(ErrTDFUnableToReadAssertions, err)
+				// if unable to marshal to json, interpret as file string and try to read from file
+				assertionBytes, err := readBytesFromFile(assertions)
+				if err != nil {
+					return nil, errors.Join(ErrTDFUnableToReadAssertions, err)
+				}
+				err = json.Unmarshal([]byte(assertionBytes), &assertionConfigs)
+				if err != nil {
+					return nil, errors.Join(ErrTDFUnableToReadAssertions, err)
+				}
 			}
 			for i, config := range assertionConfigs {
 				if (config.SigningKey != sdk.AssertionKey{}) {
@@ -103,71 +113,6 @@ func (h Handler) EncryptBytes(tdfType string, unencrypted []byte, attrValues []s
 	}
 }
 
-func correctKeyType(alg sdk.AssertionKeyAlg, key interface{}, public bool) (interface{}, error) {
-	//nolint:nestif // nested its within switch mainly for error catching
-	if alg == sdk.AssertionKeyAlgHS256 {
-		// convert string to []byte
-		strKey, ok := key.(string)
-		if !ok {
-			return nil, errors.New("unable to convert HS256 assertion key to string")
-		}
-		return []byte(strKey), nil
-	} else if alg == sdk.AssertionKeyAlgRS256 {
-		// convert to rsa.PrivateKey
-		strKey, ok := key.(string)
-		if !ok {
-			return nil, errors.New("unable to convert RS256 assertion pem to string")
-		}
-		// Decode the PEM block
-		block, _ := pem.Decode([]byte(strKey))
-		if block == nil {
-			return nil, errors.New("failed to decode PEM block")
-		}
-
-		// Check the block type and parse accordingly
-		var privateKey *rsa.PrivateKey
-		var publicKey *rsa.PublicKey
-		var err error
-		switch block.Type {
-		case "RSA PRIVATE KEY":
-			privateKey, err = x509.ParsePKCS1PrivateKey(block.Bytes)
-			publicKey = &privateKey.PublicKey
-		case "PRIVATE KEY":
-			parsedKey, parseErr := x509.ParsePKCS8PrivateKey(block.Bytes)
-			if parseErr != nil {
-				return nil, fmt.Errorf("failed to parse PKCS#8 private key: %w", parseErr)
-			}
-			privateKey, ok = parsedKey.(*rsa.PrivateKey)
-			if !ok {
-				return nil, errors.New("parsed key is not an RSA private key")
-			}
-			publicKey = &privateKey.PublicKey
-		case "RSA PUBLIC KEY":
-			publicKey, err = x509.ParsePKCS1PublicKey(block.Bytes)
-		case "PUBLIC KEY":
-			parsedKey, parseErr := x509.ParsePKIXPublicKey(block.Bytes)
-			if parseErr != nil {
-				return nil, fmt.Errorf("failed to parse PKIX public key: %w", parseErr)
-			}
-			publicKey, ok = parsedKey.(*rsa.PublicKey)
-			if !ok {
-				return nil, errors.New("parsed key is not an RSA public key")
-			}
-		default:
-			return nil, fmt.Errorf("unsupported key type: %s", block.Type)
-		}
-
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse private key: %w", err)
-		}
-		if public {
-			return publicKey, nil
-		}
-		return privateKey, nil
-	}
-	return nil, fmt.Errorf("unsupported signing key alg: %v", alg)
-}
-
 func (h Handler) DecryptBytes(toDecrypt []byte, assertionVerification string, disableAssertionCheck bool) (*bytes.Buffer, error) {
 	out := &bytes.Buffer{}
 	pt := io.Writer(out)
@@ -181,9 +126,14 @@ func (h Handler) DecryptBytes(toDecrypt []byte, assertionVerification string, di
 		opts := []sdk.TDFReaderOption{sdk.WithDisableAssertionVerification(disableAssertionCheck)}
 		var assertionVerificationKeys sdk.AssertionVerificationKeys
 		if assertionVerification != "" {
-			err := json.Unmarshal([]byte(assertionVerification), &assertionVerificationKeys)
+			// read the file
+			assertionVerificationBytes, err := readBytesFromFile(assertionVerification)
 			if err != nil {
-				return nil, errors.Join(ErrTDFUnableToReadAssertions, err)
+				return nil, errors.Join(ErrTDFUnableToReadAssertionVerificationKeys, err)
+			}
+			err = json.Unmarshal(assertionVerificationBytes, &assertionVerificationKeys)
+			if err != nil {
+				return nil, errors.Join(ErrTDFUnableToReadAssertionVerificationKeys, err)
 			}
 			for assertionName, key := range assertionVerificationKeys.Keys {
 				correctedKey, err := correctKeyType(key.Alg, key.Key, true)
@@ -262,4 +212,83 @@ func (h Handler) InspectTDF(toInspect []byte) (TDFInspect, []error) {
 	default:
 		return TDFInspect{}, []error{fmt.Errorf("tdf format unrecognized")}
 	}
+}
+
+func readBytesFromFile(filePath string) ([]byte, error) {
+	fileToEncrypt, err := os.Open(filePath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open file at path %s: %w", filePath, err)
+	}
+	defer fileToEncrypt.Close()
+
+	bytes, err := io.ReadAll(fileToEncrypt)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read bytes from file at path %s: %w", filePath, err)
+	}
+	return bytes, nil
+}
+
+func correctKeyType(alg sdk.AssertionKeyAlg, key interface{}, public bool) (interface{}, error) {
+	//nolint:nestif // nested its within switch mainly for error catching
+	if alg == sdk.AssertionKeyAlgHS256 {
+		// convert string to []byte
+		strKey, ok := key.(string)
+		if !ok {
+			return nil, errors.New("unable to convert HS256 assertion key to string")
+		}
+		return []byte(strKey), nil
+	} else if alg == sdk.AssertionKeyAlgRS256 {
+		// convert to rsa.PrivateKey
+		strKey, ok := key.(string)
+		if !ok {
+			return nil, errors.New("unable to convert RS256 assertion pem to string")
+		}
+		// Decode the PEM block
+		block, _ := pem.Decode([]byte(strKey))
+		if block == nil {
+			return nil, errors.New("failed to decode PEM block")
+		}
+
+		// Check the block type and parse accordingly
+		var privateKey *rsa.PrivateKey
+		var publicKey *rsa.PublicKey
+		var err error
+		switch block.Type {
+		case "RSA PRIVATE KEY":
+			privateKey, err = x509.ParsePKCS1PrivateKey(block.Bytes)
+			publicKey = &privateKey.PublicKey
+		case "PRIVATE KEY":
+			parsedKey, parseErr := x509.ParsePKCS8PrivateKey(block.Bytes)
+			if parseErr != nil {
+				return nil, fmt.Errorf("failed to parse PKCS#8 private key: %w", parseErr)
+			}
+			privateKey, ok = parsedKey.(*rsa.PrivateKey)
+			if !ok {
+				return nil, errors.New("parsed key is not an RSA private key")
+			}
+			publicKey = &privateKey.PublicKey
+		case "RSA PUBLIC KEY":
+			publicKey, err = x509.ParsePKCS1PublicKey(block.Bytes)
+		case "PUBLIC KEY":
+			parsedKey, parseErr := x509.ParsePKIXPublicKey(block.Bytes)
+			if parseErr != nil {
+				return nil, fmt.Errorf("failed to parse PKIX public key: %w", parseErr)
+			}
+			publicKey, ok = parsedKey.(*rsa.PublicKey)
+			if !ok {
+				return nil, errors.New("parsed key is not an RSA public key")
+			}
+		default:
+			return nil, fmt.Errorf("unsupported key type: %s", block.Type)
+		}
+
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse private key: %w", err)
+		}
+		if public {
+			return publicKey, nil
+		}
+		return privateKey, nil
+	}
+	return nil, fmt.Errorf("unsupported signing key alg: %v", alg)
 }

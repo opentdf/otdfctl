@@ -15,7 +15,7 @@ command:
       default: false
     - name: with-assertion-verification-keys
       description: >
-        EXPERIMENTAL: JSON string of keys to verify signed assertions. See examples for more information.
+        EXPERIMENTAL: path to JSON file of keys to verify signed assertions. See examples for more information.
 ---
 
 Decrypt a Trusted Data Format (TDF) file and output the contents to stdout or a file in the current working directory.
@@ -47,6 +47,9 @@ hello world
 Assertion verification:
 ```shell
 # decrypt file and write to standard output
-otdfctl decrypt hello.txt.tdf --with-assertion-verification-keys '{"keys":{"assertion1":{ "alg":"HS256","key":"xxxx"},"assertion2":{ "alg":"RS256","key":"-----BEGIN PUBLIC KEY-----..."}}}'
-
+otdfctl decrypt hello.txt.tdf --with-assertion-verification-keys my_assertion_verification_keys.json
+```
+Where my_assertion_verification_keys.json look like:
+```json
+'{"keys":{"assertion1":{ "alg":"HS256","key":"xxxx"},"assertion2":{ "alg":"RS256","key":"-----BEGIN PUBLIC KEY-----..."}}}'
 ```

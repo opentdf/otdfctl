@@ -27,7 +27,7 @@ command:
       default: /kas
     - name: with-assertions
       description: >
-        EXPERIMENTAL: JSON string of assertions to bind metadata to the TDF. See examples for more information.
+        EXPERIMENTAL: JSON string or path to JSON file of assertions to bind metadata to the TDF. See examples for more information.
 ---
 
 Build a Trusted Data Format (TDF) with encrypted content from a specified file or input from stdin utilizing OpenTDF platform.
