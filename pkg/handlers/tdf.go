@@ -73,7 +73,7 @@ func (h Handler) EncryptBytes(tdfType string, unencrypted []byte, attrValues []s
 			}
 			for i, config := range assertionConfigs {
 				if (config.SigningKey != sdk.AssertionKey{}) {
-					correctedKey, err := correctKeyType(config.SigningKey.Alg, config.SigningKey.Key, false)
+					correctedKey, err := correctKeyType(config.SigningKey, false)
 					if err != nil {
 						return nil, fmt.Errorf("error with assertion signing key: %w", err)
 					}
@@ -137,7 +137,7 @@ func (h Handler) DecryptBytes(toDecrypt []byte, assertionVerification string, di
 				return nil, errors.Join(ErrTDFUnableToReadAssertionVerificationKeys, err)
 			}
 			for assertionName, key := range assertionVerificationKeys.Keys {
-				correctedKey, err := correctKeyType(key.Alg, key.Key, true)
+				correctedKey, err := correctKeyType(key, true)
 				if err != nil {
 					return nil, fmt.Errorf("error with assertion signing key: %w", err)
 				}
@@ -229,16 +229,16 @@ func readBytesFromFile(filePath string) ([]byte, error) {
 	return bytes, nil
 }
 
-func correctKeyType(alg sdk.AssertionKeyAlg, key interface{}, public bool) (interface{}, error) {
-	//nolint:nestif // nested its within switch mainly for error catching
-	strKey, ok := key.(string)
+func correctKeyType(assertionKey sdk.AssertionKey, public bool) (interface{}, error) {
+	strKey, ok := assertionKey.Key.(string)
 	if !ok {
 		return nil, errors.New("unable to convert assertion key to string")
 	}
-	if alg == sdk.AssertionKeyAlgHS256 {
+	//nolint:nestif // nested its within switch mainly for error catching
+	if assertionKey.Alg == sdk.AssertionKeyAlgHS256 {
 		// convert the hs256 key to []byte
 		return []byte(strKey), nil
-	} else if alg == sdk.AssertionKeyAlgRS256 {
+	} else if assertionKey.Alg == sdk.AssertionKeyAlgRS256 {
 		// Decode the PEM block
 		block, _ := pem.Decode([]byte(strKey))
 		if block == nil {
@@ -286,5 +286,5 @@ func correctKeyType(alg sdk.AssertionKeyAlg, key interface{}, public bool) (inte
 		}
 		return privateKey, nil
 	}
-	return nil, fmt.Errorf("unsupported signing key alg: %v", alg)
+	return nil, fmt.Errorf("unsupported signing key alg: %v", assertionKey.Alg)
 }
