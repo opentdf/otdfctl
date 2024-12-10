@@ -57,6 +57,7 @@ func (h Handler) EncryptBytes(tdfType string, unencrypted []byte, attrValues []s
 		}
 
 		var assertionConfigs []sdk.AssertionConfig
+		//nolint:nestif // nested its mainly for error catching and handling case of string vs file
 		if assertions != "" {
 			err := json.Unmarshal([]byte(assertions), &assertionConfigs)
 			if err != nil {
@@ -230,19 +231,14 @@ func readBytesFromFile(filePath string) ([]byte, error) {
 
 func correctKeyType(alg sdk.AssertionKeyAlg, key interface{}, public bool) (interface{}, error) {
 	//nolint:nestif // nested its within switch mainly for error catching
+	strKey, ok := key.(string)
+	if !ok {
+		return nil, errors.New("unable to convert assertion key to string")
+	}
 	if alg == sdk.AssertionKeyAlgHS256 {
-		// convert string to []byte
-		strKey, ok := key.(string)
-		if !ok {
-			return nil, errors.New("unable to convert HS256 assertion key to string")
-		}
+		// convert the hs256 key to []byte
 		return []byte(strKey), nil
 	} else if alg == sdk.AssertionKeyAlgRS256 {
-		// convert to rsa.PrivateKey
-		strKey, ok := key.(string)
-		if !ok {
-			return nil, errors.New("unable to convert RS256 assertion pem to string")
-		}
 		// Decode the PEM block
 		block, _ := pem.Decode([]byte(strKey))
 		if block == nil {

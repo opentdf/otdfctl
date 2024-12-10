@@ -30,12 +30,12 @@ setup_file() {
   openssl genpkey -algorithm RSA -out $RS_PRIVATE_KEY -pkeyopt rsa_keygen_bits:2048
   openssl rsa -pubout -in $RS_PRIVATE_KEY -out $RS_PUBLIC_KEY
 
-  ASSERTIONS='[{"id":"assertion1","type":"handling","scope":"tdo","appliesToState":"encrypted","statement":{"format":"json+stanag5636","schema":"urn:nato:stanag:5636:A:1:elements:json","value":"{\"ocl\":\"2024-10-21T20:47:36Z\"}"}}]'
+  export ASSERTIONS='[{"id":"assertion1","type":"handling","scope":"tdo","appliesToState":"encrypted","statement":{"format":"json+stanag5636","schema":"urn:nato:stanag:5636:A:1:elements:json","value":"{\"ocl\":\"2024-10-21T20:47:36Z\"}"}}]'
 
-  SIGNED_ASSERTIONS_HS256=signed_assertions_hs256.json
-  SIGNED_ASSERTION_VERIFICATON_HS256=assertion_verification_hs256.json
-  SIGNED_ASSERTIONS_RS256=signed_assertion_rs256.json
-  SIGNED_ASSERTION_VERIFICATON_RS256=assertion_verification_rs256.json
+  export SIGNED_ASSERTIONS_HS256=signed_assertions_hs256.json
+  export SIGNED_ASSERTION_VERIFICATON_HS256=assertion_verification_hs256.json
+  export SIGNED_ASSERTIONS_RS256=signed_assertion_rs256.json
+  export SIGNED_ASSERTION_VERIFICATON_RS256=assertion_verification_rs256.json
   echo '[{"id":"assertion1","type":"handling","scope":"tdo","appliesToState":"encrypted","statement":{"format":"json+stanag5636","schema":"urn:nato:stanag:5636:A:1:elements:json","value":"{\"ocl\":\"2024-10-21T20:47:36Z\"}"},"signingKey":{"alg":"HS256","key":"replace"}}]' > $SIGNED_ASSERTIONS_HS256
   jq --arg pem "$(echo $HS256_KEY)" '.[0].signingKey.key = $pem' $SIGNED_ASSERTIONS_HS256 > tmp.json && mv tmp.json $SIGNED_ASSERTIONS_HS256
   echo '{"keys":{"assertion1":{"alg":"HS256","key":"replace"}}}' > $SIGNED_ASSERTION_VERIFICATON_HS256
@@ -57,6 +57,7 @@ teardown() {
 
 teardown_file(){
     ./otdfctl --host "$HOST" $WITH_CREDS policy attributes namespaces unsafe delete --id "$NS_ID" --force
+    rm -f $SIGNED_ASSERTIONS_HS256 $SIGNED_ASSERTION_VERIFICATON_HS256 $SIGNED_ASSERTIONS_RS256 $SIGNED_ASSERTION_VERIFICATON_RS256
 }
 
 @test "roundtrip TDF3, no attributes, file" {
