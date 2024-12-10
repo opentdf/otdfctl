@@ -152,20 +152,6 @@ func readPipedStdin() []byte {
 	return nil
 }
 
-func readBytesFromFile(filePath string) []byte {
-	fileToEncrypt, err := os.Open(filePath)
-	if err != nil {
-		cli.ExitWithError(fmt.Sprintf("Failed to open file at path: %s", filePath), err)
-	}
-	defer fileToEncrypt.Close()
-
-	bytes, err := io.ReadAll(fileToEncrypt)
-	if err != nil {
-		cli.ExitWithError(fmt.Sprintf("Failed to read bytes from file at path: %s", filePath), err)
-	}
-	return bytes
-}
-
 func init() {
 	designCmd := man.Docs.GetCommand("dev/design-system",
 		man.WithRun(dev_designSystem),
