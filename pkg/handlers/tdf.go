@@ -66,7 +66,7 @@ func (h Handler) EncryptBytes(tdfType string, unencrypted []byte, attrValues []s
 				if err != nil {
 					return nil, errors.Join(ErrTDFUnableToReadAssertions, err)
 				}
-				err = json.Unmarshal([]byte(assertionBytes), &assertionConfigs)
+				err = json.Unmarshal(assertionBytes, &assertionConfigs)
 				if err != nil {
 					return nil, errors.Join(ErrTDFUnableToReadAssertions, err)
 				}
