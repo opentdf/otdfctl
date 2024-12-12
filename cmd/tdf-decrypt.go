@@ -15,6 +15,8 @@ var TDF = "tdf"
 
 var assertionVerification string
 
+const TDF_MAX_FILE_SIZE = int64(10 * 1024 * 1024 * 1024) // 10 GB
+
 func dev_tdfDecryptCmd(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args, cli.WithPrintJson())
 	h := NewHandler(c)
@@ -32,8 +34,10 @@ func dev_tdfDecryptCmd(cmd *cobra.Command, args []string) {
 	var err error
 	if len(args) > 0 {
 		tdfFile = args[0]
-		bytesToDecrypt, err = utils.ReadBytesFromFile(tdfFile)
-		cli.ExitWithError("Failed to read file:", err)
+		bytesToDecrypt, err = utils.ReadBytesFromFile(tdfFile, TDF_MAX_FILE_SIZE)
+		if err != nil {
+			cli.ExitWithError("Failed to read file:", err)
+		}
 	}
 
 	if len(bytesToDecrypt) == 0 {

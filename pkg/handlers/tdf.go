@@ -25,9 +25,10 @@ var (
 )
 
 const (
-	TDF_TYPE_ZTDF = "ztdf"
-	TDF_TYPE_TDF3 = "tdf3" // alias for TDF
-	TDF_TYPE_NANO = "nano"
+	TDF_TYPE_ZTDF            = "ztdf"
+	TDF_TYPE_TDF3            = "tdf3" // alias for TDF
+	TDF_TYPE_NANO            = "nano"
+	MAX_ASSERTIONS_FILE_SIZE = int64(5 * 1024 * 1024) // 5MB
 )
 
 type TDFInspect struct {
@@ -62,13 +63,13 @@ func (h Handler) EncryptBytes(tdfType string, unencrypted []byte, attrValues []s
 			err := json.Unmarshal([]byte(assertions), &assertionConfigs)
 			if err != nil {
 				// if unable to marshal to json, interpret as file string and try to read from file
-				assertionBytes, err := utils.ReadBytesFromFile(assertions)
+				assertionBytes, err := utils.ReadBytesFromFile(assertions, MAX_ASSERTIONS_FILE_SIZE)
 				if err != nil {
-					return nil, errors.Join(ErrTDFUnableToReadAssertions, err)
+					return nil, fmt.Errorf("unable to read assertions file: %w", err)
 				}
 				err = json.Unmarshal(assertionBytes, &assertionConfigs)
 				if err != nil {
-					return nil, errors.Join(ErrTDFUnableToReadAssertions, err)
+					return nil, fmt.Errorf("unable to unmarshal assertions json: %w", err)
 				}
 			}
 			for i, config := range assertionConfigs {
@@ -128,13 +129,13 @@ func (h Handler) DecryptBytes(toDecrypt []byte, assertionVerificationKeysFile st
 		var assertionVerificationKeys sdk.AssertionVerificationKeys
 		if assertionVerificationKeysFile != "" {
 			// read the file
-			assertionVerificationBytes, err := utils.ReadBytesFromFile(assertionVerificationKeysFile)
+			assertionVerificationBytes, err := utils.ReadBytesFromFile(assertionVerificationKeysFile, MAX_ASSERTIONS_FILE_SIZE)
 			if err != nil {
-				return nil, errors.Join(ErrTDFUnableToReadAssertionVerificationKeys, err)
+				return nil, fmt.Errorf("unable to read assertions verification keys file: %w", err)
 			}
 			err = json.Unmarshal(assertionVerificationBytes, &assertionVerificationKeys)
 			if err != nil {
-				return nil, errors.Join(ErrTDFUnableToReadAssertionVerificationKeys, err)
+				return nil, fmt.Errorf("unable to unmarshal assertion verification keys json: %w", err)
 			}
 			for assertionName, key := range assertionVerificationKeys.Keys {
 				correctedKey, err := correctKeyType(key, true)

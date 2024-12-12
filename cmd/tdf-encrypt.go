@@ -25,6 +25,8 @@ const (
 var attrValues []string
 var assertions string
 
+const INPUT_MAX_FILE_SIZE = int64(10 * 1024 * 1024 * 1024) // 10 GB
+
 func dev_tdfEncryptCmd(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args, cli.WithPrintJson())
 	h := NewHandler(c)
@@ -66,8 +68,10 @@ func dev_tdfEncryptCmd(cmd *cobra.Command, args []string) {
 	bytesSlice := piped
 	var err error
 	if filePath != "" {
-		bytesSlice, err = utils.ReadBytesFromFile(filePath)
-		cli.ExitWithError("Failed to read file:", err)
+		bytesSlice, err = utils.ReadBytesFromFile(filePath, INPUT_MAX_FILE_SIZE)
+		if err != nil {
+			cli.ExitWithError("Failed to read file:", err)
+		}
 	}
 
 	// auto-detect mime type if not provided
