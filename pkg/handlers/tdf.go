@@ -73,7 +73,7 @@ func (h Handler) EncryptBytes(tdfType string, unencrypted []byte, attrValues []s
 				}
 			}
 			for i, config := range assertionConfigs {
-				if (config.SigningKey != sdk.AssertionKey{}) {
+				if !config.SigningKey.IsEmpty() {
 					correctedKey, err := correctKeyType(config.SigningKey, false)
 					if err != nil {
 						return nil, fmt.Errorf("error with assertion signing key: %w", err)
