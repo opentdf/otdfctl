@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.18.0](https://github.com/opentdf/otdfctl/compare/v0.17.1...v0.18.0) (2024-12-17)
+
+
+### Features
+
+* Assertion verification ([#452](https://github.com/opentdf/otdfctl/issues/452)) ([5a8fe0d](https://github.com/opentdf/otdfctl/commit/5a8fe0d64088b74c95d3376e4a2a5a47d680d9c0))
+
 ## [0.17.1](https://github.com/opentdf/otdfctl/compare/v0.17.0...v0.17.1) (2024-12-09)
 
 
