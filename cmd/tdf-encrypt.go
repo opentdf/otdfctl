@@ -11,6 +11,7 @@ import (
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/man"
+	"github.com/opentdf/otdfctl/pkg/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -23,6 +24,8 @@ const (
 
 var attrValues []string
 var assertions string
+
+const INPUT_MAX_FILE_SIZE = int64(10 * 1024 * 1024 * 1024) // 10 GB
 
 func dev_tdfEncryptCmd(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args, cli.WithPrintJson())
@@ -63,8 +66,12 @@ func dev_tdfEncryptCmd(cmd *cobra.Command, args []string) {
 
 	// prefer filepath argument over stdin input
 	bytesSlice := piped
+	var err error
 	if filePath != "" {
-		bytesSlice = readBytesFromFile(filePath)
+		bytesSlice, err = utils.ReadBytesFromFile(filePath, INPUT_MAX_FILE_SIZE)
+		if err != nil {
+			cli.ExitWithError("Failed to read file:", err)
+		}
 	}
 
 	// auto-detect mime type if not provided

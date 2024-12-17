@@ -24,6 +24,7 @@ type tdfInspectManifest struct {
 	Method                sdk.Method                `json:"method"`
 	IntegrityInformation  sdk.IntegrityInformation  `json:"integrityInformation"`
 	EncryptionInformation sdk.EncryptionInformation `json:"encryptionInformation"`
+	Assertions            []sdk.Assertion           `json:"assertions,omitempty"`
 }
 
 type nanoInspectResult struct {
@@ -72,6 +73,7 @@ func tdf_InspectCmd(cmd *cobra.Command, args []string) {
 				Method:                result.ZTDFManifest.Method,
 				IntegrityInformation:  result.ZTDFManifest.IntegrityInformation,
 				EncryptionInformation: result.ZTDFManifest.EncryptionInformation,
+				Assertions:            result.ZTDFManifest.Assertions,
 			},
 			Attributes: result.Attributes,
 		}

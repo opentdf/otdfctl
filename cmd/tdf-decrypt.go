@@ -7,10 +7,15 @@ import (
 
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/man"
+	"github.com/opentdf/otdfctl/pkg/utils"
 	"github.com/spf13/cobra"
 )
 
 var TDF = "tdf"
+
+var assertionVerification string
+
+const TDF_MAX_FILE_SIZE = int64(10 * 1024 * 1024 * 1024) // 10 GB
 
 func dev_tdfDecryptCmd(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args, cli.WithPrintJson())
@@ -26,16 +31,20 @@ func dev_tdfDecryptCmd(cmd *cobra.Command, args []string) {
 	// Prefer file argument over piped input over default filename
 	bytesToDecrypt := piped
 	var tdfFile string
+	var err error
 	if len(args) > 0 {
 		tdfFile = args[0]
-		bytesToDecrypt = readBytesFromFile(tdfFile)
+		bytesToDecrypt, err = utils.ReadBytesFromFile(tdfFile, TDF_MAX_FILE_SIZE)
+		if err != nil {
+			cli.ExitWithError("Failed to read file:", err)
+		}
 	}
 
 	if len(bytesToDecrypt) == 0 {
 		cli.ExitWithError("Must provide ONE of the following to decrypt: [file argument, stdin input]", errors.New("no input provided"))
 	}
 
-	decrypted, err := h.DecryptBytes(bytesToDecrypt, disableAssertionVerification)
+	decrypted, err := h.DecryptBytes(bytesToDecrypt, assertionVerification, disableAssertionVerification)
 	if err != nil {
 		cli.ExitWithError("Failed to decrypt file", err)
 	}
@@ -73,6 +82,13 @@ func init() {
 		decryptCmd.GetDocFlag("tdf-type").Shorthand,
 		decryptCmd.GetDocFlag("tdf-type").Default,
 		decryptCmd.GetDocFlag("tdf-type").Description,
+	)
+	decryptCmd.Flags().StringVarP(
+		&assertionVerification,
+		decryptCmd.GetDocFlag("with-assertion-verification-keys").Name,
+		decryptCmd.GetDocFlag("with-assertion-verification-keys").Shorthand,
+		"",
+		decryptCmd.GetDocFlag("with-assertion-verification-keys").Description,
 	)
 	decryptCmd.Flags().Bool(
 		decryptCmd.GetDocFlag("no-verify-assertions").Name,
