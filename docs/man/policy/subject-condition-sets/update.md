@@ -35,7 +35,7 @@ For more information about subject condition sets, see the `subject-condition-se
 ## Example
 
 This updates the boolean_operator of the subject condition set created in the `create` example. The following subject condition set would resolve to true if the field at `.example.field.one` is 
-"myvalue" or "myothervalue" AND the field at `.example.field.two` is not equal to "notpresentvalue".
+`myvalue` or `myothervalue` AND the field at `.example.field.two` is not equal to `notpresentvalue`.
 ```shell
 otdfctl policy subject-condition-set update --id bfade235-509a-4a6f-886a-812005c01db5 --subject-sets '[
   {

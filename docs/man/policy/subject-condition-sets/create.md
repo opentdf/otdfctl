@@ -98,7 +98,7 @@ For more information about subject condition sets, see the `subject-condition-se
 ## Examples
 
 The following subject condition set would resolve to true if the field at `.example.field.one` is 
-"myvalue" or "myothervalue", or the field at `.example.field.two` is not equal to "notpresentvalue".
+`myvalue` or `myothervalue1`, or the field at `.example.field.two` is not equal to `notpresentvalue`.
 ```shell
 otdfctl policy subject-condition-set create --subject-sets '[
   {
