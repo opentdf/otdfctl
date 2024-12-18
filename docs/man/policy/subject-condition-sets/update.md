@@ -31,3 +31,44 @@ command:
 Replace the existing conditional logic within an SCS with new conditional logic, passing either JSON directly or a JSON file.
 
 For more information about subject condition sets, see the `subject-condition-sets` subcommand.
+
+## Example
+
+This updates the boolean_operator of the subject condition set created in the `create` example. The following subject condition set would resolve to true if the field at `.example.field.one` is 
+"myvalue" or "myothervalue" AND the field at `.example.field.two` is not equal to "notpresentvalue".
+```shell
+otdfctl policy subject-condition-set update --id bfade235-509a-4a6f-886a-812005c01db5 --subject-sets '[
+  {
+    "condition_groups": [
+      {
+        "conditions": [
+          {
+            "operator": 1,
+            "subject_external_values": ["myvalue", "myothervalue"],
+            "subject_external_selector_value": ".example.field.one"
+          },
+          {
+            "operator": 2,
+            "subject_external_values": ["notpresentvalue"],
+            "subject_external_selector_value": ".example.field.two"
+          }
+        ],
+        "boolean_operator": 1
+      }
+    ]
+  }
+]'
+```
+
+```shell
+   SUCCESS   Updated subject-condition-sets: bfade235-509a-4a6f-886a-812005c01db5                                                                                                                                                                                                                                                                                                                                                                      
+╭─────────────────────────────────────────────────────────────────────────┬────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│Property                                                                 │Value                                                                                                                                           │
+├─────────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│Id                                                                       │bfade235-509a-4a6f-886a-812005c01db5                                                                                                            │
+│SubjectSets                                                              │[{"conditionGroups":[{"conditions":[{"subjectExternalSelectorValue":".example.field.one","operator":"SUBJECT_MAPPING_OPERATOR_ENUM_IN","subject…│
+│Created At                                                               │Wed Dec 18 06:44:39 UTC 2024                                                                                                                    │
+│Updated At                                                               │Wed Dec 18 06:54:28 UTC 2024                                                                                                                    │
+╰─────────────────────────────────────────────────────────────────────────┴────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+  NOTE   Use 'otdfctl policy subject-condition-sets get --id=bfade235-509a-4a6f-886a-812005c01db5 --json' to see all properties
+```
