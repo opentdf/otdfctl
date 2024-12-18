@@ -24,3 +24,24 @@ and already created may now become accessible.
 Make sure you know what you are doing.
 
 For more information on attribute values, see the `values` subcommand.
+
+## Example
+
+```shell
+otdfctl policy attributes values unsafe update --id 355743c1-c0ef-4e8d-9790-d49d883dbc7d --name mynewvalue1
+```
+
+```shell
+  SUCCESS   Updated unsafe: 355743c1-c0ef-4e8d-9790-d49d883dbc7d                                                                                                                                                            
+                                                                                                                                                                                                                            
+╭─────────────────────────────────────────────────────────────────────────┬────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│Property                                                                 │Value                                                                                                                                           │
+├─────────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│Id                                                                       │355743c1-c0ef-4e8d-9790-d49d883dbc7d                                                                                                            │
+│Value                                                                    │mynewvalue1                                                                                                                                     │
+│Created At                                                               │Tue Dec 17 19:06:55 UTC 2024                                                                                                                    │
+│Updated At                                                               │Tue Dec 17 19:14:53 UTC 2024                                                                                                                    │
+│Labels                                                                   │[hello: world]                                                                                                                                  │
+╰─────────────────────────────────────────────────────────────────────────┴────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+  NOTE   Use 'otdfctl policy attributes values unsafe get --id=355743c1-c0ef-4e8d-9790-d49d883dbc7d --json' to see all properties 
+```
