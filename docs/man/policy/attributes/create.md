@@ -53,3 +53,25 @@ If an Attribute is defined with logical rule `HIERARCHY`, an Entity must be mapp
 compared to a given Value on TDF'd Resource Data. Hierarchical values are considered highest at index 0 and lowest at the last index.
 
 For more general information about attributes, see the `attributes` subcommand.
+
+## Example
+
+```shell
+otdfctl policy attributes create --namespace 3d25d33e-2469-4990-a9ed-fdd13ce74436 --name myattribute --rule ANY_OF
+```
+
+```shell
+  SUCCESS   Created attributes: 3c51a593-cbf8-419d-b7dc-b656d0bedfbb                                                                                                                                                        
+                                                                                                                                                                                                                            
+╭─────────────────────────────────────────────────────────────────────────┬────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│Property                                                                 │Value                                                                                                                                           │
+├─────────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│Name                                                                     │myattribute                                                                                                                                     │
+│Rule                                                                     │ANY_OF                                                                                                                                          │
+│Values                                                                   │[]                                                                                                                                              │
+│Namespace                                                                │opentdf.io                                                                                                                                      │
+│Created At                                                               │Tue Dec 17 18:33:06 UTC 2024                                                                                                                    │
+│Updated At                                                               │Tue Dec 17 18:33:06 UTC 2024                                                                                                                    │
+╰─────────────────────────────────────────────────────────────────────────┴────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+  NOTE   Use 'otdfctl policy attributes get --id=3c51a593-cbf8-419d-b7dc-b656d0bedfbb --json' to see all properties 
+```

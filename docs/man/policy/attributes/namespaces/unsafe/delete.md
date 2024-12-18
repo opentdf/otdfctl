@@ -18,3 +18,21 @@ Any existing TDFs containing attributes under this namespace will be rendered in
 Make sure you know what you are doing.
 
 For more general information, see the `namespaces` subcommand.
+
+## Example 
+
+```shell
+otdfctl policy attributes namespaces unsafe delete --id 7650f02a-be00-4faa-a1d1-37cded5e23dc
+```
+
+```shell
+SUCCESS  Deleted unsafe: 7650f02a-be00-4faa-a1d1-37cded5e23dc
+┌────────────────────────────────────────────────────────────────────────────┬─────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│Property                                                                    │Value                                                                                                │
+├────────────────────────────────────────────────────────────────────────────┼─────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│Name                                                                        │opentdf.io                                                                                           │
+│Id                                                                          │7650f02a-be00-4faa-a1d1-37cded5e23dc                                                                 │
+│Created At                                                                  │Mon Jun 24 11:02:00 UTC 2024                                                                         │
+│Updated At                                                                  │Mon Jun 24 11:02:00 UTC 2024                                                                         │
+└────────────────────────────────────────────────────────────────────────────┴─────────────────────────────────────────────────────────────────────────────────────────────────────┘
+```
