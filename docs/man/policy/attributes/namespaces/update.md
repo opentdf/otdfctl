@@ -21,3 +21,23 @@ command:
 Attribute Namespace changes can be dangerous, so this command is for updates considered "safe" (currently just mutations to metadata `labels`).
 
 For unsafe updates, see the dedicated `unsafe update` command. For more general information, see the `namespaces` subcommand.
+
+## Example
+
+```shell
+otdfctl policy attributes namespaces update --id=7650f02a-be00-4faa-a1d1-37cded5e23dc --label hello=world
+```
+
+```shell
+SUCCESS   Updated namespaces: 7650f02a-be00-4faa-a1d1-37cded5e23dc
+┌────────────────────────────────────────────────────────────────────────────┬─────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│Property                                                                    │Value                                                                                                │
+├────────────────────────────────────────────────────────────────────────────┼─────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│Id                                                                          │7650f02a-be00-4faa-a1d1-37cded5e23dc                                                                 │
+│Name                                                                        │opentdf.io                                                                                           │
+│Created At                                                                  │Mon Jun 24 11:02:00 UTC 2024                                                                         │
+│Updated At                                                                  │Mon Jun 24 11:02:00 UTC 2024                                                                         │
+│Labels                                                                      │[hello: world]                                                                                       │
+└────────────────────────────────────────────────────────────────────────────┴─────────────────────────────────────────────────────────────────────────────────────────────────────┘
+NOTE   Use 'namespaces get --id=7650f02a-be00-4faa-a1d1-37cded5e23dc --json' to see all properties
+```

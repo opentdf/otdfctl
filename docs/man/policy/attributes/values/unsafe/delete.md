@@ -18,3 +18,23 @@ Any existing TDFs containing the deleted attribute of this value will be rendere
 Make sure you know what you are doing.
 
 For more information on attribute values, see the `values` subcommand.
+
+## Example
+
+```shell
+otdfctl policy attributes values unsafe delete --id b20458b0-1855-4608-8869-3f6199bc2878
+```
+
+```shell
+  SUCCESS   Deleted unsafe: b20458b0-1855-4608-8869-3f6199bc2878                                                                                                                                                                                                                                                                                                                                                                                
+╭─────────────────────────────────────────────────────────────────────────┬────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│Property                                                                 │Value                                                                                                                                           │
+├─────────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│Id                                                                       │b20458b0-1855-4608-8869-3f6199bc2878                                                                                                            │
+│Value                                                                    │myvalue2                                                                                                                                        │
+│Deleted                                                                  │true                                                                                                                                            │
+│Created At                                                               │Tue Dec 17 19:10:37 UTC 2024                                                                                                                    │
+│Updated At                                                               │Tue Dec 17 19:10:37 UTC 2024                                                                                                                    │
+╰─────────────────────────────────────────────────────────────────────────┴────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+  NOTE   Use 'otdfctl policy attributes values list --json' to see all properties
+```

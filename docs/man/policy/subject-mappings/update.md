@@ -44,3 +44,21 @@ At this time, creation of a new SCS during update of a subject mapping is not su
 For more information about subject mappings, see the `subject-mappings` subcommand.
 
 For more information about subject condition sets, see the `subject-condition-sets` subcommand.
+
+## Example
+
+```shell
+otdfctl policy subject-mappings update --id 39866dd2-368b-41f6-b292-b4b68c01888b --action-standard DECRYPT,TRANSMIT
+```
+
+```shell
+  SUCCESS   Updated subject-mappings: 39866dd2-368b-41f6-b292-b4b68c01888b                                                                                                                                                                                                                                                                                                                                                                         
+╭─────────────────────────────────────────────────────────────────────────┬────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│Property                                                                 │Value                                                                                                                                           │
+├─────────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│Id                                                                       │39866dd2-368b-41f6-b292-b4b68c01888b                                                                                                            │
+│Created At                                                               │Wed Dec 18 15:40:50 UTC 2024                                                                                                                    │
+│Updated At                                                               │Wed Dec 18 15:46:41 UTC 2024                                                                                                                    │
+╰─────────────────────────────────────────────────────────────────────────┴────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+  NOTE   Use 'otdfctl policy subject-mappings get --id=39866dd2-368b-41f6-b292-b4b68c01888b --json' to see all properties
+```
