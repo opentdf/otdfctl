@@ -25,19 +25,3 @@ For more general information about attributes, see the `attributes` subcommand.
 ```shell
 otdfctl policy attributes deactivate --id 3c51a593-cbf8-419d-b7dc-b656d0bedfbb
 ```
-
-```shell
-  SUCCESS   Deactivated attributes: 3c51a593-cbf8-419d-b7dc-b656d0bedfbb                                                                                                                                                                                                                                                                                                                                    
-╭─────────────────────────────────────────────────────────────────────────┬────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│Property                                                                 │Value                                                                                                                                           │
-├─────────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
-│Name                                                                     │myattribute                                                                                                                                     │
-│Rule                                                                     │ANY_OF                                                                                                                                          │
-│Values                                                                   │[myvalue1]                                                                                                                                      │
-│Namespace                                                                │opentdf.io                                                                                                                                      │
-│Created At                                                               │Tue Dec 17 18:33:06 UTC 2024                                                                                                                    │
-│Updated At                                                               │Tue Dec 17 19:41:47 UTC 2024                                                                                                                    │
-│Labels                                                                   │[hello: world]                                                                                                                                  │
-╰─────────────────────────────────────────────────────────────────────────┴────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-  NOTE   Use 'otdfctl policy attributes list --json' to see all properties 
-```

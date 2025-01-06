@@ -29,16 +29,3 @@ For more general information, see the `namespaces` subcommand.
 ```shell
 otdfctl policy attributes namespaces unsafe update --id=7650f02a-be00-4faa-a1d1-37cded5e23dc --name opentdf2.io
 ```
-
-```shell
-SUCCESS   Unsafe updated namespaces: 7650f02a-be00-4faa-a1d1-37cded5e23dc
-┌────────────────────────────────────────────────────────────────────────────┬─────────────────────────────────────────────────────────────────────────────────────────────────────┐
-│Property                                                                    │Value                                                                                                │
-├────────────────────────────────────────────────────────────────────────────┼─────────────────────────────────────────────────────────────────────────────────────────────────────┤
-│Id                                                                          │7650f02a-be00-4faa-a1d1-37cded5e23dc                                                                 │
-│Name                                                                        │opentdf2.io                                                                                          │
-│Created At                                                                  │Mon Jun 24 11:02:00 UTC 2024                                                                         │
-│Updated At                                                                  │Mon Jun 24 11:02:00 UTC 2024                                                                         │
-└────────────────────────────────────────────────────────────────────────────┴─────────────────────────────────────────────────────────────────────────────────────────────────────┘
-NOTE   Use 'namespaces get --id=7650f02a-be00-4faa-a1d1-37cded5e23dc --json' to see all properties
-```

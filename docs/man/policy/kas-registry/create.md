@@ -89,37 +89,7 @@ otdfctl policy kas-registry create --uri http://example.com/kas --name example-k
   }'
 ```
 
-```shell
-  SUCCESS   Created kas-registry: 62857b55-560c-4b67-96e3-33e4670ecb3b                                                                                                                                                                                                                                                                                                                                                             
-╭─────────────────────────────────────────────────────────────────────────┬────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│Property                                                                 │Value                                                                                                                                           │
-├─────────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
-│Id                                                                       │62857b55-560c-4b67-96e3-33e4670ecb3b                                                                                                            │
-│URI                                                                      │http://example.com/kas                                                                                                                          │
-│PublicKey                                                                │cached:{keys:{pem:"-----BEGIN CERTIFICATE-----\nMIIC/TCCAeWgAwIBAgIUSHTJ2bzAh7dQmmF03q6Iq/n0l90wDQYJKoZIhvcNAQEL\nBQAwDjEMMAoGA1UEAwwDa2FzMB4XD…│
-│Name                                                                     │example-kas                                                                                                                                     │
-│Created At                                                               │Wed Dec 18 04:51:22 UTC 2024                                                                                                                    │
-│Updated At                                                               │Wed Dec 18 04:51:22 UTC 2024                                                                                                                    │
-╰─────────────────────────────────────────────────────────────────────────┴────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-  NOTE   Use 'otdfctl policy kas-registry get --id=62857b55-560c-4b67-96e3-33e4670ecb3b --json' to see all properties 
-```
-
 With a remote public key:
 ```shell
 otdfctl policy kas-registry create --uri http://example.com/kas2 --name example-kas2 --public-key-remote "https://example.com/kas2/public_key"
-```
-
-```shell
-  SUCCESS   Created kas-registry: 3c39618a-cd8c-48cf-a60c-e8a2f4be4dd5                                                                                                                                                                                                                                                                                                                                                                     
-╭─────────────────────────────────────────────────────────────────────────┬────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│Property                                                                 │Value                                                                                                                                           │
-├─────────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
-│Id                                                                       │3c39618a-cd8c-48cf-a60c-e8a2f4be4dd5                                                                                                            │
-│URI                                                                      │http://example.com/kas2                                                                                                                         │
-│PublicKey                                                                │remote:"https://example.com/kas2/public_key"                                                                                                    │
-│Name                                                                     │example-kas2                                                                                                                                    │
-│Created At                                                               │Wed Dec 18 04:57:51 UTC 2024                                                                                                                    │
-│Updated At                                                               │Wed Dec 18 04:57:51 UTC 2024                                                                                                                    │
-╰─────────────────────────────────────────────────────────────────────────┴────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-  NOTE   Use 'otdfctl policy kas-registry get --id=3c39618a-cd8c-48cf-a60c-e8a2f4be4dd5 --json' to see all properties 
 ```

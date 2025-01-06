@@ -54,20 +54,3 @@ For more general information about attributes, see the `attributes` subcommand.
 ```shell
 otdfctl policy attributes unsafe update --id 3c51a593-cbf8-419d-b7dc-b656d0bedfbb --name mynewname
 ```
-
-```shell
-  SUCCESS   Updated unsafe: 3c51a593-cbf8-419d-b7dc-b656d0bedfbb                                                                                                                                                                                                                                                                                                                                                                           
-╭─────────────────────────────────────────────────────────────────────────┬────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│Property                                                                 │Value                                                                                                                                           │
-├─────────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
-│Id                                                                       │3c51a593-cbf8-419d-b7dc-b656d0bedfbb                                                                                                            │
-│Name                                                                     │myattribute                                                                                                                                     │
-│Rule                                                                     │ANY_OF                                                                                                                                          │
-│Values                                                                   │[myvalue1]                                                                                                                                      │
-│Value IDs                                                                │[355743c1-c0ef-4e8d-9790-d49d883dbc7d]                                                                                                          │
-│Created At                                                               │Tue Dec 17 18:33:06 UTC 2024                                                                                                                    │
-│Updated At                                                               │Tue Dec 17 19:42:39 UTC 2024                                                                                                                    │
-│Labels                                                                   │[hello: world]                                                                                                                                  │
-╰─────────────────────────────────────────────────────────────────────────┴────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-  NOTE   Use 'otdfctl policy attributes unsafe get --id=3c51a593-cbf8-419d-b7dc-b656d0bedfbb --json' to see all properties
-```
