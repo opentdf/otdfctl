@@ -19,3 +19,9 @@ However, a deactivation of an attribute means its associated values cannot be en
 For information about reactivation, see the `unsafe reactivate` subcommand.
 
 For more general information about attributes, see the `attributes` subcommand.
+
+## Example
+
+```shell
+otdfctl policy attributes deactivate --id 3c51a593-cbf8-419d-b7dc-b656d0bedfbb
+```

@@ -18,3 +18,9 @@ The Active/Inactive state of any Attribute Definitions or Values under this Name
 Make sure you know what you are doing.
 
 For more general information, see the `namespaces` subcommand.
+
+## Example 
+
+```shell
+otdfctl policy attributes namespaces unsafe reactivate --id 7650f02a-be00-4faa-a1d1-37cded5e23dc
+```

@@ -20,3 +20,9 @@ type of grants and relevant key splits.
 Make sure you know what you are doing.
 
 For more information about registration of Key Access Servers, see the manual for `kas-registry`.
+
+## Example 
+
+```shell
+otdfctl policy kas-registry delete --id 3c39618a-cd8c-48cf-a60c-e8a2f4be4dd5
+```

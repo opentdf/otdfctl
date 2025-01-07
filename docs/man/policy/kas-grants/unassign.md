@@ -30,3 +30,20 @@ command:
 Unassign a registered Key Access Server (KAS) to an attribute namespace, definition, or value.
 
 For more information, see `kas-registry` and `kas-grants` manuals.
+
+## Example
+
+Namespace grant:
+```shell
+otdfctl policy kas-grants unassign --namespace-id 3d25d33e-2469-4990-a9ed-fdd13ce74436 --kas-id 62857b55-560c-4b67-96e3-33e4670ecb3b
+```
+
+Attribute grant:
+```shell
+otdfctl policy kas-grants unassign --attribute-id a21eb299-3a7d-4035-8a39-c8662c03cb15 --kas-id 62857b55-560c-4b67-96e3-33e4670ecb3b
+```
+
+Attribute value grant:
+```shell
+otdfctl policy kas-grants unassign --value-id 0a40b27c-6cc9-49e8-a6ae-663cac2c324b --kas-id 62857b55-560c-4b67-96e3-33e4670ecb3b
+```

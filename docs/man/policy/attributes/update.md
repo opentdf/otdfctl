@@ -23,3 +23,9 @@ Attribute Definition changes can be dangerous, so this command is for updates co
 For unsafe updates, see the dedicated `unsafe update` command. For more general information, see the `attributes` subcommand.
 
 For more general information about attributes, see the `attributes` subcommand.
+
+## Example
+
+```shell
+otdfctl policy attributes update --id=3c51a593-cbf8-419d-b7dc-b656d0bedfbb --label hello=world
+```

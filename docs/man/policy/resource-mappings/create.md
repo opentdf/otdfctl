@@ -22,3 +22,9 @@ command:
 Associate an attribute value with a set of plaintext string terms.
 
 For more information about resource mappings, see the `resource-mappings` subcommand.
+
+## Examples
+
+```shell
+otdfctl policy resource-mappings create --attribute-value-id 891cfe85-b381-4f85-9699-5f7dbfe2a9ab --terms term1,term2
+```

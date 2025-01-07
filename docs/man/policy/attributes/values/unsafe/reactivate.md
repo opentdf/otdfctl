@@ -18,3 +18,9 @@ The Active/Inactive state of the Attribute Definition and Namespace above this V
 Make sure you know what you are doing.
 
 For more information on attribute values, see the `values` subcommand.
+
+## Example
+
+```shell
+otdfctl policy attributes values unsafe reactivate --id 355743c1-c0ef-4e8d-9790-d49d883dbc7d
+```

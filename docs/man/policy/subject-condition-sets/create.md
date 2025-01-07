@@ -94,3 +94,36 @@ the condition set would not resolve to true, and the Subject would not be found 
 to the Attribute Value applicable to this Subject Condition Set via Subject Mapping between.
 
 For more information about subject condition sets, see the `subject-condition-sets` subcommand.
+
+## Examples
+
+The following subject condition set would resolve to true if the field at `.example.field.one` is 
+`myvalue` or `myothervalue1`, or the field at `.example.field.two` is not equal to `notpresentvalue`.
+```shell
+otdfctl policy subject-condition-set create --subject-sets '[
+  {
+    "condition_groups": [
+      {
+        "conditions": [
+          {
+            "operator": 1,
+            "subject_external_values": ["myvalue", "myothervalue"],
+            "subject_external_selector_value": ".example.field.one"
+          },
+          {
+            "operator": 2,
+            "subject_external_values": ["notpresentvalue"],
+            "subject_external_selector_value": ".example.field.two"
+          }
+        ],
+        "boolean_operator": 2
+      }
+    ]
+  }
+]'
+```
+
+You can perform the same action with the input contained in a file:
+```shell
+otdfctl policy subject-condition-set create --subject-sets-file-json scs.json
+```

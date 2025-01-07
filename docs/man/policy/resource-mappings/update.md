@@ -26,3 +26,9 @@ command:
 Alter the attribute value associated with a resource mapping's terms, or fully replace the terms in a given resource mapping.
 
 For more information about resource mappings, see the `resource-mappings` subcommand.
+
+## Examples
+
+```shell
+otdfctl policy resource-mappings update --id=3ff446fb-8fb1-4c04-8023-47592c90370c --terms newterm1,newterm2
+```

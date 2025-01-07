@@ -72,3 +72,24 @@ The JSON value passed to the `--public-keys` flag stores the set of public keys 
 Deprecated.
 
 For more information about registration of Key Access Servers, see the manual for `kas-registry`.
+
+## Examples
+
+```shell
+otdfctl policy kas-registry create --uri http://example.com/kas --name example-kas --public-keys '{
+        "cached": {
+          "keys": [
+                {
+                  "pem": "-----BEGIN CERTIFICATE-----\nMIIC/TCCAeWgAwIBAgIUSHTJ2bzAh7dQmmF03q6Iq/n0l90wDQYJKoZIhvcNAQEL\nBQAwDjEMMAoGA1UEAwwDa2FzMB4XDTI0MDYwNjE3NDY1NFoXDTI1MDYwNjE3NDY1\nNFowDjEMMAoGA1UEAwwDa2FzMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKC\nAQEAxN3APihTiojcaH6oWj1tMtZMaaZ+IA1qtqFmpy5Fg8D5bEsP736GxzUMFsMV\nshrKEXz8dY9Kp23uIwyeC0RPWLe5xIfTkJUbyLpqGdlEgqj10RQ8kSVq270XPES2\nGZUij2DuJVfwpTpLzcti2PsgEOoOKC6NnnAI0NS1mao/2DxQxs/D9hAJjGdpzymb\nxi2TxGnvYbvofCPd8RdFTCPvgwKLS7+MqBcmic9VdX91QNOPmrP3rIoKtjjd+5PY\nl/z73PAxR3K3SIzIZLvItq2ahobOOMiSxw8soOlOdHNUJTpECcduhRbquqmK6fTw\nVOfrcRQhhU4TkDu92LI7SglOWQIDAQABo1MwUTAdBgNVHQ4EFgQUdgxx7U5AQgfi\niQWu3khi9yneEVowHwYDVR0jBBgwFoAUdgxx7U5AQgfiiQWu3khi9yneEVowDwYD\nVR0TAQH/BAUwAwEB/zANBgkqhkiG9w0BAQsFAAOCAQEATcLYbHomJgLQ/H6iDvcA\nIpISF/Rcxgh7NnIqRkB+Tm4xNlNHIxl4Sz+KkEZEPh0WKItGVDj3293rArROEOXI\ntVmn2OBv9M/5DQkHj76Ru4PQ2TcL0CACl1JKfqXLsMc6HHTp8ZTP8lMdpW4kzEc3\nfVtgvtpJc4WHdUIEzAtTlzYRqIbyyBMWeTjXwa54aMv3RZQdJ+C0ehwWTDQDph7n\nKY3+7G0enNEVtyW4dtxvQQbidMany0JEpr6QpPmxC8e0Z23dMDdkR1IoT99PhdW/\nQC8xMjuLCiREV7a6e2MxCGj3fxrnMXwOIqO3AzNswe2amcoz2ktuoqgDTYlo+FkK\n5w==\n-----END CERTIFICATE-----\n",
+                  "kid": "k1",
+                  "alg": 1
+                }
+          ]
+        }
+  }'
+```
+
+With a remote public key:
+```shell
+otdfctl policy kas-registry create --uri http://example.com/kas2 --name example-kas2 --public-key-remote "https://example.com/kas2/public_key"
+```

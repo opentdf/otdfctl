@@ -24,3 +24,9 @@ and already created may now become accessible.
 Make sure you know what you are doing.
 
 For more information on attribute values, see the `values` subcommand.
+
+## Example
+
+```shell
+otdfctl policy attributes values unsafe update --id 355743c1-c0ef-4e8d-9790-d49d883dbc7d --name mynewvalue1
+```

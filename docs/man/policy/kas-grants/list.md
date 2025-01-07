@@ -25,3 +25,9 @@ Omitting `kas` lists all grants known to platform policy, otherwise results are 
 the KAS URI or ID specified by the flag value.
 
 For more information, see `kas-registry` and `kas-grants` manuals.
+
+## Example
+
+```shell
+otdfctl policy kas-grants list
+```

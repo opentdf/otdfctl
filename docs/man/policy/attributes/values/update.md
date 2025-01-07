@@ -23,3 +23,9 @@ Attribute Value changes can be dangerous, so this command is for updates conside
 For unsafe updates, see the dedicated `unsafe update` command. For more general information, see the `values` subcommand.
 
 For more general information about attributes, see the `attributes` subcommand.
+
+## Example
+
+```shell
+otdfctl policy attributes values update --id 355743c1-c0ef-4e8d-9790-d49d883dbc7d --label hello=world
+```

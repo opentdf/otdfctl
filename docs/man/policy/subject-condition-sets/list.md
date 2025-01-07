@@ -15,3 +15,9 @@ command:
 ---
 
 For more information about subject condition sets, see the `subject-condition-sets` subcommand.
+
+## Example
+
+```shell
+otdfctl policy subject-condition-set list
+```

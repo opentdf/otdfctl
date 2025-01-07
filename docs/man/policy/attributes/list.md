@@ -24,3 +24,9 @@ command:
 By default, the list will only provide `active` attributes if unspecified, but the filter can be controlled with the `--state` flag.
 
 For more general information about attributes, see the `attributes` subcommand.
+
+## Example
+
+```shell
+otdfctl policy attributes list
+```

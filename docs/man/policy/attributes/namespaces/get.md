@@ -11,3 +11,9 @@ command:
 ---
 
 For more information, see the `namespaces` subcommand.
+
+## Example
+
+```shell
+otdfctl policy attributes namespaces get --id=7650f02a-be00-4faa-a1d1-37cded5e23dc
+```

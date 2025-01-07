@@ -48,3 +48,9 @@ To remove Values from an Attribute Definition, delete them separately via the `v
 Make sure you know what you are doing.
 
 For more general information about attributes, see the `attributes` subcommand.
+
+## Example
+
+```shell
+otdfctl policy attributes unsafe update --id 3c51a593-cbf8-419d-b7dc-b656d0bedfbb --name mynewname
+```

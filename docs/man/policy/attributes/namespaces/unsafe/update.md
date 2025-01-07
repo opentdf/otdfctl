@@ -23,3 +23,9 @@ and already created may now become accessible.
 Make sure you know what you are doing.
 
 For more general information, see the `namespaces` subcommand.
+
+## Example
+
+```shell
+otdfctl policy attributes namespaces unsafe update --id=7650f02a-be00-4faa-a1d1-37cded5e23dc --name opentdf2.io
+```

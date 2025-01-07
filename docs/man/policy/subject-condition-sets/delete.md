@@ -13,3 +13,9 @@ command:
 ---
 
 For more information about subject condition sets, see the `subject-condition-sets` subcommand.
+
+## Example
+
+```shell
+otdfctl policy subject-condition-sets delete --id=bfade235-509a-4a6f-886a-812005c01db5
+```

@@ -14,3 +14,9 @@ command:
 ---
 
 For more information about registration of Key Access Servers, see the manual for `kas-registry`.
+
+## Example
+
+```shell
+otdfctl policy kas-registry list
+```

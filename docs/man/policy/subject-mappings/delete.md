@@ -17,3 +17,9 @@ Delete a Subject Mapping to remove entitlement of an entity (via Subject Conditi
 For more information about subject mappings, see the `subject-mappings` subcommand.
 
 For more information about subject condition sets, see the `subject-condition-sets` subcommand.
+
+## Example
+
+```shell
+otdfctl policy subject-mappings delete --id d71c4028-ce64-453b-8aa7-6edb45fbb848
+```

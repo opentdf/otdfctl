@@ -14,3 +14,9 @@ command:
 ---
 
 For more information about subject mappings, see the `subject-mappings` subcommand.
+
+## Example
+
+```shell
+otdfctl policy subject-mappings list
+```

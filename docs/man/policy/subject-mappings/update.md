@@ -44,3 +44,9 @@ At this time, creation of a new SCS during update of a subject mapping is not su
 For more information about subject mappings, see the `subject-mappings` subcommand.
 
 For more information about subject condition sets, see the `subject-condition-sets` subcommand.
+
+## Example
+
+```shell
+otdfctl policy subject-mappings update --id 39866dd2-368b-41f6-b292-b4b68c01888b --action-standard DECRYPT,TRANSMIT
+```

@@ -15,3 +15,7 @@ command:
 Retrieve the specifics of a Subject Mapping.
 
 For more information about subject mappings, see the `subject-mappings` subcommand.
+
+```shell
+otdfctl policy subject-mappings get --id 39866dd2-368b-41f6-b292-b4b68c01888b
+```

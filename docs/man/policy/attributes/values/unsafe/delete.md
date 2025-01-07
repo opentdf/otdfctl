@@ -18,3 +18,9 @@ Any existing TDFs containing the deleted attribute of this value will be rendere
 Make sure you know what you are doing.
 
 For more information on attribute values, see the `values` subcommand.
+
+## Example
+
+```shell
+otdfctl policy attributes values unsafe delete --id b20458b0-1855-4608-8869-3f6199bc2878
+```

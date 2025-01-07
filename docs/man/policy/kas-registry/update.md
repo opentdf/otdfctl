@@ -39,3 +39,9 @@ type of grants and relevant key splits.
 Make sure you know what you are doing.
 
 For more information about registration of Key Access Servers, see the manual for `kas-registry`.
+
+## Example 
+
+```shell
+otdfctl policy kas-registry update --id 3c39618a-cd8c-48cf-a60c-e8a2f4be4dd5 --name example-kas2-newname --public-key-remote "https://example.com/kas2/new_public_key"
+```
