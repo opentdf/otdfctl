@@ -2,6 +2,8 @@ module github.com/opentdf/otdfctl
 
 go 1.22.7
 
+// replace github.com/jrschumacher/go-osprofiles => ../go-osprofiles
+
 require (
 	github.com/adrg/frontmatter v0.2.0
 	github.com/charmbracelet/bubbles v0.18.0
@@ -15,13 +17,13 @@ require (
 	github.com/go-jose/go-jose/v3 v3.0.3
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.6.0
+	github.com/jrschumacher/go-osprofiles v0.0.0-20250107221332-e0e75723f41a
 	github.com/opentdf/platform/lib/flattening v0.1.1
 	github.com/opentdf/platform/protocol/go v0.2.22
 	github.com/opentdf/platform/sdk v0.3.23
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.10.0
-	github.com/zalando/go-keyring v0.2.6
 	github.com/zitadel/oidc/v3 v3.33.1
 	golang.org/x/oauth2 v0.24.0
 	golang.org/x/term v0.27.0
@@ -98,6 +100,7 @@ require (
 	github.com/xeipuuv/gojsonschema v1.2.0 // indirect
 	github.com/yuin/goldmark v1.7.4 // indirect
 	github.com/yuin/goldmark-emoji v1.0.3 // indirect
+	github.com/zalando/go-keyring v0.2.6 // indirect
 	github.com/zitadel/logging v0.6.1 // indirect
 	github.com/zitadel/schema v1.3.0 // indirect
 	go.opentelemetry.io/otel v1.31.0 // indirect

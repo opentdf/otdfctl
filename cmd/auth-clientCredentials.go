@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/opentdf/otdfctl/pkg/auth"
+	"github.com/opentdf/otdfctl/internal/auth"
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/opentdf/otdfctl/pkg/profiles"
@@ -15,7 +15,7 @@ var clientCredentialsCmd = man.Docs.GetCommand("auth/client-credentials",
 
 func auth_clientCredentials(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
-	_, cp := InitProfile(c, false)
+	profileMgr, currProfile := InitProfile(c, false)
 
 	var clientId string
 	var clientSecret string
@@ -35,18 +35,15 @@ func auth_clientCredentials(cmd *cobra.Command, args []string) {
 	}
 
 	// Set the client credentials
-	err := cp.SetAuthCredentials(profiles.AuthCredentials{
-		AuthType:     profiles.PROFILE_AUTH_TYPE_CLIENT_CREDENTIALS,
-		ClientId:     clientId,
+	currProfile.SetAuthCredentials(auth.AuthCredentials{
+		AuthType:     auth.AUTH_TYPE_CLIENT_CREDENTIALS,
+		ClientID:     clientId,
 		ClientSecret: clientSecret,
 	})
-	if err != nil {
-		c.ExitWithError("Failed to set client credentials", err)
-	}
 
 	// Validate the client credentials
-	c.Printf("Validating client credentials for %s... ", cp.GetEndpoint())
-	if err := auth.ValidateProfileAuthCredentials(cmd.Context(), cp); err != nil {
+	c.Printf("Validating client credentials for %s... ", currProfile.GetEndpoint())
+	if err := profiles.ValidateProfileAuthCredentials(cmd.Context(), currProfile); err != nil {
 		c.Println("failed")
 		c.ExitWithError("An error occurred during login. Please check your credentials and try again", err)
 	}
@@ -54,7 +51,8 @@ func auth_clientCredentials(cmd *cobra.Command, args []string) {
 
 	// Save the client credentials
 	c.Print("Storing client ID and secret in keyring... ")
-	if err := cp.Save(); err != nil {
+
+	if err := profileMgr.UpdateProfile(currProfile); err != nil {
 		c.Println("failed")
 		c.ExitWithError("An error occurred while storing client credentials", err)
 	}

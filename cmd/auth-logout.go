@@ -1,25 +1,24 @@
 package cmd
 
 import (
-	"github.com/opentdf/otdfctl/pkg/auth"
+	"github.com/opentdf/otdfctl/internal/auth"
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/man"
-	"github.com/opentdf/otdfctl/pkg/profiles"
 	"github.com/spf13/cobra"
 )
 
 func auth_logout(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
-	_, cp := InitProfile(c, false)
+	profileMgr, currProfile := InitProfile(c, false)
 	c.Println("Initiating logout...")
 
 	// we can only revoke access tokens stored for the code login flow, not client credentials
-	creds := cp.GetAuthCredentials()
-	if creds.AuthType == profiles.PROFILE_AUTH_TYPE_ACCESS_TOKEN {
+	creds := currProfile.GetAuthCredentials()
+	if creds.AuthType == auth.AUTH_TYPE_ACCESS_TOKEN {
 		c.Println("Revoking access token...")
 		if err := auth.RevokeAccessToken(
 			cmd.Context(),
-			cp.GetEndpoint(),
+			currProfile.GetEndpoint(),
 			creds.AccessToken.PublicClientID,
 			creds.AccessToken.RefreshToken,
 			c.FlagHelper.GetOptionalBool("tls-no-verify"),
@@ -29,7 +28,8 @@ func auth_logout(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	if err := cp.SetAuthCredentials(profiles.AuthCredentials{}); err != nil {
+	currProfile.SetAuthCredentials(auth.AuthCredentials{})
+	if err := profileMgr.UpdateProfile(currProfile); err != nil {
 		c.Println("failed")
 		c.ExitWithError("An error occurred while logging out", err)
 	}

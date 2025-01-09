@@ -1,21 +1,20 @@
 package cmd
 
 import (
-	"github.com/opentdf/otdfctl/pkg/auth"
+	"github.com/opentdf/otdfctl/internal/auth"
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/man"
-	"github.com/opentdf/otdfctl/pkg/profiles"
 	"github.com/spf13/cobra"
 )
 
 func auth_codeLogin(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
-	_, cp := InitProfile(c, false)
+	profileMgr, currProfile := InitProfile(c, false)
 
 	c.Print("Initiating login...")
 	tok, publicClientID, err := auth.LoginWithPKCE(
 		cmd.Context(),
-		cp.GetEndpoint(),
+		currProfile.GetEndpoint(),
 		c.FlagHelper.GetOptionalString("client-id"),
 		c.FlagHelper.GetOptionalBool("tls-no-verify"),
 	)
@@ -26,20 +25,18 @@ func auth_codeLogin(cmd *cobra.Command, args []string) {
 	c.Println("ok")
 
 	// Set the auth credentials to profile
-	if err := cp.SetAuthCredentials(profiles.AuthCredentials{
-		AuthType: profiles.PROFILE_AUTH_TYPE_ACCESS_TOKEN,
-		AccessToken: profiles.AuthCredentialsAccessToken{
+	currProfile.SetAuthCredentials(auth.AuthCredentials{
+		AuthType: auth.AUTH_TYPE_ACCESS_TOKEN,
+		AccessToken: auth.AuthCredentialsAccessToken{
 			PublicClientID: publicClientID,
 			AccessToken:    tok.AccessToken,
 			Expiration:     tok.Expiry.Unix(),
 			RefreshToken:   tok.RefreshToken,
 		},
-	}); err != nil {
-		c.ExitWithError("failed to set auth credentials", err)
-	}
+	})
 
 	c.Print("Storing credentials to profile in keyring...")
-	if err := cp.Save(); err != nil {
+	if err := profileMgr.UpdateProfile(currProfile); err != nil {
 		c.Println("failed")
 		c.ExitWithError("An error occurred while storing authentication credentials", err)
 	}

@@ -2,211 +2,125 @@ package profiles
 
 import (
 	"errors"
+
+	osprofiles "github.com/jrschumacher/go-osprofiles"
+	"github.com/opentdf/otdfctl/pkg/config"
 )
 
-// TODO:
-// - add a version
-// - add a migration path
-
-const (
-	STORE_KEY_PROFILE = "profile"
-	STORE_KEY_GLOBAL  = "global"
-)
-
-type profileConfig struct {
-	driver ProfileDriver
+type ProfileManager struct {
+	profiler *osprofiles.Profiler
 }
 
-type Profile struct {
-	config profileConfig
+// TODO: errors should be named
 
-	globalStore         *GlobalStore
-	currentProfileStore *ProfileStore
-}
+// NewProfileManager sets up profiler to CRUD ProfileCLI instances to the configured storage location
+func NewProfileManager(cfg *config.Config, isInMemoryProfile bool) (*ProfileManager, error) {
+	var (
+		profiler  *osprofiles.Profiler
+		err       error
+		namespace = config.AppName
+	)
 
-type CurrentProfileStore struct {
-	StoreInterface
-	ProfileConfig
-}
-
-const (
-	PROFILE_DRIVER_KEYRING   ProfileDriver = "keyring"
-	PROFILE_DRIVER_IN_MEMORY ProfileDriver = "in-memory"
-	PROFILE_DRIVER_DEFAULT                 = PROFILE_DRIVER_KEYRING
-)
-
-type (
-	profileConfigVariadicFunc func(profileConfig) profileConfig
-	ProfileDriver             string
-)
-
-func WithInMemoryStore() profileConfigVariadicFunc {
-	return func(c profileConfig) profileConfig {
-		c.driver = PROFILE_DRIVER_IN_MEMORY
-		return c
+	// allow override
+	if isInMemoryProfile {
+		profiler, err = osprofiles.New(namespace, osprofiles.WithInMemoryStore())
 	}
-}
 
-func WithKeyringStore() profileConfigVariadicFunc {
-	return func(c profileConfig) profileConfig {
-		c.driver = PROFILE_DRIVER_KEYRING
-		return c
-	}
-}
-
-func newStoreFactory(driver ProfileDriver) NewStoreInterface {
-	switch driver {
-	case PROFILE_DRIVER_KEYRING:
-		return NewKeyringStore
-	case PROFILE_DRIVER_IN_MEMORY:
-		return NewMemoryStore
+	// defer to config
+	switch cfg.ProfileStoreType {
+	case config.ProfileStoreInMemory:
+		profiler, err = osprofiles.New(namespace, osprofiles.WithInMemoryStore())
+	case config.ProfileStoreFile:
+		profiler, err = osprofiles.New(namespace, osprofiles.WithFileStore(cfg.ProfileStoreDir))
+	case config.ProfileStoreNativeKeyring:
+		profiler, err = osprofiles.New(namespace, osprofiles.WithKeyringStore())
 	default:
-		return nil
+		err = errors.New("Invalid storage location")
 	}
+
+	return &ProfileManager{
+		profiler: profiler,
+	}, err
 }
 
-// create a new profile and load global config
-func New(opts ...profileConfigVariadicFunc) (*Profile, error) {
-	var err error
+// AddProfile adds a new profile to the profile store
+func (p ProfileManager) AddProfile(profile ProfileCLI, setDefault bool) error {
+	return p.profiler.AddProfile(profile, setDefault)
+}
 
-	newStoreFactory("hello")
-	if testProfile != nil {
-		return testProfile, nil
-	}
-
-	config := profileConfig{
-		driver: PROFILE_DRIVER_DEFAULT,
-	}
-	for _, opt := range opts {
-		config = opt(config)
-	}
-
-	// check if the store driver is valid
-	newStore := newStoreFactory(config.driver)
-	if newStore == nil {
-		return nil, errors.New("invalid store driver")
-	}
-
-	p := &Profile{
-		config: config,
-	}
-
-	// load global config
-	p.globalStore, err = LoadGlobalConfig(newStore)
+// GetCurrentProfile returns the current stored default profile
+func (p ProfileManager) GetCurrentProfile() (*ProfileCLI, error) {
+	profileName := p.profiler.GetGlobalConfig().GetDefaultProfile()
+	store, err := p.profiler.GetProfile(profileName)
 	if err != nil {
 		return nil, err
 	}
-
-	return p, nil
-}
-
-func (p *Profile) GetGlobalConfig() *GlobalStore {
-	return p.globalStore
-}
-
-func (p *Profile) AddProfile(profileName string, endpoint string, tlsNoVerify bool, setDefault bool) error {
-	var err error
-
-	// check if profile already exists
-	if p.globalStore.ProfileExists(profileName) {
-		return errors.New("profile already exists")
+	profile, ok := store.Profile.(*ProfileCLI)
+	if !ok {
+		return nil, errors.New("Profile is not of type ProfileCLI")
 	}
+	return profile, nil
+}
 
-	// Create profile store and save
-	p.currentProfileStore, err = NewProfileStore(newStoreFactory(p.config.driver), profileName, endpoint, tlsNoVerify)
+// GetProfile returns the profile stored under the specified name
+func (p ProfileManager) GetProfile(name string) (*ProfileCLI, error) {
+	store, err := p.profiler.GetProfile(name)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	if err := p.currentProfileStore.Save(); err != nil {
-		return err
+	profile, ok := store.Profile.(*ProfileCLI)
+	if !ok {
+		return nil, errors.New("Profile is not of type ProfileCLI")
 	}
-
-	// add profile to global config
-	if err := p.globalStore.AddProfile(profileName); err != nil {
-		return err
-	}
-
-	if setDefault || p.globalStore.GetDefaultProfile() == "" {
-		return p.globalStore.SetDefaultProfile(profileName)
-	}
-
-	return nil
+	return profile, nil
 }
 
-func (p *Profile) GetCurrentProfile() (*ProfileStore, error) {
-	if p.currentProfileStore == nil {
-		return nil, errors.New("no current profile set")
-	}
-
-	return p.currentProfileStore, nil
-}
-
-func (p *Profile) GetProfile(profileName string) (*ProfileStore, error) {
-	if !p.globalStore.ProfileExists(profileName) {
-		return nil, errors.New("profile does not exist")
-	}
-
-	return LoadProfileStore(newStoreFactory(p.config.driver), profileName)
-}
-
-func (p *Profile) ListProfiles() []string {
-	return p.globalStore.ListProfiles()
-}
-
-func (p *Profile) UseProfile(profileName string) (*ProfileStore, error) {
-	var err error
-
-	// check if current profile is already set
-	if p.currentProfileStore != nil {
-		if p.currentProfileStore.config.Name == profileName {
-			return p.currentProfileStore, nil
+// ListProfiles returns a list of all stored profiles
+func (p ProfileManager) ListProfiles() ([]*ProfileCLI, error) {
+	var profiles []*ProfileCLI
+	for _, profileName := range p.profiler.ListProfiles() {
+		store, err := p.profiler.GetProfile(profileName)
+		if err != nil {
+			return nil, err
 		}
+		profile, ok := store.Profile.(*ProfileCLI)
+		if !ok {
+			return nil, errors.New("Profile is not of type ProfileCLI")
+		}
+		profiles = append(profiles, profile)
 	}
-
-	// set current profile
-	p.currentProfileStore, err = p.GetProfile(profileName)
-	return p.currentProfileStore, err
+	return profiles, nil
 }
 
-func (p *Profile) UseDefaultProfile() (*ProfileStore, error) {
-	defaultProfile := p.globalStore.GetDefaultProfile()
-	if defaultProfile == "" {
-		return nil, errors.New("no default profile set")
+// UseProfile sets the current profile to the specified profile name
+func (p ProfileManager) UseProfile(name string) (*ProfileCLI, error) {
+	store, err := p.profiler.UseProfile(name)
+	if err != nil {
+		return nil, err
 	}
-
-	return p.UseProfile(defaultProfile)
+	profile, ok := store.Profile.(*ProfileCLI)
+	if !ok {
+		return nil, errors.New("Profile is not of type ProfileCLI")
+	}
+	return profile, nil
 }
 
-func (p *Profile) SetDefaultProfile(profileName string) error {
-	if !p.globalStore.ProfileExists(profileName) {
-		return errors.New("profile does not exist")
-	}
-
-	return p.globalStore.SetDefaultProfile(profileName)
+// SetDefaultProfile sets the specified profile name the default profile in the store
+func (p ProfileManager) SetDefaultProfile(name string) error {
+	return p.profiler.SetDefaultProfile(name)
 }
 
-func (p *Profile) DeleteProfile(profileName string) error {
-	// check if profile exists
-	if !p.globalStore.ProfileExists(profileName) {
-		return errors.New("profile does not exist")
-	}
-
-	// get profile
-	profile, err := LoadProfileStore(newStoreFactory(p.config.driver), profileName)
+// UpdateProfile updates the specified profile saved to the store
+func (p ProfileManager) UpdateProfile(profile *ProfileCLI) error {
+	profileStore, err := p.profiler.GetProfile(profile.GetName())
 	if err != nil {
 		return err
 	}
+	profileStore.Profile = profile
+	return profileStore.Save()
+}
 
-	// remove profile from global config (will error if profile is default)
-	if err := p.globalStore.RemoveProfile(profileName); err != nil {
-		return err
-	}
-
-	// delete profile config
-	err = profile.Delete()
-	if err != nil {
-		return err
-	}
-
-	return nil
+// DeleteProfile removes the specified profile from the store
+func (p ProfileManager) DeleteProfile(name string) error {
+	return p.profiler.DeleteProfile(name)
 }

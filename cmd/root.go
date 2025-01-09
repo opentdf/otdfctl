@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/opentdf/otdfctl/pkg/auth"
+	"github.com/opentdf/otdfctl/internal/auth"
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/config"
 	"github.com/opentdf/otdfctl/pkg/handlers"
@@ -20,8 +20,6 @@ var (
 	clientCredsJSON     string
 	configFlagOverrides = config.ConfigFlagOverrides{}
 
-	profile *profiles.Profile
-
 	RootCmd = &man.Docs.GetDoc("<root>").Command
 )
 
@@ -34,39 +32,41 @@ type version struct {
 
 // InitProfile initializes the profile store and loads the profile specified in the flags
 // if onlyNew is set to true, a new profile will be created and returned
-// returns the profile and the current profile store
-func InitProfile(c *cli.Cli, onlyNew bool) (*profiles.Profile, *profiles.ProfileStore) {
+// returns the manager of all profiles and the current profile
+func InitProfile(c *cli.Cli, onlyNew bool) (*profiles.ProfileManager, *profiles.ProfileCLI) {
 	var err error
 	profileName := c.FlagHelper.GetOptionalString("profile")
 
-	profile, err = profiles.New()
-	if err != nil || profile == nil {
+	profileMgr, err := profiles.NewProfileManager(&OtdfctlCfg, false)
+	if err != nil || profileMgr == nil {
 		c.ExitWithError("Failed to initialize profile store", err)
 	}
 
 	// short circuit if onlyNew is set to enable creating a new profile
 	if onlyNew && profileName == "" {
-		return profile, nil
+		return profileMgr, nil
 	}
 
 	// check if there exists a default profile and warn if not with steps to create one
-	if profile.GetGlobalConfig().GetDefaultProfile() == "" {
+	currProfile, err := profileMgr.GetCurrentProfile()
+	if err != nil || currProfile == nil {
 		c.ExitWithWarning(fmt.Sprintf("No default profile set. Use `%s profile create <profile> <endpoint>` to create a default profile.", config.AppName))
 	}
 
+	// if a specific profile not passed in flag, use current stored profile
 	if profileName == "" {
-		profileName = profile.GetGlobalConfig().GetDefaultProfile()
+		profileName = currProfile.Name
 	}
 
 	c.Printf("Using profile [%s]\n", profileName)
 
 	// load profile
-	cp, err := profile.UseProfile(profileName)
+	currProfile, err = profileMgr.UseProfile(profileName)
 	if err != nil {
 		c.ExitWithError(fmt.Sprintf("Failed to load profile: %s", profileName), err)
 	}
 
-	return profile, cp
+	return profileMgr, currProfile
 }
 
 // instantiates a new handler with authentication via client credentials
@@ -75,7 +75,10 @@ func InitProfile(c *cli.Cli, onlyNew bool) (*profiles.Profile, *profiles.Profile
 //nolint:nestif // separate refactor [https://github.com/opentdf/otdfctl/issues/383]
 func NewHandler(c *cli.Cli) handlers.Handler {
 	// if global flags are set then validate and create a temporary profile in memory
-	var cp *profiles.ProfileStore
+	var (
+		currProfile *profiles.ProfileCLI
+		profileMgr  *profiles.ProfileManager
+	)
 
 	// Non-profile flags
 	host := c.FlagHelper.GetOptionalString("host")
@@ -115,17 +118,23 @@ func NewHandler(c *cli.Cli) handlers.Handler {
 		}
 
 		inMemoryProfile = true
-		profile, err = profiles.New(profiles.WithInMemoryStore())
-		if err != nil || profile == nil {
+		profileMgr, err = profiles.NewProfileManager(&OtdfctlCfg, inMemoryProfile)
+		if err != nil || profileMgr == nil {
 			cli.ExitWithError("Failed to initialize in-memory profile", err)
 		}
 
-		if err := profile.AddProfile("temp", host, tlsNoVerify, true); err != nil {
+		profile := profiles.ProfileCLI{
+			Name:        "temp",
+			Endpoint:    host,
+			TlsNoVerify: tlsNoVerify,
+		}
+
+		if err := profileMgr.AddProfile(profile, true); err != nil {
 			cli.ExitWithError("Failed to create in-memory profile", err)
 		}
 
 		// add credentials to the temporary profile
-		cp, err = profile.UseProfile("temp")
+		currProfile, err = profileMgr.UseProfile("temp")
 		if err != nil {
 			cli.ExitWithError("Failed to load in-memory profile", err)
 		}
@@ -136,16 +145,14 @@ func NewHandler(c *cli.Cli) handlers.Handler {
 			if err != nil {
 				cli.ExitWithError("Failed to get access token", err)
 			}
-
-			if err := cp.SetAuthCredentials(profiles.AuthCredentials{
-				AuthType: profiles.PROFILE_AUTH_TYPE_ACCESS_TOKEN,
-				AccessToken: profiles.AuthCredentialsAccessToken{
+			currProfile.AuthCredentials = auth.AuthCredentials{
+				AuthType: auth.AUTH_TYPE_ACCESS_TOKEN,
+				AccessToken: auth.AuthCredentialsAccessToken{
 					AccessToken: withAccessToken,
 					Expiration:  claims.Expiration,
 				},
-			}); err != nil {
-				cli.ExitWithError("Failed to set access token", err)
 			}
+
 		} else {
 			var cc auth.ClientCredentials
 			if withClientCreds != "" {
@@ -156,44 +163,42 @@ func NewHandler(c *cli.Cli) handlers.Handler {
 			if err != nil {
 				cli.ExitWithError("Failed to get client credentials", err)
 			}
-
-			// add credentials to the temporary profile
-			if err := cp.SetAuthCredentials(profiles.AuthCredentials{
-				AuthType:     profiles.PROFILE_AUTH_TYPE_CLIENT_CREDENTIALS,
-				ClientId:     cc.ClientId,
+			currProfile.AuthCredentials = auth.AuthCredentials{
+				AuthType:     auth.AUTH_TYPE_CLIENT_CREDENTIALS,
+				ClientID:     cc.ClientID,
 				ClientSecret: cc.ClientSecret,
-			}); err != nil {
-				cli.ExitWithError("Failed to set client credentials", err)
 			}
+
 		}
-		if err := cp.Save(); err != nil {
-			cli.ExitWithError("Failed to save profile", err)
+		// update and save the profile
+		if err := profileMgr.UpdateProfile(currProfile); err != nil {
+			cli.ExitWithError("Failed to populate CLI profile with provided credentials", err)
 		}
 	} else {
-		profile, cp = InitProfile(c, false)
+		profileMgr, currProfile = InitProfile(c, false)
 	}
 
-	if err := auth.ValidateProfileAuthCredentials(c.Context(), cp); err != nil {
+	if err := profiles.ValidateProfileAuthCredentials(c.Context(), currProfile); err != nil {
 		if errors.Is(err, auth.ErrPlatformConfigNotFound) {
-			cli.ExitWithError(fmt.Sprintf("Failed to get platform configuration. Is the platform accepting connections at '%s'?", cp.GetEndpoint()), nil)
+			cli.ExitWithError(fmt.Sprintf("Failed to get platform configuration. Is the platform accepting connections at '%s'?", currProfile.GetEndpoint()), nil)
 		}
 		if inMemoryProfile {
 			cli.ExitWithError("Failed to authenticate with flag-provided client credentials.", err)
 		}
-		if errors.Is(err, auth.ErrProfileCredentialsNotFound) {
+		if errors.Is(err, profiles.ErrProfileCredentialsNotFound) {
 			cli.ExitWithWarning("Profile missing credentials. Please login or add client credentials.")
 		}
 
-		if errors.Is(err, auth.ErrAccessTokenExpired) {
+		if errors.Is(err, profiles.ErrAccessTokenExpired) {
 			cli.ExitWithWarning("Access token expired. Please login or add flag-provided credentials.")
 		}
-		if errors.Is(err, auth.ErrAccessTokenNotFound) {
+		if errors.Is(err, profiles.ErrAccessTokenNotFound) {
 			cli.ExitWithWarning("No access token found. Please login or add flag-provided credentials.")
 		}
 		cli.ExitWithError("Failed to get access token.", err)
 	}
 
-	h, err := handlers.New(handlers.WithProfile(cp))
+	h, err := handlers.New(handlers.WithProfile(currProfile))
 	if err != nil {
 		cli.ExitWithError("Unexpected error", err)
 	}

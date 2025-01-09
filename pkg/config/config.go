@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/creasty/defaults"
+	profiles "github.com/jrschumacher/go-osprofiles/pkg/platform"
 	"github.com/spf13/viper"
 )
 
@@ -29,17 +30,31 @@ var (
 	TEST_TERMINAL_WIDTH = "TEST_TERMINAL_WIDTH"
 )
 
+// Profile storage drivers
+const (
+	_ = iota
+	ProfileStoreInMemory
+	ProfileStoreFile
+	ProfileStoreNativeKeyring
+)
+
 type Output struct {
 	Format string `yaml:"format" default:"styled"`
 }
 
 type Config struct {
 	Output Output `yaml:"output"`
+	// TODO: make this actually configurable by flags/env
+	// ProfileStoreType is the type of profile store to use
+	ProfileStoreType int
+	// Configured file system directory to store profiles (if using file system profile driver)
+	ProfileStoreDir string
 }
 
 // captures all CLI flags that will override pre-specified config values
 type ConfigFlagOverrides struct {
 	OutputFormatJSON bool
+	// TODO: add profile store type override
 }
 
 const (
@@ -93,6 +108,22 @@ func LoadConfig(file string, key string) (*Config, error) {
 	err = viper.Unmarshal(config)
 	if err != nil {
 		return nil, errors.Join(err, ErrLoadingConfig)
+	}
+
+	platOS, err := profiles.NewPlatform(AppName)
+	if err != nil {
+		return nil, errors.Join(err, ErrLoadingConfig)
+	}
+	config.ProfileStoreDir = platOS.GetDataDirectory()
+
+	// TODO: do not hardcode!
+	config.ProfileStoreType = ProfileStoreNativeKeyring
+
+	// Override platform-native profile store directory if set in the environment
+	profilePathKey := strings.ToUpper(fmt.Sprintf("%s_PROFILE_STORE_DIR", AppName))
+	profilePath := os.Getenv(profilePathKey)
+	if profilePath != "" {
+		config.ProfileStoreDir = profilePath
 	}
 
 	return config, nil

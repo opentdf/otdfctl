@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 
-	"github.com/opentdf/otdfctl/pkg/auth"
 	"github.com/opentdf/otdfctl/pkg/profiles"
 	"github.com/opentdf/otdfctl/pkg/utils"
 	"github.com/opentdf/platform/protocol/go/common"
@@ -21,15 +20,15 @@ type Handler struct {
 	sdk *sdk.SDK
 	//nolint:containedctx // need to handle in a separate dedicated issue [https://github.com/opentdf/otdfctl/issues/364]
 	ctx              context.Context
-	OIDC_TOKEN       string
 	platformEndpoint string
+	profile          *profiles.ProfileCLI
 }
 
 type handlerOpts struct {
 	endpoint    string
 	tlsNoVerify bool
 
-	profile *profiles.ProfileStore
+	profile *profiles.ProfileCLI
 
 	sdkOpts []sdk.Option
 }
@@ -44,14 +43,14 @@ func WithEndpoint(endpoint string, tlsNoVerify bool) handlerOptsFunc {
 	}
 }
 
-func WithProfile(profile *profiles.ProfileStore) handlerOptsFunc {
+func WithProfile(p *profiles.ProfileCLI) handlerOptsFunc {
 	return func(c handlerOpts) handlerOpts {
-		c.profile = profile
-		c.endpoint = profile.GetEndpoint()
-		c.tlsNoVerify = profile.GetTLSNoVerify()
+		c.profile = p
+		c.endpoint = p.GetEndpoint()
+		c.tlsNoVerify = p.GetTLSNoVerify()
 
 		// get sdk opts
-		opts, err := auth.GetSDKAuthOptionFromProfile(profile)
+		opts, err := profiles.GetSDKAuthOptionFromProfile(p)
 		if err != nil {
 			return c
 		}
@@ -87,7 +86,7 @@ func New(opts ...handlerOptsFunc) (Handler, error) {
 	// TODO let's make sure we still support plaintext connections
 
 	// get auth
-	ao, err := auth.GetSDKAuthOptionFromProfile(o.profile)
+	ao, err := profiles.GetSDKAuthOptionFromProfile(o.profile)
 	if err != nil {
 		return Handler{}, err
 	}
@@ -105,6 +104,7 @@ func New(opts ...handlerOptsFunc) (Handler, error) {
 	return Handler{
 		sdk:              s,
 		platformEndpoint: o.endpoint,
+		profile:          o.profile,
 		ctx:              context.Background(),
 	}, nil
 }
@@ -138,16 +138,3 @@ func (h Handler) WithLabelMetadata(metadata *common.MetadataMutable, key, value 
 		return nextMetadata
 	}
 }
-
-// func buildMetadata(metadata *common.MetadataMutable, fns ...func(*common.MetadataMutable) *common.MetadataMutable) *common.MetadataMutable {
-// 	if metadata == nil {
-// 		metadata = &common.MetadataMutable{}
-// 	}
-// 	if len(fns) == 0 {
-// 		return metadata
-// 	}
-// 	for _, fn := range fns {
-// 		metadata = fn(metadata)
-// 	}
-// 	return metadata
-// }
