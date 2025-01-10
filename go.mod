@@ -1,8 +1,8 @@
 module github.com/opentdf/otdfctl
 
-go 1.22.7
+go 1.23.4
 
-// replace github.com/jrschumacher/go-osprofiles => ../go-osprofiles
+replace github.com/jrschumacher/go-osprofiles => ../go-osprofiles
 
 require (
 	github.com/adrg/frontmatter v0.2.0

@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/opentdf/otdfctl/pkg/profiles"
 	"github.com/opentdf/otdfctl/pkg/utils"
@@ -24,89 +25,44 @@ type Handler struct {
 	profile          *profiles.ProfileCLI
 }
 
-type handlerOpts struct {
-	endpoint    string
-	tlsNoVerify bool
-
-	profile *profiles.ProfileCLI
-
-	sdkOpts []sdk.Option
-}
-
-type handlerOptsFunc func(handlerOpts) handlerOpts
-
-func WithEndpoint(endpoint string, tlsNoVerify bool) handlerOptsFunc {
-	return func(c handlerOpts) handlerOpts {
-		c.endpoint = endpoint
-		c.tlsNoVerify = tlsNoVerify
-		return c
-	}
-}
-
-func WithProfile(p *profiles.ProfileCLI) handlerOptsFunc {
-	return func(c handlerOpts) handlerOpts {
-		c.profile = p
-		c.endpoint = p.GetEndpoint()
-		c.tlsNoVerify = p.GetTLSNoVerify()
-
-		// get sdk opts
-		opts, err := profiles.GetSDKAuthOptionFromProfile(p)
-		if err != nil {
-			return c
-		}
-		c.sdkOpts = append(c.sdkOpts, opts)
-
-		return c
-	}
-}
-
-func WithSDKOpts(opts ...sdk.Option) handlerOptsFunc {
-	return func(c handlerOpts) handlerOpts {
-		c.sdkOpts = opts
-		return c
-	}
-}
-
 // Creates a new handler wrapping the SDK, which is authenticated through the cached client-credentials flow tokens
-func New(opts ...handlerOptsFunc) (Handler, error) {
-	var o handlerOpts
-	for _, f := range opts {
-		o = f(o)
-	}
-
-	u, err := utils.NormalizeEndpoint(o.endpoint)
+func New(p *profiles.ProfileCLI) (Handler, error) {
+	sdkOpts, err := profiles.GetSDKOptionsFromProfile(p)
 	if err != nil {
 		return Handler{}, err
 	}
-
-	if o.tlsNoVerify {
-		o.sdkOpts = append(o.sdkOpts, sdk.WithInsecureSkipVerifyConn())
+	u, err := utils.NormalizeEndpoint(p.GetEndpoint())
+	if err != nil {
+		return Handler{}, err
 	}
 
 	// TODO let's make sure we still support plaintext connections
 
-	// get auth
-	ao, err := profiles.GetSDKAuthOptionFromProfile(o.profile)
-	if err != nil {
-		return Handler{}, err
-	}
-	o.sdkOpts = append(o.sdkOpts, ao)
-
 	if u.Scheme == "http" {
-		o.sdkOpts = append(o.sdkOpts, sdk.WithInsecurePlaintextConn())
+		sdkOpts = append(sdkOpts, sdk.WithInsecurePlaintextConn())
 	}
 
-	s, err := sdk.New(u.Host, o.sdkOpts...)
+	s, err := sdk.New(u.Host, sdkOpts...)
 	if err != nil {
 		return Handler{}, err
 	}
 
-	return Handler{
+	// TODO: put back
+	// return Handler{
+	// 	sdk:              s,
+	// 	platformEndpoint: o.endpoint,
+	// 	profile:          o.profile,
+	// 	ctx:              context.Background(),
+	// }, nil
+	h := Handler{
 		sdk:              s,
-		platformEndpoint: o.endpoint,
-		profile:          o.profile,
+		platformEndpoint: u.String(),
+		profile:          p,
 		ctx:              context.Background(),
-	}, nil
+	}
+	fmt.Printf("\n %+v\n", h)
+	fmt.Println(h.profile, h.platformEndpoint)
+	return h, nil
 }
 
 func (h Handler) Close() error {

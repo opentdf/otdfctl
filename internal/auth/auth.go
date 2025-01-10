@@ -52,8 +52,8 @@ type AuthCredentials struct {
 	AuthType string `json:"authType"`
 	ClientID string `json:"clientId"`
 	// Used for client credentials
-	ClientSecret string                     `json:"clientSecret,omitempty"`
-	AccessToken  AuthCredentialsAccessToken `json:"accessToken,omitempty"`
+	ClientSecret string                      `json:"clientSecret,omitempty"`
+	AccessToken  *AuthCredentialsAccessToken `json:"accessToken,omitempty"`
 }
 
 type AuthCredentialsAccessToken struct {

@@ -12,8 +12,8 @@ type ProfileCLI struct {
 	AuthCredentials auth.AuthCredentials `json:"authCredentials"`
 }
 
-// Satisfy profiles.NamedProfile interface
-func (p ProfileCLI) GetName() string {
+// Satisfy go-osprofiles.NamedProfile interface
+func (p *ProfileCLI) GetName() string {
 	return p.Name
 }
 

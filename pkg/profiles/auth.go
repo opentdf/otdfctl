@@ -2,6 +2,7 @@ package profiles
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/opentdf/otdfctl/internal/auth"
 	"github.com/opentdf/platform/sdk"
@@ -15,22 +16,33 @@ type platformConfiguration struct {
 	publicClientID string
 }
 
-func GetSDKAuthOptionFromProfile(p *ProfileCLI) (sdk.Option, error) {
+func GetSDKOptionsFromProfile(p *ProfileCLI) ([]sdk.Option, error) {
 	c := p.GetAuthCredentials()
 
+	sdkOpts := []sdk.Option{}
+
+	if p.GetTLSNoVerify() {
+		sdkOpts = append(sdkOpts, sdk.WithInsecureSkipVerifyConn())
+	}
+
+	var authOpt sdk.Option
 	switch c.AuthType {
 	case auth.AUTH_TYPE_CLIENT_CREDENTIALS:
-		return sdk.WithClientCredentials(c.ClientID, c.ClientSecret, nil), nil
+		authOpt = sdk.WithClientCredentials(c.ClientID, c.ClientSecret, nil)
 	case auth.AUTH_TYPE_ACCESS_TOKEN:
+		fmt.Println("auth_type access token")
 		tokenSource := oauth2.StaticTokenSource(auth.BuildToken(&c))
-		return sdk.WithOAuthAccessTokenSource(tokenSource), nil
+		authOpt = sdk.WithOAuthAccessTokenSource(tokenSource)
 	default:
 		return nil, ErrInvalidAuthType
 	}
+
+	return append(sdkOpts, authOpt), nil
 }
 
 func ValidateProfileAuthCredentials(ctx context.Context, p *ProfileCLI) error {
 	c := p.GetAuthCredentials()
+
 	switch c.AuthType {
 	case "":
 		return ErrProfileCredentialsNotFound

@@ -118,23 +118,25 @@ func NewHandler(c *cli.Cli) handlers.Handler {
 		}
 
 		inMemoryProfile = true
+		inMemoryProfileName := "temp"
 		profileMgr, err = profiles.NewProfileManager(&OtdfctlCfg, inMemoryProfile)
 		if err != nil || profileMgr == nil {
 			cli.ExitWithError("Failed to initialize in-memory profile", err)
 		}
 
-		profile := profiles.ProfileCLI{
-			Name:        "temp",
+		profile := &profiles.ProfileCLI{
+			Name:        inMemoryProfileName,
 			Endpoint:    host,
 			TlsNoVerify: tlsNoVerify,
 		}
 
 		if err := profileMgr.AddProfile(profile, true); err != nil {
+			fmt.Println("here")
 			cli.ExitWithError("Failed to create in-memory profile", err)
 		}
 
 		// add credentials to the temporary profile
-		currProfile, err = profileMgr.UseProfile("temp")
+		currProfile, err = profileMgr.UseProfile(inMemoryProfileName)
 		if err != nil {
 			cli.ExitWithError("Failed to load in-memory profile", err)
 		}
@@ -147,7 +149,7 @@ func NewHandler(c *cli.Cli) handlers.Handler {
 			}
 			currProfile.AuthCredentials = auth.AuthCredentials{
 				AuthType: auth.AUTH_TYPE_ACCESS_TOKEN,
-				AccessToken: auth.AuthCredentialsAccessToken{
+				AccessToken: &auth.AuthCredentialsAccessToken{
 					AccessToken: withAccessToken,
 					Expiration:  claims.Expiration,
 				},
@@ -178,6 +180,7 @@ func NewHandler(c *cli.Cli) handlers.Handler {
 		profileMgr, currProfile = InitProfile(c, false)
 	}
 
+	fmt.Println("currProfile", currProfile)
 	if err := profiles.ValidateProfileAuthCredentials(c.Context(), currProfile); err != nil {
 		if errors.Is(err, auth.ErrPlatformConfigNotFound) {
 			cli.ExitWithError(fmt.Sprintf("Failed to get platform configuration. Is the platform accepting connections at '%s'?", currProfile.GetEndpoint()), nil)
@@ -198,10 +201,11 @@ func NewHandler(c *cli.Cli) handlers.Handler {
 		cli.ExitWithError("Failed to get access token.", err)
 	}
 
-	h, err := handlers.New(handlers.WithProfile(currProfile))
+	h, err := handlers.New(currProfile)
 	if err != nil {
 		cli.ExitWithError("Unexpected error", err)
 	}
+	fmt.Printf("\nHandler: %v\n", h)
 	return h
 }
 

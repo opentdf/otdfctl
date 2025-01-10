@@ -23,10 +23,9 @@ func NewProfileManager(cfg *config.Config, isInMemoryProfile bool) (*ProfileMana
 
 	// allow override
 	if isInMemoryProfile {
-		profiler, err = osprofiles.New(namespace, osprofiles.WithInMemoryStore())
+		cfg.ProfileStoreType = config.ProfileStoreInMemory
 	}
 
-	// defer to config
 	switch cfg.ProfileStoreType {
 	case config.ProfileStoreInMemory:
 		profiler, err = osprofiles.New(namespace, osprofiles.WithInMemoryStore())
@@ -44,14 +43,14 @@ func NewProfileManager(cfg *config.Config, isInMemoryProfile bool) (*ProfileMana
 }
 
 // AddProfile adds a new profile to the profile store
-func (p ProfileManager) AddProfile(profile ProfileCLI, setDefault bool) error {
+func (p ProfileManager) AddProfile(profile *ProfileCLI, setDefault bool) error {
 	return p.profiler.AddProfile(profile, setDefault)
 }
 
 // GetCurrentProfile returns the current stored default profile
 func (p ProfileManager) GetCurrentProfile() (*ProfileCLI, error) {
-	profileName := p.profiler.GetGlobalConfig().GetDefaultProfile()
-	store, err := p.profiler.GetProfile(profileName)
+	profileName := osprofiles.GetGlobalConfig(p.profiler).GetDefaultProfile()
+	store, err := osprofiles.GetProfile[*ProfileCLI](p.profiler, profileName)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +63,7 @@ func (p ProfileManager) GetCurrentProfile() (*ProfileCLI, error) {
 
 // GetProfile returns the profile stored under the specified name
 func (p ProfileManager) GetProfile(name string) (*ProfileCLI, error) {
-	store, err := p.profiler.GetProfile(name)
+	store, err := osprofiles.GetProfile[*ProfileCLI](p.profiler, name)
 	if err != nil {
 		return nil, err
 	}
@@ -78,8 +77,8 @@ func (p ProfileManager) GetProfile(name string) (*ProfileCLI, error) {
 // ListProfiles returns a list of all stored profiles
 func (p ProfileManager) ListProfiles() ([]*ProfileCLI, error) {
 	var profiles []*ProfileCLI
-	for _, profileName := range p.profiler.ListProfiles() {
-		store, err := p.profiler.GetProfile(profileName)
+	for _, profileName := range osprofiles.ListProfiles(p.profiler) {
+		store, err := osprofiles.GetProfile[*ProfileCLI](p.profiler, profileName)
 		if err != nil {
 			return nil, err
 		}
@@ -94,7 +93,7 @@ func (p ProfileManager) ListProfiles() ([]*ProfileCLI, error) {
 
 // UseProfile sets the current profile to the specified profile name
 func (p ProfileManager) UseProfile(name string) (*ProfileCLI, error) {
-	store, err := p.profiler.UseProfile(name)
+	store, err := osprofiles.UseProfile[*ProfileCLI](p.profiler, name)
 	if err != nil {
 		return nil, err
 	}
@@ -107,20 +106,15 @@ func (p ProfileManager) UseProfile(name string) (*ProfileCLI, error) {
 
 // SetDefaultProfile sets the specified profile name the default profile in the store
 func (p ProfileManager) SetDefaultProfile(name string) error {
-	return p.profiler.SetDefaultProfile(name)
+	return osprofiles.SetDefaultProfile(p.profiler, name)
 }
 
 // UpdateProfile updates the specified profile saved to the store
 func (p ProfileManager) UpdateProfile(profile *ProfileCLI) error {
-	profileStore, err := p.profiler.GetProfile(profile.GetName())
-	if err != nil {
-		return err
-	}
-	profileStore.Profile = profile
-	return profileStore.Save()
+	return osprofiles.UpdateCurrentProfile(p.profiler, profile)
 }
 
 // DeleteProfile removes the specified profile from the store
 func (p ProfileManager) DeleteProfile(name string) error {
-	return p.profiler.DeleteProfile(name)
+	return osprofiles.DeleteProfile[*ProfileCLI](p.profiler, name)
 }

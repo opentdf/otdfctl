@@ -40,7 +40,7 @@ var profileCreateCmd = &cobra.Command{
 		tlsNoVerify := c.FlagHelper.GetOptionalBool("tls-no-verify")
 
 		c.Printf("Creating profile %s... ", profileName)
-		profile := profiles.ProfileCLI{
+		profile := &profiles.ProfileCLI{
 			Name:        profileName,
 			Endpoint:    endpoint,
 			TlsNoVerify: tlsNoVerify,
@@ -70,11 +70,11 @@ var profileListCmd = &cobra.Command{
 		}
 
 		for _, p := range profiles {
-			if p == currProfile {
-				c.Printf("* %s %s\n", p.GetName(), p.GetEndpoint())
+			if p.GetName() == currProfile.GetName() {
+				c.Printf("* %s\n", p.GetName())
 				continue
 			}
-			c.Printf("  %s %s\n", p.GetName(), p.GetEndpoint())
+			c.Printf("  %s\n", p.GetName())
 		}
 	},
 }
