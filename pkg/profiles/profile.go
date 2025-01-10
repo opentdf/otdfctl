@@ -11,8 +11,6 @@ type ProfileManager struct {
 	profiler *osprofiles.Profiler
 }
 
-// TODO: errors should be named
-
 // NewProfileManager sets up profiler to CRUD ProfileCLI instances to the configured storage location
 func NewProfileManager(cfg *config.Config, isInMemoryProfile bool) (*ProfileManager, error) {
 	var (
@@ -54,11 +52,7 @@ func (p ProfileManager) GetCurrentProfile() (*ProfileCLI, error) {
 	if err != nil {
 		return nil, err
 	}
-	profile, ok := store.Profile.(*ProfileCLI)
-	if !ok {
-		return nil, errors.New("Profile is not of type ProfileCLI")
-	}
-	return profile, nil
+	return isProfileCLI(store.Profile)
 }
 
 // GetProfile returns the profile stored under the specified name
@@ -67,11 +61,7 @@ func (p ProfileManager) GetProfile(name string) (*ProfileCLI, error) {
 	if err != nil {
 		return nil, err
 	}
-	profile, ok := store.Profile.(*ProfileCLI)
-	if !ok {
-		return nil, errors.New("Profile is not of type ProfileCLI")
-	}
-	return profile, nil
+	return isProfileCLI(store.Profile)
 }
 
 // ListProfiles returns a list of all stored profiles
@@ -84,7 +74,7 @@ func (p ProfileManager) ListProfiles() ([]*ProfileCLI, error) {
 		}
 		profile, ok := store.Profile.(*ProfileCLI)
 		if !ok {
-			return nil, errors.New("Profile is not of type ProfileCLI")
+			return nil, errStoredProfileWrongType
 		}
 		profiles = append(profiles, profile)
 	}
@@ -97,11 +87,7 @@ func (p ProfileManager) UseProfile(name string) (*ProfileCLI, error) {
 	if err != nil {
 		return nil, err
 	}
-	profile, ok := store.Profile.(*ProfileCLI)
-	if !ok {
-		return nil, errors.New("Profile is not of type ProfileCLI")
-	}
-	return profile, nil
+	return isProfileCLI(store.Profile)
 }
 
 // SetDefaultProfile sets the specified profile name the default profile in the store
@@ -117,4 +103,12 @@ func (p ProfileManager) UpdateProfile(profile *ProfileCLI) error {
 // DeleteProfile removes the specified profile from the store
 func (p ProfileManager) DeleteProfile(name string) error {
 	return osprofiles.DeleteProfile[*ProfileCLI](p.profiler, name)
+}
+
+func isProfileCLI(p osprofiles.NamedProfile) (*ProfileCLI, error) {
+	profile, ok := p.(*ProfileCLI)
+	if !ok {
+		return nil, errStoredProfileWrongType
+	}
+	return profile, nil
 }

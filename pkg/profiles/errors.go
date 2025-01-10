@@ -14,4 +14,7 @@ var (
 	ErrProfileCredentialsNotFound = errors.New("profile missing credentials")
 
 	ErrStoredProfileInvalid = errors.New("stored profile is invalid")
+
+	// internal error
+	errStoredProfileWrongType   = errors.New("stored profile is not of type ProfileCLI")
 )

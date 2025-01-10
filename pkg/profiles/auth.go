@@ -8,13 +8,6 @@ import (
 	"golang.org/x/oauth2"
 )
 
-type platformConfiguration struct {
-	issuer         string
-	authzEndpoint  string
-	tokenEndpoint  string
-	publicClientID string
-}
-
 func GetSDKOptionsFromProfile(p *ProfileCLI) ([]sdk.Option, error) {
 	c := p.GetAuthCredentials()
 
