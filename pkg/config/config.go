@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"runtime"
 	"strings"
 
 	"github.com/creasty/defaults"
@@ -110,7 +111,7 @@ func LoadConfig(file string, key string) (*Config, error) {
 		return nil, errors.Join(err, ErrLoadingConfig)
 	}
 
-	platOS, err := profiles.NewPlatform(AppName)
+	platOS, err := profiles.NewPlatform(AppName, runtime.GOOS)
 	if err != nil {
 		return nil, errors.Join(err, ErrLoadingConfig)
 	}
