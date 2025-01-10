@@ -131,7 +131,6 @@ func NewHandler(c *cli.Cli) handlers.Handler {
 		}
 
 		if err := profileMgr.AddProfile(profile, true); err != nil {
-			fmt.Println("here")
 			cli.ExitWithError("Failed to create in-memory profile", err)
 		}
 
@@ -180,7 +179,6 @@ func NewHandler(c *cli.Cli) handlers.Handler {
 		profileMgr, currProfile = InitProfile(c, false)
 	}
 
-	fmt.Println("currProfile", currProfile)
 	if err := profiles.ValidateProfileAuthCredentials(c.Context(), currProfile); err != nil {
 		if errors.Is(err, auth.ErrPlatformConfigNotFound) {
 			cli.ExitWithError(fmt.Sprintf("Failed to get platform configuration. Is the platform accepting connections at '%s'?", currProfile.GetEndpoint()), nil)
@@ -201,11 +199,10 @@ func NewHandler(c *cli.Cli) handlers.Handler {
 		cli.ExitWithError("Failed to get access token.", err)
 	}
 
-	h, err := handlers.New(currProfile)
+	h, err := handlers.New(c.Context(), currProfile)
 	if err != nil {
 		cli.ExitWithError("Unexpected error", err)
 	}
-	fmt.Printf("\nHandler: %v\n", h)
 	return h
 }
 

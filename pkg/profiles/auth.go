@@ -2,7 +2,6 @@ package profiles
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/opentdf/otdfctl/internal/auth"
 	"github.com/opentdf/platform/sdk"
@@ -30,7 +29,6 @@ func GetSDKOptionsFromProfile(p *ProfileCLI) ([]sdk.Option, error) {
 	case auth.AUTH_TYPE_CLIENT_CREDENTIALS:
 		authOpt = sdk.WithClientCredentials(c.ClientID, c.ClientSecret, nil)
 	case auth.AUTH_TYPE_ACCESS_TOKEN:
-		fmt.Println("auth_type access token")
 		tokenSource := oauth2.StaticTokenSource(auth.BuildToken(&c))
 		authOpt = sdk.WithOAuthAccessTokenSource(tokenSource)
 	default:

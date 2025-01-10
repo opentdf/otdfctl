@@ -3,7 +3,6 @@ package handlers
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/opentdf/otdfctl/pkg/profiles"
 	"github.com/opentdf/otdfctl/pkg/utils"
@@ -26,7 +25,7 @@ type Handler struct {
 }
 
 // Creates a new handler wrapping the SDK, which is authenticated through the cached client-credentials flow tokens
-func New(p *profiles.ProfileCLI) (Handler, error) {
+func New(ctx context.Context, p *profiles.ProfileCLI) (Handler, error) {
 	sdkOpts, err := profiles.GetSDKOptionsFromProfile(p)
 	if err != nil {
 		return Handler{}, err
@@ -47,22 +46,12 @@ func New(p *profiles.ProfileCLI) (Handler, error) {
 		return Handler{}, err
 	}
 
-	// TODO: put back
-	// return Handler{
-	// 	sdk:              s,
-	// 	platformEndpoint: o.endpoint,
-	// 	profile:          o.profile,
-	// 	ctx:              context.Background(),
-	// }, nil
-	h := Handler{
+	return Handler{
 		sdk:              s,
 		platformEndpoint: u.String(),
 		profile:          p,
-		ctx:              context.Background(),
-	}
-	fmt.Printf("\n %+v\n", h)
-	fmt.Println(h.profile, h.platformEndpoint)
-	return h, nil
+		ctx:              ctx,
+	}, nil
 }
 
 func (h Handler) Close() error {
