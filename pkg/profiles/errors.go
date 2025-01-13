@@ -16,5 +16,5 @@ var (
 	ErrStoredProfileInvalid = errors.New("stored profile is invalid")
 
 	// internal error
-	errStoredProfileWrongType   = errors.New("stored profile is not of type ProfileCLI")
+	errStoredProfileWrongType = errors.New("stored profile is not of type ProfileCLI")
 )
