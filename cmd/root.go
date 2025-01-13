@@ -153,7 +153,6 @@ func NewHandler(c *cli.Cli) handlers.Handler {
 					Expiration:  claims.Expiration,
 				},
 			}
-
 		} else {
 			var cc auth.ClientCredentials
 			if withClientCreds != "" {
@@ -169,7 +168,6 @@ func NewHandler(c *cli.Cli) handlers.Handler {
 				ClientID:     cc.ClientID,
 				ClientSecret: cc.ClientSecret,
 			}
-
 		}
 		// update and save the profile
 		if err := profileMgr.UpdateProfile(currProfile); err != nil {
