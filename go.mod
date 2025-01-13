@@ -15,7 +15,7 @@ require (
 	github.com/go-jose/go-jose/v3 v3.0.3
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.6.0
-	github.com/jrschumacher/go-osprofiles v0.0.0-20250110162642-c939d93bbe92
+	github.com/jrschumacher/go-osprofiles v0.0.0-20250110232712-2eb9d74ed7b3
 	github.com/opentdf/platform/lib/flattening v0.1.1
 	github.com/opentdf/platform/protocol/go v0.2.22
 	github.com/opentdf/platform/sdk v0.3.23
