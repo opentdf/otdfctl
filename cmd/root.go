@@ -176,7 +176,7 @@ func NewHandler(c *cli.Cli) handlers.Handler {
 			cli.ExitWithError("Failed to populate CLI profile with provided credentials", err)
 		}
 	} else {
-		profileMgr, currProfile = InitProfile(c, false)
+		_, currProfile = InitProfile(c, false)
 	}
 
 	if err := profiles.ValidateProfileAuthCredentials(c.Context(), currProfile); err != nil {

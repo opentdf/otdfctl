@@ -32,7 +32,7 @@ func NewProfileManager(cfg *config.Config, isInMemoryProfile bool) (*ProfileMana
 	case config.ProfileStoreNativeKeyring:
 		profiler, err = osprofiles.New(namespace, osprofiles.WithKeyringStore())
 	default:
-		err = errors.New("Invalid storage location")
+		err = errors.New("error: invalid storage location")
 	}
 
 	return &ProfileManager{
