@@ -16,17 +16,17 @@ require (
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.6.0
 	github.com/jrschumacher/go-osprofiles v0.0.0-20250110232712-2eb9d74ed7b3
-	github.com/opentdf/platform/lib/flattening v0.1.1
+	github.com/opentdf/platform/lib/flattening v0.1.3
 	github.com/opentdf/platform/protocol/go v0.2.22
 	github.com/opentdf/platform/sdk v0.3.23
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.10.0
-	github.com/zitadel/oidc/v3 v3.33.1
+	github.com/zitadel/oidc/v3 v3.34.0
 	golang.org/x/oauth2 v0.24.0
 	golang.org/x/term v0.27.0
 	google.golang.org/grpc v1.69.2
-	google.golang.org/protobuf v1.35.2
+	google.golang.org/protobuf v1.36.2
 )
 
 require (
