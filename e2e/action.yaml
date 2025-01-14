@@ -30,6 +30,13 @@ runs:
       shell: bash
       run: make build-test
       working-directory: otdfctl
+    - name: Install gnome-keyring OS dependency
+      run: sudo apt-get update && sudo apt-get install -y gnome-keyring
+    # The keyring is unlocked with a dummy password as it is not actually used in the CI
+    # pipeline for sensitive data, just as a dependency of the library and its tests.
+    - name: Unlock the keyring for use
+      run: |
+        echo 'somecredstorepass' | gnome-keyring-daemon --unlock
     - name: Set up the CLI config
       shell: bash
       run: cp otdfctl-example.yaml otdfctl.yaml
