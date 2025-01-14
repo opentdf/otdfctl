@@ -35,7 +35,7 @@ func auth_clientCredentials(cmd *cobra.Command, args []string) {
 	}
 
 	// Set the client credentials
-	currProfile.SetAuthCredentials(auth.AuthCredentials{
+	currProfile.SetAuthCredentials(&auth.AuthCredentials{
 		AuthType:     auth.AUTH_TYPE_CLIENT_CREDENTIALS,
 		ClientID:     clientId,
 		ClientSecret: clientSecret,

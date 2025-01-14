@@ -25,7 +25,7 @@ func auth_codeLogin(cmd *cobra.Command, args []string) {
 	c.Println("ok")
 
 	// Set the auth credentials to profile
-	currProfile.SetAuthCredentials(auth.AuthCredentials{
+	currProfile.SetAuthCredentials(&auth.AuthCredentials{
 		AuthType: auth.AUTH_TYPE_ACCESS_TOKEN,
 		AccessToken: &auth.AuthCredentialsAccessToken{
 			PublicClientID: publicClientID,

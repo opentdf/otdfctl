@@ -146,7 +146,7 @@ func NewHandler(c *cli.Cli) handlers.Handler {
 			if err != nil {
 				cli.ExitWithError("Failed to get access token", err)
 			}
-			currProfile.AuthCredentials = auth.AuthCredentials{
+			currProfile.AuthCredentials = &auth.AuthCredentials{
 				AuthType: auth.AUTH_TYPE_ACCESS_TOKEN,
 				AccessToken: &auth.AuthCredentialsAccessToken{
 					AccessToken: withAccessToken,
@@ -163,7 +163,7 @@ func NewHandler(c *cli.Cli) handlers.Handler {
 			if err != nil {
 				cli.ExitWithError("Failed to get client credentials", err)
 			}
-			currProfile.AuthCredentials = auth.AuthCredentials{
+			currProfile.AuthCredentials = &auth.AuthCredentials{
 				AuthType:     auth.AUTH_TYPE_CLIENT_CREDENTIALS,
 				ClientID:     cc.ClientID,
 				ClientSecret: cc.ClientSecret,

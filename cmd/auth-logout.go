@@ -28,7 +28,7 @@ func auth_logout(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	currProfile.SetAuthCredentials(auth.AuthCredentials{})
+	currProfile.SetAuthCredentials(nil)
 	if err := profileMgr.UpdateProfile(currProfile); err != nil {
 		c.Println("failed")
 		c.ExitWithError("An error occurred while logging out", err)
