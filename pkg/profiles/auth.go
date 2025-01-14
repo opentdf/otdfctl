@@ -22,7 +22,7 @@ func GetSDKOptionsFromProfile(p *ProfileCLI) ([]sdk.Option, error) {
 	case auth.AUTH_TYPE_CLIENT_CREDENTIALS:
 		authOpt = sdk.WithClientCredentials(c.ClientID, c.ClientSecret, nil)
 	case auth.AUTH_TYPE_ACCESS_TOKEN:
-		tokenSource := oauth2.StaticTokenSource(auth.BuildToken(&c))
+		tokenSource := oauth2.StaticTokenSource(auth.BuildToken(c))
 		authOpt = sdk.WithOAuthAccessTokenSource(tokenSource)
 	default:
 		return nil, ErrInvalidAuthType
@@ -44,7 +44,7 @@ func ValidateProfileAuthCredentials(ctx context.Context, p *ProfileCLI) error {
 		}
 		return nil
 	case auth.AUTH_TYPE_ACCESS_TOKEN:
-		if !auth.BuildToken(&c).Valid() {
+		if !auth.BuildToken(c).Valid() {
 			return ErrAccessTokenExpired
 		}
 	default:
@@ -59,7 +59,7 @@ func GetTokenWithProfile(ctx context.Context, p *ProfileCLI) (*oauth2.Token, err
 	case auth.AUTH_TYPE_CLIENT_CREDENTIALS:
 		return auth.GetTokenWithClientCreds(ctx, p.GetEndpoint(), c.ClientID, c.ClientSecret, p.GetTLSNoVerify())
 	case auth.AUTH_TYPE_ACCESS_TOKEN:
-		return auth.BuildToken(&c), nil
+		return auth.BuildToken(c), nil
 	default:
 		return nil, ErrInvalidAuthType
 	}

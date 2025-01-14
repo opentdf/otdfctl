@@ -6,10 +6,11 @@ import (
 )
 
 type ProfileCLI struct {
-	Name            string               `json:"profile"`
-	Endpoint        string               `json:"endpoint"`
-	TlsNoVerify     bool                 `json:"tlsNoVerify"`
-	AuthCredentials auth.AuthCredentials `json:"authCredentials"`
+	Name        string `json:"profile"`
+	Endpoint    string `json:"endpoint"`
+	TlsNoVerify bool   `json:"tlsNoVerify"`
+	// TODO: use pointer?
+	AuthCredentials *auth.AuthCredentials `json:"authCredentials"`
 }
 
 // Satisfy go-osprofiles.NamedProfile interface
@@ -41,10 +42,10 @@ func (p *ProfileCLI) SetTLSNoVerify(tlsNoVerify bool) {
 }
 
 // AuthCredentials
-func (p *ProfileCLI) GetAuthCredentials() auth.AuthCredentials {
+func (p *ProfileCLI) GetAuthCredentials() *auth.AuthCredentials {
 	return p.AuthCredentials
 }
 
-func (p *ProfileCLI) SetAuthCredentials(c auth.AuthCredentials) {
+func (p *ProfileCLI) SetAuthCredentials(c *auth.AuthCredentials) {
 	p.AuthCredentials = c
 }
