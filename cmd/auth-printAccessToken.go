@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/opentdf/otdfctl/pkg/auth"
+	"github.com/opentdf/otdfctl/internal/auth"
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/opentdf/otdfctl/pkg/profiles"
@@ -17,14 +17,14 @@ func auth_printAccessToken(cmd *cobra.Command, args []string) {
 
 	ac := cp.GetAuthCredentials()
 	switch ac.AuthType {
-	case profiles.PROFILE_AUTH_TYPE_CLIENT_CREDENTIALS:
-		c.Printf("Getting access token for %s... ", ac.ClientId)
-	case profiles.PROFILE_AUTH_TYPE_ACCESS_TOKEN:
+	case auth.AUTH_TYPE_CLIENT_CREDENTIALS:
+		c.Printf("Getting access token for %s... ", ac.ClientID)
+	case auth.AUTH_TYPE_ACCESS_TOKEN:
 		c.Printf("Getting profile's stored access token... ")
 	default:
 		c.ExitWithError("Invalid auth type", nil)
 	}
-	tok, err := auth.GetTokenWithProfile(cmd.Context(), cp)
+	tok, err := profiles.GetTokenWithProfile(cmd.Context(), cp)
 	if err != nil {
 		c.Println("failed")
 		cli.ExitWithError("Failed to get token", err)
