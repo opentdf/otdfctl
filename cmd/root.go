@@ -10,6 +10,7 @@ import (
 	"github.com/opentdf/otdfctl/pkg/handlers"
 	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/opentdf/otdfctl/pkg/profiles"
+	"github.com/opentdf/platform/sdk"
 	"github.com/spf13/cobra"
 )
 
@@ -26,10 +27,12 @@ var (
 )
 
 type version struct {
-	AppName   string `json:"app_name"`
-	Version   string `json:"version"`
-	CommitSha string `json:"commit_sha"`
-	BuildTime string `json:"build_time"`
+	AppName       string `json:"app_name"`
+	Version       string `json:"version"`
+	CommitSha     string `json:"commit_sha"`
+	BuildTime     string `json:"build_time"`
+	SDKVersion    string `json:"sdk_version"`
+	SchemaVersion string `json:"schema_version"`
 }
 
 // InitProfile initializes the profile store and loads the profile specified in the flags
@@ -206,10 +209,12 @@ func init() {
 
 		if c.Flags.GetOptionalBool("version") {
 			v := version{
-				AppName:   config.AppName,
-				Version:   config.Version,
-				CommitSha: config.CommitSha,
-				BuildTime: config.BuildTime,
+				AppName:       config.AppName,
+				Version:       config.Version,
+				CommitSha:     config.CommitSha,
+				BuildTime:     config.BuildTime,
+				SDKVersion:    sdk.Version,
+				SchemaVersion: sdk.TDFSpecVersion,
 			}
 
 			c.Println(fmt.Sprintf("%s version %s (%s) %s", config.AppName, config.Version, config.BuildTime, config.CommitSha))
