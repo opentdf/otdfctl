@@ -22,7 +22,7 @@ require (
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.10.0
 	github.com/zalando/go-keyring v0.2.6
-	github.com/zitadel/oidc/v3 v3.34.0
+	github.com/zitadel/oidc/v3 v3.34.1
 	golang.org/x/oauth2 v0.25.0
 	golang.org/x/term v0.28.0
 	google.golang.org/grpc v1.69.4
