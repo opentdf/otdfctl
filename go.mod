@@ -1,6 +1,6 @@
 module github.com/opentdf/otdfctl
 
-go 1.22.7
+go 1.23.4
 
 require (
 	github.com/adrg/frontmatter v0.2.0
@@ -15,13 +15,13 @@ require (
 	github.com/go-jose/go-jose/v3 v3.0.3
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.6.0
+	github.com/jrschumacher/go-osprofiles v0.0.0-20250110232712-2eb9d74ed7b3
 	github.com/opentdf/platform/lib/flattening v0.1.3
 	github.com/opentdf/platform/protocol/go v0.2.22
 	github.com/opentdf/platform/sdk v0.3.25
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.10.0
-	github.com/zalando/go-keyring v0.2.6
 	github.com/zitadel/oidc/v3 v3.34.0
 	golang.org/x/oauth2 v0.25.0
 	golang.org/x/term v0.28.0
@@ -67,7 +67,7 @@ require (
 	github.com/lestrrat-go/jwx/v2 v2.1.0 // indirect
 	github.com/lestrrat-go/option v1.0.1 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
-	github.com/magiconair/properties v1.8.7 // indirect
+	github.com/magiconair/properties v1.8.9 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-localereader v0.0.1 // indirect
 	github.com/mattn/go-runewidth v0.0.16 // indirect
@@ -98,6 +98,7 @@ require (
 	github.com/xeipuuv/gojsonschema v1.2.0 // indirect
 	github.com/yuin/goldmark v1.7.4 // indirect
 	github.com/yuin/goldmark-emoji v1.0.3 // indirect
+	github.com/zalando/go-keyring v0.2.6 // indirect
 	github.com/zitadel/logging v0.6.1 // indirect
 	github.com/zitadel/schema v1.3.0 // indirect
 	go.opentelemetry.io/otel v1.31.0 // indirect
