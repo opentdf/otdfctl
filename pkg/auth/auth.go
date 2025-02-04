@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/url"
 	"os"
 	"time"
@@ -23,8 +24,8 @@ import (
 )
 
 const (
-	authCallbackPath = "/callback"
-	authCodeFlowPort = "9000"
+	authCallbackPath        = "/callback"
+	defaultAuthCodeFlowPort = "9000"
 )
 
 type ClientCredentials struct {
@@ -33,10 +34,11 @@ type ClientCredentials struct {
 }
 
 type platformConfiguration struct {
-	issuer         string
-	authzEndpoint  string
-	tokenEndpoint  string
-	publicClientID string
+	issuer           string
+	authzEndpoint    string
+	tokenEndpoint    string
+	publicClientID   string
+	authCodeFlowPort string
 }
 
 type oidcClientCredentials struct {
@@ -119,6 +121,12 @@ func getPlatformConfiguration(endpoint, publicClientID string, tlsNoVerify bool)
 		if e != nil {
 			err = errors.Join(err, sdk.ErrPlatformPublicClientIDNotFound)
 		}
+	}
+
+	c.authCodeFlowPort, e = s.PlatformConfiguration.CodeFlowPort()
+
+	if e != nil {
+		err = errors.Join(err, sdk.ErrPlatformCodeFlowPort)
 	}
 
 	if err != nil {
@@ -214,7 +222,7 @@ const (
 
 // Facilitates an auth code PKCE flow to obtain OIDC tokens.
 // Spawns a local server to handle the callback and opens a browser window in each respective OS.
-func Login(ctx context.Context, platformEndpoint, tokenURL, authURL, publicClientID string) (*oauth2.Token, error) {
+func Login(ctx context.Context, platformEndpoint, tokenURL, authURL, publicClientID, authCodeFlowPort string) (*oauth2.Token, error) {
 	// Generate random hash and encryption keys for cookie handling
 	hashKey := make([]byte, keyLength)
 	encryptKey := make([]byte, keyLength)
@@ -268,10 +276,15 @@ func Login(ctx context.Context, platformEndpoint, tokenURL, authURL, publicClien
 func LoginWithPKCE(ctx context.Context, host, publicClientID string, tlsNoVerify bool) (*oauth2.Token, string, error) {
 	pc, err := getPlatformConfiguration(host, publicClientID, tlsNoVerify)
 	if err != nil {
-		return nil, "", fmt.Errorf("failed to get platform configuration: %w", err)
+		if !errors.Is(err, sdk.ErrPlatformCodeFlowPort) {
+			return nil, "", fmt.Errorf("failed to get platform configuration: %w", err)
+		}
+		// Fallback to default port.
+		slog.Warn(fmt.Sprintf("No port specified for code flow, falling back to: %s", defaultAuthCodeFlowPort))
+		pc.authCodeFlowPort = defaultAuthCodeFlowPort
 	}
 
-	tok, err := Login(ctx, host, pc.tokenEndpoint, pc.authzEndpoint, pc.publicClientID)
+	tok, err := Login(ctx, host, pc.tokenEndpoint, pc.authzEndpoint, pc.publicClientID, pc.authCodeFlowPort)
 	if err != nil {
 		return nil, "", fmt.Errorf("failed to login: %w", err)
 	}
