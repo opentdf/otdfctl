@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log/slog"
 	"net/url"
 	"os"
 	"time"
@@ -123,10 +122,10 @@ func getPlatformConfiguration(endpoint, publicClientID string, tlsNoVerify bool)
 		}
 	}
 
-	c.authCodeFlowPort, e = s.PlatformConfiguration.CodeFlowPort()
+	c.authCodeFlowPort, e = s.PlatformConfiguration.PublicClientLocalPort()
 
 	if e != nil {
-		err = errors.Join(err, sdk.ErrPlatformCodeFlowPort)
+		err = errors.Join(err, sdk.ErrPlatformPublicClientLocalPortNotFound)
 	}
 
 	if err != nil {
@@ -276,11 +275,9 @@ func Login(ctx context.Context, platformEndpoint, tokenURL, authURL, publicClien
 func LoginWithPKCE(ctx context.Context, host, publicClientID string, tlsNoVerify bool) (*oauth2.Token, string, error) {
 	pc, err := getPlatformConfiguration(host, publicClientID, tlsNoVerify)
 	if err != nil {
-		if !errors.Is(err, sdk.ErrPlatformCodeFlowPort) {
+		if !errors.Is(err, sdk.ErrPlatformPublicClientLocalPortNotFound) {
 			return nil, "", fmt.Errorf("failed to get platform configuration: %w", err)
 		}
-		// Fallback to default port.
-		slog.Warn(fmt.Sprintf("No port specified for code flow, falling back to: %s", defaultAuthCodeFlowPort))
 		pc.authCodeFlowPort = defaultAuthCodeFlowPort
 	}
 
