@@ -13,11 +13,10 @@ command:
       required: true
     - name: public-keys
       shorthand: c
-      description: One or more public keys saved for the KAS
+      description: (Deprecated) One or more public keys saved for the KAS
     - name: public-key-remote
       shorthand: r
-      description: Remote URI where the public key can be retrieved for the KAS
-    - name: label
+      description: (Deprecated) Remote URI where the public key can be retrieved for the KAS
     - name: name
       shorthand: n
       description: Optional name of the registered KAS (must be unique within policy)

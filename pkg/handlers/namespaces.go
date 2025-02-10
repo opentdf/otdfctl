@@ -1,16 +1,31 @@
 package handlers
 
 import (
+	"context"
+	"errors"
+
+	"github.com/opentdf/otdfctl/pkg/utils"
 	"github.com/opentdf/platform/protocol/go/common"
 	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/opentdf/platform/protocol/go/policy/namespaces"
 	"github.com/opentdf/platform/protocol/go/policy/unsafe"
+	"google.golang.org/grpc/status"
 )
 
-func (h Handler) GetNamespace(id string) (*policy.Namespace, error) {
-	resp, err := h.sdk.Namespaces.GetNamespace(h.ctx, &namespaces.GetNamespaceRequest{
-		Id: id,
-	})
+func (h Handler) GetNamespace(identifier string) (*policy.Namespace, error) {
+	nsReq := new(namespaces.GetNamespaceRequest)
+
+	if utils.IsUUID(identifier) {
+		nsReq.Identifier = &namespaces.GetNamespaceRequest_NamespaceId{
+			NamespaceId: identifier,
+		}
+	} else {
+		nsReq.Identifier = &namespaces.GetNamespaceRequest_Fqn{
+			Fqn: identifier,
+		}
+	}
+
+	resp, err := h.sdk.Namespaces.GetNamespace(h.ctx, nsReq)
 	if err != nil {
 		return nil, err
 	}
@@ -103,4 +118,59 @@ func (h Handler) UnsafeUpdateNamespace(id, name string) (*policy.Namespace, erro
 	}
 
 	return h.GetNamespace(id)
+}
+
+func (h Handler) AddPublicKeyToNamespace(ctx context.Context, nameSpace, publicKeyID string) (*namespaces.NamespaceKey, error) {
+	nk := &namespaces.NamespaceKey{
+		KeyId: publicKeyID,
+	}
+
+	if utils.IsUUID(nameSpace) {
+		nk.NamespaceId = nameSpace
+	} else {
+		nss, err := h.GetNamespace(nameSpace)
+		if err != nil {
+			return nil, err
+		}
+		nk.NamespaceId = nss.GetId()
+	}
+
+	resp, err := h.sdk.Namespaces.AssignKeyToNamespace(ctx, &namespaces.AssignKeyToNamespaceRequest{
+		NamespaceKey: nk,
+	})
+	if err != nil {
+		s := status.Convert(err)
+		return nil, errors.New(s.Message())
+	}
+
+	return resp.GetNamespaceKey(), nil
+}
+
+func (h Handler) RemovePublicKeyFromNamespace(ctx context.Context, nameSpace, publicKeyID string) (*namespaces.NamespaceKey, error) {
+	nk := &namespaces.NamespaceKey{
+		KeyId: publicKeyID,
+	}
+
+	if utils.IsUUID(nameSpace) {
+		nk.NamespaceId = nameSpace
+	} else {
+		nss, err := h.GetNamespace(nameSpace)
+		if err != nil {
+			return nil, err
+		}
+		nk.NamespaceId = nss.GetId()
+	}
+	_, err := h.sdk.Namespaces.RemoveKeyFromNamespace(ctx, &namespaces.RemoveKeyFromNamespaceRequest{
+		NamespaceKey: nk,
+	})
+	if err != nil {
+		s := status.Convert(err)
+		return nil, errors.New(s.Message())
+	}
+
+	return nk, nil
+}
+
+func (h Handler) ListPublicKeyNamespaceMappings(ctx context.Context, namespaceID string, offset, limit int32) error {
+	return nil
 }

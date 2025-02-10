@@ -2,6 +2,8 @@ module github.com/opentdf/otdfctl
 
 go 1.22.7
 
+replace github.com/opentdf/platform/protocol/go => ../platform/protocol/go
+
 require (
 	github.com/adrg/frontmatter v0.2.0
 	github.com/charmbracelet/bubbles v0.18.0
@@ -16,7 +18,7 @@ require (
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.6.0
 	github.com/opentdf/platform/lib/flattening v0.1.3
-	github.com/opentdf/platform/protocol/go v0.2.22
+	github.com/opentdf/platform/protocol/go v0.2.24
 	github.com/opentdf/platform/sdk v0.3.25
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.19.0

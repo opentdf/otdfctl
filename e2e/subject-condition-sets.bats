@@ -5,7 +5,7 @@
 setup_file() {
   echo -n '{"clientId":"opentdf","clientSecret":"secret"}' > creds.json
   export WITH_CREDS='--with-client-creds-file ./creds.json'
-  export HOST='--host http://localhost:8080'
+  export HOST="${HOST:---host http://localhost:8080}"
 
   export SCS_1='[{"condition_groups":[{"conditions":[{"operator":1,"subject_external_values":["marketing"],"subject_external_selector_value":".org.name"},{"operator":1,"subject_external_values":["ShinyThing"],"subject_external_selector_value":".team.name"}],"boolean_operator":1}]}]'
   export SCS_2='[{"condition_groups":[{"conditions":[{"operator":3,"subject_external_values":["piedpiper.com","hooli.com"],"subject_external_selector_value":".emailAddress"},{"operator":1,"subject_external_values":["sales"],"subject_external_selector_value":".department"}],"boolean_operator":2}]}]'

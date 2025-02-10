@@ -20,6 +20,7 @@ const (
 	// text input names
 	InputNameFQN        = "fully qualified name (FQN)"
 	InputNameFQNUpdated = "deprecated fully qualified name (FQN) being altered"
+	InputNameKeyID      = "key ID"
 )
 
 func ConfirmAction(action, resource, id string, force bool) {

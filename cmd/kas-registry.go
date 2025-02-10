@@ -1,9 +1,6 @@
 package cmd
 
 import (
-	"encoding/json"
-	"encoding/pem"
-	"errors"
 	"fmt"
 
 	"github.com/evertras/bubble-table/table"
@@ -11,10 +8,9 @@ import (
 	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/spf13/cobra"
-	"google.golang.org/protobuf/encoding/protojson"
 )
 
-var policy_kasRegistryCmd *cobra.Command
+var policy_kasRegistryCmd = man.Docs.GetCommand("policy/kas-registry")
 
 func policy_getKeyAccessRegistry(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
@@ -29,15 +25,9 @@ func policy_getKeyAccessRegistry(cmd *cobra.Command, args []string) {
 		cli.ExitWithError(errMsg, err)
 	}
 
-	key := &policy.PublicKey{}
-	key.PublicKey = &policy.PublicKey_Cached{Cached: kas.GetPublicKey().GetCached()}
-	if kas.GetPublicKey().GetRemote() != "" {
-		key.PublicKey = &policy.PublicKey_Remote{Remote: kas.GetPublicKey().GetRemote()}
-	}
 	rows := [][]string{
 		{"Id", kas.GetId()},
 		{"URI", kas.GetUri()},
-		{"PublicKey", kas.GetPublicKey().String()},
 	}
 	name := kas.GetName()
 	if name != "" {
@@ -69,21 +59,13 @@ func policy_listKeyAccessRegistries(cmd *cobra.Command, args []string) {
 		cli.NewUUIDColumn(),
 		table.NewFlexColumn("uri", "URI", cli.FlexColumnWidthFour),
 		table.NewFlexColumn("name", "Name", cli.FlexColumnWidthThree),
-		table.NewFlexColumn("pk", "PublicKey", cli.FlexColumnWidthFour),
 	)
 	rows := []table.Row{}
 	for _, kas := range list {
-		key := policy.PublicKey{}
-		key.PublicKey = &policy.PublicKey_Cached{Cached: kas.GetPublicKey().GetCached()}
-		if kas.GetPublicKey().GetRemote() != "" {
-			key.PublicKey = &policy.PublicKey_Remote{Remote: kas.GetPublicKey().GetRemote()}
-		}
-
 		rows = append(rows, table.NewRow(table.RowData{
 			"id":   kas.GetId(),
 			"uri":  kas.GetUri(),
 			"name": kas.GetName(),
-			"pk":   kas.GetPublicKey().String(),
 		}))
 	}
 	t = t.WithRows(rows)
@@ -97,31 +79,12 @@ func policy_createKeyAccessRegistry(cmd *cobra.Command, args []string) {
 	defer h.Close()
 
 	uri := c.Flags.GetRequiredString("uri")
-	cachedJSON := c.Flags.GetOptionalString("public-keys")
-	remote := c.Flags.GetOptionalString("public-key-remote")
 	name := c.Flags.GetOptionalString("name")
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
-	if cachedJSON == "" && remote == "" {
-		cli.ExitWithError("Empty flags 'public-keys' and 'public-key-remote'", errors.New("error: a public key is required"))
-	}
-
-	key := new(policy.PublicKey)
-	if cachedJSON != "" {
-		if remote != "" {
-			cli.ExitWithError("Found values for both flags 'public-keys' and 'public-key-remote'", errors.New("error: only one public key is allowed"))
-		}
-		err := unmarshalKASPublicKey(cachedJSON, key)
-		if err != nil {
-			cli.ExitWithError(fmt.Sprintf("KAS registry key is invalid: '%s', see help for examples", cachedJSON), err)
-		}
-	} else {
-		key.PublicKey = &policy.PublicKey_Remote{Remote: remote}
-	}
-
 	created, err := h.CreateKasRegistryEntry(
 		uri,
-		key,
+		&policy.PublicKey{},
 		name,
 		getMetadataMutable(metadataLabels),
 	)
@@ -132,7 +95,6 @@ func policy_createKeyAccessRegistry(cmd *cobra.Command, args []string) {
 	rows := [][]string{
 		{"Id", created.GetId()},
 		{"URI", created.GetUri()},
-		{"PublicKey", created.GetPublicKey().String()},
 	}
 	if name != "" {
 		rows = append(rows, []string{"Name", name})
@@ -153,34 +115,18 @@ func policy_updateKeyAccessRegistry(cmd *cobra.Command, args []string) {
 	id := c.Flags.GetRequiredID("id")
 	uri := c.Flags.GetOptionalString("uri")
 	name := c.Flags.GetOptionalString("name")
-	cachedJSON := c.Flags.GetOptionalString("public-keys")
-	remote := c.Flags.GetOptionalString("public-key-remote")
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
-	allEmpty := cachedJSON == "" && remote == "" && len(metadataLabels) == 0 && uri == "" && name == ""
+	allEmpty := len(metadataLabels) == 0 && uri == "" && name == ""
 	if allEmpty {
 		cli.ExitWithError("No values were passed to update. Please pass at least one value to update (E.G. 'uri', 'name', 'public-keys', 'public-key-remote', 'label')", nil)
-	}
-
-	pubKey := new(policy.PublicKey)
-	if cachedJSON != "" && remote != "" {
-		e := fmt.Errorf("only one public key is allowed. Please pass either a cached or remote public key but not both")
-		cli.ExitWithError("Issue with update flags 'public-keys' and 'public-key-remote': ", e)
-	}
-	if cachedJSON != "" {
-		err := unmarshalKASPublicKey(cachedJSON, pubKey)
-		if err != nil {
-			cli.ExitWithError(fmt.Sprintf("KAS registry key is invalid: '%s', see help for examples", cachedJSON), err)
-		}
-	} else if remote != "" {
-		pubKey.PublicKey = &policy.PublicKey_Remote{Remote: remote}
 	}
 
 	updated, err := h.UpdateKasRegistryEntry(
 		id,
 		uri,
 		name,
-		pubKey,
+		&policy.PublicKey{},
 		getMetadataMutable(metadataLabels),
 		getMetadataUpdateBehavior(),
 	)
@@ -190,7 +136,6 @@ func policy_updateKeyAccessRegistry(cmd *cobra.Command, args []string) {
 	rows := [][]string{
 		{"Id", id},
 		{"URI", updated.GetUri()},
-		{"PublicKey", updated.GetPublicKey().String()},
 	}
 	if updated.GetName() != "" {
 		rows = append(rows, []string{"Name", updated.GetName()})
@@ -230,32 +175,6 @@ func policy_deleteKeyAccessRegistry(cmd *cobra.Command, args []string) {
 	)
 
 	HandleSuccess(cmd, kas.GetId(), t, kas)
-}
-
-// TODO: remove this when the data is structured
-func unmarshalKASPublicKey(keyStr string, key *policy.PublicKey) error {
-	if !json.Valid([]byte(keyStr)) {
-		return errors.New("invalid JSON")
-	}
-
-	if err := protojson.Unmarshal([]byte(keyStr), key); err != nil {
-		return errors.New("invalid shape")
-	}
-
-	// Validate all PEMs
-	keyErrs := []error{}
-	for i, k := range key.GetCached().GetKeys() {
-		block, _ := pem.Decode([]byte(k.GetPem()))
-		if block == nil {
-			keyErrs = append(keyErrs, fmt.Errorf("error in key[%d] with KID \"%s\": PEM is invalid", i, k.GetKid()))
-		}
-	}
-
-	if len(keyErrs) != 0 {
-		return errors.Join(keyErrs...)
-	}
-
-	return nil
 }
 
 func init() {
@@ -353,9 +272,6 @@ func init() {
 		deleteDoc.GetDocFlag("force").Description,
 	)
 
-	doc := man.Docs.GetCommand("policy/kas-registry",
-		man.WithSubcommands(createDoc, getDoc, listDoc, updateDoc, deleteDoc),
-	)
-	policy_kasRegistryCmd = &doc.Command
-	policyCmd.AddCommand(policy_kasRegistryCmd)
+	policy_kasRegistryCmd.AddSubcommands(createDoc, getDoc, listDoc, updateDoc, deleteDoc)
+	policyCmd.AddCommand(&policy_kasRegistryCmd.Command)
 }

@@ -8,32 +8,35 @@ type Color struct {
 	Background lipgloss.CompleteAdaptiveColor
 }
 
-var colorRed = Color{
-	Foreground: lipgloss.CompleteAdaptiveColor{
-		Light: lipgloss.CompleteColor{
-			TrueColor: "#FF0000",
-			ANSI256:   "9",
-			ANSI:      "1",
+var (
+	ColorRed = colorRed
+	colorRed = Color{
+		Foreground: lipgloss.CompleteAdaptiveColor{
+			Light: lipgloss.CompleteColor{
+				TrueColor: "#FF0000",
+				ANSI256:   "9",
+				ANSI:      "1",
+			},
+			Dark: lipgloss.CompleteColor{
+				TrueColor: "#FF0000",
+				ANSI256:   "9",
+				ANSI:      "1",
+			},
 		},
-		Dark: lipgloss.CompleteColor{
-			TrueColor: "#FF0000",
-			ANSI256:   "9",
-			ANSI:      "1",
+		Background: lipgloss.CompleteAdaptiveColor{
+			Light: lipgloss.CompleteColor{
+				TrueColor: "#FFD2D2",
+				ANSI256:   "224",
+				ANSI:      "7",
+			},
+			Dark: lipgloss.CompleteColor{
+				TrueColor: "#da6b81",
+				ANSI256:   "52",
+				ANSI:      "4",
+			},
 		},
-	},
-	Background: lipgloss.CompleteAdaptiveColor{
-		Light: lipgloss.CompleteColor{
-			TrueColor: "#FFD2D2",
-			ANSI256:   "224",
-			ANSI:      "7",
-		},
-		Dark: lipgloss.CompleteColor{
-			TrueColor: "#da6b81",
-			ANSI256:   "52",
-			ANSI:      "4",
-		},
-	},
-}
+	}
+)
 
 var colorOrange = Color{
 	Foreground: lipgloss.CompleteAdaptiveColor{
@@ -90,32 +93,35 @@ var colorYellow = Color{
 	},
 }
 
-var colorGreen = Color{
-	Foreground: lipgloss.CompleteAdaptiveColor{
-		Light: lipgloss.CompleteColor{
-			TrueColor: "#008000",
-			ANSI256:   "28",
-			ANSI:      "2",
+var (
+	ColorGreen = colorGreen
+	colorGreen = Color{
+		Foreground: lipgloss.CompleteAdaptiveColor{
+			Light: lipgloss.CompleteColor{
+				TrueColor: "#008000",
+				ANSI256:   "28",
+				ANSI:      "2",
+			},
+			Dark: lipgloss.CompleteColor{
+				TrueColor: "#008000",
+				ANSI256:   "28",
+				ANSI:      "2",
+			},
 		},
-		Dark: lipgloss.CompleteColor{
-			TrueColor: "#008000",
-			ANSI256:   "28",
-			ANSI:      "2",
+		Background: lipgloss.CompleteAdaptiveColor{
+			Light: lipgloss.CompleteColor{
+				TrueColor: "#D2FFD2",
+				ANSI256:   "157",
+				ANSI:      "7",
+			},
+			Dark: lipgloss.CompleteColor{
+				TrueColor: "#29cf68",
+				ANSI256:   "22",
+				ANSI:      "4",
+			},
 		},
-	},
-	Background: lipgloss.CompleteAdaptiveColor{
-		Light: lipgloss.CompleteColor{
-			TrueColor: "#D2FFD2",
-			ANSI256:   "157",
-			ANSI:      "7",
-		},
-		Dark: lipgloss.CompleteColor{
-			TrueColor: "#29cf68",
-			ANSI256:   "22",
-			ANSI:      "4",
-		},
-	},
-}
+	}
+)
 
 var colorBlue = Color{
 	Foreground: lipgloss.CompleteAdaptiveColor{

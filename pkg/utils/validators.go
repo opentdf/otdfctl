@@ -4,6 +4,8 @@ import (
 	"errors"
 	"net/url"
 	"strings"
+
+	"github.com/google/uuid"
 )
 
 func NormalizeEndpoint(endpoint string) (*url.URL, error) {
@@ -30,4 +32,17 @@ func NormalizeEndpoint(endpoint string) (*url.URL, error) {
 		u.Path = strings.TrimSuffix(u.Path, "/")
 	}
 	return u, nil
+}
+
+func IsUUID(u string) bool {
+	_, err := uuid.Parse(u)
+	return err == nil
+}
+
+func IsURI(u string) bool {
+	ur, err := url.Parse(u)
+	if err != nil {
+		return false
+	}
+	return ur.IsAbs()
 }

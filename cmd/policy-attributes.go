@@ -16,7 +16,8 @@ var (
 	values                     []string
 	valuesOrder                []string
 
-	policy_attributesCmd = man.Docs.GetCommand("policy/attributes")
+	policy_attributesCmd     = man.Docs.GetCommand("policy/attributes")
+	policy_DefinitionKeysCmd = man.Docs.GetCommand("policy/attributes/keys")
 )
 
 func policy_createAttribute(cmd *cobra.Command, args []string) {
@@ -300,6 +301,53 @@ func policy_unsafeDeleteAttribute(cmd *cobra.Command, args []string) {
 	}
 }
 
+func policy_DefinitionKeysAdd(cmd *cobra.Command, args []string) {
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
+	defer h.Close()
+
+	def := c.Flags.GetRequiredString("definition")
+	pkID := c.Flags.GetRequiredID("public-key-id")
+
+	ak, err := h.AddPublicKeyToDefinition(c.Context(), def, pkID)
+	if err != nil {
+		cli.ExitWithError("Failed to add public key to definition", err)
+	}
+
+	rows := [][]string{
+		{"Public Key Id", pkID},
+		{"Attribute Definition", def},
+	}
+
+	t := cli.NewTabular(rows...)
+
+	HandleSuccess(cmd, "Public key added to definition", t, ak)
+}
+
+func policy_DefinitionKeysRemove(cmd *cobra.Command, args []string) {
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
+	defer h.Close()
+
+	def := c.Flags.GetRequiredString("definition")
+	pkID := c.Flags.GetRequiredID("public-key-id")
+
+	_, err := h.RemovePublicKeyFromDefinition(c.Context(), def, pkID)
+	if err != nil {
+		cli.ExitWithError("Failed to remove public key from definition", err)
+	}
+
+	rows := [][]string{
+		{"Public Key Id", pkID},
+		{"Attribute Definition", def},
+	}
+
+	t := cli.NewTabular(rows...)
+
+	HandleSuccess(cmd, "Public key removed from definition", t, nil)
+}
+func policy_DefinitionKeysList(cmd *cobra.Command, args []string) {}
+
 func init() {
 	// Create an attribute
 	createDoc := man.Docs.GetCommand("policy/attributes/create",
@@ -438,7 +486,51 @@ func init() {
 		unsafeUpdateCmd.GetDocFlag("values-order").Description,
 	)
 
+	definitionKeysAddDoc := man.Docs.GetCommand("policy/attributes/keys/add",
+		man.WithRun(policy_DefinitionKeysAdd),
+	)
+	definitionKeysAddDoc.Flags().StringP(
+		definitionKeysAddDoc.GetDocFlag("definition").Name,
+		definitionKeysAddDoc.GetDocFlag("definition").Shorthand,
+		definitionKeysAddDoc.GetDocFlag("definition").Default,
+		definitionKeysAddDoc.GetDocFlag("definition").Description,
+	)
+	definitionKeysAddDoc.Flags().StringP(
+		definitionKeysAddDoc.GetDocFlag("public-key-id").Name,
+		definitionKeysAddDoc.GetDocFlag("public-key-id").Shorthand,
+		definitionKeysAddDoc.GetDocFlag("public-key-id").Default,
+		definitionKeysAddDoc.GetDocFlag("public-key-id").Description,
+	)
+
+	definitionKeysRemoveDoc := man.Docs.GetCommand("policy/attributes/keys/remove",
+		man.WithRun(policy_DefinitionKeysRemove),
+	)
+	definitionKeysRemoveDoc.Flags().StringP(
+		definitionKeysRemoveDoc.GetDocFlag("definition").Name,
+		definitionKeysRemoveDoc.GetDocFlag("definition").Shorthand,
+		definitionKeysRemoveDoc.GetDocFlag("definition").Default,
+		definitionKeysRemoveDoc.GetDocFlag("definition").Description,
+	)
+	definitionKeysRemoveDoc.Flags().StringP(
+		definitionKeysRemoveDoc.GetDocFlag("public-key-id").Name,
+		definitionKeysRemoveDoc.GetDocFlag("public-key-id").Shorthand,
+		definitionKeysRemoveDoc.GetDocFlag("public-key-id").Default,
+		definitionKeysRemoveDoc.GetDocFlag("public-key-id").Description,
+	)
+
+	definitionKeysListDoc := man.Docs.GetCommand("policy/attributes/keys/list",
+		man.WithRun(policy_DefinitionKeysList),
+	)
+	definitionKeysListDoc.Flags().StringP(
+		definitionKeysListDoc.GetDocFlag("definition").Name,
+		definitionKeysListDoc.GetDocFlag("definition").Shorthand,
+		definitionKeysListDoc.GetDocFlag("definition").Default,
+		definitionKeysListDoc.GetDocFlag("definition").Description,
+	)
+
+	policy_DefinitionKeysCmd.AddSubcommands(definitionKeysAddDoc, definitionKeysRemoveDoc, definitionKeysListDoc)
+
 	unsafeCmd.AddSubcommands(reactivateCmd, deleteCmd, unsafeUpdateCmd)
-	policy_attributesCmd.AddSubcommands(createDoc, getDoc, listDoc, updateDoc, deactivateDoc, unsafeCmd)
+	policy_attributesCmd.AddSubcommands(createDoc, getDoc, listDoc, updateDoc, deactivateDoc, unsafeCmd, policy_DefinitionKeysCmd)
 	policyCmd.AddCommand(&policy_attributesCmd.Command)
 }

@@ -1,12 +1,16 @@
 package handlers
 
 import (
+	"context"
+	"errors"
 	"fmt"
 
+	"github.com/opentdf/otdfctl/pkg/utils"
 	"github.com/opentdf/platform/protocol/go/common"
 	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/opentdf/platform/protocol/go/policy/attributes"
 	"github.com/opentdf/platform/protocol/go/policy/unsafe"
+	"google.golang.org/grpc/status"
 )
 
 // TODO: Might be useful to map out the attribute rule definitions for help text in the CLI and TUI
@@ -31,10 +35,20 @@ func (e *CreateAttributeError) Error() string {
 	return "Error creating attribute"
 }
 
-func (h Handler) GetAttribute(id string) (*policy.Attribute, error) {
-	resp, err := h.sdk.Attributes.GetAttribute(h.ctx, &attributes.GetAttributeRequest{
-		Id: id,
-	})
+func (h Handler) GetAttribute(identifier string) (*policy.Attribute, error) {
+	req := &attributes.GetAttributeRequest{}
+
+	if utils.IsUUID(identifier) {
+		req.Identifier = &attributes.GetAttributeRequest_AttributeId{
+			AttributeId: identifier,
+		}
+	} else {
+		req.Identifier = &attributes.GetAttributeRequest_Fqn{
+			Fqn: identifier,
+		}
+	}
+
+	resp, err := h.sdk.Attributes.GetAttribute(h.ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -187,4 +201,59 @@ func GetAttributeRuleFromReadableString(rule string) (policy.AttributeRuleTypeEn
 		return policy.AttributeRuleTypeEnum_ATTRIBUTE_RULE_TYPE_ENUM_HIERARCHY, nil
 	}
 	return 0, fmt.Errorf("invalid attribute rule: %s, must be one of [%s, %s, %s]", rule, AttributeRuleAllOf, AttributeRuleAnyOf, AttributeRuleHierarchy)
+}
+
+func (h Handler) AddPublicKeyToDefinition(ctx context.Context, definition, publicKeyID string) (*attributes.AttributeKey, error) {
+	ak := &attributes.AttributeKey{
+		KeyId: publicKeyID,
+	}
+
+	if utils.IsUUID(definition) {
+		ak.AttributeId = definition
+	} else {
+		def, err := h.GetAttribute(definition)
+		if err != nil {
+			return nil, err
+		}
+		ak.AttributeId = def.GetId()
+	}
+
+	resp, err := h.sdk.Attributes.AssignKeyToAttribute(ctx, &attributes.AssignKeyToAttributeRequest{
+		AttributeKey: ak,
+	})
+	if err != nil {
+		s := status.Convert(err)
+		return nil, errors.New(s.Message())
+	}
+
+	return resp.GetAttributeKey(), nil
+}
+
+func (h Handler) RemovePublicKeyFromDefinition(ctx context.Context, definition, publicKeyID string) (*attributes.AttributeKey, error) {
+	ak := &attributes.AttributeKey{
+		KeyId: publicKeyID,
+	}
+
+	if utils.IsUUID(definition) {
+		ak.AttributeId = definition
+	} else {
+		def, err := h.GetAttribute(definition)
+		if err != nil {
+			return nil, err
+		}
+		ak.AttributeId = def.GetId()
+	}
+
+	_, err := h.sdk.Attributes.RemoveKeyFromAttribute(ctx, &attributes.RemoveKeyFromAttributeRequest{
+		AttributeKey: ak,
+	})
+	if err != nil {
+		s := status.Convert(err)
+		return nil, errors.New(s.Message())
+	}
+	return ak, nil
+}
+
+func (h Handler) ListPublicKeyDefinitionMappings(ctx context.Context, definitionID string, offset, limit int32) error {
+	return nil
 }

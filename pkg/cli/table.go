@@ -22,7 +22,8 @@ func NewTable(cols ...table.Column) table.Model {
 		BorderRounded().
 		WithBaseStyle(styleTable).
 		WithNoPagination().
-		WithTargetWidth(TermWidth())
+		WithTargetWidth(TermWidth()).
+		WithMultiline(true)
 }
 
 func NewUUIDColumn() table.Column {

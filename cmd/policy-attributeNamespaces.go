@@ -12,6 +12,7 @@ import (
 
 var (
 	policy_attributeNamespacesCmd = man.Docs.GetCommand("policy/attributes/namespaces")
+	policy_NamespaceKeysCmd       = man.Docs.GetCommand("policy/attributes/namespaces/keys")
 
 	forceUnsafe bool
 )
@@ -265,6 +266,53 @@ func policy_unsafeUpdateAttributeNamespace(cmd *cobra.Command, args []string) {
 	HandleSuccess(cmd, ns.GetId(), t, ns)
 }
 
+func policy_NamespaceKeysAdd(cmd *cobra.Command, args []string) {
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
+	defer h.Close()
+
+	ns := c.Flags.GetRequiredString("namespace")
+	pkID := c.Flags.GetRequiredID("public-key-id")
+
+	_, err := h.AddPublicKeyToNamespace(c.Context(), ns, pkID)
+	if err != nil {
+		cli.ExitWithError("Failed to add public key to namespace", err)
+	}
+
+	rows := [][]string{
+		{"Public Key Id", pkID},
+		{"Namespace", ns},
+	}
+
+	t := cli.NewTabular(rows...)
+
+	HandleSuccess(cmd, "Public key added to namespace", t, nil)
+}
+
+func policy_NamespaceKeysRemove(cmd *cobra.Command, args []string) {
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
+	defer h.Close()
+
+	ns := c.Flags.GetRequiredString("namespace")
+	pkID := c.Flags.GetRequiredID("public-key-id")
+
+	_, err := h.RemovePublicKeyFromNamespace(c.Context(), ns, pkID)
+	if err != nil {
+		cli.ExitWithError("Failed to remove public key from namespace", err)
+	}
+
+	rows := [][]string{
+		{"Public Key Id", pkID},
+		{"Namespace", ns},
+	}
+
+	t := cli.NewTabular(rows...)
+
+	HandleSuccess(cmd, "Public key removed from namespace", t, nil)
+}
+func policy_NamespaceKeysListcmd(cmd *cobra.Command, args []string) {}
+
 func init() {
 	getCmd := man.Docs.GetCommand("policy/attributes/namespaces/get",
 		man.WithRun(policy_getAttributeNamespace),
@@ -367,6 +415,49 @@ func init() {
 	)
 	unsafeCmd.AddSubcommands(deleteCmd, reactivateCmd, unsafeUpdateCmd)
 
-	policy_attributeNamespacesCmd.AddSubcommands(getCmd, listCmd, createDoc, updateCmd, deactivateCmd, unsafeCmd)
+	namespaceKeysAddDoc := man.Docs.GetCommand("policy/attributes/namespaces/keys/add",
+		man.WithRun(policy_NamespaceKeysAdd),
+	)
+	namespaceKeysAddDoc.Flags().StringP(
+		namespaceKeysAddDoc.GetDocFlag("namespace").Name,
+		namespaceKeysAddDoc.GetDocFlag("namespace").Shorthand,
+		namespaceKeysAddDoc.GetDocFlag("namespace").Default,
+		namespaceKeysAddDoc.GetDocFlag("namespace").Description,
+	)
+	namespaceKeysAddDoc.Flags().StringP(
+		namespaceKeysAddDoc.GetDocFlag("public-key-id").Name,
+		namespaceKeysAddDoc.GetDocFlag("public-key-id").Shorthand,
+		namespaceKeysAddDoc.GetDocFlag("public-key-id").Default,
+		namespaceKeysAddDoc.GetDocFlag("public-key-id").Description,
+	)
+
+	namespaceKeysRemoveDoc := man.Docs.GetCommand("policy/attributes/namespaces/keys/remove",
+		man.WithRun(policy_NamespaceKeysRemove),
+	)
+	namespaceKeysRemoveDoc.Flags().StringP(
+		namespaceKeysRemoveDoc.GetDocFlag("namespace").Name,
+		namespaceKeysRemoveDoc.GetDocFlag("namespace").Shorthand,
+		namespaceKeysRemoveDoc.GetDocFlag("namespace").Default,
+		namespaceKeysRemoveDoc.GetDocFlag("namespace").Description,
+	)
+	namespaceKeysRemoveDoc.Flags().StringP(
+		namespaceKeysRemoveDoc.GetDocFlag("public-key-id").Name,
+		namespaceKeysRemoveDoc.GetDocFlag("public-key-id").Shorthand,
+		namespaceKeysRemoveDoc.GetDocFlag("public-key-id").Default,
+		namespaceKeysRemoveDoc.GetDocFlag("public-key-id").Description,
+	)
+
+	namespaceKeysListDoc := man.Docs.GetCommand("policy/attributes/namespaces/keys/list",
+		man.WithRun(policy_NamespaceKeysListcmd),
+	)
+	namespaceKeysListDoc.Flags().StringP(
+		namespaceKeysListDoc.GetDocFlag("namespace").Name,
+		namespaceKeysListDoc.GetDocFlag("namespace").Shorthand,
+		namespaceKeysListDoc.GetDocFlag("namespace").Default,
+		namespaceKeysListDoc.GetDocFlag("namespace").Description,
+	)
+
+	policy_NamespaceKeysCmd.AddSubcommands(namespaceKeysAddDoc, namespaceKeysRemoveDoc, namespaceKeysListDoc)
+	policy_attributeNamespacesCmd.AddSubcommands(getCmd, listCmd, createDoc, updateCmd, deactivateCmd, unsafeCmd, policy_NamespaceKeysCmd)
 	policy_attributesCmd.AddCommand(&policy_attributeNamespacesCmd.Command)
 }

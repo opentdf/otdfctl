@@ -1,11 +1,12 @@
 #!/usr/bin/env bats
+load "./helpers.bash"
 
 # Tests for namespaces
 
 setup_file() {
     echo -n '{"clientId":"opentdf","clientSecret":"secret"}' > creds.json
     export WITH_CREDS='--with-client-creds-file ./creds.json'
-    export HOST='--host http://localhost:8080'
+     export HOST="${HOST:---host http://localhost:8080}"
 
     # Create the namespace to be used by other tests
 
@@ -16,13 +17,19 @@ setup_file() {
 }
 
 setup() {
-    load "${BATS_LIB_PATH}/bats-support/load.bash"
-    load "${BATS_LIB_PATH}/bats-assert/load.bash"
+    setup_helper
 
     # invoke binary with credentials
     run_otdfctl_ns () {
       run sh -c "./otdfctl $HOST $WITH_CREDS policy attributes namespaces $*"
     }
+}
+
+teardown() {
+  cleanup_helper
+
+  # cleanup
+  run_otdfctl_ns unsafe delete --id $NS_ID --force
 }
 
 teardown_file() {
@@ -189,4 +196,69 @@ teardown_file() {
 
   run_otdfctl_ns list --state active
   echo $output | refute_output --partial "$NS_ID"
+}
+
+@test "add_remove_key_to_namespace" {
+    log_info "Starting test: $BATS_TEST_NAME"
+
+    run_otdfctl_ns create --name keys.test --json
+    
+    log_debug "Raw output:"
+    log_debug "$output"
+
+    assert_success
+
+    NAMESPACE_ID=$(echo "$output" | jq -r '.id')
+
+    create_kas "$KAS_URI" "$KAS_NAME"
+
+    ALG="rsa:2048"
+    KID="test"
+
+    create_public_key "$KAS_ID" "$KID" "$ALG"
+
+    # Add the key to the attribute namespace
+    log_info "Running ${run_otdfctl_ns} keys add --value $NAMESPACE_ID --public-key-id $KID"
+    run_otdfctl_ns keys add --namespace "$NAMESPACE_ID" --public-key-id "$PUBLIC_KEY_ID" --json
+
+    log_debug "Raw output:"
+    log_debug "$output"
+
+    assert_success
+
+    # Check that the key was added to the attribute namespace
+    log_info "Running ${run_otdfctl_ns} get --id $NAMESPACE_ID"
+    run_otdfctl_ns get --id "$NAMESPACE_ID" --json
+
+    log_debug "Raw output:"
+    log_debug "$output"
+
+    assert_success
+
+    echo "$output" | jq -r '.keys[].id' | while read -r id; do
+        log_debug "Checking PK ID: $id against $PUBLIC_KEY_ID"
+        [ "$id" = "$PUBLIC_KEY_ID" ] || fail "KAS ID does not match"
+    done
+
+    # Remove the key from the attribute namespaces
+    log_info "Running ${run_otdfctl_ns} keys remove --namespace $NAMESPACE_ID --public-key-id $PUBLIC_KEY_ID"
+    run_otdfctl_ns keys remove --namespace "$NAMESPACE_ID" --public-key-id "$PUBLIC_KEY_ID" --json
+
+    log_debug "Raw output:"
+    log_debug "$output"
+
+    assert_success
+
+    # Check that the key was removed from the attribute namespaces
+    log_info "Running ${run_otdfctl_ns} get --id $NAMESPACE_ID"
+    run_otdfctl_ns get --id "$NAMESPACE_ID" --json
+
+    log_debug "Raw output:"
+    log_debug "$output"
+
+    assert_success
+
+    echo "$output" | jq -e 'has("keys") | not' || fail "KAS ID still present"
+
+    run_otdfctl_ns unsafe delete --id $NAMESPACE_ID --force
 }
