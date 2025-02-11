@@ -18,18 +18,11 @@ command:
       default: false
 ---
 
-Update the `uri`, `metadata`, or key material (remote/cached) for a KAS registered to the platform.
-
-If resource data has been TDFd utilizing key splits from the registered KAS, deletion from
-the registry (and therefore any associated grants) may prevent decryption depending on the
-type of grants and relevant key splits.
-
-Make sure you know what you are doing.
-
-For more information about registration of Key Access Servers, see the manual for `kas-registry`.
+Update the metadata of a public key. The public key information itself cannot be updated. To update a public key create a new key with the updated information.
 
 ## Example 
 
 ```shell
-otdfctl policy kas-registry update --id 3c39618a-cd8c-48cf-a60c-e8a2f4be4dd5 --name example-kas2-newname --public-key-remote "https://example.com/kas2/new_public_key"
+otdfctl policy kas-registry public-key update --id=62857b55-560c-4b67-96e3-33e4670ecb3b --label key=value
 ```
+

@@ -11,7 +11,7 @@ command:
       required: true
 ---
 
-For more information about registration of Key Access Servers, see the manual for `kas-registry`.
+Get a public key.
 
 ## Example
 

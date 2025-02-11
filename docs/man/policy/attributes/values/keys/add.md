@@ -15,10 +15,14 @@ command:
       required: true
 ---
 
-For more information about registration of Key Access Servers, see the manual for `kas-registry`.
+Add a public key mapping to an attribute value.
 
 ## Example
 
 ```shell
-otdfctl policy kas-registry public-key get --id=62857b55-560c-4b67-96e3-33e4670ecb3b
+otdfctl policy attributes values keys add --public-key-id=62857b55-560c-4b67-96e3-33e4670ecb3b --value=62857b55-560c-4b67-96e3-33e4670ecb3b
+```
+
+```shell
+otdfctl policy attributes values keys add --public-key-id=62857b55-560c-4b67-96e3-33e4670ecb3b --value=https://example.com/attr/attr1/value/val1
 ```

@@ -1,9 +1,10 @@
 ---
 title: Manage Key Access Server Public Keys
 command:
-  name: public-key
+  name: public-keys
   aliases:
     - pk
+    - public-key
 ---
 
 

@@ -15,10 +15,17 @@ command:
       required: true
 ---
 
-For more information about registration of Key Access Servers, see the manual for `kas-registry`.
+Remove a public key mapping from an attribute value.
 
 ## Example
 
 ```shell
-otdfctl policy kas-registry public-key get --id=62857b55-560c-4b67-96e3-33e4670ecb3b
+# Remove a public key mapping with Value ID
+otdfctl policy attributes values keys remove --public-key-id=62857b55-560c-4b67-96e3-33e4670ecb3b --value=62857b55-560c-4b67-96e3-33e4670ecb3b
 ```
+
+```shell
+# Remove a public key mapping with Value FQN
+otdfctl policy attributes values keys remove --public-key-id=62857b55-560c-4b67-96e3-33e4670ecb3b --value=https://example.com/attr/attr1/value/val1
+```
+

@@ -26,10 +26,26 @@ command:
 
 ---
 
-For more information about registration of Key Access Servers, see the manual for `kas-registry`.
+Add a public key to a Key Access Server. The public key must be in PEM format. It can be base64 encoded or plain text.
+
+If a key exists with the same algorithm already, the new key will be marked as active and the existing key will be marked as inactive. The namespace, attribute and value mappings will be updated to point to the new key.
 
 ## Example
 
 ```shell
-otdfctl policy kas-registry public-key add --kas-id 1 --key "-----BEGIN CERTIFICATE-----\nMIIB...5Q=\n-----END CERTIFICATE-----\n" --algorithm rsa:2048
+# Add a public key to a Key Access Server By ID
+otdfctl policy kas-registry public-key create --kas 62857b55-560c-4b67-96e3-33e4670ecb3b  --key-id key-1 --key "-----BEGIN CERTIFICATE-----\nMIIB...5Q=\n-----END CERTIFICATE-----\n" --algorithm rsa:2048
 ```
+
+```shell
+# Add a public key to a Key Access Server By Name
+otdfctl policy kas-registry public-key
+create --kas kas-1 --key-id key-1 --key "-----BEGIN CERTIFICATE-----\nMIIB...5Q=\n-----END CERTIFICATE-----\n" --algorithm rsa:2048
+```
+
+```shell
+# Add a public key to a Key Access Server By URI
+otdfctl policy kas-registry public-key
+create --kas https://example.com/kas --key-id key-1 --key "-----BEGIN CERTIFICATE-----\nMIIB...5Q=\n-----END CERTIFICATE-----\n" --algorithm rsa:2048
+```
+

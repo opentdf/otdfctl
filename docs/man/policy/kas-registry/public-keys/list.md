@@ -19,10 +19,25 @@ command:
       description: Offset (page) quantity from start of the list
 ---
 
-For more information about registration of Key Access Servers, see the manual for `kas-registry`.
+List public keys shows a list of public keys.
 
 ## Example
 
 ```shell
 otdfctl policy kas-registry public-key list
+```
+
+```shell
+# List public keys with Key Access Server ID
+otdfctl policy kas-registry public-keys list --kas=62857b55-560c-4b67-96e3-33e4670ecb3b
+```
+
+```shell
+# List public keys with Key Access Server Name
+otdfctl policy kas-registry public-keys list --kas=example-kas
+```
+
+```shell
+# List public keys with Key Access Server URI
+otdfctl policy kas-registry public-keys list --kas=https://example.com/kas
 ```

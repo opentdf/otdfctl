@@ -16,18 +16,10 @@ command:
       description: Force deletion without interactive confirmation (dangerous)
 ---
 
-Removes knowledge of a KAS (registration) from a platform's policy.
-
-If resource data has been TDFd utilizing key splits from the registered KAS, deletion from
-the registry (and therefore any associated grants) may prevent decryption depending on the
-type of grants and relevant key splits.
-
-Make sure you know what you are doing.
-
-For more information about registration of Key Access Servers, see the manual for `kas-registry`.
+Delete a Key Access Server Public Key.
 
 ## Example 
 
 ```shell
-otdfctl policy kas-registry delete --id 3c39618a-cd8c-48cf-a60c-e8a2f4be4dd5
+otdfctl policy kas-registry public-keys unsafe delete --id=62857b55-560c-4b67-96e3-33e4670ecb3b
 ```

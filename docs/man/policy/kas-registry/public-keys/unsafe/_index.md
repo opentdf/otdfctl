@@ -8,12 +8,4 @@ command:
       required: false
 ---
 
-Unsafe changes are dangerous mutations to Policy that can significantly change access behavior around existing attributes
-and entitlement.
-
-Depending on the unsafe change introduced and already existing TDFs, TDFs might become inaccessible that were previously
-accessible or vice versa.
-
-Make sure you know what you are doing.
-
-For more general information about attributes, see the `attributes` subcommand.
+Unsafe changes to a Public Key are potentially dangerous or more restrictive than the default behavior. Use this command with caution.
