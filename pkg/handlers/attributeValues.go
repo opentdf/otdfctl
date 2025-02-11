@@ -168,7 +168,3 @@ func (h Handler) RemovePublicKeyFromValue(ctx context.Context, value, publicKeyI
 	}
 	return vk, nil
 }
-
-func (h Handler) ListPublicKeyValueMappings(ctx context.Context, attributeID string, offset, limit int32) error {
-	return nil
-}

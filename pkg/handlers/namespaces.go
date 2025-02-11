@@ -170,7 +170,3 @@ func (h Handler) RemovePublicKeyFromNamespace(ctx context.Context, nameSpace, pu
 
 	return nk, nil
 }
-
-func (h Handler) ListPublicKeyNamespaceMappings(ctx context.Context, namespaceID string, offset, limit int32) error {
-	return nil
-}

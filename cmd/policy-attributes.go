@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/charmbracelet/lipgloss"
 	"github.com/evertras/bubble-table/table"
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/handlers"
@@ -346,7 +347,62 @@ func policy_DefinitionKeysRemove(cmd *cobra.Command, args []string) {
 
 	HandleSuccess(cmd, "Public key removed from definition", t, nil)
 }
-func policy_DefinitionKeysList(cmd *cobra.Command, args []string) {}
+
+func policy_DefinitionKeysList(cmd *cobra.Command, args []string) {
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
+	defer h.Close()
+
+	ns := c.Flags.GetRequiredString("definition")
+	showPublicKey := c.Flags.GetOptionalBool("show-public-key")
+
+	list, err := h.GetAttribute(ns)
+	if err != nil {
+		cli.ExitWithError("Failed to list definition keys", err)
+	}
+
+	columns := []table.Column{
+		table.NewFlexColumn("kas_name", "KAS Name", cli.FlexColumnWidthThree),
+		table.NewFlexColumn("kas_uri", "KAS URI", cli.FlexColumnWidthThree),
+		table.NewFlexColumn("kid", "Key ID", cli.FlexColumnWidthThree),
+		table.NewFlexColumn("alg", "Algorithm", cli.FlexColumnWidthThree),
+	}
+
+	if showPublicKey {
+		columns = append(columns, table.NewFlexColumn("public_key", "Public Key", cli.FlexColumnWidthFour))
+	}
+
+	t := cli.NewTable(columns...)
+	rows := []table.Row{}
+	for _, key := range list.GetKeys() {
+
+		alg, err := enumToAlg(key.GetPublicKey().GetAlg())
+		if err != nil {
+			cli.ExitWithError("Failed to get algorithm", err)
+		}
+
+		rowStyle := lipgloss.NewStyle().BorderBottom(true).BorderStyle(lipgloss.NormalBorder())
+
+		if key.GetIsActive().GetValue() {
+			rowStyle = rowStyle.Background(cli.ColorGreen.Background)
+		} else {
+			rowStyle = rowStyle.Background(cli.ColorRed.Background)
+		}
+
+		rd := table.RowData{
+			"key_id":     key.GetPublicKey().GetKid(),
+			"algorithm":  alg,
+			"is_active":  key.GetIsActive().GetValue(),
+			"kas_id":     key.GetKas().GetId(),
+			"kas_name":   key.GetKas().GetName(),
+			"kas_uri":    key.GetKas().GetUri(),
+			"public_key": key.GetPublicKey().GetPem(),
+		}
+		rows = append(rows, table.NewRow(rd).WithStyle(rowStyle))
+	}
+	t = t.WithRows(rows)
+	HandleSuccess(cmd, "", t, list)
+}
 
 func init() {
 	// Create an attribute
@@ -526,6 +582,12 @@ func init() {
 		definitionKeysListDoc.GetDocFlag("definition").Shorthand,
 		definitionKeysListDoc.GetDocFlag("definition").Default,
 		definitionKeysListDoc.GetDocFlag("definition").Description,
+	)
+	definitionKeysListDoc.Flags().BoolP(
+		definitionKeysListDoc.GetDocFlag("show-public-key").Name,
+		definitionKeysListDoc.GetDocFlag("show-public-key").Shorthand,
+		definitionKeysListDoc.GetDocFlag("show-public-key").DefaultAsBool(),
+		definitionKeysListDoc.GetDocFlag("show-public-key").Description,
 	)
 
 	policy_DefinitionKeysCmd.AddSubcommands(definitionKeysAddDoc, definitionKeysRemoveDoc, definitionKeysListDoc)

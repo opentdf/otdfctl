@@ -253,7 +253,3 @@ func (h Handler) RemovePublicKeyFromDefinition(ctx context.Context, definition, 
 	}
 	return ak, nil
 }
-
-func (h Handler) ListPublicKeyDefinitionMappings(ctx context.Context, definitionID string, offset, limit int32) error {
-	return nil
-}

@@ -262,3 +262,46 @@ teardown_file() {
 
     run_otdfctl_ns unsafe delete --id $NAMESPACE_ID --force
 }
+
+@test "list_keys_on_namesapces" {
+  log_info "Starting test: $BATS_TEST_NAME"
+
+  run_otdfctl_ns create --name keys.test --json
+
+  log_debug "Raw output:"
+  log_debug "$output"
+
+  assert_success
+
+  NAMESPACE_ID=$(echo "$output" | jq -r '.id')
+
+  create_kas "$KAS_URI" "$KAS_NAME"
+
+  ALG="rsa:2048"
+  KID="test"
+
+  create_public_key "$KAS_ID" "$KID" "$ALG"
+
+  # Add the key to the attribute namespace
+  log_info "Running ${run_otdfctl_ns} keys add --value $NAMESPACE_ID --public-key-id $KID"
+  run_otdfctl_ns keys add --namespace "$NAMESPACE_ID" --public-key-id "$PUBLIC_KEY_ID" --json
+
+  log_debug "Raw output:"
+  log_debug "$output"
+
+  assert_success
+
+  # Check that the key was added to the attribute namespace
+  log_info "Running ${run_otdfctl_ns} get --id $NAMESPACE_ID"
+  run_otdfctl_ns get --id "$NAMESPACE_ID" --json
+
+  log_debug "Raw output:"
+  log_debug "$output"
+
+  assert_success
+
+  echo "$output" | jq -r '.keys[].id' | while read -r id; do
+      log_debug "Checking PK ID: $id against $PUBLIC_KEY_ID"
+      [ "$id" = "$PUBLIC_KEY_ID" ] || fail "KAS ID does not match"
+  done
+}

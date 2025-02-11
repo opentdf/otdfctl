@@ -9,6 +9,9 @@ command:
       shorthand: n
       description: ID or FQN of the Attribute Namespace
       required: true
+    - name: show-public-key
+      description: Show the public key
+      default: false
 ---
 
 List the public key mappings for an attribute namespace.

@@ -263,6 +263,40 @@ teardown_file() {
     echo "$output" | jq -e 'has("keys") | not' || fail "KAS ID still present"
 }
 
+@test "list_keys_on_definition" {
+    log_info "Starting test: $BATS_TEST_NAME"
+
+    create_kas "$KAS_URI" "$KAS_NAME"
+
+    ALG="rsa:2048"
+    KID="test"
+
+    create_public_key "$KAS_ID" "$KID" "$ALG"
+
+    # Add the key to the attribute definition
+    log_info "Running ${run_otdfctl_attr} keys add --definition $ATTR_ID --public-key-id $PUBLIC_KEY_ID"
+    run_otdfctl_attr keys add --definition "$ATTR_ID" --public-key-id "$PUBLIC_KEY_ID" --json
+
+    log_debug "Raw output:"
+    log_debug "$output"
+
+    assert_success
+
+    # List the keys on the attribute definition
+    log_info "Running ${run_otdfctl_attr} keys list --definition $ATTR_ID"
+    run_otdfctl_attr keys list --definition "$ATTR_ID" --json
+
+    log_debug "Raw output:"
+    log_debug "$output"
+
+    assert_success
+
+    echo "$output" | jq -r '.keys[].id' | while read -r id; do
+        log_debug "Checking PK ID: $id against $PUBLIC_KEY_ID"
+        [ "$id" = "$PUBLIC_KEY_ID" ] || fail "KAS ID does not match"
+    done
+}
+
 @test "add_remove_key_to_value" {
     log_info "Starting test: $BATS_TEST_NAME"
 
@@ -326,4 +360,49 @@ teardown_file() {
     assert_success
 
     echo "$output" | jq -e 'has("keys") | not' || fail "KAS ID still present"
+}
+
+@test "list_keys_on_value" {
+    log_info "Starting test: $BATS_TEST_NAME"
+
+    create_kas "$KAS_URI" "$KAS_NAME"
+
+    ALG="rsa:2048"
+    KID="test"
+
+    create_public_key "$KAS_ID" "$KID" "$ALG"
+
+    # Add value to the attribute definition
+    log_info "Running ${run_otdfctl_attr} values create --attribute-id $ATTR_ID --value val1"
+    run_otdfctl_attr values create --attribute-id "$ATTR_ID" --value val1 --json
+
+    log_debug "Raw output:"
+    log_debug "$output"
+
+    assert_success
+
+    VALUE_ID=$(echo "$output" | jq -r '.id')
+
+    # Add the key to the attribute value
+    log_info "Running ${run_otdfctl_attr} values keys add --value $VALUE_ID --public-key-id $KID"
+    run_otdfctl_attr values keys add --value "$VALUE_ID" --public-key-id "$PUBLIC_KEY_ID" --json
+
+    log_debug "Raw output:"
+    log_debug "$output"
+
+    assert_success
+
+    # List the keys on the attribute value
+    log_info "Running ${run_otdfctl_attr} values keys list --value $VALUE_ID"
+    run_otdfctl_attr values keys list --value "$VALUE_ID" --json
+
+    log_debug "Raw output:"
+    log_debug "$output"
+
+    assert_success
+
+    echo "$output" | jq -r '.[].id' | while read -r id; do
+        log_debug "Checking PK ID: $id against $PUBLIC_KEY_ID"
+        [ "$id" = "$PUBLIC_KEY_ID" ] || fail "KAS ID does not match"
+    done
 }
