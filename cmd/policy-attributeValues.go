@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/charmbracelet/lipgloss"
 	"github.com/evertras/bubble-table/table"
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/man"
@@ -10,7 +11,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var policy_attributeValuesCmd *cobra.Command
+var (
+	policy_attributeValuesCmd *cobra.Command
+	policy_ValueKeysCmd       = man.Docs.GetCommand("policy/attributes/values/keys")
+)
 
 func policy_createAttributeValue(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
@@ -226,6 +230,108 @@ func policy_unsafeDeleteAttributeValue(cmd *cobra.Command, args []string) {
 	}
 }
 
+func policy_ValueKeysAdd(cmd *cobra.Command, args []string) {
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
+	defer h.Close()
+
+	val := c.Flags.GetRequiredString("value")
+	pkID := c.Flags.GetRequiredID("public-key-id")
+
+	ak, err := h.AddPublicKeyToValue(c.Context(), val, pkID)
+	if err != nil {
+		cli.ExitWithError("Failed to add public key to value", err)
+	}
+
+	rows := [][]string{
+		{"Public Key Id", pkID},
+		{"Attribute Value", val},
+	}
+
+	t := cli.NewTabular(rows...)
+
+	HandleSuccess(cmd, "Public key added to value", t, ak)
+}
+
+func policy_ValueKeysRemove(cmd *cobra.Command, args []string) {
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
+	defer h.Close()
+
+	val := c.Flags.GetRequiredString("value")
+	pkID := c.Flags.GetRequiredID("public-key-id")
+
+	_, err := h.RemovePublicKeyFromValue(c.Context(), val, pkID)
+	if err != nil {
+		cli.ExitWithError("Failed to remove public key from value", err)
+	}
+
+	rows := [][]string{
+		{"Public Key Id", pkID},
+		{"Attribute Value", val},
+	}
+
+	t := cli.NewTabular(rows...)
+
+	HandleSuccess(cmd, "Public key removed from value", t, nil)
+}
+
+func policy_ValueKeysList(cmd *cobra.Command, args []string) {
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
+	defer h.Close()
+
+	ns := c.Flags.GetRequiredString("value")
+	showPublicKey := c.Flags.GetOptionalBool("show-public-key")
+
+	list, err := h.GetAttributeValue(ns)
+	if err != nil {
+		cli.ExitWithError("Failed to list attribute value keys", err)
+	}
+
+	columns := []table.Column{
+		table.NewFlexColumn("kas_name", "KAS Name", cli.FlexColumnWidthThree),
+		table.NewFlexColumn("kas_uri", "KAS URI", cli.FlexColumnWidthThree),
+		table.NewFlexColumn("kid", "Key ID", cli.FlexColumnWidthThree),
+		table.NewFlexColumn("alg", "Algorithm", cli.FlexColumnWidthThree),
+	}
+
+	if showPublicKey {
+		columns = append(columns, table.NewFlexColumn("public_key", "Public Key", cli.FlexColumnWidthFour))
+	}
+
+	t := cli.NewTable(columns...)
+	rows := []table.Row{}
+	for _, key := range list.GetKeys() {
+
+		alg, err := enumToAlg(key.GetPublicKey().GetAlg())
+		if err != nil {
+			cli.ExitWithError("Failed to get algorithm", err)
+		}
+
+		rowStyle := lipgloss.NewStyle().BorderBottom(true).BorderStyle(lipgloss.NormalBorder())
+
+		if key.GetIsActive().GetValue() {
+			rowStyle = rowStyle.Background(cli.ColorGreen.Background)
+		} else {
+			rowStyle = rowStyle.Background(cli.ColorRed.Background)
+		}
+
+		rd := table.RowData{
+			"key_id":     key.GetPublicKey().GetKid(),
+			"algorithm":  alg,
+			"is_active":  key.GetIsActive().GetValue(),
+			"kas_id":     key.GetKas().GetId(),
+			"kas_name":   key.GetKas().GetName(),
+			"kas_uri":    key.GetKas().GetUri(),
+			"public_key": key.GetPublicKey().GetPem(),
+		}
+		rows = append(rows, table.NewRow(rd).WithStyle(rowStyle))
+	}
+	t = t.WithRows(rows)
+	HandleSuccess(cmd, "", t, list)
+}
+
 func init() {
 	createCmd := man.Docs.GetCommand("policy/attributes/values/create",
 		man.WithRun(policy_createAttributeValue),
@@ -335,9 +441,59 @@ func init() {
 		unsafeCmd.GetDocFlag("force").Description,
 	)
 
+	valueKeysAddDoc := man.Docs.GetCommand("policy/attributes/values/keys/add",
+		man.WithRun(policy_ValueKeysAdd),
+	)
+	valueKeysAddDoc.Flags().StringP(
+		valueKeysAddDoc.GetDocFlag("value").Name,
+		valueKeysAddDoc.GetDocFlag("value").Shorthand,
+		valueKeysAddDoc.GetDocFlag("value").Default,
+		valueKeysAddDoc.GetDocFlag("value").Description,
+	)
+	valueKeysAddDoc.Flags().StringP(
+		valueKeysAddDoc.GetDocFlag("public-key-id").Name,
+		valueKeysAddDoc.GetDocFlag("public-key-id").Shorthand,
+		valueKeysAddDoc.GetDocFlag("public-key-id").Default,
+		valueKeysAddDoc.GetDocFlag("public-key-id").Description,
+	)
+
+	valueKeysRemoveDoc := man.Docs.GetCommand("policy/attributes/values/keys/remove",
+		man.WithRun(policy_ValueKeysRemove),
+	)
+	valueKeysRemoveDoc.Flags().StringP(
+		valueKeysRemoveDoc.GetDocFlag("value").Name,
+		valueKeysRemoveDoc.GetDocFlag("value").Shorthand,
+		valueKeysRemoveDoc.GetDocFlag("value").Default,
+		valueKeysRemoveDoc.GetDocFlag("value").Description,
+	)
+	valueKeysRemoveDoc.Flags().StringP(
+		valueKeysRemoveDoc.GetDocFlag("public-key-id").Name,
+		valueKeysRemoveDoc.GetDocFlag("public-key-id").Shorthand,
+		valueKeysRemoveDoc.GetDocFlag("public-key-id").Default,
+		valueKeysRemoveDoc.GetDocFlag("public-key-id").Description,
+	)
+
+	valueKeysListDoc := man.Docs.GetCommand("policy/attributes/values/keys/list",
+		man.WithRun(policy_ValueKeysList),
+	)
+	valueKeysListDoc.Flags().StringP(
+		valueKeysListDoc.GetDocFlag("value").Name,
+		valueKeysListDoc.GetDocFlag("value").Shorthand,
+		valueKeysListDoc.GetDocFlag("value").Default,
+		valueKeysListDoc.GetDocFlag("value").Description,
+	)
+	valueKeysListDoc.Flags().BoolP(
+		valueKeysListDoc.GetDocFlag("show-public-key").Name,
+		valueKeysListDoc.GetDocFlag("show-public-key").Shorthand,
+		valueKeysListDoc.GetDocFlag("show-public-key").DefaultAsBool(),
+		valueKeysListDoc.GetDocFlag("show-public-key").Description,
+	)
+
+	policy_ValueKeysCmd.AddSubcommands(valueKeysAddDoc, valueKeysRemoveDoc, valueKeysListDoc)
+
 	unsafeCmd.AddSubcommands(unsafeReactivateCmd, unsafeDeleteCmd, unsafeUpdateCmd)
 	doc := man.Docs.GetCommand("policy/attributes/values",
-		man.WithSubcommands(createCmd, getCmd, listCmd, updateCmd, deactivateCmd, unsafeCmd),
+		man.WithSubcommands(createCmd, getCmd, listCmd, updateCmd, deactivateCmd, unsafeCmd, policy_ValueKeysCmd),
 	)
 	policy_attributeValuesCmd = &doc.Command
 	policy_attributesCmd.AddCommand(policy_attributeValuesCmd)
