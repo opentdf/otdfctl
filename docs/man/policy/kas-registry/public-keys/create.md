@@ -16,14 +16,15 @@ command:
     - name: key-id
       shorthand: i
       description: ID of the public key.
+      required: true
     - name: algorithm
       shorthand: a
       description: Algorithm of the public key. (rsa:2048, rsa:4096, ec:secp256r1, ec:secp384r1, ec:secp521r1)
+      required: true
     - name: label
       description: "Optional metadata 'labels' in the format: key=value"
       shorthand: l
-      default: ''
-
+      default: ""
 ---
 
 Add a public key to a Key Access Server. The public key must be in PEM format. It can be base64 encoded or plain text.
@@ -48,4 +49,3 @@ create --kas kas-1 --key-id key-1 --key "-----BEGIN CERTIFICATE-----\nMIIB...5Q=
 otdfctl policy kas-registry public-key
 create --kas https://example.com/kas --key-id key-1 --key "-----BEGIN CERTIFICATE-----\nMIIB...5Q=\n-----END CERTIFICATE-----\n" --algorithm rsa:2048
 ```
-

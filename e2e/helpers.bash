@@ -2,11 +2,11 @@
 #!/usr/bin/env bash
 
 # OTDFCTL Helper Functions
-run_otdfctl_kasr () {
+run_otdfctl_kasr() {
     run sh -c "./otdfctl policy kas-registry $HOST $WITH_CREDS $*"
 }
 
-create_kas () {
+create_kas() {
     log_debug "Creating KAS... $1 $2"
 
     run_otdfctl_kasr create --uri "$1" -n "$2" --json
@@ -27,30 +27,30 @@ create_public_key() {
 
     # Select the appropriate key generation function based on the algorithm
     case "$algorithm" in
-        "$RSA_2048_ALG")
-            eval "$(gen_rsa_2048)"
-            key_content="$RSA_2048_PUBLIC_KEY"
-            ;;
-        "$RSA_4096_ALG")
-            eval "$(gen_rsa_4096)"
-            key_content="$RSA_4096_PUBLIC_KEY"
-            ;;
-        "$EC_256_ALG")
-            eval "$(gen_ec256)"
-            key_content="$EC_256_PUBLIC_KEY"
-            ;;
-        "$EC_384_ALG")
-            eval "$(gen_ec384)"
-            key_content="$EC_384_PUBLIC_KEY"
-            ;;
-        "$EC_521_ALG")
-            eval "$(gen_ec521)"
-            key_content="$EC_521_PUBLIC_KEY"
-            ;;
-        *)
-            log_error "Unsupported algorithm: $algorithm"
-            return 1
-            ;;
+    "$RSA_2048_ALG")
+        eval "$(gen_rsa_2048)"
+        key_content="$RSA_2048_PUBLIC_KEY"
+        ;;
+    "$RSA_4096_ALG")
+        eval "$(gen_rsa_4096)"
+        key_content="$RSA_4096_PUBLIC_KEY"
+        ;;
+    "$EC_256_ALG")
+        eval "$(gen_ec256)"
+        key_content="$EC_256_PUBLIC_KEY"
+        ;;
+    "$EC_384_ALG")
+        eval "$(gen_ec384)"
+        key_content="$EC_384_PUBLIC_KEY"
+        ;;
+    "$EC_521_ALG")
+        eval "$(gen_ec521)"
+        key_content="$EC_521_PUBLIC_KEY"
+        ;;
+    *)
+        log_error "Unsupported algorithm: $algorithm"
+        return 1
+        ;;
     esac
 
     # Verify key content is not empty
@@ -83,48 +83,48 @@ create_public_key() {
 }
 
 # Setup Helper
-setup_helper(){
-  load "${BATS_LIB_PATH}/bats-support/load.bash"
-  load "${BATS_LIB_PATH}/bats-assert/load.bash"
+setup_helper() {
+    load "${BATS_LIB_PATH}/bats-support/load.bash"
+    load "${BATS_LIB_PATH}/bats-assert/load.bash"
 
-  # Initialize IDs to empty strings in case creation fails
-  KAS_ID=""
-  PUBLIC_KEY_ID=""
-  PUBLIC_KEY_IDS=() # Initialize an empty array
+    # Initialize IDs to empty strings in case creation fails
+    KAS_ID=""
+    PUBLIC_KEY_ID=""
+    PUBLIC_KEY_IDS=() # Initialize an empty array
 
-  KAS_URI="https://testing-public-key.io"
-  KAS_NAME="public-key-kas"
+    KAS_URI="https://testing-public-key.io"
+    KAS_NAME="public-key-kas"
 
-  RSA_2048_ALG="rsa:2048"
-  RSA_4096_ALG="rsa:4096"
-  EC_256_ALG="ec:secp256r1"
-  EC_384_ALG="ec:secp384r1"
-  EC_521_ALG="ec:secp521r1"
+    RSA_2048_ALG="rsa:2048"
+    RSA_4096_ALG="rsa:4096"
+    EC_256_ALG="ec:secp256r1"
+    EC_384_ALG="ec:secp384r1"
+    EC_521_ALG="ec:secp521r1"
 }
 
 # Cleanup Helper
-cleanup_helper(){
-  # Iterate over the array of public key IDs and delete them
-  for PUBLIC_KEY_ID in "${PUBLIC_KEY_IDS[@]}"; do
-      if [ -n "$PUBLIC_KEY_ID" ]; then
-          log_debug "Running ${run_otdfctl_kasr} public-key unsafe delete --id $PUBLIC_KEY_ID --force --json"
-          run_otdfctl_kasr public-key unsafe delete --id "$PUBLIC_KEY_ID" --force --json
-          log_debug "$output"
-          if [ $? -ne 0 ]; then
-              log_info "Error: Failed to delete public key with ID: $PUBLIC_KEY_ID"
-          fi
-          log_debug "Deleted public key with ID: $PUBLIC_KEY_ID"
-      fi
-  done
-  if [ -n "$KAS_ID" ]; then
-      log_debug "Running ${run_otdfctl_kasr} delete --id $KAS_ID --force --json"
-      run_otdfctl_kasr delete --id "$KAS_ID" --force --json
-      log_debug "$output"
-      if [ $? -ne 0 ]; then
-          log_info "Error: Failed to delete KAS registry with ID: $KAS_ID"
-      fi
-      log_debug "Deleted KAS registry with ID: $KAS_ID"
-  fi
+cleanup_helper() {
+    # Iterate over the array of public key IDs and delete them
+    for PUBLIC_KEY_ID in "${PUBLIC_KEY_IDS[@]}"; do
+        if [ -n "$PUBLIC_KEY_ID" ]; then
+            log_debug "Running ${run_otdfctl_kasr} public-key unsafe delete --id $PUBLIC_KEY_ID --force --json"
+            run_otdfctl_kasr public-key unsafe delete --id "$PUBLIC_KEY_ID" --force --json
+            log_debug "$output"
+            if [ $? -ne 0 ]; then
+                log_info "Error: Failed to delete public key with ID: $PUBLIC_KEY_ID"
+            fi
+            log_debug "Deleted public key with ID: $PUBLIC_KEY_ID"
+        fi
+    done
+    if [ -n "$KAS_ID" ]; then
+        log_debug "Running ${run_otdfctl_kasr} delete --id $KAS_ID --force --json"
+        run_otdfctl_kasr delete --id "$KAS_ID" --force --json
+        log_debug "$output"
+        if [ $? -ne 0 ]; then
+            log_info "Error: Failed to delete KAS registry with ID: $KAS_ID"
+        fi
+        log_debug "Deleted KAS registry with ID: $KAS_ID"
+    fi
 }
 
 # Helper function for debug logging
@@ -143,7 +143,7 @@ log_info() {
 gen_rsa_2048() {
     log_debug "Generating RSA 2048 key pair"
     local private_key public_key
-    
+
     # Generate private key
     private_key=$(openssl genrsa 2048)
 
@@ -158,7 +158,7 @@ gen_rsa_2048() {
 gen_rsa_4096() {
     log_debug "Generating RSA 4096 key pair"
     local private_key public_key
-    
+
     # Generate private key
     private_key=$(openssl genrsa 4096)
 
@@ -170,45 +170,42 @@ gen_rsa_4096() {
 
 # Helper function to generate an EC 256 key pair
 gen_ec256() {
-  log_debug "Generating EC 256 key pair" 
-  local private_key public_key
+    log_debug "Generating EC 256 key pair"
+    local private_key public_key
 
-  # Generate private key
-  private_key=$(openssl ecparam -name prime256v1 -genkey)
+    # Generate private key
+    private_key=$(openssl ecparam -name prime256v1 -genkey)
 
-  # Extract public key
-  public_key=$(echo "$private_key" | openssl ec -pubout)
-  
-  printf 'export EC_256_PUBLIC_KEY=%q\n' "$public_key"
+    # Extract public key
+    public_key=$(echo "$private_key" | openssl ec -pubout)
+
+    printf 'export EC_256_PUBLIC_KEY=%q\n' "$public_key"
 }
 
 # Helper function to generate an EC 384 key pair
 gen_ec384() {
-  log_debug "Generating EC 384 key pair"
-  local private_key public_key
+    log_debug "Generating EC 384 key pair"
+    local private_key public_key
 
-  # Generate private key
-  private_key=$(openssl ecparam -name secp384r1 -genkey)
+    # Generate private key
+    private_key=$(openssl ecparam -name secp384r1 -genkey)
 
-  # Extract public key
-  public_key=$(echo "$private_key" | openssl ec -pubout)
+    # Extract public key
+    public_key=$(echo "$private_key" | openssl ec -pubout)
 
-  printf 'export EC_384_PUBLIC_KEY=%q\n' "$public_key"
+    printf 'export EC_384_PUBLIC_KEY=%q\n' "$public_key"
 }
 
 # Helper function to generate an EC 521 key pair
 gen_ec521() {
-  log_debug "Generating EC 521 key pair"
-  local private_key public_key
+    log_debug "Generating EC 521 key pair"
+    local private_key public_key
 
-  # Generate private key
-  private_key=$(openssl ecparam -name secp521r1 -genkey)
+    # Generate private key
+    private_key=$(openssl ecparam -name secp521r1 -genkey)
 
-  # Extract public key
-  public_key=$(echo "$private_key" | openssl ec -pubout)
+    # Extract public key
+    public_key=$(echo "$private_key" | openssl ec -pubout)
 
-  printf 'export EC_521_PUBLIC_KEY=%q\n' "$public_key"
+    printf 'export EC_521_PUBLIC_KEY=%q\n' "$public_key"
 }
-
-
-

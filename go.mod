@@ -2,8 +2,6 @@ module github.com/opentdf/otdfctl
 
 go 1.22.7
 
-replace github.com/opentdf/platform/protocol/go => ../platform/protocol/go
-
 require (
 	github.com/adrg/frontmatter v0.2.0
 	github.com/charmbracelet/bubbles v0.18.0
@@ -11,6 +9,7 @@ require (
 	github.com/charmbracelet/glamour v0.8.0
 	github.com/charmbracelet/huh v0.5.2
 	github.com/charmbracelet/lipgloss v1.0.0
+	github.com/charmbracelet/x/term v0.2.1
 	github.com/creasty/defaults v1.8.0
 	github.com/evertras/bubble-table v0.17.1
 	github.com/gabriel-vasile/mimetype v1.4.8
@@ -18,7 +17,7 @@ require (
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.6.0
 	github.com/opentdf/platform/lib/flattening v0.1.3
-	github.com/opentdf/platform/protocol/go v0.2.24
+	github.com/opentdf/platform/protocol/go v0.2.26
 	github.com/opentdf/platform/sdk v0.3.25
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.19.0
@@ -42,7 +41,6 @@ require (
 	github.com/catppuccin/go v0.2.0 // indirect
 	github.com/charmbracelet/x/ansi v0.4.5 // indirect
 	github.com/charmbracelet/x/exp/strings v0.0.0-20240722160745-212f7b056ed0 // indirect
-	github.com/charmbracelet/x/term v0.2.1 // indirect
 	github.com/danieljoos/wincred v1.2.2 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.3.0 // indirect

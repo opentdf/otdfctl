@@ -373,6 +373,11 @@ func formatAssociations(assocs []*kasregistry.ListPublicKeyMappingResponse_Assoc
 	return strings.Join(fqns, "\n")
 }
 
+func isValidBase64(s string) bool {
+	_, err := base64.StdEncoding.DecodeString(s)
+	return err == nil
+}
+
 func parseAndFormatKey(key string) (string, error) {
 	if key == "" {
 		return "", errors.New("key is required")
@@ -393,11 +398,6 @@ func parseAndFormatKey(key string) (string, error) {
 	}
 
 	return key, nil
-}
-
-func isValidBase64(s string) bool {
-	_, err := base64.StdEncoding.DecodeString(s)
-	return err == nil
 }
 
 func enumToAlg(enum policy.KasPublicKeyAlgEnum) (string, error) {
