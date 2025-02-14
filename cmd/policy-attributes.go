@@ -375,7 +375,6 @@ func policy_DefinitionKeysList(cmd *cobra.Command, args []string) {
 	t := cli.NewTable(columns...)
 	rows := []table.Row{}
 	for _, key := range list.GetKeys() {
-
 		alg, err := enumToAlg(key.GetPublicKey().GetAlg())
 		if err != nil {
 			cli.ExitWithError("Failed to get algorithm", err)

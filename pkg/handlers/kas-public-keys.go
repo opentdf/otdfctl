@@ -11,6 +11,8 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+const maxKeyIDLength = 32
+
 func (h Handler) CreatePublicKey(kas, pk, kid, alg string, metadata *common.MetadataMutable) (*policy.Key, error) {
 	// Check if alg is valid
 	algEnum, err := algToEnum(alg)
@@ -19,7 +21,7 @@ func (h Handler) CreatePublicKey(kas, pk, kid, alg string, metadata *common.Meta
 	}
 
 	// Key ID can't be more than 32 characters
-	if len(kid) > 32 {
+	if len(kid) > maxKeyIDLength {
 		return nil, errors.New("key id must be less than 32 characters")
 	}
 

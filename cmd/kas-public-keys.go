@@ -270,10 +270,10 @@ func policy_listPublicKeyMappings(cmd *cobra.Command, args []string) {
 	}
 
 	t := cli.NewTable(
-		table.NewColumn("kas_name", "KAS Name", 20),
-		table.NewColumn("kas_uri", "KAS URI", 30),
-		table.NewColumn("key_count", "Key Count", 10),
-		table.NewFlexColumn("publicKeys", "Public Keys", 1),
+		table.NewFlexColumn("kas_name", "KAS Name", cli.FlexColumnWidthTwo),
+		table.NewFlexColumn("kas_uri", "KAS URI", cli.FlexColumnWidthThree),
+		table.NewFlexColumn("key_count", "Key Count", cli.FlexColumnWidthOne),
+		table.NewFlexColumn("publicKeys", "Public Keys", cli.FlexColumnWidthFour),
 	)
 
 	rows := []table.Row{}
@@ -301,9 +301,9 @@ func policy_listPublicKeyMappings(cmd *cobra.Command, args []string) {
 func createPublicKeysTable(keys []*kasregistry.ListPublicKeyMappingResponse_PublicKey, termWidth int) string {
 	// Create columns for the nested table
 	columns := []table.Column{
-		table.NewColumn("kid", "KID", 8),
-		table.NewColumn("algorithm", "Algorithm", 12),
-		table.NewColumn("active", "Active", 6),
+		table.NewFlexColumn("kid", "KID", cli.FlexColumnWidthTwo),
+		table.NewFlexColumn("algorithm", "Algorithm", cli.FlexColumnWidthTwo),
+		table.NewFlexColumn("active", "Active", cli.FlexColumnWidthOne),
 		table.NewFlexColumn("namespaces", "Namespaces", cli.FlexColumnWidthTwo),
 		table.NewFlexColumn("definitions", "Definitions", cli.FlexColumnWidthThree),
 		table.NewFlexColumn("values", "Values", cli.FlexColumnWidthFour),
@@ -336,14 +336,15 @@ func createPublicKeysTable(keys []*kasregistry.ListPublicKeyMappingResponse_Publ
 	}
 
 	minWidth := 80 // Set a minimum width for the nested table
-	tableWidth := int(float64(termWidth) * 0.75)
+	tableWidthPercentage := 0.75
+	tableWidth := int(float64(termWidth) * tableWidthPercentage)
 	if tableWidth < minWidth {
 		tableWidth = minWidth
 	}
 	// Create nested table
 	nestedTable := table.New(columns).
 		WithRows(rows).
-		WithTargetWidth(int(float64(tableWidth) * 0.75)).
+		WithTargetWidth(int(float64(tableWidth) * tableWidthPercentage)).
 		WithMultiline(true).
 		WithNoPagination().
 		BorderRounded().
@@ -401,7 +402,7 @@ func parseAndFormatKey(key string) (string, error) {
 }
 
 func enumToAlg(enum policy.KasPublicKeyAlgEnum) (string, error) {
-	switch enum {
+	switch enum { //nolint:exhaustive // UNSPECIFIED is not needed here
 	case policy.KasPublicKeyAlgEnum_KAS_PUBLIC_KEY_ALG_ENUM_RSA_2048:
 		return "rsa:2048", nil
 	case policy.KasPublicKeyAlgEnum_KAS_PUBLIC_KEY_ALG_ENUM_RSA_4096:
