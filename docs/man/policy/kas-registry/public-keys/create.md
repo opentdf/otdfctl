@@ -19,7 +19,7 @@ command:
       required: true
     - name: algorithm
       shorthand: a
-      description: Algorithm of the public key. (rsa:2048, rsa:4096, ec:secp256r1, ec:secp384r1, ec:secp521r1)
+      description: Algorithm of the public key. (rsa:2048, rsa:4096, ec:p256, ec:p384, ec:p521)
       required: true
     - name: label
       description: "Optional metadata 'labels' in the format: key=value"
