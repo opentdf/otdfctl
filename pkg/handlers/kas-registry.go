@@ -1,15 +1,26 @@
 package handlers
 
 import (
+	"github.com/opentdf/otdfctl/pkg/utils"
 	"github.com/opentdf/platform/protocol/go/common"
 	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/opentdf/platform/protocol/go/policy/kasregistry"
 )
 
-func (h Handler) GetKasRegistryEntry(id string) (*policy.KeyAccessServer, error) {
-	resp, err := h.sdk.KeyAccessServerRegistry.GetKeyAccessServer(h.ctx, &kasregistry.GetKeyAccessServerRequest{
-		Id: id,
-	})
+func (h Handler) GetKasRegistryEntry(identifier string) (*policy.KeyAccessServer, error) {
+	req := &kasregistry.GetKeyAccessServerRequest{}
+
+	switch {
+	case utils.IsUUID(identifier):
+		req.Identifier = &kasregistry.GetKeyAccessServerRequest_KasId{KasId: identifier}
+	case utils.IsURI(identifier):
+		req.Identifier = &kasregistry.GetKeyAccessServerRequest_Uri{Uri: identifier}
+	default:
+		// At this point we assume its a kas name
+		req.Identifier = &kasregistry.GetKeyAccessServerRequest_Name{Name: identifier}
+	}
+
+	resp, err := h.sdk.KeyAccessServerRegistry.GetKeyAccessServer(h.ctx, req)
 	if err != nil {
 		return nil, err
 	}

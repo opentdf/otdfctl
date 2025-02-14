@@ -9,6 +9,7 @@ require (
 	github.com/charmbracelet/glamour v0.8.0
 	github.com/charmbracelet/huh v0.5.2
 	github.com/charmbracelet/lipgloss v1.0.0
+	github.com/charmbracelet/x/term v0.2.1
 	github.com/creasty/defaults v1.8.0
 	github.com/evertras/bubble-table v0.17.1
 	github.com/gabriel-vasile/mimetype v1.4.8
@@ -40,7 +41,6 @@ require (
 	github.com/catppuccin/go v0.2.0 // indirect
 	github.com/charmbracelet/x/ansi v0.4.5 // indirect
 	github.com/charmbracelet/x/exp/strings v0.0.0-20240722160745-212f7b056ed0 // indirect
-	github.com/charmbracelet/x/term v0.2.1 // indirect
 	github.com/danieljoos/wincred v1.2.2 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.3.0 // indirect

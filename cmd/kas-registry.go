@@ -14,7 +14,7 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
-var policy_kasRegistryCmd *cobra.Command
+var policy_kasRegistryCmd = man.Docs.GetCommand("policy/kas-registry")
 
 func policy_getKeyAccessRegistry(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
@@ -34,6 +34,7 @@ func policy_getKeyAccessRegistry(cmd *cobra.Command, args []string) {
 	if kas.GetPublicKey().GetRemote() != "" {
 		key.PublicKey = &policy.PublicKey_Remote{Remote: kas.GetPublicKey().GetRemote()}
 	}
+
 	rows := [][]string{
 		{"Id", kas.GetId()},
 		{"URI", kas.GetUri()},
@@ -69,7 +70,6 @@ func policy_listKeyAccessRegistries(cmd *cobra.Command, args []string) {
 		cli.NewUUIDColumn(),
 		table.NewFlexColumn("uri", "URI", cli.FlexColumnWidthFour),
 		table.NewFlexColumn("name", "Name", cli.FlexColumnWidthThree),
-		table.NewFlexColumn("pk", "PublicKey", cli.FlexColumnWidthFour),
 	)
 	rows := []table.Row{}
 	for _, kas := range list {
@@ -101,10 +101,6 @@ func policy_createKeyAccessRegistry(cmd *cobra.Command, args []string) {
 	remote := c.Flags.GetOptionalString("public-key-remote")
 	name := c.Flags.GetOptionalString("name")
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
-
-	if cachedJSON == "" && remote == "" {
-		cli.ExitWithError("Empty flags 'public-keys' and 'public-key-remote'", errors.New("error: a public key is required"))
-	}
 
 	key := new(policy.PublicKey)
 	if cachedJSON != "" {
@@ -353,9 +349,6 @@ func init() {
 		deleteDoc.GetDocFlag("force").Description,
 	)
 
-	doc := man.Docs.GetCommand("policy/kas-registry",
-		man.WithSubcommands(createDoc, getDoc, listDoc, updateDoc, deleteDoc),
-	)
-	policy_kasRegistryCmd = &doc.Command
-	policyCmd.AddCommand(policy_kasRegistryCmd)
+	policy_kasRegistryCmd.AddSubcommands(createDoc, getDoc, listDoc, updateDoc, deleteDoc)
+	policyCmd.AddCommand(&policy_kasRegistryCmd.Command)
 }

@@ -7,7 +7,7 @@ setup_file() {
   echo -n '{"clientId":"opentdf","clientSecret":"secret"}' > $CREDSFILE
   export WITH_CREDS="--with-client-creds-file $CREDSFILE"
   export DEBUG_LEVEL="--log-level debug"
-  export HOST=http://localhost:8080
+   export HOST="${HOST:---host http://localhost:8080}"
 
   export INFILE_GO_MOD=go.mod
   export OUTFILE_GO_MOD=go.mod.tdf

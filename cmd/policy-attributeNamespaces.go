@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/charmbracelet/lipgloss"
 	"github.com/evertras/bubble-table/table"
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/man"
@@ -12,6 +13,7 @@ import (
 
 var (
 	policy_attributeNamespacesCmd = man.Docs.GetCommand("policy/attributes/namespaces")
+	policy_NamespaceKeysCmd       = man.Docs.GetCommand("policy/attributes/namespaces/keys")
 
 	forceUnsafe bool
 )
@@ -265,6 +267,107 @@ func policy_unsafeUpdateAttributeNamespace(cmd *cobra.Command, args []string) {
 	HandleSuccess(cmd, ns.GetId(), t, ns)
 }
 
+func policy_NamespaceKeysAdd(cmd *cobra.Command, args []string) {
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
+	defer h.Close()
+
+	ns := c.Flags.GetRequiredString("namespace")
+	pkID := c.Flags.GetRequiredID("public-key-id")
+
+	_, err := h.AddPublicKeyToNamespace(c.Context(), ns, pkID)
+	if err != nil {
+		cli.ExitWithError("Failed to add public key to namespace", err)
+	}
+
+	rows := [][]string{
+		{"Public Key Id", pkID},
+		{"Namespace", ns},
+	}
+
+	t := cli.NewTabular(rows...)
+
+	HandleSuccess(cmd, "Public key added to namespace", t, nil)
+}
+
+func policy_NamespaceKeysRemove(cmd *cobra.Command, args []string) {
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
+	defer h.Close()
+
+	ns := c.Flags.GetRequiredString("namespace")
+	pkID := c.Flags.GetRequiredID("public-key-id")
+
+	_, err := h.RemovePublicKeyFromNamespace(c.Context(), ns, pkID)
+	if err != nil {
+		cli.ExitWithError("Failed to remove public key from namespace", err)
+	}
+
+	rows := [][]string{
+		{"Public Key Id", pkID},
+		{"Namespace", ns},
+	}
+
+	t := cli.NewTabular(rows...)
+
+	HandleSuccess(cmd, "Public key removed from namespace", t, nil)
+}
+
+func policy_NamespaceKeysListcmd(cmd *cobra.Command, args []string) {
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
+	defer h.Close()
+
+	ns := c.Flags.GetRequiredString("namespace")
+	showPublicKey := c.Flags.GetOptionalBool("show-public-key")
+
+	list, err := h.GetNamespace(ns)
+	if err != nil {
+		cli.ExitWithError("Failed to list namespace keys", err)
+	}
+
+	columns := []table.Column{
+		table.NewFlexColumn("kas_name", "KAS Name", cli.FlexColumnWidthThree),
+		table.NewFlexColumn("kas_uri", "KAS URI", cli.FlexColumnWidthThree),
+		table.NewFlexColumn("kid", "Key ID", cli.FlexColumnWidthThree),
+		table.NewFlexColumn("alg", "Algorithm", cli.FlexColumnWidthThree),
+	}
+
+	if showPublicKey {
+		columns = append(columns, table.NewFlexColumn("public_key", "Public Key", cli.FlexColumnWidthFour))
+	}
+
+	t := cli.NewTable(columns...)
+	rows := []table.Row{}
+	for _, key := range list.GetKeys() {
+		alg, err := enumToAlg(key.GetPublicKey().GetAlg())
+		if err != nil {
+			cli.ExitWithError("Failed to get algorithm", err)
+		}
+
+		rowStyle := lipgloss.NewStyle().BorderBottom(true).BorderStyle(lipgloss.NormalBorder())
+
+		if key.GetIsActive().GetValue() {
+			rowStyle = rowStyle.Background(cli.ColorGreen.Background)
+		} else {
+			rowStyle = rowStyle.Background(cli.ColorRed.Background)
+		}
+
+		rd := table.RowData{
+			"key_id":     key.GetPublicKey().GetKid(),
+			"algorithm":  alg,
+			"is_active":  key.GetIsActive().GetValue(),
+			"kas_id":     key.GetKas().GetId(),
+			"kas_name":   key.GetKas().GetName(),
+			"kas_uri":    key.GetKas().GetUri(),
+			"public_key": key.GetPublicKey().GetPem(),
+		}
+		rows = append(rows, table.NewRow(rd).WithStyle(rowStyle))
+	}
+	t = t.WithRows(rows)
+	HandleSuccess(cmd, "", t, list)
+}
+
 func init() {
 	getCmd := man.Docs.GetCommand("policy/attributes/namespaces/get",
 		man.WithRun(policy_getAttributeNamespace),
@@ -367,6 +470,55 @@ func init() {
 	)
 	unsafeCmd.AddSubcommands(deleteCmd, reactivateCmd, unsafeUpdateCmd)
 
-	policy_attributeNamespacesCmd.AddSubcommands(getCmd, listCmd, createDoc, updateCmd, deactivateCmd, unsafeCmd)
+	namespaceKeysAddDoc := man.Docs.GetCommand("policy/attributes/namespaces/keys/add",
+		man.WithRun(policy_NamespaceKeysAdd),
+	)
+	namespaceKeysAddDoc.Flags().StringP(
+		namespaceKeysAddDoc.GetDocFlag("namespace").Name,
+		namespaceKeysAddDoc.GetDocFlag("namespace").Shorthand,
+		namespaceKeysAddDoc.GetDocFlag("namespace").Default,
+		namespaceKeysAddDoc.GetDocFlag("namespace").Description,
+	)
+	namespaceKeysAddDoc.Flags().StringP(
+		namespaceKeysAddDoc.GetDocFlag("public-key-id").Name,
+		namespaceKeysAddDoc.GetDocFlag("public-key-id").Shorthand,
+		namespaceKeysAddDoc.GetDocFlag("public-key-id").Default,
+		namespaceKeysAddDoc.GetDocFlag("public-key-id").Description,
+	)
+
+	namespaceKeysRemoveDoc := man.Docs.GetCommand("policy/attributes/namespaces/keys/remove",
+		man.WithRun(policy_NamespaceKeysRemove),
+	)
+	namespaceKeysRemoveDoc.Flags().StringP(
+		namespaceKeysRemoveDoc.GetDocFlag("namespace").Name,
+		namespaceKeysRemoveDoc.GetDocFlag("namespace").Shorthand,
+		namespaceKeysRemoveDoc.GetDocFlag("namespace").Default,
+		namespaceKeysRemoveDoc.GetDocFlag("namespace").Description,
+	)
+	namespaceKeysRemoveDoc.Flags().StringP(
+		namespaceKeysRemoveDoc.GetDocFlag("public-key-id").Name,
+		namespaceKeysRemoveDoc.GetDocFlag("public-key-id").Shorthand,
+		namespaceKeysRemoveDoc.GetDocFlag("public-key-id").Default,
+		namespaceKeysRemoveDoc.GetDocFlag("public-key-id").Description,
+	)
+
+	namespaceKeysListDoc := man.Docs.GetCommand("policy/attributes/namespaces/keys/list",
+		man.WithRun(policy_NamespaceKeysListcmd),
+	)
+	namespaceKeysListDoc.Flags().StringP(
+		namespaceKeysListDoc.GetDocFlag("namespace").Name,
+		namespaceKeysListDoc.GetDocFlag("namespace").Shorthand,
+		namespaceKeysListDoc.GetDocFlag("namespace").Default,
+		namespaceKeysListDoc.GetDocFlag("namespace").Description,
+	)
+	namespaceKeysListDoc.Flags().BoolP(
+		namespaceKeysListDoc.GetDocFlag("show-public-key").Name,
+		namespaceKeysListDoc.GetDocFlag("show-public-key").Shorthand,
+		namespaceKeysListDoc.GetDocFlag("show-public-key").DefaultAsBool(),
+		namespaceKeysListDoc.GetDocFlag("show-public-key").Description,
+	)
+
+	policy_NamespaceKeysCmd.AddSubcommands(namespaceKeysAddDoc, namespaceKeysRemoveDoc, namespaceKeysListDoc)
+	policy_attributeNamespacesCmd.AddSubcommands(getCmd, listCmd, createDoc, updateCmd, deactivateCmd, unsafeCmd, policy_NamespaceKeysCmd)
 	policy_attributesCmd.AddCommand(&policy_attributeNamespacesCmd.Command)
 }
