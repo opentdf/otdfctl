@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.18.0](https://github.com/opentdf/otdfctl/compare/v0.17.1...v0.18.0) (2025-02-25)
+
+
+### Features
+
+* Assertion verification ([#452](https://github.com/opentdf/otdfctl/issues/452)) ([5a8fe0d](https://github.com/opentdf/otdfctl/commit/5a8fe0d64088b74c95d3376e4a2a5a47d680d9c0))
+* **core:** Adding examples docs, mainly policy commands ([#461](https://github.com/opentdf/otdfctl/issues/461)) ([04c1743](https://github.com/opentdf/otdfctl/commit/04c17439bb5f68fb5d44ba96cb457ce9ca072250))
+* **core:** bump SDK and consume new platform connection validation ([#493](https://github.com/opentdf/otdfctl/issues/493)) ([1106b54](https://github.com/opentdf/otdfctl/commit/1106b54e73f9ceb711ff19d15cd08bf1cebbb29f))
+* **core:** Shows SDK version and spec info ([#474](https://github.com/opentdf/otdfctl/issues/474)) ([5a685c4](https://github.com/opentdf/otdfctl/commit/5a685c4e36cf524c4f594fac42cfec30f62a6e83))
+
 ## [0.17.1](https://github.com/opentdf/otdfctl/compare/v0.17.0...v0.17.1) (2024-12-09)
 
 
