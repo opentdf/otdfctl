@@ -9,9 +9,6 @@ var (
 	ErrInvalidAuthType           = errors.New("invalid auth type")
 	ErrUnauthenticated           = errors.New("not logged in")
 	ErrParsingAccessToken        = errors.New("failed to parse access token")
+	ErrProfileCredentialsNotFound = errors.New("profile missing credentials")
 )
 
-var (
-	ErrProfileCredentialsNotFound = errors.New("profile missing credentials")
-	ErrPlatformConfigNotFound     = errors.New("platform configuration not found")
-)

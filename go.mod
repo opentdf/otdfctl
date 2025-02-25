@@ -16,8 +16,8 @@ require (
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.6.0
 	github.com/opentdf/platform/lib/flattening v0.1.3
-	github.com/opentdf/platform/protocol/go v0.2.26
-	github.com/opentdf/platform/sdk v0.3.25
+	github.com/opentdf/platform/protocol/go v0.2.27
+	github.com/opentdf/platform/sdk v0.3.27
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.10.0
@@ -79,7 +79,7 @@ require (
 	github.com/muesli/reflow v0.3.0 // indirect
 	github.com/muesli/termenv v0.15.3-0.20240618155329-98d742f6907a // indirect
 	github.com/muhlemmer/gu v0.3.1 // indirect
-	github.com/opentdf/platform/lib/ocrypto v0.1.7 // indirect
+	github.com/opentdf/platform/lib/ocrypto v0.1.8 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.2 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect

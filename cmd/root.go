@@ -177,8 +177,11 @@ func NewHandler(c *cli.Cli) handlers.Handler {
 	}
 
 	if err := auth.ValidateProfileAuthCredentials(c.Context(), cp); err != nil {
-		if errors.Is(err, auth.ErrPlatformConfigNotFound) {
-			cli.ExitWithError(fmt.Sprintf("Failed to get platform configuration. Is the platform accepting connections at '%s'?", cp.GetEndpoint()), nil)
+		if errors.Is(err, sdk.ErrPlatformUnreachable) {
+			cli.ExitWithError(fmt.Sprintf("Failed to connect to the platform. Is the platform accepting connections at '%s'?", cp.GetEndpoint()), nil)
+		}
+		if errors.Is(err, sdk.ErrPlatformConfigFailed) {
+			cli.ExitWithError(fmt.Sprintf("Failed to get the platform configuration. Is the platform serving a well-known configuration at '%s'?", cp.GetEndpoint()), nil)
 		}
 		if inMemoryProfile {
 			cli.ExitWithError("Failed to authenticate with flag-provided client credentials.", err)

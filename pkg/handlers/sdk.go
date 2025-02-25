@@ -84,14 +84,12 @@ func New(opts ...handlerOptsFunc) (Handler, error) {
 		o.sdkOpts = append(o.sdkOpts, sdk.WithInsecureSkipVerifyConn())
 	}
 
-	// TODO let's make sure we still support plaintext connections
-
 	// get auth
-	ao, err := auth.GetSDKAuthOptionFromProfile(o.profile)
+	authSDKOpt, err := auth.GetSDKAuthOptionFromProfile(o.profile)
 	if err != nil {
 		return Handler{}, err
 	}
-	o.sdkOpts = append(o.sdkOpts, ao)
+	o.sdkOpts = append(o.sdkOpts, authSDKOpt, sdk.WithConnectionValidation())
 
 	if u.Scheme == "http" {
 		o.sdkOpts = append(o.sdkOpts, sdk.WithInsecurePlaintextConn())
