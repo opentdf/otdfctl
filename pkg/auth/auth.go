@@ -83,7 +83,7 @@ func getPlatformConfiguration(endpoint, publicClientID string, tlsNoVerify bool)
 		return c, err
 	}
 
-	opts := []sdk.Option{}
+	opts := []sdk.Option{sdk.WithConnectionValidation()}
 	if tlsNoVerify {
 		opts = append(opts, sdk.WithInsecureSkipVerifyConn())
 	}
@@ -309,9 +309,6 @@ func newOidcRelyingParty(ctx context.Context, endpoint string, tlsNoVerify bool,
 
 	pc, err := getPlatformConfiguration(endpoint, pcClient, tlsNoVerify)
 	if err != nil {
-		if errors.Is(err, sdk.ErrPlatformConfigFailed) {
-			return nil, ErrPlatformConfigNotFound
-		}
 		return nil, err
 	}
 

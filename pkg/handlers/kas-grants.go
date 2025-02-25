@@ -111,5 +111,6 @@ func (h Handler) ListKasGrants(ctx context.Context, kas_id, kas_uri string, limi
 	if err != nil {
 		return nil, nil, err
 	}
+	//nolint:staticcheck // deprecated but not removed while public keys work is experimental
 	return resp.GetGrants(), resp.GetPagination(), nil
 }
