@@ -28,7 +28,7 @@ teardown_file() {
     BAD_HOST='--host http://localhost:9000'
     run_otdfctl $BAD_HOST $WITH_CREDS policy attributes list
     assert_failure
-    assert_output --partial "Failed to get platform configuration. Is the platform accepting connections at"
+    assert_output --partial "Failed to connect to the platform. Is the platform accepting connections at"
 }
 
 @test "helpful error if bad credentials" {
