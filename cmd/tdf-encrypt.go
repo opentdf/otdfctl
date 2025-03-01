@@ -48,16 +48,16 @@ func dev_tdfEncryptCmd(cmd *cobra.Command, args []string) {
 	wrappingKeyAlgStr := c.Flags.GetOptionalString("wrapping-key-algorithm")
 	var wrappingKeyAlgorithm ocrypto.KeyType
 	switch wrappingKeyAlgStr {
-	case "rsa:2048":
-		wrappingKeyAlgorithm = "rsa:2048"
-	case "ec:secp256r1":
-		wrappingKeyAlgorithm = "ec:secp256r1"
-	case "ec:secp384r1":
-		wrappingKeyAlgorithm = "ec:secp384r1"
-	case "ec:secp521r1":
-		wrappingKeyAlgorithm = "ec:secp521r1"
+	case RSA2048:
+		wrappingKeyAlgorithm = RSA2048
+	case ECSECP256R1:
+		wrappingKeyAlgorithm = ECSECP256R1
+	case ECSECP384R1:
+		wrappingKeyAlgorithm = ECSECP384R1
+	case ECSECP521R1:
+		wrappingKeyAlgorithm = ECSECP521R1
 	default:
-		wrappingKeyAlgorithm = "rsa:2048"
+		wrappingKeyAlgorithm = RSA2048
 	}
 
 	piped := readPipedStdin()
