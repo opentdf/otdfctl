@@ -8,6 +8,7 @@ import (
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/opentdf/otdfctl/pkg/utils"
+	"github.com/opentdf/platform/lib/ocrypto"
 	"github.com/spf13/cobra"
 )
 
@@ -18,12 +19,26 @@ var assertionVerification string
 const TDF_MAX_FILE_SIZE = int64(10 * 1024 * 1024 * 1024) // 10 GB
 
 func dev_tdfDecryptCmd(cmd *cobra.Command, args []string) {
-	c := cli.New(cmd, args, cli.WithPrintJson())
+	c := cli.New(cmd, args)
 	h := NewHandler(c)
 	defer h.Close()
 
 	output := c.Flags.GetOptionalString("out")
 	disableAssertionVerification := c.Flags.GetOptionalBool("no-verify-assertions")
+	sessionKeyAlgStr := c.Flags.GetOptionalString("session-key-algorithm")
+	var sessionKeyAlgorithm ocrypto.KeyType
+	switch sessionKeyAlgStr {
+	case "rsa:2048":
+		sessionKeyAlgorithm = "rsa:2048"
+	case "ec:secp256r1":
+		sessionKeyAlgorithm = "ec:secp256r1"
+	case "ec:secp384r1":
+		sessionKeyAlgorithm = "ec:secp384r1"
+	case "ec:secp521r1":
+		sessionKeyAlgorithm = "ec:secp521r1"
+	default:
+		sessionKeyAlgorithm = "rsa:2048"
+	}
 
 	// check for piped input
 	piped := readPipedStdin()
@@ -44,7 +59,7 @@ func dev_tdfDecryptCmd(cmd *cobra.Command, args []string) {
 		cli.ExitWithError("Must provide ONE of the following to decrypt: [file argument, stdin input]", errors.New("no input provided"))
 	}
 
-	decrypted, err := h.DecryptBytes(bytesToDecrypt, assertionVerification, disableAssertionVerification)
+	decrypted, err := h.DecryptBytes(bytesToDecrypt, assertionVerification, disableAssertionVerification, sessionKeyAlgorithm)
 	if err != nil {
 		cli.ExitWithError("Failed to decrypt file", err)
 	}
@@ -89,6 +104,12 @@ func init() {
 		decryptCmd.GetDocFlag("with-assertion-verification-keys").Shorthand,
 		"",
 		decryptCmd.GetDocFlag("with-assertion-verification-keys").Description,
+	)
+	decryptCmd.Flags().StringP(
+		decryptCmd.GetDocFlag("session-key-algorithm").Name,
+		decryptCmd.GetDocFlag("session-key-algorithm").Shorthand,
+		decryptCmd.GetDocFlag("session-key-algorithm").Default,
+		decryptCmd.GetDocFlag("session-key-algorithm").Description,
 	)
 	decryptCmd.Flags().Bool(
 		decryptCmd.GetDocFlag("no-verify-assertions").Name,

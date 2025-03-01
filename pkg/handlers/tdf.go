@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/opentdf/otdfctl/pkg/utils"
+	"github.com/opentdf/platform/lib/ocrypto"
 	"github.com/opentdf/platform/sdk"
 )
 
@@ -38,7 +39,16 @@ type TDFInspect struct {
 	UnencryptedMetadata []byte
 }
 
-func (h Handler) EncryptBytes(tdfType string, unencrypted []byte, attrValues []string, mimeType string, kasUrlPath string, ecdsaBinding bool, assertions string) (*bytes.Buffer, error) {
+func (h Handler) EncryptBytes(
+	tdfType string,
+	unencrypted []byte,
+	attrValues []string,
+	mimeType string,
+	kasUrlPath string,
+	ecdsaBinding bool,
+	assertions string,
+	wrappingKeyAlgorithm ocrypto.KeyType,
+) (*bytes.Buffer, error) {
 	var encrypted []byte
 	enc := bytes.NewBuffer(encrypted)
 
@@ -55,6 +65,7 @@ func (h Handler) EncryptBytes(tdfType string, unencrypted []byte, attrValues []s
 				URL: h.platformEndpoint + kasUrlPath,
 			}),
 			sdk.WithMimeType(mimeType),
+			sdk.WithWrappingKeyAlg(wrappingKeyAlgorithm),
 		}
 
 		var assertionConfigs []sdk.AssertionConfig
@@ -115,7 +126,7 @@ func (h Handler) EncryptBytes(tdfType string, unencrypted []byte, attrValues []s
 	}
 }
 
-func (h Handler) DecryptBytes(toDecrypt []byte, assertionVerificationKeysFile string, disableAssertionCheck bool) (*bytes.Buffer, error) {
+func (h Handler) DecryptBytes(toDecrypt []byte, assertionVerificationKeysFile string, disableAssertionCheck bool, sessionKeyAlgorithm ocrypto.KeyType) (*bytes.Buffer, error) {
 	out := &bytes.Buffer{}
 	pt := io.Writer(out)
 	ec := bytes.NewReader(toDecrypt)
@@ -125,7 +136,8 @@ func (h Handler) DecryptBytes(toDecrypt []byte, assertionVerificationKeysFile st
 			return nil, err
 		}
 	case sdk.Standard:
-		opts := []sdk.TDFReaderOption{sdk.WithDisableAssertionVerification(disableAssertionCheck)}
+		opts := []sdk.TDFReaderOption{sdk.WithDisableAssertionVerification(disableAssertionCheck),
+			sdk.WithSessionKeyType(sessionKeyAlgorithm)}
 		var assertionVerificationKeys sdk.AssertionVerificationKeys
 		if assertionVerificationKeysFile != "" {
 			// read the file
