@@ -12,13 +12,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const (
-	RSA2048     = "rsa:2048"
-	ECSECP256R1 = "ec:secp256r1"
-	ECSECP384R1 = "ec:secp384r1"
-	ECSECP521R1 = "ec:secp521r1"
-)
-
 var TDF = "tdf"
 
 var assertionVerification string
@@ -35,16 +28,16 @@ func dev_tdfDecryptCmd(cmd *cobra.Command, args []string) {
 	sessionKeyAlgStr := c.Flags.GetOptionalString("session-key-algorithm")
 	var sessionKeyAlgorithm ocrypto.KeyType
 	switch sessionKeyAlgStr {
-	case RSA2048:
-		sessionKeyAlgorithm = RSA2048
-	case ECSECP256R1:
-		sessionKeyAlgorithm = ECSECP256R1
-	case ECSECP384R1:
-		sessionKeyAlgorithm = ECSECP384R1
-	case ECSECP521R1:
-		sessionKeyAlgorithm = ECSECP521R1
+	case string(ocrypto.RSA2048Key):
+		sessionKeyAlgorithm = ocrypto.RSA2048Key
+	case string(ocrypto.EC256Key):
+		sessionKeyAlgorithm = ocrypto.EC256Key
+	case string(ocrypto.EC384Key):
+		sessionKeyAlgorithm = ocrypto.EC384Key
+	case string(ocrypto.EC521Key):
+		sessionKeyAlgorithm = ocrypto.EC521Key
 	default:
-		sessionKeyAlgorithm = RSA2048
+		sessionKeyAlgorithm = ocrypto.RSA2048Key
 	}
 
 	// check for piped input
