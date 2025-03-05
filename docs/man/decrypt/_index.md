@@ -53,7 +53,7 @@ hello world
 ```
 
 ## Session Key Algorithm
-The session-key-algorithm specifies the algorithm to use for the wrapping key. The available options are:
+The session-key-algorithm specifies the algorithm to use for the session key. The available options are (default: rsa:2048):
 - rsa:2048
 - ec:secp256r1
 - ec:secp384r1
