@@ -11,7 +11,8 @@ command:
       shorthand: a
       description: Attribute value Fully Qualified Names (FQNs, i.e. 'https://example.com/attr/attr1/value/value1') to apply to the encrypted data.
     - name: wrapping-key-algorithm
-      description: The algorithm to use for the wrapping key
+      description: >
+        EXPERIMENTAL: The algorithm to use for the wrapping key 
       enum:
         - rsa:2048
         - ec:secp256r1
@@ -72,7 +73,8 @@ $ echo "hello world" | otdfctl encrypt | otdfctl decrypt | cat
 hello world
 ```
 
-## Wrapping Key Algorithm
+## Wrapping Key Algorithm - EXPERIMENTAL
+
 The wrapping-key-algorithm specifies the algorithm to use for the wrapping key. The available options are (default: rsa:2048):
 - rsa:2048
 - ec:secp256r1
@@ -82,6 +84,7 @@ The wrapping-key-algorithm specifies the algorithm to use for the wrapping key. 
 Example
 ```shell
 # Encrypt a file using the ec:secp256r1 algorithm for the wrapping key
+# EXPERIMENTAL
 otdfctl encrypt hello.txt --wrapping-key-algorithm ec:secp256r1 --out hello.txt.tdf
 ```
 
