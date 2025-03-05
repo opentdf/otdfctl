@@ -1,3 +1,4 @@
+ALPN
 AllOf
 AnyOf
 Auth
@@ -17,18 +18,17 @@ KASes
 KASs
 LDAP
 MacOS
-Nano
-NanoTDF
 NPM
 Namespace
-namespace's
+Nano
+NanoTDF
 OIDC
 OpenID
 OpenTDF
 PDP
 PKCE
-RadService
 README
+RadService
 SCS
 SCSs
 SDK
@@ -50,6 +50,7 @@ appliesToState
 args
 attr
 auth
+balancer
 cli
 clientId
 clientSecret
@@ -64,6 +65,7 @@ ec
 ecdsa
 encodings
 enum
+go-grpc
 https
 idP
 jq
@@ -79,6 +81,7 @@ keyring
 localhost
 mapping's
 namespace
+namespace's
 namespaces
 nano
 nato
