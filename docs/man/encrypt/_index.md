@@ -11,7 +11,6 @@ command:
       shorthand: a
       description: Attribute value Fully Qualified Names (FQNs, i.e. 'https://example.com/attr/attr1/value/value1') to apply to the encrypted data.
     - name: wrapping-key-algorithm
-      shorthand: w
       description: The algorithm to use for the wrapping key
       enum:
         - rsa:2048

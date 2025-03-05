@@ -19,7 +19,7 @@ var assertionVerification string
 const TDF_MAX_FILE_SIZE = int64(10 * 1024 * 1024 * 1024) // 10 GB
 
 func dev_tdfDecryptCmd(cmd *cobra.Command, args []string) {
-	c := cli.New(cmd, args)
+	c := cli.New(cmd, args, cli.WithPrintJson())
 	h := NewHandler(c)
 	defer h.Close()
 
@@ -105,9 +105,8 @@ func init() {
 		"",
 		decryptCmd.GetDocFlag("with-assertion-verification-keys").Description,
 	)
-	decryptCmd.Flags().StringP(
+	decryptCmd.Flags().String(
 		decryptCmd.GetDocFlag("session-key-algorithm").Name,
-		decryptCmd.GetDocFlag("session-key-algorithm").Shorthand,
 		decryptCmd.GetDocFlag("session-key-algorithm").Default,
 		decryptCmd.GetDocFlag("session-key-algorithm").Description,
 	)

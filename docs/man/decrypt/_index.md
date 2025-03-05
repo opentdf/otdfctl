@@ -14,7 +14,6 @@ command:
       description: disable verification of assertions
       default: false
     - name: session-key-algorithm
-      shorthand: s
       description: The type of session key algorithm to use for decryption
       enum:
         - rsa:2048

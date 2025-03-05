@@ -136,7 +136,8 @@ func (h Handler) DecryptBytes(toDecrypt []byte, assertionVerificationKeysFile st
 			return nil, err
 		}
 	case sdk.Standard:
-		opts := []sdk.TDFReaderOption{sdk.WithDisableAssertionVerification(disableAssertionCheck),
+		opts := []sdk.TDFReaderOption{
+			sdk.WithDisableAssertionVerification(disableAssertionCheck),
 			sdk.WithSessionKeyType(sessionKeyAlgorithm)}
 		var assertionVerificationKeys sdk.AssertionVerificationKeys
 		if assertionVerificationKeysFile != "" {

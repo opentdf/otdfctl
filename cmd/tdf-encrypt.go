@@ -167,9 +167,8 @@ func init() {
 		encryptCmd.GetDocFlag("mime-type").Default,
 		encryptCmd.GetDocFlag("mime-type").Description,
 	)
-	encryptCmd.Flags().StringP(
+	encryptCmd.Flags().String(
 		encryptCmd.GetDocFlag("tdf-type").Name,
-		encryptCmd.GetDocFlag("tdf-type").Shorthand,
 		encryptCmd.GetDocFlag("tdf-type").Default,
 		encryptCmd.GetDocFlag("tdf-type").Description,
 	)
