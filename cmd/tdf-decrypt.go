@@ -8,6 +8,7 @@ import (
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/opentdf/otdfctl/pkg/utils"
+	"github.com/opentdf/platform/lib/ocrypto"
 	"github.com/spf13/cobra"
 )
 
@@ -24,6 +25,20 @@ func dev_tdfDecryptCmd(cmd *cobra.Command, args []string) {
 
 	output := c.Flags.GetOptionalString("out")
 	disableAssertionVerification := c.Flags.GetOptionalBool("no-verify-assertions")
+	sessionKeyAlgStr := c.Flags.GetOptionalString("session-key-algorithm")
+	var sessionKeyAlgorithm ocrypto.KeyType
+	switch sessionKeyAlgStr {
+	case string(ocrypto.RSA2048Key):
+		sessionKeyAlgorithm = ocrypto.RSA2048Key
+	case string(ocrypto.EC256Key):
+		sessionKeyAlgorithm = ocrypto.EC256Key
+	case string(ocrypto.EC384Key):
+		sessionKeyAlgorithm = ocrypto.EC384Key
+	case string(ocrypto.EC521Key):
+		sessionKeyAlgorithm = ocrypto.EC521Key
+	default:
+		sessionKeyAlgorithm = ocrypto.RSA2048Key
+	}
 
 	// check for piped input
 	piped := readPipedStdin()
@@ -44,7 +59,7 @@ func dev_tdfDecryptCmd(cmd *cobra.Command, args []string) {
 		cli.ExitWithError("Must provide ONE of the following to decrypt: [file argument, stdin input]", errors.New("no input provided"))
 	}
 
-	decrypted, err := h.DecryptBytes(bytesToDecrypt, assertionVerification, disableAssertionVerification)
+	decrypted, err := h.DecryptBytes(bytesToDecrypt, assertionVerification, disableAssertionVerification, sessionKeyAlgorithm)
 	if err != nil {
 		cli.ExitWithError("Failed to decrypt file", err)
 	}
@@ -89,6 +104,11 @@ func init() {
 		decryptCmd.GetDocFlag("with-assertion-verification-keys").Shorthand,
 		"",
 		decryptCmd.GetDocFlag("with-assertion-verification-keys").Description,
+	)
+	decryptCmd.Flags().String(
+		decryptCmd.GetDocFlag("session-key-algorithm").Name,
+		decryptCmd.GetDocFlag("session-key-algorithm").Default,
+		decryptCmd.GetDocFlag("session-key-algorithm").Description,
 	)
 	decryptCmd.Flags().Bool(
 		decryptCmd.GetDocFlag("no-verify-assertions").Name,

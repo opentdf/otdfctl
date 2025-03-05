@@ -13,6 +13,14 @@ command:
     - name: no-verify-assertions
       description: disable verification of assertions
       default: false
+    - name: session-key-algorithm
+      description: The type of session key algorithm to use for decryption
+      enum:
+        - rsa:2048
+        - ec:secp256r1
+        - ec:secp384r1
+        - ec:secp521r1
+      default: rsa:2048
     - name: with-assertion-verification-keys
       description: >
         EXPERIMENTAL: path to JSON file of keys to verify signed assertions. See examples for more information.
@@ -42,6 +50,19 @@ Advanced piping is supported
 ```shell
 $ echo "hello world" | otdfctl encrypt | otdfctl decrypt | cat
 hello world
+```
+
+## Session Key Algorithm
+The session-key-algorithm specifies the algorithm to use for the session key. The available options are (default: rsa:2048):
+- rsa:2048
+- ec:secp256r1
+- ec:secp384r1
+- ec:secp521r1
+
+Example
+```shell
+# Decrypt a file using the ec:secp256r1 algorithm for the session key
+otdfctl decrypt hello.txt --session-key-algorithm ec:secp256r1
 ```
 
 ### ZTDF Assertion Verification (experimental)

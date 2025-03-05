@@ -12,6 +12,7 @@ import (
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/opentdf/otdfctl/pkg/utils"
+	"github.com/opentdf/platform/lib/ocrypto"
 	"github.com/spf13/cobra"
 )
 
@@ -44,6 +45,20 @@ func dev_tdfEncryptCmd(cmd *cobra.Command, args []string) {
 	attrValues = c.Flags.GetStringSlice("attr", attrValues, cli.FlagsStringSliceOptions{Min: 0})
 	tdfType := c.Flags.GetOptionalString("tdf-type")
 	kasURLPath := c.Flags.GetOptionalString("kas-url-path")
+	wrappingKeyAlgStr := c.Flags.GetOptionalString("wrapping-key-algorithm")
+	var wrappingKeyAlgorithm ocrypto.KeyType
+	switch wrappingKeyAlgStr {
+	case string(ocrypto.RSA2048Key):
+		wrappingKeyAlgorithm = ocrypto.RSA2048Key
+	case string(ocrypto.EC256Key):
+		wrappingKeyAlgorithm = ocrypto.EC256Key
+	case string(ocrypto.EC384Key):
+		wrappingKeyAlgorithm = ocrypto.EC384Key
+	case string(ocrypto.EC521Key):
+		wrappingKeyAlgorithm = ocrypto.EC521Key
+	default:
+		wrappingKeyAlgorithm = ocrypto.RSA2048Key
+	}
 
 	piped := readPipedStdin()
 
@@ -95,7 +110,7 @@ func dev_tdfEncryptCmd(cmd *cobra.Command, args []string) {
 	)
 
 	// Do the encryption
-	encrypted, err := h.EncryptBytes(tdfType, bytesSlice, attrValues, fileMimeType, kasURLPath, c.Flags.GetOptionalBool("ecdsa-binding"), assertions)
+	encrypted, err := h.EncryptBytes(tdfType, bytesSlice, attrValues, fileMimeType, kasURLPath, c.Flags.GetOptionalBool("ecdsa-binding"), assertions, wrappingKeyAlgorithm)
 	if err != nil {
 		cli.ExitWithError("Failed to encrypt", err)
 	}
@@ -152,11 +167,16 @@ func init() {
 		encryptCmd.GetDocFlag("mime-type").Default,
 		encryptCmd.GetDocFlag("mime-type").Description,
 	)
-	encryptCmd.Flags().StringP(
+	encryptCmd.Flags().String(
 		encryptCmd.GetDocFlag("tdf-type").Name,
-		encryptCmd.GetDocFlag("tdf-type").Shorthand,
 		encryptCmd.GetDocFlag("tdf-type").Default,
 		encryptCmd.GetDocFlag("tdf-type").Description,
+	)
+	encryptCmd.Flags().StringP(
+		encryptCmd.GetDocFlag("wrapping-key-algorithm").Name,
+		encryptCmd.GetDocFlag("wrapping-key-algorithm").Shorthand,
+		encryptCmd.GetDocFlag("wrapping-key-algorithm").Default,
+		encryptCmd.GetDocFlag("wrapping-key-algorithm").Description,
 	)
 	encryptCmd.Flags().Bool(
 		encryptCmd.GetDocFlag("ecdsa-binding").Name,

@@ -10,6 +10,14 @@ command:
     - name: attr
       shorthand: a
       description: Attribute value Fully Qualified Names (FQNs, i.e. 'https://example.com/attr/attr1/value/value1') to apply to the encrypted data.
+    - name: wrapping-key-algorithm
+      description: The algorithm to use for the wrapping key
+      enum:
+        - rsa:2048
+        - ec:secp256r1
+        - ec:secp384r1
+        - ec:secp521r1
+      default: rsa:2048  
     - name: mime-type
       description: The MIME type of the input data. If not provided, the MIME type is inferred from the input data.
     - name: tdf-type
@@ -62,6 +70,19 @@ Advanced piping is supported
 ```shell
 $ echo "hello world" | otdfctl encrypt | otdfctl decrypt | cat
 hello world
+```
+
+## Wrapping Key Algorithm
+The wrapping-key-algorithm specifies the algorithm to use for the wrapping key. The available options are (default: rsa:2048):
+- rsa:2048
+- ec:secp256r1
+- ec:secp384r1
+- ec:secp521r1
+
+Example
+```shell
+# Encrypt a file using the ec:secp256r1 algorithm for the wrapping key
+otdfctl encrypt hello.txt --wrapping-key-algorithm ec:secp256r1 --out hello.txt.tdf
 ```
 
 ## Attributes
