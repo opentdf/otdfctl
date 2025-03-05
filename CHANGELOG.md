@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.19.0](https://github.com/opentdf/otdfctl/compare/v0.18.0...v0.19.0) (2025-03-05)
+
+
+### Features
+
+* **core:** support for ec-wrapping ([#499](https://github.com/opentdf/otdfctl/issues/499)) ([e839445](https://github.com/opentdf/otdfctl/commit/e839445181c89447d9a2374d54ce5ea4c3f46320))
+
+
+### Bug Fixes
+
+* **core:** mark new algorithm flags experimental ([#501](https://github.com/opentdf/otdfctl/issues/501)) ([95e00bf](https://github.com/opentdf/otdfctl/commit/95e00bf3daa8eb05196a5839488a4718c2230210))
+
 ## [0.18.0](https://github.com/opentdf/otdfctl/compare/v0.17.1...v0.18.0) (2025-02-25)
 
 
