@@ -14,7 +14,8 @@ command:
       description: disable verification of assertions
       default: false
     - name: session-key-algorithm
-      description: The type of session key algorithm to use for decryption
+      description: >
+        EXPERIMENTAL: The type of session key algorithm to use for decryption
       enum:
         - rsa:2048
         - ec:secp256r1
@@ -52,7 +53,8 @@ $ echo "hello world" | otdfctl encrypt | otdfctl decrypt | cat
 hello world
 ```
 
-## Session Key Algorithm
+## Session Key Algorithm -- EXPERIMENTAL
+
 The session-key-algorithm specifies the algorithm to use for the session key. The available options are (default: rsa:2048):
 - rsa:2048
 - ec:secp256r1
@@ -62,6 +64,7 @@ The session-key-algorithm specifies the algorithm to use for the session key. Th
 Example
 ```shell
 # Decrypt a file using the ec:secp256r1 algorithm for the session key
+# EXPERIMENTAL
 otdfctl decrypt hello.txt --session-key-algorithm ec:secp256r1
 ```
 
