@@ -4,11 +4,9 @@ on:
   pull_request:
     branches:
       - main
-    paths-ignore:
-      - LICENSE
-      - CODEOWNERS
-      - '.gitignore'
-      - '**/*.go'
+    paths:
+      - '**/*.md'
+      - '**/*.txt'
 
 jobs:
   spellcheck:
