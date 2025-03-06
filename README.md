@@ -93,4 +93,4 @@ Terminal size when testing:
 In deevelopment.
 
 
-I think you're a really great fun nice friend.
+I think your an nice friend.
