@@ -91,3 +91,6 @@ Terminal size when testing:
 ## Status
 
 In deevelopment.
+
+
+I think you're a really great fun nice friend.
