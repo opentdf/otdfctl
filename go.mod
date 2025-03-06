@@ -1,6 +1,7 @@
 module github.com/opentdf/otdfctl
 
 go 1.22.7
+toolchain go1.23.7
 
 require (
 	github.com/adrg/frontmatter v0.2.0
@@ -24,7 +25,7 @@ require (
 	github.com/stretchr/testify v1.10.0
 	github.com/zalando/go-keyring v0.2.6
 	github.com/zitadel/oidc/v3 v3.35.0
-	golang.org/x/oauth2 v0.26.0
+	golang.org/x/oauth2 v0.28.0
 	golang.org/x/term v0.28.0
 	google.golang.org/grpc v1.69.4
 	google.golang.org/protobuf v1.36.2
