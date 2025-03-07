@@ -12,6 +12,8 @@ setup_file() {
   export INFILE_GO_MOD=go.mod
   export OUTFILE_GO_MOD=go.mod.tdf
   export RESULTFILE_GO_MOD=result.mod
+  export SESSION_KEY_ALGORITHM=ec:secp256r1
+  export WRAPPING_KEY_ALGORITHM=ec:secp256r1
 
   export SECRET_TEXT="my special secret"
   export OUT_TXT=secret.txt
@@ -63,6 +65,12 @@ teardown_file(){
 @test "roundtrip TDF3, no attributes, file" {
   ./otdfctl encrypt -o $OUTFILE_GO_MOD --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --tdf-type tdf3 $INFILE_GO_MOD
   ./otdfctl decrypt -o $RESULTFILE_GO_MOD --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --tdf-type tdf3 $OUTFILE_GO_MOD
+  diff $INFILE_GO_MOD $RESULTFILE_GO_MOD
+}
+
+@test "roundtrip TDF3, no attributes, ec-wrapping, file" {
+  ./otdfctl encrypt -o $OUTFILE_GO_MOD --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --tdf-type tdf3 --wrapping-key-algorithm $WRAPPING_KEY_ALGORITHM $INFILE_GO_MOD
+  ./otdfctl decrypt -o $RESULTFILE_GO_MOD --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --tdf-type tdf3 --session-key-algorithm $SESSION_KEY_ALGORITHM $OUTFILE_GO_MOD
   diff $INFILE_GO_MOD $RESULTFILE_GO_MOD
 }
 
