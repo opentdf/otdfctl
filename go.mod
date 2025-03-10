@@ -16,9 +16,9 @@ require (
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.6.0
 	github.com/opentdf/platform/lib/flattening v0.1.3
-	github.com/opentdf/platform/lib/ocrypto v0.1.8
-	github.com/opentdf/platform/protocol/go v0.2.28
-	github.com/opentdf/platform/sdk v0.3.28
+	github.com/opentdf/platform/lib/ocrypto v0.1.9
+	github.com/opentdf/platform/protocol/go v0.2.29
+	github.com/opentdf/platform/sdk v0.3.29
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.10.0
