@@ -16,9 +16,10 @@ var (
 )
 
 var profileCmd = &cobra.Command{
-	Use:    "profile",
-	Short:  "Manage profiles (experimental)",
-	Hidden: runningInLinux && !runningInTestMode,
+	Use:     "profile",
+	Aliases: []string{"profiles", "prof"},
+	Short:   "Manage profiles (experimental)",
+	Hidden:  runningInLinux && !runningInTestMode,
 }
 
 var profileCreateCmd = &cobra.Command{
