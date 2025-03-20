@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.20.0](https://github.com/opentdf/otdfctl/compare/v0.19.0...v0.20.0) (2025-03-20)
+
+
+### Features
+
+* **core:** add aliases for profile command ([#510](https://github.com/opentdf/otdfctl/issues/510)) ([45c633d](https://github.com/opentdf/otdfctl/commit/45c633da6b00b04a8c92686521d25144048ac62c))
+
 ## [0.19.0](https://github.com/opentdf/otdfctl/compare/v0.18.0...v0.19.0) (2025-03-05)
 
 
