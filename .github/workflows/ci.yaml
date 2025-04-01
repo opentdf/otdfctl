@@ -32,7 +32,7 @@ jobs:
           go-version-file: 'go.mod'
           cache: false
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@971e284b6050e8a5849b72094c50ab08da042db8
+        uses: golangci/golangci-lint-action@1481404843c368bc19ca9406f87d6e0fc97bdcfd
         with:
           version: v1.60.3
           # Optional: golangci-lint command line arguments.
