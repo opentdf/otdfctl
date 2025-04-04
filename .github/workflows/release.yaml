@@ -23,6 +23,7 @@ jobs:
       - uses: googleapis/release-please-action@7987652d64b4581673a76e33ad5e98e3dd56832f
         id: release
         with:
+          config-file: .github/release-please.json
           token: ${{ steps.generate_token.outputs.token }}
           release-type: go
 
