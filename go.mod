@@ -13,7 +13,7 @@ require (
 	github.com/evertras/bubble-table v0.17.1
 	github.com/gabriel-vasile/mimetype v1.4.8
 	github.com/go-jose/go-jose/v3 v3.0.4
-	github.com/golang-jwt/jwt v3.2.2+incompatible
+	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/google/uuid v1.6.0
 	github.com/opentdf/platform/lib/flattening v0.1.3
 	github.com/opentdf/platform/lib/ocrypto v0.1.9
