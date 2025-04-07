@@ -35,7 +35,7 @@ command:
       description: URL path to the KAS service at the platform endpoint domain. Leading slash is required if needed.
       default: /kas
     - name: target-mode
-      description: The target tdf spec version
+      description: The target tdf spec version, ex. 4.3.0
       default: ""
     - name: with-assertions
       description: >
@@ -137,4 +137,12 @@ Signing with HS256 is also available.
 ```
 ```shell
 otdfctl encrypt hello.txt --out hello.txt.tdf --with-assertions my_assertions_signed_hs256.json
+```
+
+## Target Mode
+
+To encrypt with a target tdf spec version, use the `--target-mode` flag. A version < 4.3.0 will include hex encoded signature hashes and will not include a schema version in the manifest.
+
+```shell
+otdfctl encrypt hello.txt --out hello.txt.tdf --target-mode 4.3.0
 ```
