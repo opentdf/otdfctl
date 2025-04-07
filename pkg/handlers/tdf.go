@@ -48,6 +48,7 @@ func (h Handler) EncryptBytes(
 	ecdsaBinding bool,
 	assertions string,
 	wrappingKeyAlgorithm ocrypto.KeyType,
+	targetMode string,
 ) (*bytes.Buffer, error) {
 	var encrypted []byte
 	enc := bytes.NewBuffer(encrypted)
@@ -93,6 +94,10 @@ func (h Handler) EncryptBytes(
 				}
 			}
 			opts = append(opts, sdk.WithAssertions(assertionConfigs...))
+		}
+
+		if targetMode != "" {
+			opts = append(opts, sdk.WithTargetMode(targetMode))
 		}
 
 		_, err := h.sdk.CreateTDF(enc, bytes.NewReader(unencrypted), opts...)

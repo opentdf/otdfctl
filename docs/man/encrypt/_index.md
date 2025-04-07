@@ -34,6 +34,9 @@ command:
     - name: kas-url-path
       description: URL path to the KAS service at the platform endpoint domain. Leading slash is required if needed.
       default: /kas
+    - name: target-mode
+      description: The target tdf spec version
+      default: ""
     - name: with-assertions
       description: >
         EXPERIMENTAL: JSON string or path to a JSON file of assertions to bind metadata to the TDF. See examples for more information. WARNING: Providing keys in a JSON string is strongly discouraged. If including sensitive keys, instead provide a path to a JSON file containing that information.
