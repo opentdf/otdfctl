@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt/v5"
 	flat "github.com/opentdf/platform/lib/flattening"
 )
 
