@@ -20,7 +20,7 @@ command:
     - name: label
     - name: name
       shorthand: n
-      description: Optional name of the registered KAS (must be unique within policy)
+      description: Optional name of the registered KAS (must be unique within Policy)
     - name: label
       description: "Optional metadata 'labels' in the format: key=value"
       shorthand: l
