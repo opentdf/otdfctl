@@ -134,3 +134,21 @@ teardown_file(){
   echo $SECRET_TEXT | ./otdfctl encrypt --tdf-type nano -o $OUT_TXT --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS -a $MIXED_CASE_FQN
   ./otdfctl decrypt --tdf-type nano --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS $OUTFILE_TXT | grep "$SECRET_TEXT"
 }
+
+@test "roundtrip TDF3, with target version < 4.3.0" {
+  ./otdfctl encrypt -o $OUTFILE_GO_MOD --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --tdf-type tdf3 --target-mode v4.2.2 $INFILE_GO_MOD
+  ./otdfctl decrypt -o $RESULTFILE_GO_MOD --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --tdf-type tdf3 $OUTFILE_GO_MOD
+  diff $INFILE_GO_MOD $RESULTFILE_GO_MOD
+
+  schema_version_present=$(./otdfctl --host $HOST --tls-no-verify $WITH_CREDS inspect $OUTFILE_GO_MOD | jq '.manifest | has("schemaVersion")')
+  [[ $schema_version_present == false ]]
+}
+
+@test "roundtrip TDF3, with target version >= 4.3.0" {
+  ./otdfctl encrypt -o $OUTFILE_GO_MOD --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --tdf-type tdf3 --target-mode v4.3.1 $INFILE_GO_MOD
+  ./otdfctl decrypt -o $RESULTFILE_GO_MOD --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --tdf-type tdf3 $OUTFILE_GO_MOD
+  diff $INFILE_GO_MOD $RESULTFILE_GO_MOD
+
+  schema_version_present=$(./otdfctl --host $HOST --tls-no-verify $WITH_CREDS inspect $OUTFILE_GO_MOD | jq '.manifest | has("schemaVersion")')
+  [[ $schema_version_present == true ]]
+}

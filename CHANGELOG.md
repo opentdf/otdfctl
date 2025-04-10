@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.20.0](https://github.com/opentdf/otdfctl/compare/v0.19.0...v0.20.0) (2025-04-08)
+
+
+### Features
+
+* **core:** add aliases for profile command ([#510](https://github.com/opentdf/otdfctl/issues/510)) ([45c633d](https://github.com/opentdf/otdfctl/commit/45c633da6b00b04a8c92686521d25144048ac62c))
+* **core:** Add support for WithTargetMode encrypt option ([#519](https://github.com/opentdf/otdfctl/issues/519)) ([a0ab213](https://github.com/opentdf/otdfctl/commit/a0ab2136be0b1d39e16a7522210f493fd797089d))
+
+
+### Bug Fixes
+
+* **core:** bump jwt dep and remove outdated version ([#520](https://github.com/opentdf/otdfctl/issues/520)) ([77bb9ca](https://github.com/opentdf/otdfctl/commit/77bb9ca9a0741ab7b920cc00f264a021064b117c))
+
 ## [0.19.0](https://github.com/opentdf/otdfctl/compare/v0.18.0...v0.19.0) (2025-03-05)
 
 

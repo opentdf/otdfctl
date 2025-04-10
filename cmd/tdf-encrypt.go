@@ -46,6 +46,7 @@ func dev_tdfEncryptCmd(cmd *cobra.Command, args []string) {
 	tdfType := c.Flags.GetOptionalString("tdf-type")
 	kasURLPath := c.Flags.GetOptionalString("kas-url-path")
 	wrappingKeyAlgStr := c.Flags.GetOptionalString("wrapping-key-algorithm")
+	targetMode := c.Flags.GetOptionalString("target-mode")
 	var wrappingKeyAlgorithm ocrypto.KeyType
 	switch wrappingKeyAlgStr {
 	case string(ocrypto.RSA2048Key):
@@ -110,7 +111,17 @@ func dev_tdfEncryptCmd(cmd *cobra.Command, args []string) {
 	)
 
 	// Do the encryption
-	encrypted, err := h.EncryptBytes(tdfType, bytesSlice, attrValues, fileMimeType, kasURLPath, c.Flags.GetOptionalBool("ecdsa-binding"), assertions, wrappingKeyAlgorithm)
+	encrypted, err := h.EncryptBytes(
+		tdfType,
+		bytesSlice,
+		attrValues,
+		fileMimeType,
+		kasURLPath,
+		c.Flags.GetOptionalBool("ecdsa-binding"),
+		assertions,
+		wrappingKeyAlgorithm,
+		targetMode,
+	)
 	if err != nil {
 		cli.ExitWithError("Failed to encrypt", err)
 	}
@@ -187,6 +198,11 @@ func init() {
 		encryptCmd.GetDocFlag("kas-url-path").Name,
 		encryptCmd.GetDocFlag("kas-url-path").Default,
 		encryptCmd.GetDocFlag("kas-url-path").Description,
+	)
+	encryptCmd.Flags().String(
+		encryptCmd.GetDocFlag("target-mode").Name,
+		encryptCmd.GetDocFlag("target-mode").Default,
+		encryptCmd.GetDocFlag("target-mode").Description,
 	)
 	encryptCmd.Command.GroupID = TDF
 
