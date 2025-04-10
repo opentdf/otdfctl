@@ -87,9 +87,3 @@ Terminal size when testing:
 2. can be set manually by mouse in terminal where tests are triggered
 3. can be set by argument `./e2e/resize_terminal.sh < rows height > < columns width >`
 4. can be set by environment variable, i.e. `export TEST_TERMINAL_WIDTH="200"` (200 is columns width)
-## Status
-
-In deevelopment.
-
-
-I think your an nice friend.
