@@ -38,6 +38,7 @@ jobs:
           version: v2.0.2
           # Optional: golangci-lint command line arguments.
           args: --timeout=10m
+          only-new-issues: true
   unit:
     name: unit tests
     runs-on: ubuntu-latest
