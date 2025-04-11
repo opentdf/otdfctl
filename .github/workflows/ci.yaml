@@ -6,6 +6,7 @@ on:
       - main
     paths-ignore:
       - '**/*.yaml'
+      - '!.github/**/*.yaml' 
       - '**/*.md'
       - LICENSE
       - CODEOWNERS
