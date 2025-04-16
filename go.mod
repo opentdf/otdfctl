@@ -2,6 +2,8 @@ module github.com/opentdf/otdfctl
 
 go 1.23.0
 
+toolchain go1.24.2
+
 require (
 	github.com/adrg/frontmatter v0.2.0
 	github.com/charmbracelet/bubbles v0.21.0
@@ -17,7 +19,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/opentdf/platform/lib/flattening v0.1.3
 	github.com/opentdf/platform/lib/ocrypto v0.1.9
-	github.com/opentdf/platform/protocol/go v0.2.29
+	github.com/opentdf/platform/protocol/go v0.2.30-0.20250415154440-38838d764dc6
 	github.com/opentdf/platform/sdk v0.4.1
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/viper v1.19.0
