@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.20.1](https://github.com/opentdf/otdfctl/compare/v0.20.0...v0.20.1) (2025-04-17)
+
+
+### Bug Fixes
+
+* **ci:** ci job should run on changes to GHA ([#530](https://github.com/opentdf/otdfctl/issues/530)) ([1d296ca](https://github.com/opentdf/otdfctl/commit/1d296ca8fac889a6e776ad381df999a2fcf9d6ce))
+
 ## [0.20.0](https://github.com/opentdf/otdfctl/compare/v0.19.0...v0.20.0) (2025-04-08)
 
 
