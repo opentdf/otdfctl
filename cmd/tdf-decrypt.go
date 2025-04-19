@@ -15,6 +15,7 @@ import (
 var TDF = "tdf"
 
 var assertionVerification string
+var kasAllowList []string
 
 const TDF_MAX_FILE_SIZE = int64(10 * 1024 * 1024 * 1024) // 10 GB
 
@@ -25,6 +26,7 @@ func dev_tdfDecryptCmd(cmd *cobra.Command, args []string) {
 
 	output := c.Flags.GetOptionalString("out")
 	disableAssertionVerification := c.Flags.GetOptionalBool("no-verify-assertions")
+	ignoreAllowlist := c.Flags.GetOptionalBool("ignore-kas-allowlist")
 	sessionKeyAlgStr := c.Flags.GetOptionalString("session-key-algorithm")
 	var sessionKeyAlgorithm ocrypto.KeyType
 	switch sessionKeyAlgStr {
@@ -59,7 +61,14 @@ func dev_tdfDecryptCmd(cmd *cobra.Command, args []string) {
 		cli.ExitWithError("Must provide ONE of the following to decrypt: [file argument, stdin input]", errors.New("no input provided"))
 	}
 
-	decrypted, err := h.DecryptBytes(bytesToDecrypt, assertionVerification, disableAssertionVerification, sessionKeyAlgorithm)
+	decrypted, err := h.DecryptBytes(
+		bytesToDecrypt,
+		assertionVerification,
+		disableAssertionVerification,
+		sessionKeyAlgorithm,
+		kasAllowList,
+		ignoreAllowlist,
+	)
 	if err != nil {
 		cli.ExitWithError("Failed to decrypt file", err)
 	}
@@ -114,6 +123,18 @@ func init() {
 		decryptCmd.GetDocFlag("no-verify-assertions").Name,
 		decryptCmd.GetDocFlag("no-verify-assertions").DefaultAsBool(),
 		decryptCmd.GetDocFlag("no-verify-assertions").Description,
+	)
+	decryptCmd.Flags().Bool(
+		decryptCmd.GetDocFlag("ignore-kas-allowlist").Name,
+		decryptCmd.GetDocFlag("ignore-kas-allowlist").DefaultAsBool(),
+		decryptCmd.GetDocFlag("ignore-kas-allowlist").Description,
+	)
+	decryptCmd.Flags().StringSliceVarP(
+		&kasAllowList,
+		decryptCmd.GetDocFlag("kas-allowlist").Name,
+		decryptCmd.GetDocFlag("kas-allowlist").Shorthand,
+		nil,
+		decryptCmd.GetDocFlag("kas-allowlist").Description,
 	)
 
 	decryptCmd.Command.GroupID = TDF

@@ -131,19 +131,36 @@ func (h Handler) EncryptBytes(
 	}
 }
 
-func (h Handler) DecryptBytes(toDecrypt []byte, assertionVerificationKeysFile string, disableAssertionCheck bool, sessionKeyAlgorithm ocrypto.KeyType) (*bytes.Buffer, error) {
+func (h Handler) DecryptBytes(
+	toDecrypt []byte,
+	assertionVerificationKeysFile string,
+	disableAssertionCheck bool,
+	sessionKeyAlgorithm ocrypto.KeyType,
+	kasAllowList []string,
+	ignoreAllowlist bool,
+) (*bytes.Buffer, error) {
 	out := &bytes.Buffer{}
 	pt := io.Writer(out)
 	ec := bytes.NewReader(toDecrypt)
 	switch sdk.GetTdfType(ec) {
 	case sdk.Nano:
-		if _, err := h.sdk.ReadNanoTDF(pt, ec); err != nil {
+		opts := []sdk.NanoTDFReaderOption{
+			sdk.WithNanoIgnoreAllowlist(ignoreAllowlist),
+		}
+		if kasAllowList != nil {
+			opts = append(opts, sdk.WithNanoKasAllowlist(kasAllowList))
+		}
+		if _, err := h.sdk.ReadNanoTDF(pt, ec, opts...); err != nil {
 			return nil, err
 		}
 	case sdk.Standard:
 		opts := []sdk.TDFReaderOption{
 			sdk.WithDisableAssertionVerification(disableAssertionCheck),
-			sdk.WithSessionKeyType(sessionKeyAlgorithm)}
+			sdk.WithSessionKeyType(sessionKeyAlgorithm),
+			sdk.WithIgnoreAllowlist(ignoreAllowlist)}
+		if kasAllowList != nil {
+			opts = append(opts, sdk.WithKasAllowlist(kasAllowList))
+		}
 		var assertionVerificationKeys sdk.AssertionVerificationKeys
 		if assertionVerificationKeysFile != "" {
 			// read the file
