@@ -25,6 +25,10 @@ command:
     - name: with-assertion-verification-keys
       description: >
         EXPERIMENTAL: path to JSON file of keys to verify signed assertions. See examples for more information.
+    - name: kas-allowlist
+      description: A custom allow list of comma-seperated KAS Urls, e.g. `https://example.com/kas,http://localhost:8080`. If none specified, the platform will use the list of KASes in the KAS registry.
+    - name: ignore-kas-allowlist
+      description: An option to ignore the KAS allowlist. **WARNING:** Not using an allowlist may expose you to potential security risks, as untrusted KAS URLs could be used. 
 ---
 
 Decrypt a Trusted Data Format (TDF) file and output the contents to stdout or a file in the current working directory.
