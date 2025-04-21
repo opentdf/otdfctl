@@ -6,6 +6,7 @@ on:
       - main
     paths-ignore:
       - '**/*.yaml'
+      - '!.github/**/*.yaml' 
       - '**/*.md'
       - LICENSE
       - CODEOWNERS
@@ -32,11 +33,12 @@ jobs:
           go-version-file: 'go.mod'
           cache: false
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@971e284b6050e8a5849b72094c50ab08da042db8
+        uses: golangci/golangci-lint-action@1481404843c368bc19ca9406f87d6e0fc97bdcfd
         with:
-          version: v1.60.3
+          version: v2.0.2
           # Optional: golangci-lint command line arguments.
-          args: --timeout=10m --out-format=colored-line-number
+          args: --timeout=10m
+          only-new-issues: true
   unit:
     name: unit tests
     runs-on: ubuntu-latest
@@ -60,3 +62,13 @@ jobs:
       - uses: opentdf/otdfctl/e2e@main
         with:
           otdfctl-ref: ${{ github.event.pull_request.head.sha }}
+
+  platform-xtest:
+    needs:
+      - golangci
+      - unit
+    uses: opentdf/tests/.github/workflows/xtest.yml@main
+    with:
+      otdfctl-ref: ${{ github.ref }} lts
+      platform-ref: main lts
+      focus-sdk: go
