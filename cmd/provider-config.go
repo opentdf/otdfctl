@@ -1,18 +1,11 @@
 package cmd
 
 import (
-	"encoding/json"
-
 	"github.com/evertras/bubble-table/table"
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/spf13/cobra"
 )
-
-func isJSON(str string) bool {
-	var js json.RawMessage
-	return json.Unmarshal([]byte(str), &js) == nil
-}
 
 func key_createProviderConfig(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
