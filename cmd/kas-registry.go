@@ -14,7 +14,9 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
-var policy_kasRegistryCmd *cobra.Command
+var (
+	policy_kasRegistryCmd = man.Docs.GetCommand("policy/kas-registry")
+)
 
 func policy_getKeyAccessRegistry(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
@@ -353,9 +355,6 @@ func init() {
 		deleteDoc.GetDocFlag("force").Description,
 	)
 
-	doc := man.Docs.GetCommand("policy/kas-registry",
-		man.WithSubcommands(createDoc, getDoc, listDoc, updateDoc, deleteDoc),
-	)
-	policy_kasRegistryCmd = &doc.Command
-	policyCmd.AddCommand(policy_kasRegistryCmd)
+	policy_kasRegistryCmd.AddSubcommands(createDoc, getDoc, listDoc, updateDoc, deleteDoc)
+	policyCmd.AddCommand(&policy_kasRegistryCmd.Command)
 }

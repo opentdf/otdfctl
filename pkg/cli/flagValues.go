@@ -81,6 +81,11 @@ func (f flagHelper) GetRequiredInt32(flag string) int32 {
 	return v
 }
 
+func (f flagHelper) GetOptionalInt32(flag string) int32 {
+	v, _ := f.cmd.Flags().GetInt32(flag)
+	return v
+}
+
 func (f flagHelper) GetOptionalBool(flag string) bool {
 	v, _ := f.cmd.Flags().GetBool(flag)
 	return v
