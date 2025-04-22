@@ -29,6 +29,9 @@ command:
 
 Public keys can be stored as either `remote` or `cached` under the following JSON structure.
 
+The optional `name` of a registered Key Access Server is normalized to lower case and may contain
+hyphens or underscores between other alphanumeric characters.
+
 ### Remote
 
 The value passed to the `--public-key-remote` flag puts the hosted location where the public key
