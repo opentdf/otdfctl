@@ -17,6 +17,10 @@ func policy_getAction(cmd *cobra.Command, args []string) {
 	id := c.Flags.GetOptionalID("id")
 	name := c.Flags.GetOptionalString("name")
 
+	if id == "" && name == "" {
+		cli.ExitWithError("Either 'id' or 'name' must be provided", nil)
+	}
+
 	action, err := h.GetAction(cmd.Context(), id, name)
 	if err != nil {
 		identifier := fmt.Sprintf("id: %s", id)
@@ -49,7 +53,7 @@ func policy_listActions(cmd *cobra.Command, args []string) {
 
 	stdActions, customActions, page, err := h.ListActions(cmd.Context(), limit, offset)
 	if err != nil {
-		cli.ExitWithError("Failed to get subject mappings", err)
+		cli.ExitWithError("Failed to list actions", err)
 	}
 	t := cli.NewTable(
 		cli.NewUUIDColumn(),
@@ -122,7 +126,7 @@ func policy_deleteAction(cmd *cobra.Command, args []string) {
 
 	err = h.DeleteAction(ctx, id)
 	if err != nil {
-		errMsg := fmt.Sprintf("Failed to delete subject mapping (%s)", id)
+		errMsg := fmt.Sprintf("Failed to delete action (%s)", id)
 		cli.ExitWithError(errMsg, err)
 	}
 	rows := [][]string{{"Id", id}, {"Name", action.GetName()}}
