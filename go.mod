@@ -20,7 +20,7 @@ require (
 	github.com/opentdf/platform/lib/flattening v0.1.3
 	github.com/opentdf/platform/lib/ocrypto v0.1.9
 	github.com/opentdf/platform/protocol/go v0.3.0
-	github.com/opentdf/platform/sdk v0.4.3-0.20250418202813-a683e93bd75e
+	github.com/opentdf/platform/sdk v0.4.3-0.20250423160147-e1e6bd629d4f
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.10.0
