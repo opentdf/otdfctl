@@ -2,6 +2,7 @@
 title: Manage Provider Configurations
 command:
   name: provider-config
+  hidden: true
   aliases:
     - pc
     - provider-configs

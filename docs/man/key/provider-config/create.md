@@ -25,3 +25,7 @@ Creates a new provider config with the specified name and configuration.
 ```shell
 otdfctl key provider-config create --name <name> --config <json-config>
 ```
+
+```shell
+otdfctl key provider-config create --name aws --config `{"region": "us-west-2"}`
+```

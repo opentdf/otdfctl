@@ -77,6 +77,7 @@ func policy_getAttribute(cmd *cobra.Command, args []string) {
 		{"Rule", a.Rule},
 		{"Values", cli.CommaSeparated(a.Values)},
 		{"Namespace", a.Namespace},
+		{"Associated Keys", cli.CommaSeparated(a.KeyIds)},
 	}
 	if mdRows := getMetadataRows(attr.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
@@ -300,6 +301,54 @@ func policy_unsafeDeleteAttribute(cmd *cobra.Command, args []string) {
 	}
 }
 
+func policy_assignKASKeyToAttribute(cmd *cobra.Command, args []string) {
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
+	defer h.Close()
+
+	attribute := c.Flags.GetRequiredString("attribute")
+	keyId := c.Flags.GetRequiredID("keyId")
+
+	// Get the attribute to show meaningful information in case of error
+	attrKey, err := h.AssignKeyToAttribute(c.Context(), attribute, keyId)
+	if err != nil {
+		errMsg := fmt.Sprintf("Failed to assign key: (%s) to attribue: (%s)", keyId, attribute)
+		cli.ExitWithError(errMsg, err)
+	}
+
+	// Prepare and display the result
+	rows := [][]string{
+		{"Attribute ID", attrKey.GetAttributeId()},
+		{"Key ID", attrKey.GetKeyId()},
+	}
+	t := cli.NewTabular(rows...)
+	HandleSuccess(cmd, attribute, t, attrKey)
+}
+
+func policy_removeKASKeyFromAttribute(cmd *cobra.Command, args []string) {
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
+	defer h.Close()
+
+	attribute := c.Flags.GetRequiredString("attribute")
+	keyId := c.Flags.GetRequiredID("keyId")
+
+	err := h.RemoveKeyFromAttribute(c.Context(), attribute, keyId)
+	if err != nil {
+		errMsg := fmt.Sprintf("Failed to remove key (%s) from attribute (%s)", keyId, attribute)
+		cli.ExitWithError(errMsg, err)
+	}
+
+	// Prepare and display the result
+	rows := [][]string{
+		{"Removed", "true"},
+		{"Attribute", attribute},
+		{"Key ID", keyId},
+	}
+	t := cli.NewTabular(rows...)
+	HandleSuccess(cmd, attribute, t, nil)
+}
+
 func init() {
 	// Create an attribute
 	createDoc := man.Docs.GetCommand("policy/attributes/create",
@@ -438,7 +487,43 @@ func init() {
 		unsafeUpdateCmd.GetDocFlag("values-order").Description,
 	)
 
+	keyCmd := man.Docs.GetCommand("policy/attributes/key")
+
+	// Assign KAS key to attribute
+	assignKasKeyCmd := man.Docs.GetCommand("policy/attributes/key/assign",
+		man.WithRun(policy_assignKASKeyToAttribute),
+	)
+	assignKasKeyCmd.Flags().StringP(
+		assignKasKeyCmd.GetDocFlag("attribute").Name,
+		assignKasKeyCmd.GetDocFlag("attribute").Shorthand,
+		assignKasKeyCmd.GetDocFlag("attribute").Default,
+		assignKasKeyCmd.GetDocFlag("attribute").Description,
+	)
+	assignKasKeyCmd.Flags().StringP(
+		assignKasKeyCmd.GetDocFlag("keyId").Name,
+		assignKasKeyCmd.GetDocFlag("keyId").Shorthand,
+		assignKasKeyCmd.GetDocFlag("keyId").Default,
+		assignKasKeyCmd.GetDocFlag("keyId").Description,
+	)
+
+	removeKasKeyCmd := man.Docs.GetCommand("policy/attributes/key/remove",
+		man.WithRun(policy_removeKASKeyFromAttribute),
+	)
+	removeKasKeyCmd.Flags().StringP(
+		removeKasKeyCmd.GetDocFlag("attribute").Name,
+		removeKasKeyCmd.GetDocFlag("attribute").Shorthand,
+		removeKasKeyCmd.GetDocFlag("attribute").Default,
+		removeKasKeyCmd.GetDocFlag("attribute").Description,
+	)
+	removeKasKeyCmd.Flags().StringP(
+		removeKasKeyCmd.GetDocFlag("keyId").Name,
+		removeKasKeyCmd.GetDocFlag("keyId").Shorthand,
+		removeKasKeyCmd.GetDocFlag("keyId").Default,
+		removeKasKeyCmd.GetDocFlag("keyId").Description,
+	)
+
+	keyCmd.AddSubcommands(assignKasKeyCmd, removeKasKeyCmd)
 	unsafeCmd.AddSubcommands(reactivateCmd, deleteCmd, unsafeUpdateCmd)
-	policy_attributesCmd.AddSubcommands(createDoc, getDoc, listDoc, updateDoc, deactivateDoc, unsafeCmd)
+	policy_attributesCmd.AddSubcommands(createDoc, getDoc, listDoc, updateDoc, deactivateDoc, unsafeCmd, keyCmd)
 	policyCmd.AddCommand(&policy_attributesCmd.Command)
 }
