@@ -53,8 +53,8 @@ func policy_listActions(cmd *cobra.Command, args []string) {
 	}
 	t := cli.NewTable(
 		cli.NewUUIDColumn(),
-		table.NewFlexColumn("action_type", "Action Type", cli.FlexColumnWidthFour),
 		table.NewFlexColumn("name", "Name", cli.FlexColumnWidthFour),
+		table.NewFlexColumn("action_type", "Action Type", cli.FlexColumnWidthFour),
 	)
 	rows := []table.Row{}
 	for _, a := range stdActions {
@@ -171,6 +171,12 @@ func init() {
 		getDoc.GetDocFlag("id").Default,
 		getDoc.GetDocFlag("id").Description,
 	)
+	getDoc.Flags().StringP(
+		getDoc.GetDocFlag("name").Name,
+		getDoc.GetDocFlag("name").Shorthand,
+		getDoc.GetDocFlag("name").Default,
+		getDoc.GetDocFlag("name").Description,
+	)
 
 	listDoc := man.Docs.GetCommand("policy/actions/list",
 		man.WithRun(policy_listActions),
@@ -181,34 +187,10 @@ func init() {
 		man.WithRun(policy_createAction),
 	)
 	createDoc.Flags().StringP(
-		createDoc.GetDocFlag("attribute-value-id").Name,
-		createDoc.GetDocFlag("attribute-value-id").Shorthand,
-		createDoc.GetDocFlag("attribute-value-id").Default,
-		createDoc.GetDocFlag("attribute-value-id").Description,
-	)
-	createDoc.Flags().StringSliceVarP(
-		&actionsStandard,
-		createDoc.GetDocFlag("action-standard").Name,
-		createDoc.GetDocFlag("action-standard").Shorthand,
-		[]string{},
-		createDoc.GetDocFlag("action-standard").Description,
-	)
-	createDoc.Flags().StringSliceVarP(
-		&actionsCustom,
-		createDoc.GetDocFlag("action-custom").Name,
-		createDoc.GetDocFlag("action-custom").Shorthand,
-		[]string{},
-		createDoc.GetDocFlag("action-custom").Description,
-	)
-	createDoc.Flags().String(
-		createDoc.GetDocFlag("subject-condition-set-id").Name,
-		createDoc.GetDocFlag("subject-condition-set-id").Default,
-		createDoc.GetDocFlag("subject-condition-set-id").Description,
-	)
-	createDoc.Flags().String(
-		createDoc.GetDocFlag("subject-condition-set-new").Name,
-		createDoc.GetDocFlag("subject-condition-set-new").Default,
-		createDoc.GetDocFlag("subject-condition-set-new").Description,
+		createDoc.GetDocFlag("name").Name,
+		createDoc.GetDocFlag("name").Shorthand,
+		createDoc.GetDocFlag("name").Default,
+		createDoc.GetDocFlag("name").Description,
 	)
 	injectLabelFlags(&createDoc.Command, false)
 
@@ -221,24 +203,11 @@ func init() {
 		updateDoc.GetDocFlag("id").Default,
 		updateDoc.GetDocFlag("id").Description,
 	)
-	updateDoc.Flags().StringSliceVarP(
-		&actionsStandard,
-		updateDoc.GetDocFlag("action-standard").Name,
-		updateDoc.GetDocFlag("action-standard").Shorthand,
-		[]string{},
-		updateDoc.GetDocFlag("action-standard").Description,
-	)
-	updateDoc.Flags().StringSliceVarP(
-		&actionsCustom,
-		updateDoc.GetDocFlag("action-custom").Name,
-		updateDoc.GetDocFlag("action-custom").Shorthand,
-		[]string{},
-		updateDoc.GetDocFlag("action-custom").Description,
-	)
-	updateDoc.Flags().String(
-		updateDoc.GetDocFlag("subject-condition-set-id").Name,
-		updateDoc.GetDocFlag("subject-condition-set-id").Default,
-		updateDoc.GetDocFlag("subject-condition-set-id").Description,
+	updateDoc.Flags().StringP(
+		updateDoc.GetDocFlag("name").Name,
+		updateDoc.GetDocFlag("name").Shorthand,
+		updateDoc.GetDocFlag("name").Default,
+		updateDoc.GetDocFlag("name").Description,
 	)
 	injectLabelFlags(&updateDoc.Command, true)
 
