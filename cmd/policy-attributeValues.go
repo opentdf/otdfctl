@@ -226,6 +226,51 @@ func policy_unsafeDeleteAttributeValue(cmd *cobra.Command, args []string) {
 	}
 }
 
+func policy_assignKASKeyToAttributeValue(cmd *cobra.Command, args []string) {
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
+	defer h.Close()
+
+	value := c.Flags.GetRequiredString("value")
+	keyId := c.Flags.GetRequiredID("keyId")
+
+	attrKey, err := h.AssignKeyToAttributeValue(c.Context(), value, keyId)
+	if err != nil {
+		errMsg := fmt.Sprintf("Failed to assign key: (%s) to attribute value: (%s)", keyId, value)
+		cli.ExitWithError(errMsg, err)
+	}
+
+	rows := [][]string{
+		{"Value ID", attrKey.GetValueId()},
+		{"Key ID", attrKey.GetKeyId()},
+	}
+	t := cli.NewTabular(rows...)
+	HandleSuccess(cmd, value, t, attrKey)
+}
+
+func policy_removeKASKeyFromAttributeValue(cmd *cobra.Command, args []string) {
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
+	defer h.Close()
+
+	value := c.Flags.GetRequiredString("value")
+	keyId := c.Flags.GetRequiredID("keyId")
+
+	err := h.RemoveKeyFromAttributeValue(c.Context(), value, keyId)
+	if err != nil {
+		errMsg := fmt.Sprintf("Failed to remove key (%s) from attribute value (%s)", keyId, value)
+		cli.ExitWithError(errMsg, err)
+	}
+
+	rows := [][]string{
+		{"Removed", "true"},
+		{"Value", value},
+		{"Key ID", keyId},
+	}
+	t := cli.NewTabular(rows...)
+	HandleSuccess(cmd, value, t, nil)
+}
+
 func init() {
 	createCmd := man.Docs.GetCommand("policy/attributes/values/create",
 		man.WithRun(policy_createAttributeValue),
@@ -291,7 +336,41 @@ func init() {
 		deactivateCmd.GetDocFlag("id").Default,
 		deactivateCmd.GetDocFlag("id").Description,
 	)
-	// unsafe
+
+	keyCmd := man.Docs.GetCommand("policy/attributes/values/key")
+
+	assignKasKeyCmd := man.Docs.GetCommand("policy/attributes/values/key/assign",
+		man.WithRun(policy_assignKASKeyToAttributeValue),
+	)
+	assignKasKeyCmd.Flags().StringP(
+		assignKasKeyCmd.GetDocFlag("value").Name,
+		assignKasKeyCmd.GetDocFlag("value").Shorthand,
+		assignKasKeyCmd.GetDocFlag("value").Default,
+		assignKasKeyCmd.GetDocFlag("value").Description,
+	)
+	assignKasKeyCmd.Flags().StringP(
+		assignKasKeyCmd.GetDocFlag("keyId").Name,
+		assignKasKeyCmd.GetDocFlag("keyId").Shorthand,
+		assignKasKeyCmd.GetDocFlag("keyId").Default,
+		assignKasKeyCmd.GetDocFlag("keyId").Description,
+	)
+
+	removeKasKeyCmd := man.Docs.GetCommand("policy/attributes/values/key/remove",
+		man.WithRun(policy_removeKASKeyFromAttributeValue),
+	)
+	removeKasKeyCmd.Flags().StringP(
+		removeKasKeyCmd.GetDocFlag("value").Name,
+		removeKasKeyCmd.GetDocFlag("value").Shorthand,
+		removeKasKeyCmd.GetDocFlag("value").Default,
+		removeKasKeyCmd.GetDocFlag("value").Description,
+	)
+	removeKasKeyCmd.Flags().StringP(
+		removeKasKeyCmd.GetDocFlag("keyId").Name,
+		removeKasKeyCmd.GetDocFlag("keyId").Shorthand,
+		removeKasKeyCmd.GetDocFlag("keyId").Default,
+		removeKasKeyCmd.GetDocFlag("keyId").Description,
+	)
+
 	unsafeReactivateCmd := man.Docs.GetCommand("policy/attributes/values/unsafe/reactivate",
 		man.WithRun(policy_unsafeReactivateAttributeValue),
 	)
@@ -335,19 +414,26 @@ func init() {
 		unsafeCmd.GetDocFlag("force").Description,
 	)
 
+	keyCmd.AddSubcommands(assignKasKeyCmd, removeKasKeyCmd)
 	unsafeCmd.AddSubcommands(unsafeReactivateCmd, unsafeDeleteCmd, unsafeUpdateCmd)
 	doc := man.Docs.GetCommand("policy/attributes/values",
-		man.WithSubcommands(createCmd, getCmd, listCmd, updateCmd, deactivateCmd, unsafeCmd),
+		man.WithSubcommands(createCmd, getCmd, listCmd, updateCmd, deactivateCmd, unsafeCmd, keyCmd),
 	)
 	policy_attributeValuesCmd = &doc.Command
 	policy_attributesCmd.AddCommand(policy_attributeValuesCmd)
 }
 
 func handleValueSuccess(cmd *cobra.Command, v *policy.Value) {
+	keyIds := make([]string, len(v.GetKeys()))
+	for i, k := range v.GetKeys() {
+		keyIds[i] = k.GetId()
+	}
+
 	rows := [][]string{
 		{"Id", v.GetId()},
 		{"FQN", v.GetFqn()},
 		{"Value", v.GetValue()},
+		{"Associated Keys", cli.CommaSeparated(keyIds)},
 	}
 	if mdRows := getMetadataRows(v.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)

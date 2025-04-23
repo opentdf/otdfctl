@@ -11,6 +11,10 @@ setup_file() {
 
     export NS_NAME="testing-attr.co"
     export NS_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes namespaces create -n "$NS_NAME" --json | jq -r '.id')
+
+    export KAS_URI="https://test-kas-for-attributes.com"
+    export KAS_REG_ID=$(./otdfctl $HOST $WITH_CREDS policy kas-registry create --uri "$KAS_URI" --public-key-remote 'https://test-kas-for-attributes.com/pub_key' --json | jq -r '.id')
+    export KAS_KEY_ID=$(./otdfctl $HOST $WITH_CREDS policy kas-registry key create --kasId "$KAS_REG_ID" --keyId "test-key-for-attr" --alg "rsa:2048" --mode "remote" --publicKeyCtx '{"pubKey": "key"}' --json | jq -r '.id')
 }
 
 # always create a randomly named attribute
@@ -35,9 +39,10 @@ teardown() {
 teardown_file() {
   # remove the namespace
   ./otdfctl $HOST $WITH_CREDS policy attributes namespaces unsafe delete --id "$NS_ID" --force
+  ./otdfctl $HOST $WITH_CREDS policy kas-registry delete --id "$KAS_REG_ID" --force
 
   # clear out all test env vars
-  unset HOST WITH_CREDS NS_NAME NS_ID ATTR_NAME_RANDOM
+  unset HOST WITH_CREDS NS_NAME NS_ID ATTR_NAME_RANDOM KAS_REG_ID KAS_KEY_ID KAS_URI
 }
 
 @test "Create an attribute - With Values" {
@@ -205,4 +210,148 @@ teardown_file() {
     assert_success
     [ "$(echo "$output" | jq -r '.values[0].value')" = "val2" ]
     [ "$(echo "$output" | jq -r '.values[1].value')" = "val1" ]
+}
+
+@test "Assign/Remove KAS key from attribute definition - With Attribute Id" {
+  # Test assigning KAS key to attribute
+  run_otdfctl_attr key assign --attribute "$ATTR_ID" --keyId "$KAS_KEY_ID" --json
+    assert_success
+    [ "$(echo "$output" | jq -r '.attribute_id')" = "$ATTR_ID" ]
+    [ "$(echo "$output" | jq -r '.key_id')" = "$KAS_KEY_ID" ]
+  
+  run_otdfctl_attr get --id "$ATTR_ID" --json
+    assert_success
+    [ "$(echo "$output" | jq -r '.id')" = "$ATTR_ID" ]
+    [ "$(echo "$output" | jq -r '.keys[0].id')" = "$KAS_KEY_ID" ]
+
+  # Assign the key to the attribute
+  run_otdfctl_attr key remove --attribute "$ATTR_ID" --keyId "$KAS_KEY_ID"
+    assert_success
+  
+  run_otdfctl_attr get --id "$ATTR_ID" --json
+    assert_success
+    [ "$(echo "$output" | jq -r '.id')" = "$ATTR_ID" ]
+    [ "$(echo "$output" | jq -r '.keys | length')" -eq 0 ]
+}
+
+@test "Assign/Remove KAS key from attribute definition - With Attribute FQN" {
+  # Test assigning KAS key to attribute
+  # Get the attribute by ID to retrieve its FQN
+  run_otdfctl_attr get --id "$ATTR_ID" --json
+    assert_success
+    [ "$(echo "$output" | jq -r '.keys | length')" -eq 0 ]
+    ATTR_FQN=$(echo "$output" | jq -r '.fqn')
+
+  run_otdfctl_attr key assign --attribute "$ATTR_FQN" --keyId "$KAS_KEY_ID" --json
+    assert_success
+    [ "$(echo "$output" | jq -r '.attribute_id')" = "$ATTR_ID" ]
+    [ "$(echo "$output" | jq -r '.key_id')" = "$KAS_KEY_ID" ]
+  
+  run_otdfctl_attr get --id "$ATTR_ID" --json
+    assert_success
+    [ "$(echo "$output" | jq -r '.id')" = "$ATTR_ID" ]
+    [ "$(echo "$output" | jq -r '.keys[0].id')" = "$KAS_KEY_ID" ]
+
+  # Assign the key to the attribute
+  run_otdfctl_attr key remove --attribute "$ATTR_FQN" --keyId "$KAS_KEY_ID"
+    assert_success
+  
+  run_otdfctl_attr get --id "$ATTR_ID" --json
+    assert_success
+    [ "$(echo "$output" | jq -r '.id')" = "$ATTR_ID" ]
+    [ "$(echo "$output" | jq -r '.keys | length')" -eq 0 ]
+}
+
+@test "Assign/Remove KAS key from attribute value - With Value Id" {
+  # Create attribute with a value
+  run_otdfctl_attr create --name attr-with-value-2 --namespace "$NS_ID" --rule HIERARCHY -v test-value --json
+    assert_success
+    ATTR_WITH_VALUE_ID=$(echo "$output" | jq -r '.id')
+    VALUE_ID=$(echo "$output" | jq -r '.values[0].id')
+  
+  # Test assigning KAS key to attribute value
+  run_otdfctl_attr values key assign --value "$VALUE_ID" --keyId "$KAS_KEY_ID" --json
+    assert_success
+    [ "$(echo "$output" | jq -r '.value_id')" = "$VALUE_ID" ]
+    [ "$(echo "$output" | jq -r '.key_id')" = "$KAS_KEY_ID" ]
+  
+  run_otdfctl_attr values get --id "$VALUE_ID" --json
+    assert_success
+    [ "$(echo "$output" | jq -r '.id')" = "$VALUE_ID" ]
+    [ "$(echo "$output" | jq -r '.keys[0].id')" = "$KAS_KEY_ID" ]
+
+  # Remove key from attribute value
+  run_otdfctl_attr values key remove --value "$VALUE_ID" --keyId "$KAS_KEY_ID"
+    assert_success
+  
+  run_otdfctl_attr values get --id "$VALUE_ID" --json
+    assert_success
+    [ "$(echo "$output" | jq -r '.id')" = "$VALUE_ID" ]
+    [ "$(echo "$output" | jq -r '.keys | length')" -eq 0 ]
+
+  ./otdfctl $HOST $WITH_CREDS policy attributes unsafe delete --force --id "$ATTR_WITH_VALUE_ID"
+}
+
+@test "Assign/Remove KAS key from attribute value - With Value FQN" {
+  # Create attribute with a value
+  run_otdfctl_attr create --name attr-with-value-2 --namespace "$NS_ID" --rule HIERARCHY -v test-value --json
+    assert_success
+    ATTR_WITH_VALUE_ID=$(echo "$output" | jq -r '.id')
+    VALUE_FQN=$(echo "$output" | jq -r '.values[0].fqn')
+    VALUE_ID=$(echo "$output" | jq -r '.values[0].id')
+  
+  # Assign with value FQN
+  run_otdfctl_attr values key assign --value "$VALUE_FQN" --keyId "$KAS_KEY_ID" --json
+    assert_success
+    [ "$(echo "$output" | jq -r '.value_id')" = "$VALUE_ID" ]
+    [ "$(echo "$output" | jq -r '.key_id')" = "$KAS_KEY_ID" ]
+  
+  run_otdfctl_attr values get --id "$VALUE_ID" --json
+    assert_success
+    [ "$(echo "$output" | jq -r '.id')" = "$VALUE_ID" ]
+    [ "$(echo "$output" | jq -r '.keys[0].id')" = "$KAS_KEY_ID" ]
+
+  # Remove key from attribute value by FQN
+  run_otdfctl_attr values key remove --value "$VALUE_FQN" --keyId "$KAS_KEY_ID"
+    assert_success
+  
+  run_otdfctl_attr values get --id "$VALUE_ID" --json
+    assert_success
+    [ "$(echo "$output" | jq -r '.id')" = "$VALUE_ID" ]
+    [ "$(echo "$output" | jq -r '.keys | length')" -eq 0 ]
+
+  ./otdfctl $HOST $WITH_CREDS policy attributes unsafe delete --force --id "$ATTR_WITH_VALUE_ID"
+}
+
+@test "KAS key assignment error handling - attribute" {
+  
+  # Test with non-existent attribute ID
+  run_otdfctl_attr key assign --attribute "00000000-0000-0000-0000-000000000000" --keyId "$KAS_KEY_ID"
+    assert_failure
+    assert_output --partial "error"
+
+  # Test with missing required flags
+  run_otdfctl_attr key assign --attribute "$ATTR_ID"
+    assert_failure
+    assert_output --partial "Flag '--keyId' is required"
+
+  run_otdfctl_attr key assign --keyId "$KAS_KEY_ID"
+    assert_failure
+    assert_output --partial "Flag '--attribute' is required"
+}
+
+@test "KAS key assignment error handling - attribute value" {
+  # Test with non-existent value ID
+  run_otdfctl_attr values key assign --value "00000000-0000-0000-0000-000000000000" --keyId "$KAS_KEY_ID"
+    assert_failure
+    assert_output --partial "error"
+
+  # Test with missing required flags
+  run_otdfctl_attr values key assign --keyId "$KAS_KEY_ID"
+    assert_failure
+    assert_output --partial "Flag '--value' is required"
+
+  run_otdfctl_attr values key assign --value "00000000-0000-0000-0000-000000000000"
+    assert_failure
+    assert_output --partial "Flag '--keyId' is required"
 }

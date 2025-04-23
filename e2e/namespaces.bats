@@ -13,6 +13,10 @@ setup_file() {
     export NS_NAME_UPDATE="updated-test-ns.net"
     export NS_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes namespaces create -n "$NS_NAME" --json | jq -r '.id')
     export NS_ID_FLAG="--id $NS_ID"
+
+    export KAS_URI="https://test-kas-for-namespace.com"
+    export KAS_REG_ID=$(./otdfctl $HOST $WITH_CREDS policy kas-registry create --uri "$KAS_URI" --public-key-remote 'https://test-kas-for-namespace.com/pub_key' --json | jq -r '.id')
+    export KAS_KEY_ID=$(./otdfctl $HOST $WITH_CREDS policy kas-registry key create --kasId "$KAS_REG_ID" --keyId test-key-for-namespace --alg "rsa:2048" --mode "remote" --publicKeyCtx  '{"pubKey":"key"}' --json | jq -r '.id')
 }
 
 setup() {
@@ -26,8 +30,11 @@ setup() {
 }
 
 teardown_file() {
+  ./otdfctl $HOST $WITH_CREDS policy attributes namespace unsafe delete --id "$NS_ID" --force
+  ./otdfctl $HOST $WITH_CREDS policy kas-registry delete --id "$KAS_REG_ID" --force
+
   # clear out all test env vars
-  unset HOST WITH_CREDS NS_NAME NS_FQN NS_ID NS_ID_FLAG
+  unset HOST WITH_CREDS NS_NAME NS_FQN NS_ID NS_ID_FLAG KAS_REG_ID KAS_KEY_ID KAS_URI
 }
 
 @test "Create a namespace - Good" {
@@ -129,6 +136,73 @@ teardown_file() {
   run_otdfctl_ns get "$NS_ID_FLAG"
   assert_line --regexp "Name.*$NS_NAME_UPDATE"
   refute_output --regexp "Name.*$NS_NAME"
+}
+
+
+@test "Assign/Remove KAS key from namespace - With Namespace ID" {
+  run_otdfctl_ns key assign --namespace "$NS_ID" --keyId "$KAS_KEY_ID" --json
+    assert_success
+    [ "$(echo "$output" | jq -r '.namespace_id')" = "$NS_ID" ]
+    [ "$(echo "$output" | jq -r '.key_id')" = "$KAS_KEY_ID" ]
+
+  run_otdfctl_ns get --id "$NS_ID" --json
+    assert_success
+    [ "$(echo "$output" | jq -r '.id')" = "$NS_ID" ]
+    [ "$(echo "$output" | jq -r '.keys[0].id')" = "$KAS_KEY_ID" ]
+
+  
+  run_otdfctl_ns key remove --namespace "$NS_ID" --keyId "$KAS_KEY_ID" --json
+    assert_success
+  
+  run_otdfctl_ns get --id "$NS_ID" --json
+    assert_success
+    [ "$(echo "$output" | jq -r '.id')" = "$NS_ID" ]
+    [ "$(echo "$output" | jq -r '.keys | length')" -eq 0 ]
+}
+
+@test "Assign/Remove KAS key from namespace - With Namespace FQN" {
+  run_otdfctl_ns get --id "$NS_ID" --json
+    assert_success
+    [ "$(echo "$output" | jq -r '.id')" = "$NS_ID" ]
+    [ "$(echo "$output" | jq -r '.keys | length')" -eq 0 ]
+    NS_FQN=$(echo "$output" | jq -r '.fqn')
+
+
+  run_otdfctl_ns key assign --namespace "$NS_FQN" --keyId "$KAS_KEY_ID" --json
+    assert_success
+    [ "$(echo "$output" | jq -r '.namespace_id')" = "$NS_ID" ]
+    [ "$(echo "$output" | jq -r '.key_id')" = "$KAS_KEY_ID" ]
+
+  run_otdfctl_ns get --id "$NS_ID" --json
+    assert_success
+    [ "$(echo "$output" | jq -r '.id')" = "$NS_ID" ]
+    [ "$(echo "$output" | jq -r '.keys[0].id')" = "$KAS_KEY_ID" ]
+
+  
+  run_otdfctl_ns key remove --namespace "$NS_ID" --keyId "$KAS_KEY_ID" --json
+    assert_success
+  
+  run_otdfctl_ns get --id "$NS_ID" --json
+    assert_success
+    [ "$(echo "$output" | jq -r '.id')" = "$NS_ID" ]
+    [ "$(echo "$output" | jq -r '.keys | length')" -eq 0 ]
+}
+
+
+@test "KAS key assignment error handling - namespace" {
+  # Test with non-existent namespace ID
+  run_otdfctl_ns key assign --namespace "00000000-0000-0000-0000-000000000000" --keyId "$KAS_KEY_ID"
+    assert_failure
+    assert_output --partial "error"
+
+  # Test with missing required flags
+  run_otdfctl_ns key assign --namespace "$NS_ID"
+    assert_failure
+    assert_output --partial "Flag '--keyId' is required"
+
+  run_otdfctl_ns key assign --keyId "$KAS_KEY_ID"
+    assert_failure
+    assert_output --partial "Flag '--namespace' is required"
 }
 
 @test "Deactivate namespace" {

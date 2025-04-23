@@ -18,5 +18,5 @@ Retrieves a provider config by its ID or name.
 ## Examples
 
 ```shell
-otdfctl key provider-config get --id <provider-config-id>
+otdfctl key provider-config get --id '04ba179c-2f77-4e0d-90c5-fe4d1c9aa3f7'
 ```

@@ -40,7 +40,7 @@ for encrypting and decrypting data keys.
 ## Examples
 
 ```shell
-otdfctl key create --kasId 891cfe85-b381-4f85-9699-5f7dbfe2a9ab --keyId "aws-key" --algorithm 1 --mode "remote" --wrappingKey
+otdfctl key create --kasId 891cfe85-b381-4f85-9699-5f7dbfe2a9ab --keyId "aws-key" --algorithm 1 --mode "remote"
 ```
 
 1. The `"alg"` specifies the key algorithm:
