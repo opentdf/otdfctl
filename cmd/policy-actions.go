@@ -1,14 +1,11 @@
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
-	"strings"
 
 	"github.com/evertras/bubble-table/table"
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/man"
-	"github.com/opentdf/platform/protocol/go/policy/subjectmapping"
 	"github.com/spf13/cobra"
 )
 
@@ -17,37 +14,29 @@ func policy_getAction(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
-	id := c.Flags.GetRequiredID("id")
+	id := c.Flags.GetOptionalID("id")
+	name := c.Flags.GetOptionalString("name")
 
-	mapping, err := h.GetSubjectMapping(id)
+	action, err := h.GetAction(cmd.Context(), id, name)
 	if err != nil {
-		errMsg := fmt.Sprintf("Failed to find subject mapping (%s)", id)
+		identifier := fmt.Sprintf("id: %s", id)
+		if id == "" {
+			identifier = fmt.Sprintf("name: %s", name)
+		}
+		errMsg := fmt.Sprintf("Failed to find action (%s)", identifier)
 		cli.ExitWithError(errMsg, err)
-	}
-	var actionsJSON []byte
-	if actionsJSON, err = json.Marshal(mapping.GetActions()); err != nil {
-		cli.ExitWithError("Error marshalling subject mapping actions", err)
-	}
-
-	var subjectSetsJSON []byte
-	if subjectSetsJSON, err = json.Marshal(mapping.GetSubjectConditionSet().GetSubjectSets()); err != nil {
-		cli.ExitWithError("Error marshalling subject condition set", err)
 	}
 
 	rows := [][]string{
-		{"Id", mapping.GetId()},
-		{"Attribute Value: Id", mapping.GetAttributeValue().GetId()},
-		{"Attribute Value: Value", mapping.GetAttributeValue().GetValue()},
-		{"Actions", string(actionsJSON)},
-		{"Subject Condition Set: Id", mapping.GetSubjectConditionSet().GetId()},
-		{"Subject Condition Set", string(subjectSetsJSON)},
+		{"Id", action.GetId()},
+		{"Name", action.GetName()},
 	}
-	if mdRows := getMetadataRows(mapping.GetMetadata()); mdRows != nil {
+	if mdRows := getMetadataRows(action.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
 	}
 
 	t := cli.NewTabular(rows...)
-	HandleSuccess(cmd, mapping.GetId(), t, mapping)
+	HandleSuccess(cmd, action.GetId(), t, action)
 }
 
 func policy_listActions(cmd *cobra.Command, args []string) {
@@ -58,39 +47,31 @@ func policy_listActions(cmd *cobra.Command, args []string) {
 	limit := c.Flags.GetRequiredInt32("limit")
 	offset := c.Flags.GetRequiredInt32("offset")
 
-	list, page, err := h.ListSubjectMappings(limit, offset)
+	stdActions, customActions, page, err := h.ListActions(cmd.Context(), limit, offset)
 	if err != nil {
 		cli.ExitWithError("Failed to get subject mappings", err)
 	}
 	t := cli.NewTable(
 		cli.NewUUIDColumn(),
-		table.NewFlexColumn("value_id", "Attribute Value Id", cli.FlexColumnWidthFour),
-		table.NewFlexColumn("value_fqn", "Attibribute Value FQN", cli.FlexColumnWidthFour),
-		table.NewFlexColumn("actions", "Actions", cli.FlexColumnWidthTwo),
-		table.NewFlexColumn("subject_condition_set_id", "Subject Condition Set: Id", cli.FlexColumnWidthFour),
-		table.NewFlexColumn("subject_condition_set", "Subject Condition Set", cli.FlexColumnWidthThree),
+		table.NewFlexColumn("action_type", "Action Type", cli.FlexColumnWidthFour),
+		table.NewFlexColumn("name", "Name", cli.FlexColumnWidthFour),
 	)
 	rows := []table.Row{}
-	for _, sm := range list {
-		var actionsJSON []byte
-		if actionsJSON, err = json.Marshal(sm.GetActions()); err != nil {
-			cli.ExitWithError("Error marshalling subject mapping actions", err)
-		}
-
-		var subjectSetsJSON []byte
-		if subjectSetsJSON, err = json.Marshal(sm.GetSubjectConditionSet().GetSubjectSets()); err != nil {
-			cli.ExitWithError("Error marshalling subject condition set", err)
-		}
-
+	for _, a := range stdActions {
 		rows = append(rows, table.NewRow(table.RowData{
-			"id":                       sm.GetId(),
-			"value_id":                 sm.GetAttributeValue().GetId(),
-			"value_fqn":                sm.GetAttributeValue().GetFqn(),
-			"actions":                  string(actionsJSON),
-			"subject_condition_set_id": sm.GetSubjectConditionSet().GetId(),
-			"subject_condition_set":    string(subjectSetsJSON),
+			"id":          a.GetId(),
+			"action_type": "standard",
+			"name":        a.GetName(),
 		}))
 	}
+	for _, a := range customActions {
+		rows = append(rows, table.NewRow(table.RowData{
+			"id":          a.GetId(),
+			"action_type": "custom",
+			"name":        a.GetName(),
+		}))
+	}
+	list := append(stdActions, customActions...)
 	t = t.WithRows(rows)
 	t = cli.WithListPaginationFooter(t, page)
 	HandleSuccess(cmd, "", t, list)
@@ -101,74 +82,25 @@ func policy_createAction(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
-	attrValueId := c.Flags.GetRequiredID("attribute-value-id")
-	actionsStandard = c.Flags.GetStringSlice("action-standard", actionsStandard, cli.FlagsStringSliceOptions{Min: 0})
-	actionsCustom = c.Flags.GetStringSlice("action-custom", actionsCustom, cli.FlagsStringSliceOptions{Min: 0})
+	name := c.Flags.GetRequiredString("name")
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
-	existingSCSId := c.Flags.GetOptionalID("subject-condition-set-id")
-	// NOTE: labels within a new Subject Condition Set created on a SM creation are not supported
-	newScsJSON := c.Flags.GetOptionalString("subject-condition-set-new")
 
-	// validations
-	if len(actionsStandard) == 0 && len(actionsCustom) == 0 {
-		cli.ExitWithError("At least one Standard or Custom Action [--action-standard, --action-custom] is required", nil)
-	}
-	if len(actionsStandard) > 0 {
-		for _, a := range actionsStandard {
-			a = strings.ToUpper(a)
-			if a != actionStandardDecrypt && a != actionStandardTransmit {
-				cli.ExitWithError(fmt.Sprintf("Invalid Standard Action: '%s'. Must be one of [DECRYPT, TRANSMIT].", a), nil)
-			}
-		}
-	}
-	if existingSCSId == "" && newScsJSON == "" {
-		cli.ExitWithError("At least one Subject Condition Set flag [--subject-condition-set-id, --subject-condition-set-new] must be provided", nil)
-	}
-
-	actions := getFullActionsList(actionsStandard, actionsCustom)
-
-	var scs *subjectmapping.SubjectConditionSetCreate
-	if newScsJSON != "" {
-		ss, err := unmarshalSubjectSetsProto([]byte(newScsJSON))
-		if err != nil {
-			cli.ExitWithError("Error unmarshalling subject sets", err)
-		}
-		scs = &subjectmapping.SubjectConditionSetCreate{
-			SubjectSets: ss,
-		}
-	}
-
-	mapping, err := h.CreateNewSubjectMapping(attrValueId, actions, existingSCSId, scs, getMetadataMutable(metadataLabels))
+	action, err := h.CreateAction(cmd.Context(), name, getMetadataMutable(metadataLabels))
 	if err != nil {
-		cli.ExitWithError("Failed to create subject mapping", err)
-	}
-
-	var actionsJSON []byte
-	if actionsJSON, err = json.Marshal(mapping.GetActions()); err != nil {
-		cli.ExitWithError("Error marshalling subject mapping actions", err)
-	}
-
-	var subjectSetsJSON []byte
-	if mapping.GetSubjectConditionSet() != nil {
-		if subjectSetsJSON, err = json.Marshal(mapping.GetSubjectConditionSet().GetSubjectSets()); err != nil {
-			cli.ExitWithError("Error marshalling subject condition set", err)
-		}
+		cli.ExitWithError("Failed to create action", err)
 	}
 
 	rows := [][]string{
-		{"Id", mapping.GetId()},
-		{"Attribute Value Id", mapping.GetAttributeValue().GetId()},
-		{"Actions", string(actionsJSON)},
-		{"Subject Condition Set: Id", mapping.GetSubjectConditionSet().GetId()},
-		{"Subject Condition Set", string(subjectSetsJSON)},
+		{"Id", action.GetId()},
+		{"Name", action.GetName()},
 	}
 
-	if mdRows := getMetadataRows(mapping.GetMetadata()); mdRows != nil {
+	if mdRows := getMetadataRows(action.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
 	}
 
 	t := cli.NewTabular(rows...)
-	HandleSuccess(cmd, mapping.GetId(), t, mapping)
+	HandleSuccess(cmd, action.GetId(), t, action)
 }
 
 func policy_deleteAction(cmd *cobra.Command, args []string) {
@@ -178,26 +110,27 @@ func policy_deleteAction(cmd *cobra.Command, args []string) {
 
 	id := c.Flags.GetRequiredID("id")
 	force := c.Flags.GetOptionalBool("force")
+	ctx := cmd.Context()
 
-	sm, err := h.GetSubjectMapping(id)
+	action, err := h.GetAction(ctx, id, "")
 	if err != nil {
-		errMsg := fmt.Sprintf("Failed to find subject mapping (%s)", id)
+		errMsg := fmt.Sprintf("Failed to find action (%s)", id)
 		cli.ExitWithError(errMsg, err)
 	}
 
-	cli.ConfirmAction(cli.ActionDelete, "subject mapping", sm.GetId(), force)
+	cli.ConfirmAction(cli.ActionDelete, "action", id, force)
 
-	deleted, err := h.DeleteSubjectMapping(id)
+	err = h.DeleteAction(ctx, id)
 	if err != nil {
 		errMsg := fmt.Sprintf("Failed to delete subject mapping (%s)", id)
 		cli.ExitWithError(errMsg, err)
 	}
-	rows := [][]string{{"Id", sm.GetId()}}
-	if mdRows := getMetadataRows(deleted.GetMetadata()); mdRows != nil {
+	rows := [][]string{{"Id", id}, {"Name", action.GetName()}}
+	if mdRows := getMetadataRows(action.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
 	}
 	t := cli.NewTabular(rows...)
-	HandleSuccess(cmd, id, t, deleted)
+	HandleSuccess(cmd, id, t, action)
 }
 
 func policy_updateAction(cmd *cobra.Command, args []string) {
@@ -206,32 +139,20 @@ func policy_updateAction(cmd *cobra.Command, args []string) {
 	defer h.Close()
 
 	id := c.Flags.GetRequiredID("id")
-	actionsStandard = c.Flags.GetStringSlice("action-standard", actionsStandard, cli.FlagsStringSliceOptions{Min: 0})
-	actionsCustom = c.Flags.GetStringSlice("action-custom", actionsCustom, cli.FlagsStringSliceOptions{Min: 0})
-	scsId := c.Flags.GetOptionalID("subject-condition-set-id")
+	name := c.Flags.GetOptionalString("name")
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
-	if len(actionsStandard) > 0 {
-		for _, a := range actionsStandard {
-			a = strings.ToUpper(a)
-			if a != actionStandardDecrypt && a != actionStandardTransmit {
-				cli.ExitWithError(fmt.Sprintf("Invalid Standard Action: '%s'. Must be one of [ENCRYPT, TRANSMIT]. Other actions must be custom.", a), nil)
-			}
-		}
-	}
-	actions := getFullActionsList(actionsStandard, actionsCustom)
-
-	updated, err := h.UpdateSubjectMapping(
+	updated, err := h.UpdateAction(
+		cmd.Context(),
 		id,
-		scsId,
-		actions,
+		name,
 		getMetadataMutable(metadataLabels),
 		getMetadataUpdateBehavior(),
 	)
 	if err != nil {
-		cli.ExitWithError("Failed to update subject mapping", err)
+		cli.ExitWithError("Failed to update action", err)
 	}
-	rows := [][]string{{"Id", id}}
+	rows := [][]string{{"Id", id}, {"Name", updated.GetName()}}
 	if mdRows := getMetadataRows(updated.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
 	}

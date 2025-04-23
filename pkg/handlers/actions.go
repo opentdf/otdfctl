@@ -28,7 +28,7 @@ func (h Handler) GetAction(ctx context.Context, id string, name string) (*policy
 	return resp.GetAction(), nil
 }
 
-func (h Handler) ListActions(ctx context.Context, state common.ActiveStateEnum, limit, offset int32) ([]*policy.Action, []*policy.Action, *policy.PageResponse, error) {
+func (h Handler) ListActions(ctx context.Context, limit, offset int32) ([]*policy.Action, []*policy.Action, *policy.PageResponse, error) {
 	resp, err := h.sdk.Actions.ListActions(ctx, &actions.ListActionsRequest{
 		Pagination: &policy.PageRequest{
 			Limit:  limit,
@@ -42,7 +42,6 @@ func (h Handler) ListActions(ctx context.Context, state common.ActiveStateEnum, 
 	return resp.GetActionsStandard(), resp.GetActionsCustom(), resp.GetPagination(), nil
 }
 
-// Creates and returns the created n
 func (h Handler) CreateAction(ctx context.Context, name string, metadata *common.MetadataMutable) (*policy.Action, error) {
 	resp, err := h.sdk.Actions.CreateAction(ctx, &actions.CreateActionRequest{
 		Name:     name,
@@ -55,11 +54,11 @@ func (h Handler) CreateAction(ctx context.Context, name string, metadata *common
 	return resp.GetAction(), nil
 }
 
-// Updates and returns the updated namespace
-func (h Handler) UpdateAction(ctx context.Context, id string, metadata *common.MetadataMutable, behavior common.MetadataUpdateEnum) (*policy.Action, error) {
+func (h Handler) UpdateAction(ctx context.Context, id, name string, metadata *common.MetadataMutable, behavior common.MetadataUpdateEnum) (*policy.Action, error) {
 	_, err := h.sdk.Actions.UpdateAction(ctx, &actions.UpdateActionRequest{
 		Id:                     id,
 		Metadata:               metadata,
+		Name:                   name,
 		MetadataUpdateBehavior: behavior,
 	})
 	if err != nil {

@@ -7,11 +7,13 @@ command:
       shorthand: i
       description: ID of the custom action
       required: true
+    - name: force
+      description: Force deletion without interactive confirmation
 ---
 
 Removes a Custom Action from platform Policy. Standard Actions cannot be deleted.
 
-Action deletion cascades to entitlement Subject Mappings, Obligations, and Non-Data
+Action deletion cascades to entitlement Subject Mappings, Obligations, and Registered
 Resource entitlement requirements.
 
 Make sure you know what you are doing.
