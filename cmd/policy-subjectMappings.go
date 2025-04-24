@@ -3,9 +3,9 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
 
 	"github.com/evertras/bubble-table/table"
+	"github.com/google/uuid"
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/handlers"
 	"github.com/opentdf/otdfctl/pkg/man"
@@ -14,12 +14,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	actionStandardDecrypt  = "DECRYPT"
-	actionStandardTransmit = "TRANSMIT"
-	actionsStandard        []string
-	actionsCustom          []string
-)
+var actionFlagValues []string
 
 func policy_getSubjectMapping(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
@@ -111,30 +106,31 @@ func policy_createSubjectMapping(cmd *cobra.Command, args []string) {
 	defer h.Close()
 
 	attrValueId := c.Flags.GetRequiredID("attribute-value-id")
-	actionsStandard = c.Flags.GetStringSlice("action-standard", actionsStandard, cli.FlagsStringSliceOptions{Min: 0})
-	actionsCustom = c.Flags.GetStringSlice("action-custom", actionsCustom, cli.FlagsStringSliceOptions{Min: 0})
+	actionFlagValues = c.Flags.GetStringSlice("action", actionFlagValues, cli.FlagsStringSliceOptions{Min: 0})
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 	existingSCSId := c.Flags.GetOptionalID("subject-condition-set-id")
 	// NOTE: labels within a new Subject Condition Set created on a SM creation are not supported
 	newScsJSON := c.Flags.GetOptionalString("subject-condition-set-new")
 
 	// validations
-	if len(actionsStandard) == 0 && len(actionsCustom) == 0 {
-		cli.ExitWithError("At least one Standard or Custom Action [--action-standard, --action-custom] is required", nil)
-	}
-	if len(actionsStandard) > 0 {
-		for _, a := range actionsStandard {
-			a = strings.ToUpper(a)
-			if a != actionStandardDecrypt && a != actionStandardTransmit {
-				cli.ExitWithError(fmt.Sprintf("Invalid Standard Action: '%s'. Must be one of [DECRYPT, TRANSMIT].", a), nil)
-			}
-		}
+	if len(actionFlagValues) == 0 {
+		cli.ExitWithError("At least one Action [--action] is required", nil)
 	}
 	if existingSCSId == "" && newScsJSON == "" {
 		cli.ExitWithError("At least one Subject Condition Set flag [--subject-condition-set-id, --subject-condition-set-new] must be provided", nil)
 	}
 
-	actions := getFullActionsList(actionsStandard, actionsCustom)
+	actions := make([]*policy.Action, len(actionFlagValues))
+	for i, a := range actionFlagValues {
+		action := &policy.Action{}
+		_, err := uuid.Parse(a)
+		if err != nil {
+			action.Name = a
+		} else {
+			action.Id = a
+		}
+		actions[i] = action
+	}
 
 	var scs *subjectmapping.SubjectConditionSetCreate
 	if newScsJSON != "" {
@@ -215,20 +211,23 @@ func policy_updateSubjectMapping(cmd *cobra.Command, args []string) {
 	defer h.Close()
 
 	id := c.Flags.GetRequiredID("id")
-	actionsStandard = c.Flags.GetStringSlice("action-standard", actionsStandard, cli.FlagsStringSliceOptions{Min: 0})
-	actionsCustom = c.Flags.GetStringSlice("action-custom", actionsCustom, cli.FlagsStringSliceOptions{Min: 0})
+	actionFlagValues = c.Flags.GetStringSlice("action", actionFlagValues, cli.FlagsStringSliceOptions{Min: 0})
 	scsId := c.Flags.GetOptionalID("subject-condition-set-id")
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
-	if len(actionsStandard) > 0 {
-		for _, a := range actionsStandard {
-			a = strings.ToUpper(a)
-			if a != actionStandardDecrypt && a != actionStandardTransmit {
-				cli.ExitWithError(fmt.Sprintf("Invalid Standard Action: '%s'. Must be one of [ENCRYPT, TRANSMIT]. Other actions must be custom.", a), nil)
+	var actions []*policy.Action
+	if len(actionFlagValues) > 0 {
+		for _, a := range actionFlagValues {
+			action := &policy.Action{}
+			_, err := uuid.Parse(a)
+			if err != nil {
+				action.Name = a
+			} else {
+				action.Id = a
 			}
+			actions = append(actions, action)
 		}
 	}
-	actions := getFullActionsList(actionsStandard, actionsCustom)
 
 	updated, err := h.UpdateSubjectMapping(
 		id,
@@ -313,36 +312,6 @@ func policy_matchSubjectMappings(cmd *cobra.Command, args []string) {
 	HandleSuccess(cmd, "", t, matched)
 }
 
-func getSubjectMappingMappingActionEnumFromChoice(readable string) policy.Action_StandardAction {
-	switch readable {
-	case actionStandardDecrypt:
-		return policy.Action_STANDARD_ACTION_DECRYPT
-	case actionStandardTransmit:
-		return policy.Action_STANDARD_ACTION_TRANSMIT
-	default:
-		return policy.Action_STANDARD_ACTION_UNSPECIFIED
-	}
-}
-
-func getFullActionsList(standardActions, customActions []string) []*policy.Action {
-	actions := []*policy.Action{}
-	for _, a := range standardActions {
-		actions = append(actions, &policy.Action{
-			Value: &policy.Action_Standard{
-				Standard: getSubjectMappingMappingActionEnumFromChoice(a),
-			},
-		})
-	}
-	for _, a := range customActions {
-		actions = append(actions, &policy.Action{
-			Value: &policy.Action_Custom{
-				Custom: a,
-			},
-		})
-	}
-	return actions
-}
-
 func init() {
 	getDoc := man.Docs.GetCommand("policy/subject-mappings/get",
 		man.WithRun(policy_getSubjectMapping),
@@ -368,19 +337,28 @@ func init() {
 		createDoc.GetDocFlag("attribute-value-id").Default,
 		createDoc.GetDocFlag("attribute-value-id").Description,
 	)
+	// deprecated
 	createDoc.Flags().StringSliceVarP(
-		&actionsStandard,
+		&[]string{},
 		createDoc.GetDocFlag("action-standard").Name,
 		createDoc.GetDocFlag("action-standard").Shorthand,
 		[]string{},
 		createDoc.GetDocFlag("action-standard").Description,
 	)
+	// deprecated
 	createDoc.Flags().StringSliceVarP(
-		&actionsCustom,
+		&[]string{},
 		createDoc.GetDocFlag("action-custom").Name,
 		createDoc.GetDocFlag("action-custom").Shorthand,
 		[]string{},
 		createDoc.GetDocFlag("action-custom").Description,
+	)
+	createDoc.Flags().StringSliceVarP(
+		&actionFlagValues,
+		createDoc.GetDocFlag("action").Name,
+		createDoc.GetDocFlag("action").Shorthand,
+		[]string{},
+		createDoc.GetDocFlag("action").Description,
 	)
 	createDoc.Flags().String(
 		createDoc.GetDocFlag("subject-condition-set-id").Name,
@@ -403,19 +381,27 @@ func init() {
 		updateDoc.GetDocFlag("id").Default,
 		updateDoc.GetDocFlag("id").Description,
 	)
+	// deprecated
 	updateDoc.Flags().StringSliceVarP(
-		&actionsStandard,
+		&[]string{},
 		updateDoc.GetDocFlag("action-standard").Name,
 		updateDoc.GetDocFlag("action-standard").Shorthand,
 		[]string{},
 		updateDoc.GetDocFlag("action-standard").Description,
 	)
 	updateDoc.Flags().StringSliceVarP(
-		&actionsCustom,
+		&[]string{},
 		updateDoc.GetDocFlag("action-custom").Name,
 		updateDoc.GetDocFlag("action-custom").Shorthand,
 		[]string{},
 		updateDoc.GetDocFlag("action-custom").Description,
+	)
+	updateDoc.Flags().StringSliceVarP(
+		&actionFlagValues,
+		updateDoc.GetDocFlag("action").Name,
+		updateDoc.GetDocFlag("action").Shorthand,
+		[]string{},
+		updateDoc.GetDocFlag("action").Description,
 	)
 	updateDoc.Flags().String(
 		updateDoc.GetDocFlag("subject-condition-set-id").Name,
