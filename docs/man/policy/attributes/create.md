@@ -41,17 +41,19 @@ and may contain hyphens and underscores between other alphanumeric characters.
 #### ANY_OF
 
 If an Attribute is defined with logical rule `ANY_OF`, an Entity who is mapped to `any` of the associated Values of the Attribute
-on TDF'd Resource Data will be Entitled.
+on TDF'd Resource Data will be Entitled to take the actions in the mapping.
 
 #### ALL_OF
 
 If an Attribute is defined with logical rule `ALL_OF`, an Entity must be mapped to `all` of the associated Values of the Attribute
-on TDF'd Resource Data to be Entitled.
+on TDF'd Resource Data to be Entitled to take the actions in the mapping.
 
 ### HIERARCHY
 
 If an Attribute is defined with logical rule `HIERARCHY`, an Entity must be mapped to the same level Value or a level above in hierarchy
-compared to a given Value on TDF'd Resource Data. Hierarchical values are considered highest at index 0 and lowest at the last index.
+compared to a given Value on TDF'd Resource Data. Hierarchical values are considered highest at index 0 and lowest at the last index. Actions
+propagate down through the hierarchy, so a mapping of a `read` action on the highest level Value on the Attribute will entitle the action
+to each hierarchically lower value, and so on.
 
 For more general information about attributes, see the `attributes` subcommand.
 
