@@ -38,11 +38,10 @@ teardown_file() {
 
 @test "Create subject mapping" {
     # create with simultaneous new SCS
-    run ./otdfctl $HOST $WITH_CREDS policy subject-mappings create -a "$VAL1_ID" -s 'create' --action 'read' --subject-condition-set-new "$SCS_2"
+    run ./otdfctl $HOST $WITH_CREDS policy subject-mappings create -a "$VAL1_ID" --action 'create' --action 'read' --subject-condition-set-new "$SCS_2"
         assert_success
         assert_output --partial "Subject Condition Set: Id"
-        assert_output --partial '"Standard":1'
-        assert_output --partial '"Standard":2'
+        assert_output --partial '"Name":"read"'
         assert_output --partial ".team.name"
         assert_line --regexp "Attribute Value Id.*$VAL1_ID"
 
@@ -93,7 +92,7 @@ teardown_file() {
 
 @test "Get subject mapping" {
     new_scs=$(./otdfctl $HOST $WITH_CREDS policy scs create -s "$SCS_2" --json | jq -r '.id')
-    created=$(./otdfctl $HOST $WITH_CREDS policy sm create -a "$VAL2_ID" -s 'create' --subject-condition-set-id "$new_scs" --json | jq -r '.id')
+    created=$(./otdfctl $HOST $WITH_CREDS policy sm create -a "$VAL2_ID" --action 'create' --subject-condition-set-id "$new_scs" --json | jq -r '.id')
     # table
     run_otdfctl_sm get --id "$created"
         assert_success
@@ -111,14 +110,14 @@ teardown_file() {
 }
 
 @test "Update a subject mapping" {
-    created=$(./otdfctl $HOST $WITH_CREDS policy sm create -a "$VAL1_ID" -s 'read' --subject-condition-set-new "$SCS_1" --json | jq -r '.id')
+    created=$(./otdfctl $HOST $WITH_CREDS policy sm create -a "$VAL1_ID" --action 'read' --subject-condition-set-new "$SCS_1" --json | jq -r '.id')
     additional_scs=$(./otdfctl $HOST $WITH_CREDS policy scs create -s "$SCS_2" --json | jq -r '.id')
 
     # replace the action (always destructive replacement)
-    run_otdfctl_sm update --id "$created" -s 'create' --json
+    run_otdfctl_sm update --id "$created" --action 'create' --json
         assert_success
         [ "$(echo $output | jq -r '.id')" = "$created" ]
-        [ "$(echo $output | jq -r '.actions[0].Value.Standard')" = 2 ]
+        [ "$(echo $output | jq -r '.actions[0].Name')" = "create" ]
 
     # reassign the SCS being mapped to
     run_otdfctl_sm update --id "$created" --subject-condition-set-id "$additional_scs" --json
@@ -128,7 +127,7 @@ teardown_file() {
 }
 
 @test "List subject mappings" {
-    created=$(./otdfctl $HOST $WITH_CREDS policy sm create -a "$VAL1_ID" -s 'create' --subject-condition-set-new "$SCS_2" --json | jq -r '.id')
+    created=$(./otdfctl $HOST $WITH_CREDS policy sm create -a "$VAL1_ID" --action 'create' --subject-condition-set-new "$SCS_2" --json | jq -r '.id')
 
     run_otdfctl_sm list
         assert_success
