@@ -36,9 +36,7 @@ teardown_file() {
     unset HOST WITH_CREDS VAL1_ID VAL2_ID NS_ID SCS_1 SCS_2
 }
 
-# skip while policy actions rework remains in flight
 @test "Create subject mapping" {
-    skip
     # create with simultaneous new SCS
     run ./otdfctl $HOST $WITH_CREDS policy subject-mappings create -a "$VAL1_ID" -s 'create' --action 'read' --subject-condition-set-new "$SCS_2"
         assert_success
@@ -59,9 +57,7 @@ teardown_file() {
     assert_output --partial "At least one Action [--action] is required"
 }
 
-# skip while policy actions rework remains in flight
 @test "Match subject mapping" {
-    skip
     # create with simultaneous new SCS
     NEW_SCS='[{"condition_groups":[{"conditions":[{"operator":1,"subject_external_values":["sales"],"subject_external_selector_value":".department"}],"boolean_operator":2}]}]'
     NEW_SM_ID=$(./otdfctl $HOST $WITH_CREDS policy subject-mappings create -a "$VAL2_ID" --action 'read' --subject-condition-set-new "$NEW_SCS" --json | jq -r '.id')
@@ -95,9 +91,7 @@ teardown_file() {
     refute_output --partial "$NEW_SM_ID"
 }
 
-# skip while policy actions rework remains in flight
 @test "Get subject mapping" {
-    skip
     new_scs=$(./otdfctl $HOST $WITH_CREDS policy scs create -s "$SCS_2" --json | jq -r '.id')
     created=$(./otdfctl $HOST $WITH_CREDS policy sm create -a "$VAL2_ID" -s 'create' --subject-condition-set-id "$new_scs" --json | jq -r '.id')
     # table
@@ -116,9 +110,7 @@ teardown_file() {
         [ "$(echo $output | jq -r '.subject_condition_set.id')" = "$new_scs" ]
 }
 
-# skip while policy actions rework remains in flight
 @test "Update a subject mapping" {
-    skip
     created=$(./otdfctl $HOST $WITH_CREDS policy sm create -a "$VAL1_ID" -s 'read' --subject-condition-set-new "$SCS_1" --json | jq -r '.id')
     additional_scs=$(./otdfctl $HOST $WITH_CREDS policy scs create -s "$SCS_2" --json | jq -r '.id')
 
@@ -135,9 +127,7 @@ teardown_file() {
         [ "$(echo $output | jq -r '.subject_condition_set.id')" = "$additional_scs" ]
 }
 
-# skip while policy actions rework remains in flight
 @test "List subject mappings" {
-    skip
     created=$(./otdfctl $HOST $WITH_CREDS policy sm create -a "$VAL1_ID" -s 'create' --subject-condition-set-new "$SCS_2" --json | jq -r '.id')
 
     run_otdfctl_sm list
