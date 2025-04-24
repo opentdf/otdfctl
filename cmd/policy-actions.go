@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func policy_getAction(cmd *cobra.Command, args []string) {
+func policyGetAction(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
 	defer h.Close()
@@ -44,7 +44,7 @@ func policy_getAction(cmd *cobra.Command, args []string) {
 	HandleSuccess(cmd, action.GetId(), t, action)
 }
 
-func policy_listActions(cmd *cobra.Command, args []string) {
+func policyListActions(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
 	defer h.Close()
@@ -84,7 +84,7 @@ func policy_listActions(cmd *cobra.Command, args []string) {
 	HandleSuccess(cmd, "", t, list)
 }
 
-func policy_createAction(cmd *cobra.Command, args []string) {
+func policyCreateAction(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
 	defer h.Close()
@@ -110,7 +110,7 @@ func policy_createAction(cmd *cobra.Command, args []string) {
 	HandleSuccess(cmd, action.GetId(), t, action)
 }
 
-func policy_deleteAction(cmd *cobra.Command, args []string) {
+func policyDeleteAction(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
 	defer h.Close()
@@ -140,7 +140,7 @@ func policy_deleteAction(cmd *cobra.Command, args []string) {
 	HandleSuccess(cmd, id, t, action)
 }
 
-func policy_updateAction(cmd *cobra.Command, args []string) {
+func policyUpdateAction(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
 	defer h.Close()
@@ -170,7 +170,7 @@ func policy_updateAction(cmd *cobra.Command, args []string) {
 
 func init() {
 	getDoc := man.Docs.GetCommand("policy/actions/get",
-		man.WithRun(policy_getAction),
+		man.WithRun(policyGetAction),
 	)
 	getDoc.Flags().StringP(
 		getDoc.GetDocFlag("id").Name,
@@ -186,12 +186,12 @@ func init() {
 	)
 
 	listDoc := man.Docs.GetCommand("policy/actions/list",
-		man.WithRun(policy_listActions),
+		man.WithRun(policyListActions),
 	)
 	injectListPaginationFlags(listDoc)
 
 	createDoc := man.Docs.GetCommand("policy/actions/create",
-		man.WithRun(policy_createAction),
+		man.WithRun(policyCreateAction),
 	)
 	createDoc.Flags().StringP(
 		createDoc.GetDocFlag("name").Name,
@@ -202,7 +202,7 @@ func init() {
 	injectLabelFlags(&createDoc.Command, false)
 
 	updateDoc := man.Docs.GetCommand("policy/actions/update",
-		man.WithRun(policy_updateAction),
+		man.WithRun(policyUpdateAction),
 	)
 	updateDoc.Flags().StringP(
 		updateDoc.GetDocFlag("id").Name,
@@ -219,7 +219,7 @@ func init() {
 	injectLabelFlags(&updateDoc.Command, true)
 
 	deleteDoc := man.Docs.GetCommand("policy/actions/delete",
-		man.WithRun(policy_deleteAction),
+		man.WithRun(policyDeleteAction),
 	)
 	deleteDoc.Flags().StringP(
 		deleteDoc.GetDocFlag("id").Name,
@@ -233,7 +233,7 @@ func init() {
 		deleteDoc.GetDocFlag("force").Description,
 	)
 
-	policy_ActionsDoc := man.Docs.GetCommand("policy/actions",
+	policyActionsDoc := man.Docs.GetCommand("policy/actions",
 		man.WithSubcommands(
 			getDoc,
 			listDoc,
@@ -242,5 +242,5 @@ func init() {
 			deleteDoc,
 		),
 	)
-	policyCmd.AddCommand(&policy_ActionsDoc.Command)
+	policyCmd.AddCommand(&policyActionsDoc.Command)
 }
