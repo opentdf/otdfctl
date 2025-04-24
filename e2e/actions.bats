@@ -68,7 +68,7 @@ teardown_file() {
   run_otdfctl_action get --id "$UPDATE_ACTION_ID" --json
   assert_success
   [ "$(echo "$output" | jq -r '.id')" = "$UPDATE_ACTION_ID" ]
-  [ "$(echo "$output" | jq -r '.name')" = "$update" ]
+  [ "$(echo "$output" | jq -r '.name')" = "update" ]
 }
 
 @test "Get an action - Bad" {
