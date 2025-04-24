@@ -92,7 +92,7 @@ teardown_file() {
 }
 
 @test "Update action" {
-  ACTION_TO_UPDATE=$(./otdfctl policy actions create --name testing-update $HOST $WITH_CREDS --json | jq -r '.id')
+  ACTION_TO_UPDATE=$(./otdfctl policy actions create --name testing_updation $HOST $WITH_CREDS --json | jq -r '.id')
   # extend labels
   run_otdfctl_action update --id "$ACTION_TO_UPDATE" -l key=value --label test=true
     assert_success
