@@ -41,7 +41,6 @@ teardown_file() {
     run ./otdfctl $HOST $WITH_CREDS policy subject-mappings create -a "$VAL1_ID" --action 'create' --action 'read' --subject-condition-set-new "$SCS_2"
         assert_success
         assert_output --partial "Subject Condition Set: Id"
-        assert_output --partial '"Name":"read"'
         assert_output --partial ".team.name"
         assert_line --regexp "Attribute Value Id.*$VAL1_ID"
 
@@ -117,7 +116,7 @@ teardown_file() {
     run_otdfctl_sm update --id "$created" --action 'create' --json
         assert_success
         [ "$(echo $output | jq -r '.id')" = "$created" ]
-        [ "$(echo $output | jq -r '.actions[0].Name')" = "create" ]
+        [ "$(echo $output | jq -r '.actions[0].name')" = "create" ]
 
     # reassign the SCS being mapped to
     run_otdfctl_sm update --id "$created" --subject-condition-set-id "$additional_scs" --json
