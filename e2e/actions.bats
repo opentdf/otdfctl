@@ -57,7 +57,7 @@ teardown_file() {
 }
 
 @test "Get an action - Good" {
-  run_otdfctl_action get "read"
+  run_otdfctl_action get --name "read"
     assert_success
     assert_line --partial "Id"
     assert_line --regexp "Name.*read"
@@ -65,7 +65,7 @@ teardown_file() {
   # get by name to retrieve the ID
   UPDATE_ACTION_ID=$(./otdfctl policy actions get --name update --json $HOST $WITH_CREDS | jq -r '.id')
 
-  run_otdfctl_action get "$UPDATE_ACTION_ID" --json
+  run_otdfctl_action get --id "$UPDATE_ACTION_ID" --json
   assert_success
   [ "$(echo "$output" | jq -r '.id')" = "$UPDATE_ACTION_ID" ]
   [ "$(echo "$output" | jq -r '.name')" = "$update" ]
