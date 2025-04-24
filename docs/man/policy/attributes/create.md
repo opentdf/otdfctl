@@ -33,7 +33,8 @@ command:
       default: ''
 ---
 
-Under a namespace, create an attribute with a rule.
+Under a namespace, create an attribute with a rule. An attribute definition `name` is normalized to lower case
+and may contain hyphens and underscores between other alphanumeric characters.
 
 ### Rules
 
