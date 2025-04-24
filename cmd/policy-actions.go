@@ -6,6 +6,7 @@ import (
 	"github.com/evertras/bubble-table/table"
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/man"
+	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/spf13/cobra"
 )
 
@@ -75,7 +76,9 @@ func policy_listActions(cmd *cobra.Command, args []string) {
 			"name":        a.GetName(),
 		}))
 	}
-	list := append(stdActions, customActions...)
+	list := append([]*policy.Action{}, stdActions...)
+	list = append(list, customActions...)
+
 	t = t.WithRows(rows)
 	t = cli.WithListPaginationFooter(t, page)
 	HandleSuccess(cmd, "", t, list)
