@@ -23,7 +23,7 @@ command:
 
 Update the `name` and/or metadata labels for a Custom Action.
 
-If PEPs rely on this action name, a name updation could break access.
+If PEPs rely on this action name, a name update could break access.
 
 Make sure you know what you are doing.
 
