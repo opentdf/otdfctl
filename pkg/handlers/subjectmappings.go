@@ -38,9 +38,9 @@ func (h Handler) ListSubjectMappings(ctx context.Context, limit, offset int32) (
 }
 
 // Creates and returns the created subject mapping
-func (h Handler) CreateNewSubjectMapping(ctx context.Context, attrValId string, actions []*policy.Action, existingSCSId string, newScs *subjectmapping.SubjectConditionSetCreate, m *common.MetadataMutable) (*policy.SubjectMapping, error) {
+func (h Handler) CreateNewSubjectMapping(ctx context.Context, attrValID string, actions []*policy.Action, existingSCSId string, newScs *subjectmapping.SubjectConditionSetCreate, m *common.MetadataMutable) (*policy.SubjectMapping, error) {
 	resp, err := h.sdk.SubjectMapping.CreateSubjectMapping(ctx, &subjectmapping.CreateSubjectMappingRequest{
-		AttributeValueId:              attrValId,
+		AttributeValueId:              attrValID,
 		Actions:                       actions,
 		ExistingSubjectConditionSetId: existingSCSId,
 		NewSubjectConditionSet:        newScs,
