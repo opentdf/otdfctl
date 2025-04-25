@@ -16,14 +16,14 @@ import (
 
 var actionFlagValues []string
 
-func policy_getSubjectMapping(cmd *cobra.Command, args []string) {
+func policyGetSubjectMapping(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
 	defer h.Close()
 
 	id := c.Flags.GetRequiredID("id")
 
-	mapping, err := h.GetSubjectMapping(id)
+	mapping, err := h.GetSubjectMapping(cmd.Context(), id)
 	if err != nil {
 		errMsg := fmt.Sprintf("Failed to find subject mapping (%s)", id)
 		cli.ExitWithError(errMsg, err)
@@ -54,7 +54,7 @@ func policy_getSubjectMapping(cmd *cobra.Command, args []string) {
 	HandleSuccess(cmd, mapping.GetId(), t, mapping)
 }
 
-func policy_listSubjectMappings(cmd *cobra.Command, args []string) {
+func policyListSubjectMappings(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
 	defer h.Close()
@@ -62,7 +62,7 @@ func policy_listSubjectMappings(cmd *cobra.Command, args []string) {
 	limit := c.Flags.GetRequiredInt32("limit")
 	offset := c.Flags.GetRequiredInt32("offset")
 
-	list, page, err := h.ListSubjectMappings(limit, offset)
+	list, page, err := h.ListSubjectMappings(cmd.Context(), limit, offset)
 	if err != nil {
 		cli.ExitWithError("Failed to get subject mappings", err)
 	}
@@ -100,7 +100,7 @@ func policy_listSubjectMappings(cmd *cobra.Command, args []string) {
 	HandleSuccess(cmd, "", t, list)
 }
 
-func policy_createSubjectMapping(cmd *cobra.Command, args []string) {
+func policyCreateSubjectMapping(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
 	defer h.Close()
@@ -143,7 +143,7 @@ func policy_createSubjectMapping(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	mapping, err := h.CreateNewSubjectMapping(attrValueId, actions, existingSCSId, scs, getMetadataMutable(metadataLabels))
+	mapping, err := h.CreateNewSubjectMapping(cmd.Context(), attrValueId, actions, existingSCSId, scs, getMetadataMutable(metadataLabels))
 	if err != nil {
 		cli.ExitWithError("Failed to create subject mapping", err)
 	}
@@ -176,7 +176,7 @@ func policy_createSubjectMapping(cmd *cobra.Command, args []string) {
 	HandleSuccess(cmd, mapping.GetId(), t, mapping)
 }
 
-func policy_deleteSubjectMapping(cmd *cobra.Command, args []string) {
+func policyDeleteSubjectMapping(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
 	defer h.Close()
@@ -184,7 +184,7 @@ func policy_deleteSubjectMapping(cmd *cobra.Command, args []string) {
 	id := c.Flags.GetRequiredID("id")
 	force := c.Flags.GetOptionalBool("force")
 
-	sm, err := h.GetSubjectMapping(id)
+	sm, err := h.GetSubjectMapping(cmd.Context(), id)
 	if err != nil {
 		errMsg := fmt.Sprintf("Failed to find subject mapping (%s)", id)
 		cli.ExitWithError(errMsg, err)
@@ -192,7 +192,7 @@ func policy_deleteSubjectMapping(cmd *cobra.Command, args []string) {
 
 	cli.ConfirmAction(cli.ActionDelete, "subject mapping", sm.GetId(), force)
 
-	deleted, err := h.DeleteSubjectMapping(id)
+	deleted, err := h.DeleteSubjectMapping(cmd.Context(), id)
 	if err != nil {
 		errMsg := fmt.Sprintf("Failed to delete subject mapping (%s)", id)
 		cli.ExitWithError(errMsg, err)
@@ -205,7 +205,7 @@ func policy_deleteSubjectMapping(cmd *cobra.Command, args []string) {
 	HandleSuccess(cmd, id, t, deleted)
 }
 
-func policy_updateSubjectMapping(cmd *cobra.Command, args []string) {
+func policyUpdateSubjectMapping(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
 	defer h.Close()
@@ -230,6 +230,7 @@ func policy_updateSubjectMapping(cmd *cobra.Command, args []string) {
 	}
 
 	updated, err := h.UpdateSubjectMapping(
+		cmd.Context(),
 		id,
 		scsId,
 		actions,
@@ -248,7 +249,7 @@ func policy_updateSubjectMapping(cmd *cobra.Command, args []string) {
 	HandleSuccess(cmd, id, t, updated)
 }
 
-func policy_matchSubjectMappings(cmd *cobra.Command, args []string) {
+func policyMatchSubjectMappings(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
 	defer h.Close()
@@ -270,7 +271,7 @@ func policy_matchSubjectMappings(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	matched, err := h.MatchSubjectMappings(selectors)
+	matched, err := h.MatchSubjectMappings(cmd.Context(), selectors)
 	if err != nil {
 		cli.ExitWithError(fmt.Sprintf("Failed to match subject mappings with selectors %v", selectors), err)
 	}
@@ -314,7 +315,7 @@ func policy_matchSubjectMappings(cmd *cobra.Command, args []string) {
 
 func init() {
 	getDoc := man.Docs.GetCommand("policy/subject-mappings/get",
-		man.WithRun(policy_getSubjectMapping),
+		man.WithRun(policyGetSubjectMapping),
 	)
 	getDoc.Flags().StringP(
 		getDoc.GetDocFlag("id").Name,
@@ -324,12 +325,12 @@ func init() {
 	)
 
 	listDoc := man.Docs.GetCommand("policy/subject-mappings/list",
-		man.WithRun(policy_listSubjectMappings),
+		man.WithRun(policyListSubjectMappings),
 	)
 	injectListPaginationFlags(listDoc)
 
 	createDoc := man.Docs.GetCommand("policy/subject-mappings/create",
-		man.WithRun(policy_createSubjectMapping),
+		man.WithRun(policyCreateSubjectMapping),
 	)
 	createDoc.Flags().StringP(
 		createDoc.GetDocFlag("attribute-value-id").Name,
@@ -373,7 +374,7 @@ func init() {
 	injectLabelFlags(&createDoc.Command, false)
 
 	updateDoc := man.Docs.GetCommand("policy/subject-mappings/update",
-		man.WithRun(policy_updateSubjectMapping),
+		man.WithRun(policyUpdateSubjectMapping),
 	)
 	updateDoc.Flags().StringP(
 		updateDoc.GetDocFlag("id").Name,
@@ -411,7 +412,7 @@ func init() {
 	injectLabelFlags(&updateDoc.Command, true)
 
 	deleteDoc := man.Docs.GetCommand("policy/subject-mappings/delete",
-		man.WithRun(policy_deleteSubjectMapping),
+		man.WithRun(policyDeleteSubjectMapping),
 	)
 	deleteDoc.Flags().StringP(
 		deleteDoc.GetDocFlag("id").Name,
@@ -426,7 +427,7 @@ func init() {
 	)
 
 	matchDoc := man.Docs.GetCommand("policy/subject-mappings/match",
-		man.WithRun(policy_matchSubjectMappings),
+		man.WithRun(policyMatchSubjectMappings),
 	)
 	matchDoc.Flags().StringP(
 		matchDoc.GetDocFlag("subject").Name,
