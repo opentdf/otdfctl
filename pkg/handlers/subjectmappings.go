@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"context"
+
 	"github.com/opentdf/platform/protocol/go/common"
 	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/opentdf/platform/protocol/go/policy/subjectmapping"
@@ -15,15 +17,15 @@ const (
 
 var SubjectMappingOperatorEnumChoices = []string{SubjectMappingOperatorIn, SubjectMappingOperatorNotIn, SubjectMappingOperatorUnspecified}
 
-func (h Handler) GetSubjectMapping(id string) (*policy.SubjectMapping, error) {
-	resp, err := h.sdk.SubjectMapping.GetSubjectMapping(h.ctx, &subjectmapping.GetSubjectMappingRequest{
+func (h Handler) GetSubjectMapping(ctx context.Context, id string) (*policy.SubjectMapping, error) {
+	resp, err := h.sdk.SubjectMapping.GetSubjectMapping(ctx, &subjectmapping.GetSubjectMappingRequest{
 		Id: id,
 	})
 	return resp.GetSubjectMapping(), err
 }
 
-func (h Handler) ListSubjectMappings(limit, offset int32) ([]*policy.SubjectMapping, *policy.PageResponse, error) {
-	resp, err := h.sdk.SubjectMapping.ListSubjectMappings(h.ctx, &subjectmapping.ListSubjectMappingsRequest{
+func (h Handler) ListSubjectMappings(ctx context.Context, limit, offset int32) ([]*policy.SubjectMapping, *policy.PageResponse, error) {
+	resp, err := h.sdk.SubjectMapping.ListSubjectMappings(ctx, &subjectmapping.ListSubjectMappingsRequest{
 		Pagination: &policy.PageRequest{
 			Limit:  limit,
 			Offset: offset,
@@ -36,9 +38,9 @@ func (h Handler) ListSubjectMappings(limit, offset int32) ([]*policy.SubjectMapp
 }
 
 // Creates and returns the created subject mapping
-func (h Handler) CreateNewSubjectMapping(attrValId string, actions []*policy.Action, existingSCSId string, newScs *subjectmapping.SubjectConditionSetCreate, m *common.MetadataMutable) (*policy.SubjectMapping, error) {
-	resp, err := h.sdk.SubjectMapping.CreateSubjectMapping(h.ctx, &subjectmapping.CreateSubjectMappingRequest{
-		AttributeValueId:              attrValId,
+func (h Handler) CreateNewSubjectMapping(ctx context.Context, attrValID string, actions []*policy.Action, existingSCSId string, newScs *subjectmapping.SubjectConditionSetCreate, m *common.MetadataMutable) (*policy.SubjectMapping, error) {
+	resp, err := h.sdk.SubjectMapping.CreateSubjectMapping(ctx, &subjectmapping.CreateSubjectMappingRequest{
+		AttributeValueId:              attrValID,
 		Actions:                       actions,
 		ExistingSubjectConditionSetId: existingSCSId,
 		NewSubjectConditionSet:        newScs,
@@ -47,11 +49,11 @@ func (h Handler) CreateNewSubjectMapping(attrValId string, actions []*policy.Act
 	if err != nil {
 		return nil, err
 	}
-	return h.GetSubjectMapping(resp.GetSubjectMapping().GetId())
+	return h.GetSubjectMapping(ctx, resp.GetSubjectMapping().GetId())
 }
 
 // Updates and returns the updated subject mapping
-func (h Handler) UpdateSubjectMapping(id string, updatedSCSId string, updatedActions []*policy.Action, metadata *common.MetadataMutable, metadataBehavior common.MetadataUpdateEnum) (*policy.SubjectMapping, error) {
+func (h Handler) UpdateSubjectMapping(ctx context.Context, id string, updatedSCSId string, updatedActions []*policy.Action, metadata *common.MetadataMutable, metadataBehavior common.MetadataUpdateEnum) (*policy.SubjectMapping, error) {
 	_, err := h.sdk.SubjectMapping.UpdateSubjectMapping(h.ctx, &subjectmapping.UpdateSubjectMappingRequest{
 		Id:                     id,
 		SubjectConditionSetId:  updatedSCSId,
@@ -62,24 +64,24 @@ func (h Handler) UpdateSubjectMapping(id string, updatedSCSId string, updatedAct
 	if err != nil {
 		return nil, err
 	}
-	return h.GetSubjectMapping(id)
+	return h.GetSubjectMapping(ctx, id)
 }
 
-func (h Handler) DeleteSubjectMapping(id string) (*policy.SubjectMapping, error) {
-	resp, err := h.sdk.SubjectMapping.DeleteSubjectMapping(h.ctx, &subjectmapping.DeleteSubjectMappingRequest{
+func (h Handler) DeleteSubjectMapping(ctx context.Context, id string) (*policy.SubjectMapping, error) {
+	resp, err := h.sdk.SubjectMapping.DeleteSubjectMapping(ctx, &subjectmapping.DeleteSubjectMappingRequest{
 		Id: id,
 	})
 	return resp.GetSubjectMapping(), err
 }
 
-func (h Handler) MatchSubjectMappings(selectors []string) ([]*policy.SubjectMapping, error) {
+func (h Handler) MatchSubjectMappings(ctx context.Context, selectors []string) ([]*policy.SubjectMapping, error) {
 	subjectProperties := make([]*policy.SubjectProperty, len(selectors))
 	for i, selector := range selectors {
 		subjectProperties[i] = &policy.SubjectProperty{
 			ExternalSelectorValue: selector,
 		}
 	}
-	resp, err := h.sdk.SubjectMapping.MatchSubjectMappings(h.ctx, &subjectmapping.MatchSubjectMappingsRequest{
+	resp, err := h.sdk.SubjectMapping.MatchSubjectMappings(ctx, &subjectmapping.MatchSubjectMappingsRequest{
 		SubjectProperties: subjectProperties,
 	})
 	return resp.GetSubjectMappings(), err
