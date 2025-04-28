@@ -3,9 +3,9 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
 
 	"github.com/evertras/bubble-table/table"
+	"github.com/google/uuid"
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/handlers"
 	"github.com/opentdf/otdfctl/pkg/man"
@@ -14,21 +14,16 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	actionStandardDecrypt  = "DECRYPT"
-	actionStandardTransmit = "TRANSMIT"
-	actionsStandard        []string
-	actionsCustom          []string
-)
+var actionFlagValues []string
 
-func policy_getSubjectMapping(cmd *cobra.Command, args []string) {
+func policyGetSubjectMapping(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
 	defer h.Close()
 
 	id := c.Flags.GetRequiredID("id")
 
-	mapping, err := h.GetSubjectMapping(id)
+	mapping, err := h.GetSubjectMapping(cmd.Context(), id)
 	if err != nil {
 		errMsg := fmt.Sprintf("Failed to find subject mapping (%s)", id)
 		cli.ExitWithError(errMsg, err)
@@ -59,7 +54,7 @@ func policy_getSubjectMapping(cmd *cobra.Command, args []string) {
 	HandleSuccess(cmd, mapping.GetId(), t, mapping)
 }
 
-func policy_listSubjectMappings(cmd *cobra.Command, args []string) {
+func policyListSubjectMappings(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
 	defer h.Close()
@@ -67,7 +62,7 @@ func policy_listSubjectMappings(cmd *cobra.Command, args []string) {
 	limit := c.Flags.GetRequiredInt32("limit")
 	offset := c.Flags.GetRequiredInt32("offset")
 
-	list, page, err := h.ListSubjectMappings(limit, offset)
+	list, page, err := h.ListSubjectMappings(cmd.Context(), limit, offset)
 	if err != nil {
 		cli.ExitWithError("Failed to get subject mappings", err)
 	}
@@ -105,36 +100,37 @@ func policy_listSubjectMappings(cmd *cobra.Command, args []string) {
 	HandleSuccess(cmd, "", t, list)
 }
 
-func policy_createSubjectMapping(cmd *cobra.Command, args []string) {
+func policyCreateSubjectMapping(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
 	defer h.Close()
 
 	attrValueId := c.Flags.GetRequiredID("attribute-value-id")
-	actionsStandard = c.Flags.GetStringSlice("action-standard", actionsStandard, cli.FlagsStringSliceOptions{Min: 0})
-	actionsCustom = c.Flags.GetStringSlice("action-custom", actionsCustom, cli.FlagsStringSliceOptions{Min: 0})
+	actionFlagValues = c.Flags.GetStringSlice("action", actionFlagValues, cli.FlagsStringSliceOptions{Min: 0})
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 	existingSCSId := c.Flags.GetOptionalID("subject-condition-set-id")
 	// NOTE: labels within a new Subject Condition Set created on a SM creation are not supported
 	newScsJSON := c.Flags.GetOptionalString("subject-condition-set-new")
 
 	// validations
-	if len(actionsStandard) == 0 && len(actionsCustom) == 0 {
-		cli.ExitWithError("At least one Standard or Custom Action [--action-standard, --action-custom] is required", nil)
-	}
-	if len(actionsStandard) > 0 {
-		for _, a := range actionsStandard {
-			a = strings.ToUpper(a)
-			if a != actionStandardDecrypt && a != actionStandardTransmit {
-				cli.ExitWithError(fmt.Sprintf("Invalid Standard Action: '%s'. Must be one of [DECRYPT, TRANSMIT].", a), nil)
-			}
-		}
+	if len(actionFlagValues) == 0 {
+		cli.ExitWithError("At least one Action [--action] is required", nil)
 	}
 	if existingSCSId == "" && newScsJSON == "" {
 		cli.ExitWithError("At least one Subject Condition Set flag [--subject-condition-set-id, --subject-condition-set-new] must be provided", nil)
 	}
 
-	actions := getFullActionsList(actionsStandard, actionsCustom)
+	actions := make([]*policy.Action, len(actionFlagValues))
+	for i, a := range actionFlagValues {
+		action := &policy.Action{}
+		_, err := uuid.Parse(a)
+		if err != nil {
+			action.Name = a
+		} else {
+			action.Id = a
+		}
+		actions[i] = action
+	}
 
 	var scs *subjectmapping.SubjectConditionSetCreate
 	if newScsJSON != "" {
@@ -147,7 +143,7 @@ func policy_createSubjectMapping(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	mapping, err := h.CreateNewSubjectMapping(attrValueId, actions, existingSCSId, scs, getMetadataMutable(metadataLabels))
+	mapping, err := h.CreateNewSubjectMapping(cmd.Context(), attrValueId, actions, existingSCSId, scs, getMetadataMutable(metadataLabels))
 	if err != nil {
 		cli.ExitWithError("Failed to create subject mapping", err)
 	}
@@ -180,7 +176,7 @@ func policy_createSubjectMapping(cmd *cobra.Command, args []string) {
 	HandleSuccess(cmd, mapping.GetId(), t, mapping)
 }
 
-func policy_deleteSubjectMapping(cmd *cobra.Command, args []string) {
+func policyDeleteSubjectMapping(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
 	defer h.Close()
@@ -188,7 +184,7 @@ func policy_deleteSubjectMapping(cmd *cobra.Command, args []string) {
 	id := c.Flags.GetRequiredID("id")
 	force := c.Flags.GetOptionalBool("force")
 
-	sm, err := h.GetSubjectMapping(id)
+	sm, err := h.GetSubjectMapping(cmd.Context(), id)
 	if err != nil {
 		errMsg := fmt.Sprintf("Failed to find subject mapping (%s)", id)
 		cli.ExitWithError(errMsg, err)
@@ -196,7 +192,7 @@ func policy_deleteSubjectMapping(cmd *cobra.Command, args []string) {
 
 	cli.ConfirmAction(cli.ActionDelete, "subject mapping", sm.GetId(), force)
 
-	deleted, err := h.DeleteSubjectMapping(id)
+	deleted, err := h.DeleteSubjectMapping(cmd.Context(), id)
 	if err != nil {
 		errMsg := fmt.Sprintf("Failed to delete subject mapping (%s)", id)
 		cli.ExitWithError(errMsg, err)
@@ -209,28 +205,32 @@ func policy_deleteSubjectMapping(cmd *cobra.Command, args []string) {
 	HandleSuccess(cmd, id, t, deleted)
 }
 
-func policy_updateSubjectMapping(cmd *cobra.Command, args []string) {
+func policyUpdateSubjectMapping(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
 	defer h.Close()
 
 	id := c.Flags.GetRequiredID("id")
-	actionsStandard = c.Flags.GetStringSlice("action-standard", actionsStandard, cli.FlagsStringSliceOptions{Min: 0})
-	actionsCustom = c.Flags.GetStringSlice("action-custom", actionsCustom, cli.FlagsStringSliceOptions{Min: 0})
+	actionFlagValues = c.Flags.GetStringSlice("action", actionFlagValues, cli.FlagsStringSliceOptions{Min: 0})
 	scsId := c.Flags.GetOptionalID("subject-condition-set-id")
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
-	if len(actionsStandard) > 0 {
-		for _, a := range actionsStandard {
-			a = strings.ToUpper(a)
-			if a != actionStandardDecrypt && a != actionStandardTransmit {
-				cli.ExitWithError(fmt.Sprintf("Invalid Standard Action: '%s'. Must be one of [ENCRYPT, TRANSMIT]. Other actions must be custom.", a), nil)
+	var actions []*policy.Action
+	if len(actionFlagValues) > 0 {
+		for _, a := range actionFlagValues {
+			action := &policy.Action{}
+			_, err := uuid.Parse(a)
+			if err != nil {
+				action.Name = a
+			} else {
+				action.Id = a
 			}
+			actions = append(actions, action)
 		}
 	}
-	actions := getFullActionsList(actionsStandard, actionsCustom)
 
 	updated, err := h.UpdateSubjectMapping(
+		cmd.Context(),
 		id,
 		scsId,
 		actions,
@@ -249,7 +249,7 @@ func policy_updateSubjectMapping(cmd *cobra.Command, args []string) {
 	HandleSuccess(cmd, id, t, updated)
 }
 
-func policy_matchSubjectMappings(cmd *cobra.Command, args []string) {
+func policyMatchSubjectMappings(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
 	defer h.Close()
@@ -271,7 +271,7 @@ func policy_matchSubjectMappings(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	matched, err := h.MatchSubjectMappings(selectors)
+	matched, err := h.MatchSubjectMappings(cmd.Context(), selectors)
 	if err != nil {
 		cli.ExitWithError(fmt.Sprintf("Failed to match subject mappings with selectors %v", selectors), err)
 	}
@@ -313,39 +313,9 @@ func policy_matchSubjectMappings(cmd *cobra.Command, args []string) {
 	HandleSuccess(cmd, "", t, matched)
 }
 
-func getSubjectMappingMappingActionEnumFromChoice(readable string) policy.Action_StandardAction {
-	switch readable {
-	case actionStandardDecrypt:
-		return policy.Action_STANDARD_ACTION_DECRYPT
-	case actionStandardTransmit:
-		return policy.Action_STANDARD_ACTION_TRANSMIT
-	default:
-		return policy.Action_STANDARD_ACTION_UNSPECIFIED
-	}
-}
-
-func getFullActionsList(standardActions, customActions []string) []*policy.Action {
-	actions := []*policy.Action{}
-	for _, a := range standardActions {
-		actions = append(actions, &policy.Action{
-			Value: &policy.Action_Standard{
-				Standard: getSubjectMappingMappingActionEnumFromChoice(a),
-			},
-		})
-	}
-	for _, a := range customActions {
-		actions = append(actions, &policy.Action{
-			Value: &policy.Action_Custom{
-				Custom: a,
-			},
-		})
-	}
-	return actions
-}
-
 func init() {
 	getDoc := man.Docs.GetCommand("policy/subject-mappings/get",
-		man.WithRun(policy_getSubjectMapping),
+		man.WithRun(policyGetSubjectMapping),
 	)
 	getDoc.Flags().StringP(
 		getDoc.GetDocFlag("id").Name,
@@ -355,12 +325,12 @@ func init() {
 	)
 
 	listDoc := man.Docs.GetCommand("policy/subject-mappings/list",
-		man.WithRun(policy_listSubjectMappings),
+		man.WithRun(policyListSubjectMappings),
 	)
 	injectListPaginationFlags(listDoc)
 
 	createDoc := man.Docs.GetCommand("policy/subject-mappings/create",
-		man.WithRun(policy_createSubjectMapping),
+		man.WithRun(policyCreateSubjectMapping),
 	)
 	createDoc.Flags().StringP(
 		createDoc.GetDocFlag("attribute-value-id").Name,
@@ -368,19 +338,28 @@ func init() {
 		createDoc.GetDocFlag("attribute-value-id").Default,
 		createDoc.GetDocFlag("attribute-value-id").Description,
 	)
+	// deprecated
 	createDoc.Flags().StringSliceVarP(
-		&actionsStandard,
+		&[]string{},
 		createDoc.GetDocFlag("action-standard").Name,
 		createDoc.GetDocFlag("action-standard").Shorthand,
 		[]string{},
 		createDoc.GetDocFlag("action-standard").Description,
 	)
+	// deprecated
 	createDoc.Flags().StringSliceVarP(
-		&actionsCustom,
+		&[]string{},
 		createDoc.GetDocFlag("action-custom").Name,
 		createDoc.GetDocFlag("action-custom").Shorthand,
 		[]string{},
 		createDoc.GetDocFlag("action-custom").Description,
+	)
+	createDoc.Flags().StringSliceVarP(
+		&actionFlagValues,
+		createDoc.GetDocFlag("action").Name,
+		createDoc.GetDocFlag("action").Shorthand,
+		[]string{},
+		createDoc.GetDocFlag("action").Description,
 	)
 	createDoc.Flags().String(
 		createDoc.GetDocFlag("subject-condition-set-id").Name,
@@ -395,7 +374,7 @@ func init() {
 	injectLabelFlags(&createDoc.Command, false)
 
 	updateDoc := man.Docs.GetCommand("policy/subject-mappings/update",
-		man.WithRun(policy_updateSubjectMapping),
+		man.WithRun(policyUpdateSubjectMapping),
 	)
 	updateDoc.Flags().StringP(
 		updateDoc.GetDocFlag("id").Name,
@@ -403,19 +382,27 @@ func init() {
 		updateDoc.GetDocFlag("id").Default,
 		updateDoc.GetDocFlag("id").Description,
 	)
+	// deprecated
 	updateDoc.Flags().StringSliceVarP(
-		&actionsStandard,
+		&[]string{},
 		updateDoc.GetDocFlag("action-standard").Name,
 		updateDoc.GetDocFlag("action-standard").Shorthand,
 		[]string{},
 		updateDoc.GetDocFlag("action-standard").Description,
 	)
 	updateDoc.Flags().StringSliceVarP(
-		&actionsCustom,
+		&[]string{},
 		updateDoc.GetDocFlag("action-custom").Name,
 		updateDoc.GetDocFlag("action-custom").Shorthand,
 		[]string{},
 		updateDoc.GetDocFlag("action-custom").Description,
+	)
+	updateDoc.Flags().StringSliceVarP(
+		&actionFlagValues,
+		updateDoc.GetDocFlag("action").Name,
+		updateDoc.GetDocFlag("action").Shorthand,
+		[]string{},
+		updateDoc.GetDocFlag("action").Description,
 	)
 	updateDoc.Flags().String(
 		updateDoc.GetDocFlag("subject-condition-set-id").Name,
@@ -425,7 +412,7 @@ func init() {
 	injectLabelFlags(&updateDoc.Command, true)
 
 	deleteDoc := man.Docs.GetCommand("policy/subject-mappings/delete",
-		man.WithRun(policy_deleteSubjectMapping),
+		man.WithRun(policyDeleteSubjectMapping),
 	)
 	deleteDoc.Flags().StringP(
 		deleteDoc.GetDocFlag("id").Name,
@@ -440,7 +427,7 @@ func init() {
 	)
 
 	matchDoc := man.Docs.GetCommand("policy/subject-mappings/match",
-		man.WithRun(policy_matchSubjectMappings),
+		man.WithRun(policyMatchSubjectMappings),
 	)
 	matchDoc.Flags().StringP(
 		matchDoc.GetDocFlag("subject").Name,

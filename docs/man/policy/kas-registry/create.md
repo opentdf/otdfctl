@@ -20,7 +20,7 @@ command:
     - name: label
     - name: name
       shorthand: n
-      description: Optional name of the registered KAS (must be unique within policy)
+      description: Optional name of the registered KAS (must be unique within Policy)
     - name: label
       description: "Optional metadata 'labels' in the format: key=value"
       shorthand: l
@@ -28,6 +28,9 @@ command:
 ---
 
 Public keys can be stored as either `remote` or `cached` under the following JSON structure.
+
+The optional `name` of a registered Key Access Server is normalized to lower case and may contain
+hyphens or underscores between other alphanumeric characters.
 
 ### Remote
 
