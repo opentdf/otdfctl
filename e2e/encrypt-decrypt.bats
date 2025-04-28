@@ -171,10 +171,11 @@ teardown_file(){
   assert_output --partial "KasAllowlist: kas url http://localhost:8080/kas is not allowed"
 }
 
-@test "roundtrip TDF3, with allowlist containing non existent kas and ignore allowlist (should succeed)" {
+@test "roundtrip TDF3, ignoring allowlist" {
   ./otdfctl encrypt -o $OUTFILE_GO_MOD --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --tdf-type tdf3  $INFILE_GO_MOD
-  run sh -c "./otdfctl decrypt --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --tdf-type tdf3 --kas-allowlist http://not-a-real-kas.com/kas --ignore-kas-allowlist $OUTFILE_GO_MOD"
+  run sh -c "./otdfctl decrypt --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --tdf-type tdf3 --kas-allowlist '*' $OUTFILE_GO_MOD"
   assert_success
+  assert_output --partial "KasAllowlist is ignored"
 }
 
 @test "roundtrip NANO, with allowlist containing platform kas" {
@@ -190,8 +191,9 @@ teardown_file(){
   assert_output --partial "KasAllowlist: kas url http://localhost:8080/kas is not allowed"
 }
 
-@test "roundtrip NANO, with allowlist containing non existent kas and ignore allowlist (should succeed)" {
+@test "roundtrip NANO, ignoring allowlist" {
   ./otdfctl encrypt -o $OUTFILE_GO_MOD --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --tdf-type nano  $INFILE_GO_MOD
-  run sh -c "./otdfctl decrypt --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --tdf-type nano --kas-allowlist http://not-a-real-kas.com/kas --ignore-kas-allowlist $OUTFILE_GO_MOD"
+  run sh -c "./otdfctl decrypt --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --tdf-type nano --kas-allowlist '*' $OUTFILE_GO_MOD"
   assert_success
+  assert_output --partial "KasAllowlist is ignored"
 }

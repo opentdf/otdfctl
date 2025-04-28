@@ -26,7 +26,6 @@ func dev_tdfDecryptCmd(cmd *cobra.Command, args []string) {
 
 	output := c.Flags.GetOptionalString("out")
 	disableAssertionVerification := c.Flags.GetOptionalBool("no-verify-assertions")
-	ignoreAllowlist := c.Flags.GetOptionalBool("ignore-kas-allowlist")
 	sessionKeyAlgStr := c.Flags.GetOptionalString("session-key-algorithm")
 	var sessionKeyAlgorithm ocrypto.KeyType
 	switch sessionKeyAlgStr {
@@ -60,6 +59,8 @@ func dev_tdfDecryptCmd(cmd *cobra.Command, args []string) {
 	if len(bytesToDecrypt) == 0 {
 		cli.ExitWithError("Must provide ONE of the following to decrypt: [file argument, stdin input]", errors.New("no input provided"))
 	}
+
+	ignoreAllowlist := len(kasAllowList) == 1 && kasAllowList[0] == "*"
 
 	decrypted, err := h.DecryptBytes(
 		bytesToDecrypt,
@@ -123,11 +124,6 @@ func init() {
 		decryptCmd.GetDocFlag("no-verify-assertions").Name,
 		decryptCmd.GetDocFlag("no-verify-assertions").DefaultAsBool(),
 		decryptCmd.GetDocFlag("no-verify-assertions").Description,
-	)
-	decryptCmd.Flags().Bool(
-		decryptCmd.GetDocFlag("ignore-kas-allowlist").Name,
-		decryptCmd.GetDocFlag("ignore-kas-allowlist").DefaultAsBool(),
-		decryptCmd.GetDocFlag("ignore-kas-allowlist").Description,
 	)
 	decryptCmd.Flags().StringSliceVarP(
 		&kasAllowList,
