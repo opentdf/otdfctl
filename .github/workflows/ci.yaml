@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       - main
+      - temp-*
     paths-ignore:
       - '**/*.yaml'
       - '**/*.md'
