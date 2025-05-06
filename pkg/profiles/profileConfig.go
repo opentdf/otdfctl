@@ -12,10 +12,10 @@ type ProfileStore struct {
 }
 
 type ProfileConfig struct {
-	Name            string          `json:"profile"`
-	Endpoint        string          `json:"endpoint"`
-	TlsNoVerify     bool            `json:"tlsNoVerify"`
-	AuthCredentials AuthCredentials `json:"authCredentials"`
+	Name            string          `json:"p"`
+	Endpoint        string          `json:"e"`
+	TlsNoVerify     bool            `json:"t"`
+	AuthCredentials AuthCredentials `json:"a"`
 }
 
 func NewProfileStore(newStore NewStoreInterface, profileName string, endpoint string, tlsNoVerify bool) (*ProfileStore, error) {

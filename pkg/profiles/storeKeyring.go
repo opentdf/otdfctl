@@ -3,6 +3,8 @@ package profiles
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
+	"strconv"
 
 	"github.com/zalando/go-keyring"
 )
@@ -33,9 +35,19 @@ func (k *KeyringStore) Get(value interface{}) error {
 }
 
 func (k *KeyringStore) Set(value interface{}) error {
+	var refreshTokenRemoved bool
+	if c, ok := value.(ProfileConfig); ok && c.AuthCredentials.AccessToken.RefreshToken != "" {
+		refreshTokenRemoved = true // remove to save size
+		fmt.Print("Removing refresh token, size: ")
+		c.AuthCredentials.AccessToken.RefreshToken = ""
+		value = c
+	}
 	var b bytes.Buffer
 	if err := json.NewEncoder(&b).Encode(value); err != nil {
 		return err
+	}
+	if refreshTokenRemoved {
+		fmt.Println(strconv.Itoa(b.Len()))
 	}
 	return keyring.Set(k.namespace, k.key, b.String())
 }
