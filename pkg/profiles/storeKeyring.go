@@ -1,11 +1,10 @@
 package profiles
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
 	"strconv"
 
+	"github.com/vmihailenco/msgpack/v5"
 	"github.com/zalando/go-keyring"
 )
 
@@ -31,25 +30,25 @@ func (k *KeyringStore) Get(value interface{}) error {
 	if err != nil {
 		return err
 	}
-	return json.NewDecoder(bytes.NewReader([]byte(s))).Decode(value)
+	return msgpack.Unmarshal([]byte(s), value)
 }
 
 func (k *KeyringStore) Set(value interface{}) error {
 	var refreshTokenRemoved bool
 	if c, ok := value.(ProfileConfig); ok && c.AuthCredentials.AccessToken.RefreshToken != "" {
 		refreshTokenRemoved = true // remove to save size
-		fmt.Print("Removing refresh token, size: ")
+		fmt.Print("Minimized size: ")
 		c.AuthCredentials.AccessToken.RefreshToken = ""
 		value = c
 	}
-	var b bytes.Buffer
-	if err := json.NewEncoder(&b).Encode(value); err != nil {
+	b, err := msgpack.Marshal(value)
+	if err != nil {
 		return err
 	}
 	if refreshTokenRemoved {
-		fmt.Println(strconv.Itoa(b.Len()))
+		fmt.Printf("%s...", strconv.Itoa(len(b)))
 	}
-	return keyring.Set(k.namespace, k.key, b.String())
+	return keyring.Set(k.namespace, k.key, string(b))
 }
 
 func (k *KeyringStore) Delete() error {
