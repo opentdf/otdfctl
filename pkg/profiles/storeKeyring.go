@@ -47,6 +47,8 @@ func (k *KeyringStore) Set(value interface{}) error {
 	}
 	if refreshTokenRemoved {
 		fmt.Printf("%s...", strconv.Itoa(len(b)))
+	} else {
+		fmt.Printf("Unminimized size: %s...", strconv.Itoa(len(b)))
 	}
 	return keyring.Set(k.namespace, k.key, string(b))
 }
