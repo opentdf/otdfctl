@@ -20,7 +20,6 @@ func auth_logout(cmd *cobra.Command, args []string) {
 		if err := auth.RevokeAccessToken(
 			cmd.Context(),
 			cp.GetEndpoint(),
-			creds.AccessToken.PublicClientID,
 			creds.AccessToken.RefreshToken,
 			c.FlagHelper.GetOptionalBool("tls-no-verify"),
 		); err != nil {
