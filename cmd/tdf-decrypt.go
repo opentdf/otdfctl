@@ -22,7 +22,6 @@ const TDF_MAX_FILE_SIZE = int64(10 * 1024 * 1024 * 1024) // 10 GB
 func dev_tdfDecryptCmd(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args, cli.WithPrintJson())
 	h := NewHandler(c)
-	defer h.Close()
 
 	output := c.Flags.GetOptionalString("out")
 	disableAssertionVerification := c.Flags.GetOptionalBool("no-verify-assertions")
