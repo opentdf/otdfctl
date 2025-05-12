@@ -19,7 +19,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/opentdf/platform/lib/flattening v0.1.3
 	github.com/opentdf/platform/lib/ocrypto v0.1.9
-	github.com/opentdf/platform/protocol/go v0.3.2
+	github.com/opentdf/platform/protocol/go v0.3.3-0.20250512200722-427977e1a2e7
 	github.com/opentdf/platform/sdk v0.4.5-0.20250512200338-74ec172783fd
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/viper v1.19.0
