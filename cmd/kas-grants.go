@@ -16,7 +16,6 @@ var forceFlagValue = false
 func policy_assignKasGrant(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
-	defer h.Close()
 
 	nsID := c.Flags.GetOptionalID("namespace-id")
 	attrID := c.Flags.GetOptionalID("attribute-id")
@@ -74,7 +73,6 @@ func policy_assignKasGrant(cmd *cobra.Command, args []string) {
 func policy_unassignKasGrant(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
-	defer h.Close()
 
 	nsID := c.Flags.GetOptionalID("namespace-id")
 	attrID := c.Flags.GetOptionalID("attribute-id")
@@ -160,7 +158,6 @@ func policy_unassignKasGrant(cmd *cobra.Command, args []string) {
 func policy_listKasGrants(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
-	defer h.Close()
 	kasF := c.Flags.GetOptionalString("kas")
 	limit := c.Flags.GetRequiredInt32("limit")
 	offset := c.Flags.GetRequiredInt32("offset")

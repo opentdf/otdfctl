@@ -13,7 +13,6 @@ import (
 func policyGetAction(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
-	defer h.Close()
 
 	id := c.Flags.GetOptionalID("id")
 	name := c.Flags.GetOptionalString("name")
@@ -47,7 +46,6 @@ func policyGetAction(cmd *cobra.Command, args []string) {
 func policyListActions(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
-	defer h.Close()
 
 	limit := c.Flags.GetRequiredInt32("limit")
 	offset := c.Flags.GetRequiredInt32("offset")
@@ -87,7 +85,6 @@ func policyListActions(cmd *cobra.Command, args []string) {
 func policyCreateAction(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
-	defer h.Close()
 
 	name := c.Flags.GetRequiredString("name")
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
@@ -113,7 +110,6 @@ func policyCreateAction(cmd *cobra.Command, args []string) {
 func policyDeleteAction(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
-	defer h.Close()
 
 	id := c.Flags.GetRequiredID("id")
 	force := c.Flags.GetOptionalBool("force")
@@ -143,7 +139,6 @@ func policyDeleteAction(cmd *cobra.Command, args []string) {
 func policyUpdateAction(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
-	defer h.Close()
 
 	id := c.Flags.GetRequiredID("id")
 	name := c.Flags.GetOptionalString("name")

@@ -43,7 +43,6 @@ type tdfInspectResult struct {
 func tdf_InspectCmd(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args, cli.WithPrintJson())
 	h := NewHandler(c)
-	defer h.Close()
 
 	data := cli.ReadFromArgsOrPipe(args, nil)
 	if len(data) == 0 {

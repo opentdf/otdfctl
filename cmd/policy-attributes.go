@@ -22,7 +22,6 @@ var (
 func policy_createAttribute(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
-	defer h.Close()
 
 	name := c.Flags.GetRequiredString("name")
 	rule := c.Flags.GetRequiredString("rule")
@@ -60,7 +59,6 @@ func policy_createAttribute(cmd *cobra.Command, args []string) {
 func policy_getAttribute(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
-	defer h.Close()
 
 	id := c.Flags.GetRequiredID("id")
 
@@ -88,7 +86,6 @@ func policy_getAttribute(cmd *cobra.Command, args []string) {
 func policy_listAttributes(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
-	defer h.Close()
 
 	state := cli.GetState(cmd)
 	limit := c.Flags.GetRequiredInt32("limit")
@@ -133,7 +130,6 @@ func policy_listAttributes(cmd *cobra.Command, args []string) {
 func policy_deactivateAttribute(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
-	defer h.Close()
 
 	id := c.Flags.GetRequiredID("id")
 	force := c.Flags.GetOptionalBool("force")
@@ -169,7 +165,6 @@ func policy_deactivateAttribute(cmd *cobra.Command, args []string) {
 func policy_updateAttribute(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
-	defer h.Close()
 
 	id := c.Flags.GetRequiredID("id")
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
@@ -192,7 +187,6 @@ func policy_updateAttribute(cmd *cobra.Command, args []string) {
 func policy_unsafeReactivateAttribute(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
-	defer h.Close()
 
 	id := c.Flags.GetRequiredID("id")
 
@@ -224,7 +218,6 @@ func policy_unsafeReactivateAttribute(cmd *cobra.Command, args []string) {
 func policy_unsafeUpdateAttribute(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
-	defer h.Close()
 
 	id := c.Flags.GetRequiredID("id")
 	name := c.Flags.GetOptionalString("name")
@@ -270,7 +263,6 @@ func policy_unsafeUpdateAttribute(cmd *cobra.Command, args []string) {
 func policy_unsafeDeleteAttribute(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
-	defer h.Close()
 
 	id := c.Flags.GetRequiredID("id")
 

@@ -19,7 +19,6 @@ var (
 func policy_createResourceMapping(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
-	defer h.Close()
 
 	attrId := c.Flags.GetRequiredID("attribute-value-id")
 	terms = c.Flags.GetStringSlice("terms", terms, cli.FlagsStringSliceOptions{
@@ -47,7 +46,6 @@ func policy_createResourceMapping(cmd *cobra.Command, args []string) {
 func policy_getResourceMapping(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
-	defer h.Close()
 
 	id := c.Flags.GetRequiredID("id")
 
@@ -71,7 +69,6 @@ func policy_getResourceMapping(cmd *cobra.Command, args []string) {
 func policy_listResourceMappings(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
-	defer h.Close()
 
 	limit := c.Flags.GetRequiredInt32("limit")
 	offset := c.Flags.GetRequiredInt32("offset")
@@ -111,7 +108,6 @@ func policy_listResourceMappings(cmd *cobra.Command, args []string) {
 func policy_updateResourceMapping(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
-	defer h.Close()
 
 	id := c.Flags.GetRequiredID("id")
 	attrValueId := c.Flags.GetOptionalID("attribute-value-id")
@@ -138,7 +134,6 @@ func policy_updateResourceMapping(cmd *cobra.Command, args []string) {
 func policy_deleteResourceMapping(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
-	defer h.Close()
 
 	id := c.Flags.GetRequiredID("id")
 	force := c.Flags.GetOptionalBool("force")

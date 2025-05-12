@@ -107,10 +107,6 @@ func New(opts ...handlerOptsFunc) (Handler, error) {
 	}, nil
 }
 
-func (h Handler) Close() error {
-	return h.sdk.Close()
-}
-
 func (h Handler) Direct() *sdk.SDK {
 	return h.sdk
 }

@@ -19,7 +19,6 @@ var policy_kasRegistryCmd *cobra.Command
 func policy_getKeyAccessRegistry(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
-	defer h.Close()
 
 	id := c.FlagHelper.GetRequiredID("id")
 
@@ -55,7 +54,6 @@ func policy_getKeyAccessRegistry(cmd *cobra.Command, args []string) {
 func policy_listKeyAccessRegistries(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
-	defer h.Close()
 
 	limit := c.Flags.GetRequiredInt32("limit")
 	offset := c.Flags.GetRequiredInt32("offset")
@@ -94,7 +92,6 @@ func policy_listKeyAccessRegistries(cmd *cobra.Command, args []string) {
 func policy_createKeyAccessRegistry(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
-	defer h.Close()
 
 	uri := c.Flags.GetRequiredString("uri")
 	cachedJSON := c.Flags.GetOptionalString("public-keys")
@@ -148,7 +145,6 @@ func policy_createKeyAccessRegistry(cmd *cobra.Command, args []string) {
 func policy_updateKeyAccessRegistry(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
-	defer h.Close()
 
 	id := c.Flags.GetRequiredID("id")
 	uri := c.Flags.GetOptionalString("uri")
@@ -206,7 +202,6 @@ func policy_updateKeyAccessRegistry(cmd *cobra.Command, args []string) {
 func policy_deleteKeyAccessRegistry(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
-	defer h.Close()
 
 	id := c.Flags.GetRequiredID("id")
 	force := c.Flags.GetOptionalBool("force")

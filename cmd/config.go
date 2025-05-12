@@ -11,8 +11,7 @@ import (
 
 func config_updateOutput(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
-	h := NewHandler(c)
-	defer h.Close()
+	_ = NewHandler(c)
 
 	format := c.Flags.GetRequiredString("format")
 
