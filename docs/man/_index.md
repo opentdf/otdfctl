@@ -16,6 +16,9 @@ command:
     - name: tls-no-verify
       description: disable verification of the server's TLS certificate
       default: false
+    - name: proxy
+      description: gRPC proxy
+      default:
     - name: log-level
       description: log level
       enum:

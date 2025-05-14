@@ -82,6 +82,7 @@ func NewHandler(c *cli.Cli) handlers.Handler {
 
 	// Non-profile flags
 	host := c.FlagHelper.GetOptionalString("host")
+	grpcProxy := c.FlagHelper.GetOptionalString("proxy")
 	tlsNoVerify := c.FlagHelper.GetOptionalBool("tls-no-verify")
 	withClientCreds := c.FlagHelper.GetOptionalString("with-client-creds")
 	withClientCredsFile := c.FlagHelper.GetOptionalString("with-client-creds-file")
@@ -89,7 +90,7 @@ func NewHandler(c *cli.Cli) handlers.Handler {
 	var inMemoryProfile bool
 
 	authFlags := []string{"--with-access-token", "--with-client-creds", "--with-client-creds-file"}
-	nonProfileFlags := append([]string{"--host", "--tls-no-verify"}, authFlags...)
+	nonProfileFlags := append([]string{"--host", "--tls-no-verify", "--proxy"}, authFlags...)
 	hasNonProfileFlags := host != "" || tlsNoVerify || withClientCreds != "" || withClientCredsFile != "" || withAccessToken != ""
 
 	//nolint:nestif // nested if statements are necessary for validation
@@ -199,7 +200,7 @@ func NewHandler(c *cli.Cli) handlers.Handler {
 		cli.ExitWithError("Failed to get access token.", err)
 	}
 
-	h, err := handlers.New(handlers.WithProfile(cp))
+	h, err := handlers.New(handlers.WithProxy(grpcProxy, handlers.WithProfile(cp)))
 	if err != nil {
 		cli.ExitWithError("Unexpected error", err)
 	}
@@ -264,6 +265,11 @@ func init() {
 		rootCmd.GetDocFlag("tls-no-verify").Name,
 		rootCmd.GetDocFlag("tls-no-verify").DefaultAsBool(),
 		rootCmd.GetDocFlag("tls-no-verify").Description,
+	)
+	RootCmd.PersistentFlags().String(
+		rootCmd.GetDocFlag("proxy").Name,
+		rootCmd.GetDocFlag("proxy").Default,
+		rootCmd.GetDocFlag("proxy").Description,
 	)
 	RootCmd.PersistentFlags().String(
 		rootCmd.GetDocFlag("log-level").Name,

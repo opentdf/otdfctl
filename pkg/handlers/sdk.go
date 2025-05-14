@@ -3,12 +3,15 @@ package handlers
 import (
 	"context"
 	"errors"
+	"net"
 
 	"github.com/opentdf/otdfctl/pkg/auth"
 	"github.com/opentdf/otdfctl/pkg/profiles"
 	"github.com/opentdf/otdfctl/pkg/utils"
 	"github.com/opentdf/platform/protocol/go/common"
 	"github.com/opentdf/platform/sdk"
+	"golang.org/x/net/proxy"
+	"google.golang.org/grpc"
 )
 
 var (
@@ -28,6 +31,7 @@ type Handler struct {
 type handlerOpts struct {
 	endpoint    string
 	tlsNoVerify bool
+	grpcProxy   string
 
 	profile *profiles.ProfileStore
 
@@ -41,6 +45,17 @@ func WithEndpoint(endpoint string, tlsNoVerify bool) handlerOptsFunc {
 		c.endpoint = endpoint
 		c.tlsNoVerify = tlsNoVerify
 		return c
+	}
+}
+
+func WithProxy(proxy string, parent handlerOptsFunc) handlerOptsFunc {
+	if proxy == "" {
+		return parent
+	}
+	return func(opts handlerOpts) handlerOpts {
+		opts = parent(opts)
+		opts.grpcProxy = proxy
+		return opts
 	}
 }
 
@@ -95,6 +110,10 @@ func New(opts ...handlerOptsFunc) (Handler, error) {
 		o.sdkOpts = append(o.sdkOpts, sdk.WithInsecurePlaintextConn())
 	}
 
+	if o.grpcProxy != "" {
+		o.sdkOpts = append(o.sdkOpts, sdk.WithExtraDialOptions(grpcSocks5Proxy(o.grpcProxy)))
+	}
+
 	s, err := sdk.New(u.String(), o.sdkOpts...)
 	if err != nil {
 		return Handler{}, err
@@ -105,6 +124,19 @@ func New(opts ...handlerOptsFunc) (Handler, error) {
 		platformEndpoint: o.endpoint,
 		ctx:              context.Background(),
 	}, nil
+}
+
+func grpcSocks5Proxy(proxyAddr string) grpc.DialOption {
+	return grpc.WithContextDialer(func(ctx context.Context, addr string) (net.Conn, error) {
+		// Create a SOCKS5 dialer
+		dialer, err := proxy.SOCKS5("tcp", proxyAddr, nil, proxy.Direct)
+		if err != nil {
+			return nil, err
+		}
+
+		// Use the dialer to connect to the target address
+		return dialer.Dial("tcp", addr)
+	})
 }
 
 func (h Handler) Close() error {
