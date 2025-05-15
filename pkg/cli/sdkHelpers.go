@@ -71,3 +71,11 @@ func GetSimpleAttributeValue(v *policy.Value) SimpleAttributeValue {
 		Metadata: ConstructMetadata(v.GetMetadata()),
 	}
 }
+
+func GetSimpleRegisteredResourceValues(v []*policy.RegisteredResourceValue) []string {
+	values := make([]string, len(v))
+	for i, val := range v {
+		values[i] = val.GetValue()
+	}
+	return values
+}
