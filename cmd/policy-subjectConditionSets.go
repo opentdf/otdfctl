@@ -51,7 +51,6 @@ func marshalSubjectSetsProto(subjectSet []*policy.SubjectSet) ([]byte, error) {
 func policy_createSubjectConditionSet(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
-	defer h.Close()
 	var ssBytes []byte
 
 	ssFlagJSON := c.Flags.GetOptionalString("subject-sets")
@@ -113,7 +112,6 @@ func policy_createSubjectConditionSet(cmd *cobra.Command, args []string) {
 func policy_getSubjectConditionSet(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
-	defer h.Close()
 
 	id := c.Flags.GetRequiredID("id")
 
@@ -141,7 +139,6 @@ func policy_getSubjectConditionSet(cmd *cobra.Command, args []string) {
 func policy_listSubjectConditionSets(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
-	defer h.Close()
 
 	limit := c.Flags.GetRequiredInt32("limit")
 	offset := c.Flags.GetRequiredInt32("offset")
@@ -181,7 +178,6 @@ func policy_listSubjectConditionSets(cmd *cobra.Command, args []string) {
 func policy_updateSubjectConditionSet(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
-	defer h.Close()
 
 	id := c.Flags.GetRequiredID("id")
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
@@ -249,7 +245,6 @@ func policy_updateSubjectConditionSet(cmd *cobra.Command, args []string) {
 func policy_deleteSubjectConditionSet(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
-	defer h.Close()
 
 	id := c.Flags.GetRequiredID("id")
 	force := c.Flags.GetOptionalBool("force")
@@ -286,7 +281,6 @@ func policy_deleteSubjectConditionSet(cmd *cobra.Command, args []string) {
 func policy_pruneSubjectConditionSet(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
-	defer h.Close()
 
 	force := c.Flags.GetOptionalBool("force")
 
