@@ -75,7 +75,7 @@ func GetClientCredsFromJSON(credsJSON []byte) (ClientCredentials, error) {
 	return creds, nil
 }
 
-func getPlatformConfiguration(endpoint, publicClientID string, tlsNoVerify bool) (platformConfiguration, error) {
+func getPlatformConfiguration(endpoint string, tlsNoVerify bool) (platformConfiguration, error) {
 	c := platformConfiguration{}
 
 	normalized, err := utils.NormalizeEndpoint(endpoint)
@@ -111,14 +111,6 @@ func getPlatformConfiguration(endpoint, publicClientID string, tlsNoVerify bool)
 	c.tokenEndpoint, e = s.PlatformConfiguration.TokenEndpoint()
 	if e != nil {
 		err = errors.Join(err, sdk.ErrPlatformTokenEndpointNotFound)
-	}
-
-	c.publicClientID = publicClientID
-	if c.publicClientID == "" {
-		c.publicClientID, e = s.PlatformConfiguration.PublicClientID()
-		if e != nil {
-			err = errors.Join(err, sdk.ErrPlatformPublicClientIDNotFound)
-		}
 	}
 
 	if err != nil {
@@ -266,7 +258,7 @@ func Login(ctx context.Context, platformEndpoint, tokenURL, authURL, publicClien
 
 // Logs in using the auth code PKCE flow driven by the platform well-known idP OIDC configuration.
 func LoginWithPKCE(ctx context.Context, host, clientID string, tlsNoVerify bool) (*oauth2.Token, error) {
-	pc, err := getPlatformConfiguration(host, clientID, tlsNoVerify)
+	pc, err := getPlatformConfiguration(host, tlsNoVerify)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get platform configuration: %w", err)
 	}
@@ -302,12 +294,7 @@ func newOidcRelyingParty(ctx context.Context, endpoint string, tlsNoVerify bool,
 		return nil, errors.New("client secret must be empty for public clients")
 	}
 
-	var pcClient string
-	if clientCreds.isPublic {
-		pcClient = clientCreds.clientID
-	}
-
-	pc, err := getPlatformConfiguration(endpoint, pcClient, tlsNoVerify)
+	pc, err := getPlatformConfiguration(endpoint, tlsNoVerify)
 	if err != nil {
 		return nil, err
 	}
