@@ -14,7 +14,7 @@ func auth_codeLogin(cmd *cobra.Command, args []string) {
 
 	c.Print("Initiating login...")
 	clientID := c.FlagHelper.GetRequiredString("client-id")
-	tok, _, err := auth.LoginWithPKCE(
+	tok, err := auth.LoginWithPKCE(
 		cmd.Context(),
 		cp.GetEndpoint(),
 		clientID,

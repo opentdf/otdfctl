@@ -265,18 +265,18 @@ func Login(ctx context.Context, platformEndpoint, tokenURL, authURL, publicClien
 }
 
 // Logs in using the auth code PKCE flow driven by the platform well-known idP OIDC configuration.
-func LoginWithPKCE(ctx context.Context, host, publicClientID string, tlsNoVerify bool) (*oauth2.Token, string, error) {
-	pc, err := getPlatformConfiguration(host, publicClientID, tlsNoVerify)
+func LoginWithPKCE(ctx context.Context, host, clientID string, tlsNoVerify bool) (*oauth2.Token, error) {
+	pc, err := getPlatformConfiguration(host, clientID, tlsNoVerify)
 	if err != nil {
-		return nil, "", fmt.Errorf("failed to get platform configuration: %w", err)
+		return nil, fmt.Errorf("failed to get platform configuration: %w", err)
 	}
 
-	tok, err := Login(ctx, host, pc.tokenEndpoint, pc.authzEndpoint, pc.publicClientID)
+	tok, err := Login(ctx, host, pc.tokenEndpoint, pc.authzEndpoint, clientID)
 	if err != nil {
-		return nil, "", fmt.Errorf("failed to login: %w", err)
+		return nil, fmt.Errorf("failed to login: %w", err)
 	}
 
-	return tok, pc.publicClientID, nil
+	return tok, nil
 }
 
 // Revokes the access token
