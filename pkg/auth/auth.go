@@ -33,10 +33,9 @@ type ClientCredentials struct {
 }
 
 type platformConfiguration struct {
-	issuer         string
-	authzEndpoint  string
-	tokenEndpoint  string
-	publicClientID string
+	issuer        string
+	authzEndpoint string
+	tokenEndpoint string
 }
 
 type oidcClientCredentials struct {
