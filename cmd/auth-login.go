@@ -14,7 +14,7 @@ func auth_codeLogin(cmd *cobra.Command, args []string) {
 
 	c.Print("Initiating login...")
 	clientID := c.FlagHelper.GetRequiredString("client-id")
-	tok, _, err := auth.LoginWithPKCE(
+	tok, err := auth.LoginWithPKCE(
 		cmd.Context(),
 		cp.GetEndpoint(),
 		clientID,
@@ -30,10 +30,10 @@ func auth_codeLogin(cmd *cobra.Command, args []string) {
 	if err := cp.SetAuthCredentials(profiles.AuthCredentials{
 		AuthType: profiles.PROFILE_AUTH_TYPE_ACCESS_TOKEN,
 		AccessToken: profiles.AuthCredentialsAccessToken{
-			PublicClientID: clientID,
-			AccessToken:    tok.AccessToken,
-			Expiration:     tok.Expiry.Unix(),
-			RefreshToken:   tok.RefreshToken,
+			ClientID:     clientID,
+			AccessToken:  tok.AccessToken,
+			Expiration:   tok.Expiry.Unix(),
+			RefreshToken: tok.RefreshToken,
 		},
 	}); err != nil {
 		c.ExitWithError("failed to set auth credentials", err)
