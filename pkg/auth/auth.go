@@ -272,9 +272,9 @@ func LoginWithPKCE(ctx context.Context, host, clientID string, tlsNoVerify bool)
 }
 
 // Revokes the access token
-func RevokeAccessToken(ctx context.Context, endpoint, publicClientID, refreshToken string, tlsNoVerify bool) error {
+func RevokeAccessToken(ctx context.Context, endpoint, clientID, refreshToken string, tlsNoVerify bool) error {
 	rp, err := newOidcRelyingParty(ctx, endpoint, tlsNoVerify, oidcClientCredentials{
-		clientID: publicClientID,
+		clientID: clientID,
 		isPublic: true,
 	})
 	if err != nil {
