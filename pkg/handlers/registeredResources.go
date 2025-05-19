@@ -25,15 +25,15 @@ func (h Handler) CreateRegisteredResource(ctx context.Context, name string, valu
 	return resp.GetResource(), nil
 }
 
-func (h Handler) GetRegisteredResource(ctx context.Context, id, fqn string) (*policy.RegisteredResource, error) {
+func (h Handler) GetRegisteredResource(ctx context.Context, id, name string) (*policy.RegisteredResource, error) {
 	req := &registeredresources.GetRegisteredResourceRequest{}
 	if id != "" {
-		req.Identifier = &registeredresources.GetRegisteredResourceRequest_ResourceId{
-			ResourceId: id,
+		req.Identifier = &registeredresources.GetRegisteredResourceRequest_Id{
+			Id: id,
 		}
 	} else {
-		req.Identifier = &registeredresources.GetRegisteredResourceRequest_Fqn{
-			Fqn: fqn,
+		req.Identifier = &registeredresources.GetRegisteredResourceRequest_Name{
+			Name: name,
 		}
 	}
 
@@ -101,8 +101,8 @@ func (h Handler) CreateRegisteredResourceValue(ctx context.Context, resourceId s
 func (h Handler) GetRegisteredResourceValue(ctx context.Context, id, fqn string) (*policy.RegisteredResourceValue, error) {
 	req := &registeredresources.GetRegisteredResourceValueRequest{}
 	if id != "" {
-		req.Identifier = &registeredresources.GetRegisteredResourceValueRequest_ValueId{
-			ValueId: id,
+		req.Identifier = &registeredresources.GetRegisteredResourceValueRequest_Id{
+			Id: id,
 		}
 	} else {
 		req.Identifier = &registeredresources.GetRegisteredResourceValueRequest_Fqn{

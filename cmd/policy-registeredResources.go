@@ -54,17 +54,17 @@ func policyGetRegisteredResource(cmd *cobra.Command, args []string) {
 	defer h.Close()
 
 	id := c.Flags.GetOptionalID("id")
-	fqn := c.Flags.GetOptionalString("fqn")
+	name := c.Flags.GetOptionalString("name")
 
-	if id == "" && fqn == "" {
-		cli.ExitWithError("Either 'id' or 'fqn' must be provided", nil)
+	if id == "" && name == "" {
+		cli.ExitWithError("Either 'id' or 'name' must be provided", nil)
 	}
 
-	resource, err := h.GetRegisteredResource(cmd.Context(), id, fqn)
+	resource, err := h.GetRegisteredResource(cmd.Context(), id, name)
 	if err != nil {
 		identifier := fmt.Sprintf("id: %s", id)
 		if id == "" {
-			identifier = fmt.Sprintf("fqn: %s", fqn)
+			identifier = fmt.Sprintf("name: %s", name)
 		}
 		errMsg := fmt.Sprintf("Failed to find registered resource (%s)", identifier)
 		cli.ExitWithError(errMsg, err)
