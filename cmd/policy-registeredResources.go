@@ -7,6 +7,7 @@ import (
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/opentdf/platform/protocol/go/policy"
+	"github.com/opentdf/platform/protocol/go/policy/registeredresources"
 	"github.com/spf13/cobra"
 )
 
@@ -197,9 +198,11 @@ func policyCreateRegisteredResourceValue(cmd *cobra.Command, args []string) {
 
 	resourceId := c.Flags.GetRequiredID("resource-id")
 	value := c.Flags.GetRequiredString("value")
+	// todo: figure out how to get action attribute values from command line
+	actionAttributeValues := []*registeredresources.ActionAttributeValue{}
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
-	resourceValue, err := h.CreateRegisteredResourceValue(cmd.Context(), resourceId, value, getMetadataMutable(metadataLabels))
+	resourceValue, err := h.CreateRegisteredResourceValue(cmd.Context(), resourceId, value, actionAttributeValues, getMetadataMutable(metadataLabels))
 	if err != nil {
 		cli.ExitWithError("Failed to create registered resource value", err)
 	}
@@ -250,7 +253,7 @@ func policyGetRegisteredResourceValue(cmd *cobra.Command, args []string) {
 	HandleSuccess(cmd, value.GetId(), t, value)
 }
 
-func policyListRegisteredResourceValue(cmd *cobra.Command, args []string) {
+func policyListRegisteredResourceValues(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
 	defer h.Close()
@@ -289,12 +292,15 @@ func policyUpdateRegisteredResourceValue(cmd *cobra.Command, args []string) {
 
 	id := c.Flags.GetRequiredID("id")
 	value := c.Flags.GetOptionalString("value")
+	// todo: figure out how to get action attribute values from command line
+	actionAttributeValues := []*registeredresources.ActionAttributeValue{}
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
 	updated, err := h.UpdateRegisteredResourceValue(
 		cmd.Context(),
 		id,
 		value,
+		actionAttributeValues,
 		getMetadataMutable(metadataLabels),
 		getMetadataUpdateBehavior(),
 	)
@@ -351,15 +357,177 @@ func policyDeleteRegisteredResourceValue(cmd *cobra.Command, args []string) {
 
 func init() {
 	// Registered Resources
-	// todo
 
-	// Registered Resource Values
-	// todo
+	getDoc := man.Docs.GetCommand("policy/registered-resources/get",
+		man.WithRun(policyGetRegisteredResource),
+	)
+	getDoc.Flags().StringP(
+		getDoc.GetDocFlag("id").Name,
+		getDoc.GetDocFlag("id").Shorthand,
+		getDoc.GetDocFlag("id").Default,
+		getDoc.GetDocFlag("id").Description,
+	)
+	getDoc.Flags().StringP(
+		getDoc.GetDocFlag("name").Name,
+		getDoc.GetDocFlag("name").Shorthand,
+		getDoc.GetDocFlag("name").Default,
+		getDoc.GetDocFlag("name").Description,
+	)
 
-	policyRegisteredResourcesDoc := man.Docs.GetCommand("policy/registered-resources", man.WithSubcommands(nil)) // todo
+	listDoc := man.Docs.GetCommand("policy/registered-resources/list",
+		man.WithRun(policyListRegisteredResources),
+	)
+	injectListPaginationFlags(listDoc)
 
-	policyRegisteredResourceValuesDoc := man.Docs.GetCommand("policy/registered-resources/values", man.WithSubcommands(nil)) // todo
+	createDoc := man.Docs.GetCommand("policy/registered-resources/create",
+		man.WithRun(policyCreateRegisteredResource),
+	)
+	createDoc.Flags().StringP(
+		createDoc.GetDocFlag("name").Name,
+		createDoc.GetDocFlag("name").Shorthand,
+		createDoc.GetDocFlag("name").Default,
+		createDoc.GetDocFlag("name").Description,
+	)
+	createDoc.Flags().StringSliceVarP(
+		&values,
+		createDoc.GetDocFlag("value").Name,
+		createDoc.GetDocFlag("value").Shorthand,
+		[]string{},
+		createDoc.GetDocFlag("value").Description,
+	)
+	injectLabelFlags(&createDoc.Command, false)
+
+	updateDoc := man.Docs.GetCommand("policy/registered-resources/update",
+		man.WithRun(policyUpdateRegisteredResource),
+	)
+	updateDoc.Flags().StringP(
+		updateDoc.GetDocFlag("id").Name,
+		updateDoc.GetDocFlag("id").Shorthand,
+		updateDoc.GetDocFlag("id").Default,
+		updateDoc.GetDocFlag("id").Description,
+	)
+	updateDoc.Flags().StringP(
+		updateDoc.GetDocFlag("name").Name,
+		updateDoc.GetDocFlag("name").Shorthand,
+		updateDoc.GetDocFlag("name").Default,
+		updateDoc.GetDocFlag("name").Description,
+	)
+	injectLabelFlags(&updateDoc.Command, true)
+
+	deleteDoc := man.Docs.GetCommand("policy/registered-resources/delete",
+		man.WithRun(policyDeleteRegisteredResource),
+	)
+	deleteDoc.Flags().StringP(
+		deleteDoc.GetDocFlag("id").Name,
+		deleteDoc.GetDocFlag("id").Shorthand,
+		deleteDoc.GetDocFlag("id").Default,
+		deleteDoc.GetDocFlag("id").Description,
+	)
+	deleteDoc.Flags().Bool(
+		deleteDoc.GetDocFlag("force").Name,
+		false,
+		deleteDoc.GetDocFlag("force").Description,
+	)
+
+	policyRegisteredResourcesDoc := man.Docs.GetCommand("policy/registered-resources",
+		man.WithSubcommands(
+			getDoc,
+			listDoc,
+			createDoc,
+			updateDoc,
+			deleteDoc,
+		),
+	)
 
 	policyCmd.AddCommand(&policyRegisteredResourcesDoc.Command)
+
+	// Registered Resource Values
+
+	getValueDoc := man.Docs.GetCommand("policy/registered-resources/values/get",
+		man.WithRun(policyGetRegisteredResourceValue),
+	)
+	getValueDoc.Flags().StringP(
+		getValueDoc.GetDocFlag("id").Name,
+		getValueDoc.GetDocFlag("id").Shorthand,
+		getValueDoc.GetDocFlag("id").Default,
+		getValueDoc.GetDocFlag("id").Description,
+	)
+	getValueDoc.Flags().StringP(
+		getValueDoc.GetDocFlag("fqn").Name,
+		getValueDoc.GetDocFlag("fqn").Shorthand,
+		getValueDoc.GetDocFlag("fqn").Default,
+		getValueDoc.GetDocFlag("fqn").Description,
+	)
+
+	listValuesDoc := man.Docs.GetCommand("policy/registered-resources/values/list",
+		man.WithRun(policyListRegisteredResourceValues),
+	)
+	listValuesDoc.Flags().StringP(
+		listValuesDoc.GetDocFlag("resource-id").Name,
+		listValuesDoc.GetDocFlag("resource-id").Shorthand,
+		listValuesDoc.GetDocFlag("resource-id").Default,
+		listValuesDoc.GetDocFlag("resource-id").Description,
+	)
+	injectListPaginationFlags(listValuesDoc)
+
+	createValueDoc := man.Docs.GetCommand("policy/registered-resources/values/create",
+		man.WithRun(policyCreateRegisteredResourceValue),
+	)
+	createValueDoc.Flags().StringP(
+		createValueDoc.GetDocFlag("resource-id").Name,
+		createValueDoc.GetDocFlag("resource-id").Shorthand,
+		createValueDoc.GetDocFlag("resource-id").Default,
+		createValueDoc.GetDocFlag("resource-id").Description,
+	)
+	createValueDoc.Flags().StringP(
+		createValueDoc.GetDocFlag("value").Name,
+		createValueDoc.GetDocFlag("value").Shorthand,
+		createValueDoc.GetDocFlag("value").Default,
+		createValueDoc.GetDocFlag("value").Description,
+	)
+	injectLabelFlags(&createValueDoc.Command, false)
+
+	updateValueDoc := man.Docs.GetCommand("policy/registered-resources/values/update",
+		man.WithRun(policyUpdateRegisteredResourceValue),
+	)
+	updateValueDoc.Flags().StringP(
+		updateDoc.GetDocFlag("id").Name,
+		updateDoc.GetDocFlag("id").Shorthand,
+		updateDoc.GetDocFlag("id").Default,
+		updateDoc.GetDocFlag("id").Description,
+	)
+	updateValueDoc.Flags().StringP(
+		updateValueDoc.GetDocFlag("value").Name,
+		updateValueDoc.GetDocFlag("value").Shorthand,
+		updateValueDoc.GetDocFlag("value").Default,
+		updateValueDoc.GetDocFlag("value").Description,
+	)
+	injectLabelFlags(&updateValueDoc.Command, true)
+
+	deleteValueDoc := man.Docs.GetCommand("policy/registered-resources/values/delete",
+		man.WithRun(policyDeleteRegisteredResourceValue),
+	)
+	deleteValueDoc.Flags().StringP(
+		deleteValueDoc.GetDocFlag("id").Name,
+		deleteValueDoc.GetDocFlag("id").Shorthand,
+		deleteValueDoc.GetDocFlag("id").Default,
+		deleteValueDoc.GetDocFlag("id").Description,
+	)
+	deleteDoc.Flags().Bool(
+		deleteDoc.GetDocFlag("force").Name,
+		false,
+		deleteDoc.GetDocFlag("force").Description,
+	)
+
+	policyRegisteredResourceValuesDoc := man.Docs.GetCommand("policy/registered-resources/values",
+		man.WithSubcommands(
+			getValueDoc,
+			listValuesDoc,
+			createValueDoc,
+			updateValueDoc,
+			deleteValueDoc,
+		),
+	)
+
 	policyCmd.AddCommand(&policyRegisteredResourceValuesDoc.Command)
 }
