@@ -7,15 +7,30 @@ command:
   flags:
     - name: id
       shorthand: i
-      description: ID of the attribute
+      description: ID of the registered resource to update
+      required: true
+    - name: name
+      shorthand: n
+      description: Optional updated name of the registered resource (must be unique within Policy)
+    - name: label
+      description: "Optional metadata 'labels' in the format: key=value"
+      shorthand: l
+      default: ''
+    - name: force-replace-labels
+      description: Destructively replace entire set of existing metadata 'labels' with any provided to this command
+      default: false
 ---
 
-Retrieve a registered resource along with its metadata and values.
+Update the `name` and/or metadata labels for a Registered Resource.
 
-For more general information about registered resources, see the `registered-resources` subcommand.
+If PEPs rely on this registered resource name, a name update could break access.
+
+Make sure you know what you are doing.
+
+For more information about Registered Resources, see the `registered-resources` subcommand.
 
 ## Example
 
 ```shell
-otdfctl policy registered-resources get --id=3c51a593-cbf8-419d-b7dc-b656d0bedfbb
+otdfctl policy registered-resources update --id 34c62145-5d99-45cb-a732-13cb16270e63 --name new_resource_name
 ```

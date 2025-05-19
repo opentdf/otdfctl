@@ -20,6 +20,12 @@ command:
       default: ''
 ---
 
+Add a registered resource to the platform Policy.
+
+A registered resource `name` is normalized to lower case and may contain hyphens or dashes between other alphanumeric characters.
+
+For more information, see the `registered-resources` subcommand.
+
 ## Examples
 
 Create a registered resource named 'my_resource' with value 'my_value':
