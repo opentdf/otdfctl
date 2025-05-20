@@ -33,10 +33,9 @@ type ClientCredentials struct {
 }
 
 type platformConfiguration struct {
-	issuer         string
-	authzEndpoint  string
-	tokenEndpoint  string
-	publicClientID string
+	issuer        string
+	authzEndpoint string
+	tokenEndpoint string
 }
 
 type oidcClientCredentials struct {
@@ -75,7 +74,7 @@ func GetClientCredsFromJSON(credsJSON []byte) (ClientCredentials, error) {
 	return creds, nil
 }
 
-func getPlatformConfiguration(endpoint, publicClientID string, tlsNoVerify bool) (platformConfiguration, error) {
+func getPlatformConfiguration(endpoint string, tlsNoVerify bool) (platformConfiguration, error) {
 	c := platformConfiguration{}
 
 	normalized, err := utils.NormalizeEndpoint(endpoint)
@@ -111,14 +110,6 @@ func getPlatformConfiguration(endpoint, publicClientID string, tlsNoVerify bool)
 	c.tokenEndpoint, e = s.PlatformConfiguration.TokenEndpoint()
 	if e != nil {
 		err = errors.Join(err, sdk.ErrPlatformTokenEndpointNotFound)
-	}
-
-	c.publicClientID = publicClientID
-	if c.publicClientID == "" {
-		c.publicClientID, e = s.PlatformConfiguration.PublicClientID()
-		if e != nil {
-			err = errors.Join(err, sdk.ErrPlatformPublicClientIDNotFound)
-		}
 	}
 
 	if err != nil {
@@ -265,24 +256,24 @@ func Login(ctx context.Context, platformEndpoint, tokenURL, authURL, publicClien
 }
 
 // Logs in using the auth code PKCE flow driven by the platform well-known idP OIDC configuration.
-func LoginWithPKCE(ctx context.Context, host, publicClientID string, tlsNoVerify bool) (*oauth2.Token, string, error) {
-	pc, err := getPlatformConfiguration(host, publicClientID, tlsNoVerify)
+func LoginWithPKCE(ctx context.Context, host, clientID string, tlsNoVerify bool) (*oauth2.Token, error) {
+	pc, err := getPlatformConfiguration(host, tlsNoVerify)
 	if err != nil {
-		return nil, "", fmt.Errorf("failed to get platform configuration: %w", err)
+		return nil, fmt.Errorf("failed to get platform configuration: %w", err)
 	}
 
-	tok, err := Login(ctx, host, pc.tokenEndpoint, pc.authzEndpoint, pc.publicClientID)
+	tok, err := Login(ctx, host, pc.tokenEndpoint, pc.authzEndpoint, clientID)
 	if err != nil {
-		return nil, "", fmt.Errorf("failed to login: %w", err)
+		return nil, fmt.Errorf("failed to login: %w", err)
 	}
 
-	return tok, pc.publicClientID, nil
+	return tok, nil
 }
 
 // Revokes the access token
-func RevokeAccessToken(ctx context.Context, endpoint, publicClientID, refreshToken string, tlsNoVerify bool) error {
+func RevokeAccessToken(ctx context.Context, endpoint, clientID, refreshToken string, tlsNoVerify bool) error {
 	rp, err := newOidcRelyingParty(ctx, endpoint, tlsNoVerify, oidcClientCredentials{
-		clientID: publicClientID,
+		clientID: clientID,
 		isPublic: true,
 	})
 	if err != nil {
@@ -302,12 +293,7 @@ func newOidcRelyingParty(ctx context.Context, endpoint string, tlsNoVerify bool,
 		return nil, errors.New("client secret must be empty for public clients")
 	}
 
-	var pcClient string
-	if clientCreds.isPublic {
-		pcClient = clientCreds.clientID
-	}
-
-	pc, err := getPlatformConfiguration(endpoint, pcClient, tlsNoVerify)
+	pc, err := getPlatformConfiguration(endpoint, tlsNoVerify)
 	if err != nil {
 		return nil, err
 	}
