@@ -19,7 +19,6 @@ var (
 func policy_getAttributeNamespace(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
-	defer h.Close()
 
 	id := c.Flags.GetRequiredID("id")
 
@@ -42,7 +41,6 @@ func policy_getAttributeNamespace(cmd *cobra.Command, args []string) {
 func policy_listAttributeNamespaces(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
-	defer h.Close()
 
 	state := cli.GetState(cmd)
 	limit := c.Flags.GetRequiredInt32("limit")
@@ -82,7 +80,6 @@ func policy_listAttributeNamespaces(cmd *cobra.Command, args []string) {
 func policy_createAttributeNamespace(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
-	defer h.Close()
 
 	name := c.Flags.GetRequiredString("name")
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
@@ -106,7 +103,6 @@ func policy_createAttributeNamespace(cmd *cobra.Command, args []string) {
 func policy_deactivateAttributeNamespace(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
-	defer h.Close()
 
 	force := c.Flags.GetOptionalBool("force")
 	id := c.Flags.GetRequiredID("id")
@@ -138,7 +134,6 @@ func policy_deactivateAttributeNamespace(cmd *cobra.Command, args []string) {
 func policy_updateAttributeNamespace(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
-	defer h.Close()
 
 	id := c.Flags.GetRequiredID("id")
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
@@ -166,7 +161,6 @@ func policy_updateAttributeNamespace(cmd *cobra.Command, args []string) {
 func policy_unsafeDeleteAttributeNamespace(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
-	defer h.Close()
 
 	id := c.Flags.GetRequiredID("id")
 
@@ -199,7 +193,6 @@ func policy_unsafeDeleteAttributeNamespace(cmd *cobra.Command, args []string) {
 func policy_unsafeReactivateAttributeNamespace(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
-	defer h.Close()
 
 	id := c.Flags.GetRequiredID("id")
 
@@ -233,7 +226,6 @@ func policy_unsafeReactivateAttributeNamespace(cmd *cobra.Command, args []string
 func policy_unsafeUpdateAttributeNamespace(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
-	defer h.Close()
 
 	id := c.Flags.GetRequiredID("id")
 	name := c.Flags.GetRequiredString("name")

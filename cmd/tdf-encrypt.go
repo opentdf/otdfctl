@@ -31,7 +31,6 @@ const INPUT_MAX_FILE_SIZE = int64(10 * 1024 * 1024 * 1024) // 10 GB
 func dev_tdfEncryptCmd(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args, cli.WithPrintJson())
 	h := NewHandler(c)
-	defer h.Close()
 
 	var filePath string
 	var fileExt string

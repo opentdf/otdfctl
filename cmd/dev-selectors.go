@@ -13,8 +13,6 @@ var selectors []string
 
 func dev_selectorsGen(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
-	h := NewHandler(c)
-	defer h.Close()
 
 	subject := c.Flags.GetRequiredString("subject")
 
@@ -34,8 +32,6 @@ func dev_selectorsGen(cmd *cobra.Command, args []string) {
 
 func dev_selectorsTest(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
-	h := NewHandler(c)
-	defer h.Close()
 
 	subject := c.Flags.GetRequiredString("subject")
 	selectors = c.Flags.GetStringSlice("selector", selectors, cli.FlagsStringSliceOptions{Min: 1})

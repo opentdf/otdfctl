@@ -19,7 +19,6 @@ var actionFlagValues []string
 func policyGetSubjectMapping(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
-	defer h.Close()
 
 	id := c.Flags.GetRequiredID("id")
 
@@ -57,7 +56,6 @@ func policyGetSubjectMapping(cmd *cobra.Command, args []string) {
 func policyListSubjectMappings(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
-	defer h.Close()
 
 	limit := c.Flags.GetRequiredInt32("limit")
 	offset := c.Flags.GetRequiredInt32("offset")
@@ -103,7 +101,6 @@ func policyListSubjectMappings(cmd *cobra.Command, args []string) {
 func policyCreateSubjectMapping(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
-	defer h.Close()
 
 	attrValueId := c.Flags.GetRequiredID("attribute-value-id")
 	actionFlagValues = c.Flags.GetStringSlice("action", actionFlagValues, cli.FlagsStringSliceOptions{Min: 0})
@@ -179,7 +176,6 @@ func policyCreateSubjectMapping(cmd *cobra.Command, args []string) {
 func policyDeleteSubjectMapping(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
-	defer h.Close()
 
 	id := c.Flags.GetRequiredID("id")
 	force := c.Flags.GetOptionalBool("force")
@@ -208,7 +204,6 @@ func policyDeleteSubjectMapping(cmd *cobra.Command, args []string) {
 func policyUpdateSubjectMapping(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
-	defer h.Close()
 
 	id := c.Flags.GetRequiredID("id")
 	actionFlagValues = c.Flags.GetStringSlice("action", actionFlagValues, cli.FlagsStringSliceOptions{Min: 0})
@@ -252,7 +247,6 @@ func policyUpdateSubjectMapping(cmd *cobra.Command, args []string) {
 func policyMatchSubjectMappings(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
-	defer h.Close()
 
 	subject := c.Flags.GetOptionalString("subject")
 	selectors = c.Flags.GetStringSlice("selector", selectors, cli.FlagsStringSliceOptions{Min: 0})
