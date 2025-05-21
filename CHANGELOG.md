@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.21.0](https://github.com/opentdf/otdfctl/compare/v0.20.0...v0.21.0) (2025-05-21)
+
+
+### Features
+
+* Add initial Dependency Review configuration ([#551](https://github.com/opentdf/otdfctl/issues/551)) ([b622666](https://github.com/opentdf/otdfctl/commit/b6226660c1d75e133a8ead456efcab74de4b4fc0))
+* **core:** DSPX-18 clean up Go context usage to follow best practices ([#558](https://github.com/opentdf/otdfctl/issues/558)) ([a2c9f8b](https://github.com/opentdf/otdfctl/commit/a2c9f8b13cbab740b46262f70aecc82a94f3d788))
+* **core:** DSPX-608 - Deprecate public_client_id ([#555](https://github.com/opentdf/otdfctl/issues/555)) ([8d396bd](https://github.com/opentdf/otdfctl/commit/8d396bd022126524d9d20daa03ec6ca262cf4406))
+* **core:** DSPX-608 - require clientID for login ([#553](https://github.com/opentdf/otdfctl/issues/553)) ([580172e](https://github.com/opentdf/otdfctl/commit/580172e1861b54366f4914a141e459fe3221a16d))
+* **core:** KAS allowlist options ([#539](https://github.com/opentdf/otdfctl/issues/539)) ([af7978f](https://github.com/opentdf/otdfctl/commit/af7978f86ced38543b31b792e008654071333789))
+* **main:** add actions CRUD and e2e tests ([#523](https://github.com/opentdf/otdfctl/issues/523)) ([2fb9ec7](https://github.com/opentdf/otdfctl/commit/2fb9ec7336da5731b868da94f0bbd5b2f226ede1))
+* **main:** refactor actions within existing CLI policy object CRUD ([#543](https://github.com/opentdf/otdfctl/issues/543)) ([9ab1a58](https://github.com/opentdf/otdfctl/commit/9ab1a58418643ea709aefb08e3f5ca8bd06235f4))
+
+
+### Bug Fixes
+
+* **ci:** ci job should run on changes to GHA ([#530](https://github.com/opentdf/otdfctl/issues/530)) ([1d296ca](https://github.com/opentdf/otdfctl/commit/1d296ca8fac889a6e776ad381df999a2fcf9d6ce))
+* **main:** Pass the full url when building the sdk object ([#544](https://github.com/opentdf/otdfctl/issues/544)) ([8b836f0](https://github.com/opentdf/otdfctl/commit/8b836f0fa3aa414c3ab19d830f4d1f833d3ae61d))
+
 ## [0.20.0](https://github.com/opentdf/otdfctl/compare/v0.19.0...v0.20.0) (2025-04-08)
 
 
