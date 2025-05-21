@@ -18,6 +18,8 @@ var (
 	actionAttributeValues    []string
 )
 
+const actionAttributeValueFlagSplitCount = 2
+
 //
 // Registered Resources
 //
@@ -29,7 +31,7 @@ func policyCreateRegisteredResource(cmd *cobra.Command, args []string) {
 
 	name := c.Flags.GetRequiredString("name")
 	registeredResourceValues = c.Flags.GetStringSlice("value", registeredResourceValues, cli.FlagsStringSliceOptions{})
-	metadataLabels := c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
+	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
 	resource, err := h.CreateRegisteredResource(cmd.Context(), name, registeredResourceValues, getMetadataMutable(metadataLabels))
 	if err != nil {
@@ -200,7 +202,7 @@ func policyCreateRegisteredResourceValue(cmd *cobra.Command, args []string) {
 	defer h.Close()
 
 	ctx := cmd.Context()
-	resourceId := c.Flags.GetRequiredID("resource-id")
+	resourceID := c.Flags.GetRequiredID("resource-id")
 	value := c.Flags.GetRequiredString("value")
 	actionAttributeValues = c.Flags.GetStringSlice("action-attribute-value", actionAttributeValues, cli.FlagsStringSliceOptions{Min: 0})
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
@@ -210,7 +212,7 @@ func policyCreateRegisteredResourceValue(cmd *cobra.Command, args []string) {
 	for i, aav := range actionAttributeValues {
 		// split on semicolon
 		split := strings.Split(aav, ";")
-		if len(split) != 2 {
+		if len(split) != actionAttributeValueFlagSplitCount {
 			cli.ExitWithError("Invalid action attribute value format", nil)
 		}
 
@@ -242,7 +244,7 @@ func policyCreateRegisteredResourceValue(cmd *cobra.Command, args []string) {
 		parsedActionAttributeValues[i] = newActionAttrVal
 	}
 
-	resourceValue, err := h.CreateRegisteredResourceValue(ctx, resourceId, value, parsedActionAttributeValues, getMetadataMutable(metadataLabels))
+	resourceValue, err := h.CreateRegisteredResourceValue(ctx, resourceID, value, parsedActionAttributeValues, getMetadataMutable(metadataLabels))
 	if err != nil {
 		cli.ExitWithError("Failed to create registered resource value", err)
 	}
@@ -302,11 +304,11 @@ func policyListRegisteredResourceValues(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
-	resourceId := c.Flags.GetOptionalString("resource-id")
+	resourceID := c.Flags.GetOptionalString("resource-id")
 	limit := c.Flags.GetRequiredInt32("limit")
 	offset := c.Flags.GetRequiredInt32("offset")
 
-	values, page, err := h.ListRegisteredResourceValues(cmd.Context(), resourceId, limit, offset)
+	values, page, err := h.ListRegisteredResourceValues(cmd.Context(), resourceID, limit, offset)
 	if err != nil {
 		cli.ExitWithError("Failed to list registered resource values", err)
 	}

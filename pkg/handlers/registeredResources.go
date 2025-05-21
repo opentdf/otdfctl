@@ -85,9 +85,9 @@ func (h Handler) DeleteRegisteredResource(ctx context.Context, id string) error 
 // Registered Resource Values
 //
 
-func (h Handler) CreateRegisteredResourceValue(ctx context.Context, resourceId string, value string, actionAttributeValues []*registeredresources.ActionAttributeValue, metadata *common.MetadataMutable) (*policy.RegisteredResourceValue, error) {
+func (h Handler) CreateRegisteredResourceValue(ctx context.Context, resourceID string, value string, actionAttributeValues []*registeredresources.ActionAttributeValue, metadata *common.MetadataMutable) (*policy.RegisteredResourceValue, error) {
 	resp, err := h.sdk.RegisteredResources.CreateRegisteredResourceValue(ctx, &registeredresources.CreateRegisteredResourceValueRequest{
-		ResourceId:            resourceId,
+		ResourceId:            resourceID,
 		Value:                 value,
 		ActionAttributeValues: actionAttributeValues,
 		Metadata:              metadata,
@@ -119,9 +119,9 @@ func (h Handler) GetRegisteredResourceValue(ctx context.Context, id, fqn string)
 	return resp.GetValue(), nil
 }
 
-func (h Handler) ListRegisteredResourceValues(ctx context.Context, resourceId string, limit, offset int32) ([]*policy.RegisteredResourceValue, *policy.PageResponse, error) {
+func (h Handler) ListRegisteredResourceValues(ctx context.Context, resourceID string, limit, offset int32) ([]*policy.RegisteredResourceValue, *policy.PageResponse, error) {
 	resp, err := h.sdk.RegisteredResources.ListRegisteredResourceValues(ctx, &registeredresources.ListRegisteredResourceValuesRequest{
-		ResourceId: resourceId,
+		ResourceId: resourceID,
 		Pagination: &policy.PageRequest{
 			Limit:  limit,
 			Offset: offset,
