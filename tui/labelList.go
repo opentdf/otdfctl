@@ -1,6 +1,8 @@
 package tui
 
 import (
+	"context"
+
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/opentdf/otdfctl/pkg/handlers"
@@ -52,6 +54,8 @@ func (m LabelList) Init() tea.Cmd {
 }
 
 func (m LabelList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	ctx := context.Background()
+
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		constants.WindowSize = msg
@@ -60,7 +64,7 @@ func (m LabelList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "backspace":
-			return InitAttributeView(m.attr.GetId(), m.sdk)
+			return InitAttributeView(ctx, m.attr.GetId(), m.sdk)
 		case "ctrl+c", "q", "esc":
 			return m, tea.Quit
 		case "enter", "e":
