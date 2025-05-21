@@ -2,6 +2,7 @@ package cli
 
 import (
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/opentdf/otdfctl/pkg/handlers"
@@ -77,5 +78,24 @@ func GetSimpleRegisteredResourceValues(v []*policy.RegisteredResourceValue) []st
 	for i, val := range v {
 		values[i] = val.GetValue()
 	}
+	return values
+}
+
+func GetSimpleRegisteredResourceActionAttributeValues(v []*policy.RegisteredResourceValue_ActionAttributeValue) []string {
+	values := make([]string, len(v))
+	sb := new(strings.Builder)
+
+	for i, val := range v {
+		action := val.GetAction()
+		attrVal := val.GetAttributeValue()
+
+		sb.WriteString(action.GetName())
+		sb.WriteString(" -> ")
+		sb.WriteString(attrVal.GetFqn())
+
+		values[i] = sb.String()
+		sb.Reset()
+	}
+
 	return values
 }

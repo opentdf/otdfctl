@@ -202,14 +202,10 @@ func policyCreateRegisteredResourceValue(cmd *cobra.Command, args []string) {
 	ctx := cmd.Context()
 	resourceId := c.Flags.GetRequiredID("resource-id")
 	value := c.Flags.GetRequiredString("value")
-	actionAttributeValues = c.Flags.GetStringSlice("action-attribute-value", nil, cli.FlagsStringSliceOptions{Min: 0})
+	actionAttributeValues = c.Flags.GetStringSlice("action-attribute-value", actionAttributeValues, cli.FlagsStringSliceOptions{Min: 0})
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
 	parsedActionAttributeValues := make([]*registeredresources.ActionAttributeValue, len(actionAttributeValues))
-	actionsAndAttrValues := make([]struct {
-		action *policy.Action
-		attr   *policy.Value
-	}, len(actionAttributeValues))
 
 	for i, aav := range actionAttributeValues {
 		// split on semicolon
@@ -221,44 +217,29 @@ func policyCreateRegisteredResourceValue(cmd *cobra.Command, args []string) {
 		actionIdentifier := split[0]
 		attrValIdentifier := split[1]
 
-		var action *policy.Action
-		var attrVal *policy.Value
-		var err error
+		newActionAttrVal := &registeredresources.ActionAttributeValue{}
 
-		if err = uuid.Validate(actionIdentifier); err == nil {
-			action, err = h.GetAction(ctx, actionIdentifier, "")
+		if uuid.Validate(actionIdentifier) == nil {
+			newActionAttrVal.ActionIdentifier = &registeredresources.ActionAttributeValue_ActionId{
+				ActionId: actionIdentifier,
+			}
 		} else {
-			action, err = h.GetAction(ctx, "", actionIdentifier)
-		}
-		if err != nil {
-			cli.ExitWithError("Failed to get action", err)
+			newActionAttrVal.ActionIdentifier = &registeredresources.ActionAttributeValue_ActionName{
+				ActionName: actionIdentifier,
+			}
 		}
 
-		if err = uuid.Validate(attrValIdentifier); err == nil {
-			attrVal, err = h.GetAttributeValue(ctx, attrValIdentifier, "")
+		if uuid.Validate(attrValIdentifier) == nil {
+			newActionAttrVal.AttributeValueIdentifier = &registeredresources.ActionAttributeValue_AttributeValueId{
+				AttributeValueId: attrValIdentifier,
+			}
 		} else {
-			attrVal, err = h.GetAttributeValue(ctx, "", attrValIdentifier)
-		}
-		if err != nil {
-			cli.ExitWithError("Failed to get attribute value", err)
-		}
-
-		actionsAndAttrValues[i].action = action
-		actionsAndAttrValues[i].attr = attrVal
-		parsedActionAttributeValues[i] = &registeredresources.ActionAttributeValue{
-			ActionIdentifier: &registeredresources.ActionAttributeValue_ActionId{
-				ActionId: action.GetId(),
-			},
-			AttributeValueIdentifier: &registeredresources.ActionAttributeValue_AttributeValueId{
-				AttributeValueId: attrVal.GetId(),
-			},
+			newActionAttrVal.AttributeValueIdentifier = &registeredresources.ActionAttributeValue_AttributeValueFqn{
+				AttributeValueFqn: attrValIdentifier,
+			}
 		}
 
-		// for each pair
-		// show user confirmation table of action attr vals that will be created
-		// allow force
-		// create value
-
+		parsedActionAttributeValues[i] = newActionAttrVal
 	}
 
 	resourceValue, err := h.CreateRegisteredResourceValue(ctx, resourceId, value, parsedActionAttributeValues, getMetadataMutable(metadataLabels))
@@ -266,9 +247,13 @@ func policyCreateRegisteredResourceValue(cmd *cobra.Command, args []string) {
 		cli.ExitWithError("Failed to create registered resource value", err)
 	}
 
+	simpleActionAttributeValues := cli.GetSimpleRegisteredResourceActionAttributeValues(resourceValue.GetActionAttributeValues())
+
 	rows := [][]string{
 		{"Id", resourceValue.GetId()},
 		{"Value", resourceValue.GetValue()},
+		// todo: figure out how to stop this output from being cut off
+		{"Action Attribute Values", cli.CommaSeparated(simpleActionAttributeValues)},
 	}
 	if mdRows := getMetadataRows(resourceValue.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
@@ -415,7 +400,7 @@ func policyDeleteRegisteredResourceValue(cmd *cobra.Command, args []string) {
 }
 
 func init() {
-	// Registered Resources
+	// Registered Resources commands
 
 	getDoc := man.Docs.GetCommand("policy/registered-resources/get",
 		man.WithRun(policyGetRegisteredResource),
@@ -488,19 +473,7 @@ func init() {
 		deleteDoc.GetDocFlag("force").Description,
 	)
 
-	policyRegisteredResourcesDoc := man.Docs.GetCommand("policy/registered-resources",
-		man.WithSubcommands(
-			getDoc,
-			listDoc,
-			createDoc,
-			updateDoc,
-			deleteDoc,
-		),
-	)
-
-	policyCmd.AddCommand(&policyRegisteredResourcesDoc.Command)
-
-	// Registered Resource Values
+	// Registered Resource Values commands
 
 	getValueDoc := man.Docs.GetCommand("policy/registered-resources/values/get",
 		man.WithRun(policyGetRegisteredResourceValue),
@@ -544,6 +517,13 @@ func init() {
 		createValueDoc.GetDocFlag("value").Default,
 		createValueDoc.GetDocFlag("value").Description,
 	)
+	createValueDoc.Flags().StringSliceVarP(
+		&actionAttributeValues,
+		createValueDoc.GetDocFlag("action-attribute-value").Name,
+		createValueDoc.GetDocFlag("action-attribute-value").Shorthand,
+		[]string{},
+		createValueDoc.GetDocFlag("action-attribute-value").Description,
+	)
 	injectLabelFlags(&createValueDoc.Command, false)
 
 	updateValueDoc := man.Docs.GetCommand("policy/registered-resources/values/update",
@@ -572,10 +552,22 @@ func init() {
 		deleteValueDoc.GetDocFlag("id").Default,
 		deleteValueDoc.GetDocFlag("id").Description,
 	)
-	deleteDoc.Flags().Bool(
-		deleteDoc.GetDocFlag("force").Name,
+	deleteValueDoc.Flags().Bool(
+		deleteValueDoc.GetDocFlag("force").Name,
 		false,
-		deleteDoc.GetDocFlag("force").Description,
+		deleteValueDoc.GetDocFlag("force").Description,
+	)
+
+	// Add commands to the policy command
+
+	policyRegisteredResourcesDoc := man.Docs.GetCommand("policy/registered-resources",
+		man.WithSubcommands(
+			getDoc,
+			listDoc,
+			createDoc,
+			updateDoc,
+			deleteDoc,
+		),
 	)
 
 	policyRegisteredResourceValuesDoc := man.Docs.GetCommand("policy/registered-resources/values",
@@ -588,5 +580,6 @@ func init() {
 		),
 	)
 
-	policyCmd.AddCommand(&policyRegisteredResourceValuesDoc.Command)
+	policyRegisteredResourcesDoc.AddCommand(&policyRegisteredResourceValuesDoc.Command)
+	policyCmd.AddCommand(&policyRegisteredResourcesDoc.Command)
 }
