@@ -6,7 +6,7 @@ command:
     - l
   flags:
     - name: resource-id
-      shorthand: ri
+      shorthand: i
       description: ID of the associated registered resource
     - name: limit
       shorthand: l

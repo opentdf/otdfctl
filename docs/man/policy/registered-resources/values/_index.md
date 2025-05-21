@@ -1,10 +1,11 @@
 ---
 title: Manage Registered Resource Values
 command:
-  name: registered-resources
+  name: values
   aliases:
-    - reg-res-values
-  hidden: true
+    - val
+    - value
+  # hidden: true
 ---
 
 Registered Resource Values are the values associated with a registered resource.
