@@ -2,8 +2,10 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/evertras/bubble-table/table"
+	"github.com/google/uuid"
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/opentdf/platform/protocol/go/policy"
@@ -12,7 +14,8 @@ import (
 )
 
 var (
-	values []string
+	values                []string
+	actionAttributeValues []string
 )
 
 //
@@ -196,13 +199,69 @@ func policyCreateRegisteredResourceValue(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
+	ctx := cmd.Context()
 	resourceId := c.Flags.GetRequiredID("resource-id")
 	value := c.Flags.GetRequiredString("value")
-	// todo: figure out how to get action attribute values from command line
-	actionAttributeValues := []*registeredresources.ActionAttributeValue{}
+	actionAttributeValues = c.Flags.GetStringSlice("action-attribute-value", nil, cli.FlagsStringSliceOptions{Min: 0})
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
-	resourceValue, err := h.CreateRegisteredResourceValue(cmd.Context(), resourceId, value, actionAttributeValues, getMetadataMutable(metadataLabels))
+	parsedActionAttributeValues := make([]*registeredresources.ActionAttributeValue, len(actionAttributeValues))
+	actionsAndAttrValues := make([]struct {
+		action *policy.Action
+		attr   *policy.Value
+	}, len(actionAttributeValues))
+
+	for i, aav := range actionAttributeValues {
+		// split on semicolon
+		split := strings.Split(aav, ";")
+		if len(split) != 2 {
+			cli.ExitWithError("Invalid action attribute value format", nil)
+		}
+
+		actionIdentifier := split[0]
+		attrValIdentifier := split[1]
+
+		var action *policy.Action
+		var attrVal *policy.Value
+		var err error
+
+		if err = uuid.Validate(actionIdentifier); err == nil {
+			action, err = h.GetAction(ctx, actionIdentifier, "")
+		} else {
+			action, err = h.GetAction(ctx, "", actionIdentifier)
+		}
+		if err != nil {
+			cli.ExitWithError("Failed to get action", err)
+		}
+
+		if err = uuid.Validate(attrValIdentifier); err == nil {
+			attrVal, err = h.GetAttributeValue(ctx, attrValIdentifier, "")
+		} else {
+			attrVal, err = h.GetAttributeValue(ctx, "", attrValIdentifier)
+		}
+		if err != nil {
+			cli.ExitWithError("Failed to get attribute value", err)
+		}
+
+		actionsAndAttrValues[i].action = action
+		actionsAndAttrValues[i].attr = attrVal
+		parsedActionAttributeValues[i] = &registeredresources.ActionAttributeValue{
+			ActionIdentifier: &registeredresources.ActionAttributeValue_ActionId{
+				ActionId: action.GetId(),
+			},
+			AttributeValueIdentifier: &registeredresources.ActionAttributeValue_AttributeValueId{
+				AttributeValueId: attrVal.GetId(),
+			},
+		}
+
+		// for each pair
+		// show user confirmation table of action attr vals that will be created
+		// allow force
+		// create value
+
+	}
+
+	resourceValue, err := h.CreateRegisteredResourceValue(ctx, resourceId, value, parsedActionAttributeValues, getMetadataMutable(metadataLabels))
 	if err != nil {
 		cli.ExitWithError("Failed to create registered resource value", err)
 	}

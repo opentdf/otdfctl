@@ -85,11 +85,12 @@ func (h Handler) DeleteRegisteredResource(ctx context.Context, id string) error 
 // Registered Resource Values
 //
 
-func (h Handler) CreateRegisteredResourceValue(ctx context.Context, resourceId string, value string, metadata *common.MetadataMutable) (*policy.RegisteredResourceValue, error) {
+func (h Handler) CreateRegisteredResourceValue(ctx context.Context, resourceId string, value string, actionAttributeValues []*registeredresources.ActionAttributeValue, metadata *common.MetadataMutable) (*policy.RegisteredResourceValue, error) {
 	resp, err := h.sdk.RegisteredResources.CreateRegisteredResourceValue(ctx, &registeredresources.CreateRegisteredResourceValueRequest{
-		ResourceId: resourceId,
-		Value:      value,
-		Metadata:   metadata,
+		ResourceId:            resourceId,
+		Value:                 value,
+		ActionAttributeValues: actionAttributeValues,
+		Metadata:              metadata,
 	})
 	if err != nil {
 		return nil, err
@@ -133,10 +134,11 @@ func (h Handler) ListRegisteredResourceValues(ctx context.Context, resourceId st
 	return resp.GetValues(), resp.GetPagination(), nil
 }
 
-func (h Handler) UpdateRegisteredResourceValue(ctx context.Context, id, value string, metadata *common.MetadataMutable, behavior common.MetadataUpdateEnum) (*policy.RegisteredResourceValue, error) {
+func (h Handler) UpdateRegisteredResourceValue(ctx context.Context, id, value string, actionAttributeValues []*registeredresources.ActionAttributeValue, metadata *common.MetadataMutable, behavior common.MetadataUpdateEnum) (*policy.RegisteredResourceValue, error) {
 	_, err := h.sdk.RegisteredResources.UpdateRegisteredResourceValue(ctx, &registeredresources.UpdateRegisteredResourceValueRequest{
 		Id:                     id,
 		Value:                  value,
+		ActionAttributeValues:  actionAttributeValues,
 		Metadata:               metadata,
 		MetadataUpdateBehavior: behavior,
 	})
