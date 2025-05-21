@@ -9,9 +9,9 @@ import (
 	"github.com/opentdf/platform/protocol/go/policy/unsafe"
 )
 
-func (h *Handler) ListAttributeValues(ctx context.Context, attributeId string, state common.ActiveStateEnum, limit, offset int32) ([]*policy.Value, *policy.PageResponse, error) {
+func (h *Handler) ListAttributeValues(ctx context.Context, attributeID string, state common.ActiveStateEnum, limit, offset int32) ([]*policy.Value, *policy.PageResponse, error) {
 	resp, err := h.sdk.Attributes.ListAttributeValues(ctx, &attributes.ListAttributeValuesRequest{
-		AttributeId: attributeId,
+		AttributeId: attributeID,
 		State:       state,
 		Pagination: &policy.PageRequest{
 			Limit:  limit,
@@ -25,9 +25,9 @@ func (h *Handler) ListAttributeValues(ctx context.Context, attributeId string, s
 }
 
 // Creates and returns the created value
-func (h *Handler) CreateAttributeValue(ctx context.Context, attributeId string, value string, metadata *common.MetadataMutable) (*policy.Value, error) {
+func (h *Handler) CreateAttributeValue(ctx context.Context, attributeID string, value string, metadata *common.MetadataMutable) (*policy.Value, error) {
 	resp, err := h.sdk.Attributes.CreateAttributeValue(ctx, &attributes.CreateAttributeValueRequest{
-		AttributeId: attributeId,
+		AttributeId: attributeID,
 		Value:       value,
 		Metadata:    metadata,
 	})

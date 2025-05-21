@@ -130,7 +130,7 @@ func (h Handler) UnsafeDeleteAttribute(ctx context.Context, id, fqn string) erro
 }
 
 // Deletes and returns error if deletion failed
-func (h Handler) UnsafeUpdateAttribute(ctx context.Context, id, name, rule string, values_order []string) error {
+func (h Handler) UnsafeUpdateAttribute(ctx context.Context, id, name, rule string, valuesOrder []string) error {
 	req := &unsafe.UnsafeUpdateAttributeRequest{
 		Id:   id,
 		Name: name,
@@ -143,8 +143,8 @@ func (h Handler) UnsafeUpdateAttribute(ctx context.Context, id, name, rule strin
 		}
 		req.Rule = r
 	}
-	if len(values_order) > 0 {
-		req.ValuesOrder = values_order
+	if len(valuesOrder) > 0 {
+		req.ValuesOrder = valuesOrder
 	}
 
 	_, err := h.sdk.Unsafe.UnsafeUpdateAttribute(ctx, req)
