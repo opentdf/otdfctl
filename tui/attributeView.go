@@ -1,6 +1,8 @@
 package tui
 
 import (
+	"context"
+
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/opentdf/otdfctl/pkg/cli"
@@ -32,9 +34,9 @@ type AttributeView struct {
 	sdk  handlers.Handler
 }
 
-func InitAttributeView(id string, h handlers.Handler) (AttributeView, tea.Cmd) {
+func InitAttributeView(ctx context.Context, id string, h handlers.Handler) (AttributeView, tea.Cmd) {
 	// TODO: handle and return error view
-	attr, _ := h.GetAttribute(id)
+	attr, _ := h.GetAttribute(ctx, id)
 	sa := cli.GetSimpleAttribute(attr)
 	items := []list.Item{
 		AttributeSubItem{title: "ID", description: sa.Id},
@@ -61,6 +63,8 @@ func (m AttributeView) Init() tea.Cmd {
 }
 
 func (m AttributeView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	ctx := context.Background()
+
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		constants.WindowSize = msg
@@ -69,7 +73,7 @@ func (m AttributeView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "backspace":
-			return InitAttributeList(m.attr.GetId(), m.sdk)
+			return InitAttributeList(ctx, m.attr.GetId(), m.sdk)
 		case "ctrl+c", "q":
 			return m, tea.Quit
 		case "ctrl+d":

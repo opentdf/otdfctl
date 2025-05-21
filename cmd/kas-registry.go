@@ -23,7 +23,7 @@ func policy_getKeyAccessRegistry(cmd *cobra.Command, args []string) {
 
 	id := c.FlagHelper.GetRequiredID("id")
 
-	kas, err := h.GetKasRegistryEntry(id)
+	kas, err := h.GetKasRegistryEntry(cmd.Context(), id)
 	if err != nil {
 		errMsg := fmt.Sprintf("Failed to get Registered KAS entry (%s)", id)
 		cli.ExitWithError(errMsg, err)
@@ -60,7 +60,7 @@ func policy_listKeyAccessRegistries(cmd *cobra.Command, args []string) {
 	limit := c.Flags.GetRequiredInt32("limit")
 	offset := c.Flags.GetRequiredInt32("offset")
 
-	list, page, err := h.ListKasRegistryEntries(limit, offset)
+	list, page, err := h.ListKasRegistryEntries(cmd.Context(), limit, offset)
 	if err != nil {
 		cli.ExitWithError("Failed to list Registered KAS entries", err)
 	}
@@ -120,6 +120,7 @@ func policy_createKeyAccessRegistry(cmd *cobra.Command, args []string) {
 	}
 
 	created, err := h.CreateKasRegistryEntry(
+		cmd.Context(),
 		uri,
 		key,
 		name,
@@ -177,6 +178,7 @@ func policy_updateKeyAccessRegistry(cmd *cobra.Command, args []string) {
 	}
 
 	updated, err := h.UpdateKasRegistryEntry(
+		cmd.Context(),
 		id,
 		uri,
 		name,
@@ -208,10 +210,11 @@ func policy_deleteKeyAccessRegistry(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
+	ctx := cmd.Context()
 	id := c.Flags.GetRequiredID("id")
 	force := c.Flags.GetOptionalBool("force")
 
-	kas, err := h.GetKasRegistryEntry(id)
+	kas, err := h.GetKasRegistryEntry(ctx, id)
 	if err != nil {
 		errMsg := fmt.Sprintf("Failed to get Registered KAS entry (%s)", id)
 		cli.ExitWithError(errMsg, err)
@@ -219,7 +222,7 @@ func policy_deleteKeyAccessRegistry(cmd *cobra.Command, args []string) {
 
 	cli.ConfirmAction(cli.ActionDelete, "Registered KAS", id, force)
 
-	if _, err := h.DeleteKasRegistryEntry(id); err != nil {
+	if _, err := h.DeleteKasRegistryEntry(ctx, id); err != nil {
 		errMsg := fmt.Sprintf("Failed to delete Registered KAS entry (%s)", id)
 		cli.ExitWithError(errMsg, err)
 	}
