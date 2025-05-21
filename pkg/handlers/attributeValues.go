@@ -35,13 +35,23 @@ func (h *Handler) CreateAttributeValue(ctx context.Context, attributeID string, 
 		return nil, err
 	}
 
-	return h.GetAttributeValue(ctx, resp.GetValue().GetId())
+	return h.GetAttributeValue(ctx, resp.GetValue().GetId(), "")
 }
 
-func (h *Handler) GetAttributeValue(ctx context.Context, id string) (*policy.Value, error) {
-	resp, err := h.sdk.Attributes.GetAttributeValue(ctx, &attributes.GetAttributeValueRequest{
-		Id: id,
-	})
+func (h *Handler) GetAttributeValue(ctx context.Context, id, fqn string) (*policy.Value, error) {
+	req := &attributes.GetAttributeValueRequest{}
+
+	if id != "" {
+		req.Identifier = &attributes.GetAttributeValueRequest_ValueId{
+			ValueId: id,
+		}
+	} else {
+		req.Identifier = &attributes.GetAttributeValueRequest_Fqn{
+			Fqn: fqn,
+		}
+	}
+
+	resp, err := h.sdk.Attributes.GetAttributeValue(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -60,7 +70,7 @@ func (h *Handler) UpdateAttributeValue(ctx context.Context, id string, metadata 
 		return nil, err
 	}
 
-	return h.GetAttributeValue(ctx, resp.GetValue().GetId())
+	return h.GetAttributeValue(ctx, resp.GetValue().GetId(), "")
 }
 
 // Deactivates and returns deactivated value
@@ -71,7 +81,7 @@ func (h *Handler) DeactivateAttributeValue(ctx context.Context, id string) (*pol
 	if err != nil {
 		return nil, err
 	}
-	return h.GetAttributeValue(ctx, id)
+	return h.GetAttributeValue(ctx, id, "")
 }
 
 // Reactivates and returns reactivated attribute
@@ -82,7 +92,7 @@ func (h Handler) UnsafeReactivateAttributeValue(ctx context.Context, id string) 
 	if err != nil {
 		return nil, err
 	}
-	return h.GetAttributeValue(ctx, id)
+	return h.GetAttributeValue(ctx, id, "")
 }
 
 // Deletes and returns error if deletion failed

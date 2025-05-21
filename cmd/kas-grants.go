@@ -136,7 +136,7 @@ func policy_unassignKasGrant(cmd *cobra.Command, args []string) {
 		rowID = []string{"Attribute ID", attrID}
 		rowFQN = []string{"Attribute FQN", attr.GetFqn()}
 	} else {
-		val, err := h.GetAttributeValue(ctx, valID)
+		val, err := h.GetAttributeValue(ctx, valID, "")
 		if err != nil || val == nil {
 			cli.ExitWithError("Failed to get attribute value", err)
 		}
