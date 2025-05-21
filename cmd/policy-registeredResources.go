@@ -14,8 +14,8 @@ import (
 )
 
 var (
-	values                []string
-	actionAttributeValues []string
+	registeredResourceValues []string
+	actionAttributeValues    []string
 )
 
 //
@@ -28,10 +28,10 @@ func policyCreateRegisteredResource(cmd *cobra.Command, args []string) {
 	defer h.Close()
 
 	name := c.Flags.GetRequiredString("name")
-	values = c.Flags.GetStringSlice("value", values, cli.FlagsStringSliceOptions{})
+	registeredResourceValues = c.Flags.GetStringSlice("value", registeredResourceValues, cli.FlagsStringSliceOptions{})
 	metadataLabels := c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
-	resource, err := h.CreateRegisteredResource(cmd.Context(), name, values, getMetadataMutable(metadataLabels))
+	resource, err := h.CreateRegisteredResource(cmd.Context(), name, registeredResourceValues, getMetadataMutable(metadataLabels))
 	if err != nil {
 		cli.ExitWithError("Failed to create registered resource", err)
 	}
@@ -448,7 +448,7 @@ func init() {
 		createDoc.GetDocFlag("name").Description,
 	)
 	createDoc.Flags().StringSliceVarP(
-		&values,
+		&registeredResourceValues,
 		createDoc.GetDocFlag("value").Name,
 		createDoc.GetDocFlag("value").Shorthand,
 		[]string{},
