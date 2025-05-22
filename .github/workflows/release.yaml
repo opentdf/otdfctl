@@ -17,42 +17,43 @@ jobs:
       pull-requests: write
     uses: opentdf/platform/reusable_release-please.yaml@main
   other:
+    needs: release-please
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        if: ${{ steps.release.outputs.release_created }}
+        if: ${{ needs.release-please.outputs.release_created }}
       - uses: actions/setup-go@v5
-        if: ${{ steps.release.outputs.release_created }}
+        if: ${{ needs.release-please.outputs.release_created }}
         with: 
           go-version-file: go.mod
 
       ## TODO get this working again 
       ## fatal: unable to access 'https://github.com/opentdf/otdfctl/': The requested URL returned error: 403
       # - name: Tag semver and push to repo
-      #   if: ${{ steps.release.outputs.release_created }}
+      #   if: ${{ needs.release-please.outputs.release_created }}
       #   run: |
       #     git config user.name github-actions[bot]
       #     git config user.email 41898282+github-actions[bot]@users.noreply.github.com
       #     git remote add gh-token "https://${{ steps.generate_token.outputs.token }}@github.com/googleapis/release-please-action.git"
-      #     git tag -d v${{ steps.release.outputs.major }} || true
-      #     git tag -d v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }} || true
-      #     git push origin :v${{ steps.release.outputs.major }} || true
-      #     git push origin :v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }} || true
-      #     git tag -a v${{ steps.release.outputs.major }} -m "Release v${{ steps.release.outputs.major }}"
-      #     git tag -a v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }} -m "Release v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}"
-      #     git push origin v${{ steps.release.outputs.major }}
-      #     git push origin v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}
+      #     git tag -d v${{ needs.release-please.outputs.major }} || true
+      #     git tag -d v${{ needs.release-please.outputs.major }}.${{ needs.release-please.outputs.minor }} || true
+      #     git push origin :v${{ needs.release-please.outputs.major }} || true
+      #     git push origin :v${{ needs.release-please.outputs.major }}.${{ needs.release-please.outputs.minor }} || true
+      #     git tag -a v${{ needs.release-please.outputs.major }} -m "Release v${{ needs.release-please.outputs.major }}"
+      #     git tag -a v${{ needs.release-please.outputs.major }}.${{ needs.release-please.outputs.minor }} -m "Release v${{ needs.release-please.outputs.major }}.${{ needs.release-please.outputs.minor }}"
+      #     git push origin v${{ needs.release-please.outputs.major }}
+      #     git push origin v${{ needs.release-please.outputs.major }}.${{ needs.release-please.outputs.minor }}
 
       - name: Build, compress, and draft checksums
-        if: ${{ steps.release.outputs.release_created }}
+        if: ${{ needs.release-please.outputs.release_created }}
         env:
-          SEM_VER: ${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}.${{ steps.release.outputs.patch }}
-          COMMIT_SHA: ${{ steps.release.outputs.sha }}
+          SEM_VER: ${{ needs.release-please.outputs.major }}.${{ needs.release-please.outputs.minor }}.${{ needs.release-please.outputs.patch }}
+          COMMIT_SHA: ${{ needs.release-please.outputs.sha }}
         run: make build
 
       - name: Upload Release Artifact
-        if: ${{ steps.release.outputs.release_created }}
+        if: ${{ needs.release-please.outputs.release_created }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload ${{ steps.release.outputs.tag_name }} ./output/*
+        run: gh release upload ${{ needs.release-please.outputs.tag_name }} ./output/*
 
