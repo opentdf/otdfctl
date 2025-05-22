@@ -7,6 +7,7 @@ import (
 	"github.com/evertras/bubble-table/table"
 	"github.com/google/uuid"
 	"github.com/opentdf/otdfctl/pkg/cli"
+	"github.com/opentdf/otdfctl/pkg/handlers"
 	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/spf13/cobra"
 )
@@ -18,6 +19,7 @@ func policy_assignKasGrant(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
+	ctx := cmd.Context()
 	nsID := c.Flags.GetOptionalID("namespace-id")
 	attrID := c.Flags.GetOptionalID("attribute-id")
 	valID := c.Flags.GetOptionalID("value-id")
@@ -40,12 +42,13 @@ func policy_assignKasGrant(cmd *cobra.Command, args []string) {
 		rowID []string
 	)
 
-	kas, err := h.GetKasRegistryEntry(kasID, "", "")
+	kas, err := h.GetKasRegistryEntry(ctx, handlers.KasIdentifier{
+		ID: kasID,
+	})
 	if err != nil || kas == nil {
 		cli.ExitWithError("Failed to get registered KAS", err)
 	}
 
-	ctx := cmd.Context()
 	//nolint:gocritic,nestif // this is more readable than a switch statement
 	if nsID != "" {
 		res, err = h.AssignKasGrantToNamespace(ctx, nsID, kasID)
@@ -76,6 +79,7 @@ func policy_unassignKasGrant(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
+	ctx := cmd.Context()
 	nsID := c.Flags.GetOptionalID("namespace-id")
 	attrID := c.Flags.GetOptionalID("attribute-id")
 	valID := c.Flags.GetOptionalID("value-id")
@@ -99,16 +103,17 @@ func policy_unassignKasGrant(cmd *cobra.Command, args []string) {
 		rowFQN  []string
 	)
 
-	kas, err := h.GetKasRegistryEntry(kasID, "", "")
+	kas, err := h.GetKasRegistryEntry(ctx, handlers.KasIdentifier{
+		ID: kasID,
+	})
 	if err != nil || kas == nil {
 		cli.ExitWithError("Failed to get registered KAS", err)
 	}
 	kasURI := kas.GetUri()
 
-	ctx := cmd.Context()
 	//nolint:gocritic,nestif // this is more readable than a switch statement
 	if nsID != "" {
-		ns, err := h.GetNamespace(nsID)
+		ns, err := h.GetNamespace(ctx, nsID)
 		if err != nil || ns == nil {
 			cli.ExitWithError("Failed to get namespace definition", err)
 		}
@@ -122,7 +127,7 @@ func policy_unassignKasGrant(cmd *cobra.Command, args []string) {
 		rowID = []string{"Namespace ID", nsID}
 		rowFQN = []string{"Namespace FQN", ns.GetFqn()}
 	} else if attrID != "" {
-		attr, err := h.GetAttribute(attrID)
+		attr, err := h.GetAttribute(ctx, attrID)
 		if err != nil || attr == nil {
 			cli.ExitWithError("Failed to get attribute definition", err)
 		}
@@ -136,7 +141,7 @@ func policy_unassignKasGrant(cmd *cobra.Command, args []string) {
 		rowID = []string{"Attribute ID", attrID}
 		rowFQN = []string{"Attribute FQN", attr.GetFqn()}
 	} else {
-		val, err := h.GetAttributeValue(valID)
+		val, err := h.GetAttributeValue(ctx, valID)
 		if err != nil || val == nil {
 			cli.ExitWithError("Failed to get attribute value", err)
 		}

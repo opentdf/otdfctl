@@ -8,6 +8,7 @@ import (
 
 	"github.com/evertras/bubble-table/table"
 	"github.com/opentdf/otdfctl/pkg/cli"
+	"github.com/opentdf/otdfctl/pkg/handlers"
 	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/opentdf/platform/lib/ocrypto"
 	"github.com/opentdf/platform/protocol/go/policy"
@@ -35,17 +36,17 @@ var policy_kasRegistryKeysCmd *cobra.Command
 func wrapKey(key string, wrappingKey string) ([]byte, error) {
 	wrappingKeyBytes, err := ocrypto.Base64Decode([]byte(wrappingKey))
 	if err != nil {
-		return nil, errors.Join(errors.New("Failed to decode wrapping key"), err)
+		return nil, errors.Join(errors.New("failed to decode wrapping key"), err)
 	}
 
 	aesKey, err := ocrypto.NewAESGcm(wrappingKeyBytes)
 	if err != nil {
-		return nil, errors.Join(errors.New("Failed to create AES key"), err)
+		return nil, errors.Join(errors.New("failed to create AES key"), err)
 	}
 
 	wrappedKek, err := aesKey.Encrypt([]byte(key))
 	if err != nil {
-		return nil, errors.Join(errors.New("Failed to wrap key"), err)
+		return nil, errors.Join(errors.New("failed to wrap key"), err)
 	}
 
 	return wrappedKek, nil
@@ -54,17 +55,17 @@ func wrapKey(key string, wrappingKey string) ([]byte, error) {
 func generateKeys(alg policy.Algorithm) (string, string, error) {
 	kek, err := generateKeyPair(alg)
 	if err != nil {
-		return "", "", errors.Join(errors.New("Failed to generate key pair"), err)
+		return "", "", errors.Join(errors.New("failed to generate key pair"), err)
 	}
 
 	kekPrivPem, err := kek.PrivateKeyInPemFormat()
 	if err != nil {
-		return "", "", errors.Join(errors.New("Failed to get private key in pem format"), err)
+		return "", "", errors.Join(errors.New("failed to get private key in pem format"), err)
 	}
 
 	kekPubPem, err := kek.PublicKeyInPemFormat()
 	if err != nil {
-		return "", "", errors.Join(errors.New("Failed to get public key in pem format"), err)
+		return "", "", errors.Join(errors.New("failed to get public key in pem format"), err)
 	}
 
 	return kekPrivPem, kekPubPem, nil
@@ -358,7 +359,10 @@ func policy_createKASKey(cmd *cobra.Command, args []string) {
 	}
 
 	if kasId == "" {
-		kas, err := h.GetKasRegistryEntry("", kasName, kasUri)
+		kas, err := h.GetKasRegistryEntry(c.Context(), handlers.KasIdentifier{
+			Name: kasName,
+			URI:  kasUri,
+		})
 		if err != nil {
 			cli.ExitWithError("Failed to get kas registry entry", err)
 		}

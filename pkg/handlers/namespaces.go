@@ -10,7 +10,7 @@ import (
 	"github.com/opentdf/platform/protocol/go/policy/unsafe"
 )
 
-func (h Handler) GetNamespace(identifier string) (*policy.Namespace, error) {
+func (h Handler) GetNamespace(ctx context.Context, identifier string) (*policy.Namespace, error) {
 	req := &namespaces.GetNamespaceRequest{
 		Identifier: &namespaces.GetNamespaceRequest_NamespaceId{
 			NamespaceId: identifier,
@@ -22,7 +22,7 @@ func (h Handler) GetNamespace(identifier string) (*policy.Namespace, error) {
 		}
 	}
 
-	resp, err := h.sdk.Namespaces.GetNamespace(h.ctx, req)
+	resp, err := h.sdk.Namespaces.GetNamespace(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -30,8 +30,8 @@ func (h Handler) GetNamespace(identifier string) (*policy.Namespace, error) {
 	return resp.GetNamespace(), nil
 }
 
-func (h Handler) ListNamespaces(state common.ActiveStateEnum, limit, offset int32) ([]*policy.Namespace, *policy.PageResponse, error) {
-	resp, err := h.sdk.Namespaces.ListNamespaces(h.ctx, &namespaces.ListNamespacesRequest{
+func (h Handler) ListNamespaces(ctx context.Context, state common.ActiveStateEnum, limit, offset int32) ([]*policy.Namespace, *policy.PageResponse, error) {
+	resp, err := h.sdk.Namespaces.ListNamespaces(ctx, &namespaces.ListNamespacesRequest{
 		State: state,
 		Pagination: &policy.PageRequest{
 			Limit:  limit,
@@ -46,8 +46,8 @@ func (h Handler) ListNamespaces(state common.ActiveStateEnum, limit, offset int3
 }
 
 // Creates and returns the created n
-func (h Handler) CreateNamespace(name string, metadata *common.MetadataMutable) (*policy.Namespace, error) {
-	resp, err := h.sdk.Namespaces.CreateNamespace(h.ctx, &namespaces.CreateNamespaceRequest{
+func (h Handler) CreateNamespace(ctx context.Context, name string, metadata *common.MetadataMutable) (*policy.Namespace, error) {
+	resp, err := h.sdk.Namespaces.CreateNamespace(ctx, &namespaces.CreateNamespaceRequest{
 		Name:     name,
 		Metadata: metadata,
 	})
@@ -55,12 +55,12 @@ func (h Handler) CreateNamespace(name string, metadata *common.MetadataMutable) 
 		return nil, err
 	}
 
-	return h.GetNamespace(resp.GetNamespace().GetId())
+	return h.GetNamespace(ctx, resp.GetNamespace().GetId())
 }
 
 // Updates and returns the updated namespace
-func (h Handler) UpdateNamespace(id string, metadata *common.MetadataMutable, behavior common.MetadataUpdateEnum) (*policy.Namespace, error) {
-	_, err := h.sdk.Namespaces.UpdateNamespace(h.ctx, &namespaces.UpdateNamespaceRequest{
+func (h Handler) UpdateNamespace(ctx context.Context, id string, metadata *common.MetadataMutable, behavior common.MetadataUpdateEnum) (*policy.Namespace, error) {
+	_, err := h.sdk.Namespaces.UpdateNamespace(ctx, &namespaces.UpdateNamespaceRequest{
 		Id:                     id,
 		Metadata:               metadata,
 		MetadataUpdateBehavior: behavior,
@@ -68,36 +68,36 @@ func (h Handler) UpdateNamespace(id string, metadata *common.MetadataMutable, be
 	if err != nil {
 		return nil, err
 	}
-	return h.GetNamespace(id)
+	return h.GetNamespace(ctx, id)
 }
 
 // Deactivates and returns the deactivated namespace
-func (h Handler) DeactivateNamespace(id string) (*policy.Namespace, error) {
-	_, err := h.sdk.Namespaces.DeactivateNamespace(h.ctx, &namespaces.DeactivateNamespaceRequest{
+func (h Handler) DeactivateNamespace(ctx context.Context, id string) (*policy.Namespace, error) {
+	_, err := h.sdk.Namespaces.DeactivateNamespace(ctx, &namespaces.DeactivateNamespaceRequest{
 		Id: id,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	return h.GetNamespace(id)
+	return h.GetNamespace(ctx, id)
 }
 
 // Reactivates and returns the reactivated namespace
-func (h Handler) UnsafeReactivateNamespace(id string) (*policy.Namespace, error) {
-	_, err := h.sdk.Unsafe.UnsafeReactivateNamespace(h.ctx, &unsafe.UnsafeReactivateNamespaceRequest{
+func (h Handler) UnsafeReactivateNamespace(ctx context.Context, id string) (*policy.Namespace, error) {
+	_, err := h.sdk.Unsafe.UnsafeReactivateNamespace(ctx, &unsafe.UnsafeReactivateNamespaceRequest{
 		Id: id,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	return h.GetNamespace(id)
+	return h.GetNamespace(ctx, id)
 }
 
 // Deletes and returns the deleted namespace
-func (h Handler) UnsafeDeleteNamespace(id string, fqn string) error {
-	_, err := h.sdk.Unsafe.UnsafeDeleteNamespace(h.ctx, &unsafe.UnsafeDeleteNamespaceRequest{
+func (h Handler) UnsafeDeleteNamespace(ctx context.Context, id string, fqn string) error {
+	_, err := h.sdk.Unsafe.UnsafeDeleteNamespace(ctx, &unsafe.UnsafeDeleteNamespaceRequest{
 		Id:  id,
 		Fqn: fqn,
 	})
@@ -105,8 +105,8 @@ func (h Handler) UnsafeDeleteNamespace(id string, fqn string) error {
 }
 
 // Unsafely updates the namespace and returns the renamed namespace
-func (h Handler) UnsafeUpdateNamespace(id, name string) (*policy.Namespace, error) {
-	_, err := h.sdk.Unsafe.UnsafeUpdateNamespace(h.ctx, &unsafe.UnsafeUpdateNamespaceRequest{
+func (h Handler) UnsafeUpdateNamespace(ctx context.Context, id, name string) (*policy.Namespace, error) {
+	_, err := h.sdk.Unsafe.UnsafeUpdateNamespace(ctx, &unsafe.UnsafeUpdateNamespaceRequest{
 		Id:   id,
 		Name: name,
 	})
@@ -114,7 +114,7 @@ func (h Handler) UnsafeUpdateNamespace(id, name string) (*policy.Namespace, erro
 		return nil, err
 	}
 
-	return h.GetNamespace(id)
+	return h.GetNamespace(ctx, id)
 }
 
 // AssignKeyToAttributeNamespace assigns a KAS key to an attribute namespace
@@ -125,7 +125,7 @@ func (h *Handler) AssignKeyToAttributeNamespace(ctx context.Context, namespace, 
 	}
 
 	if _, err := uuid.Parse(namespace); err != nil {
-		ns, err := h.GetNamespace(namespace)
+		ns, err := h.GetNamespace(ctx, namespace)
 		if err != nil {
 			return nil, err
 		}
@@ -150,7 +150,7 @@ func (h *Handler) RemoveKeyFromAttributeNamespace(ctx context.Context, namespace
 	}
 
 	if _, err := uuid.Parse(namespace); err != nil {
-		ns, err := h.GetNamespace(namespace)
+		ns, err := h.GetNamespace(ctx, namespace)
 		if err != nil {
 			return err
 		}

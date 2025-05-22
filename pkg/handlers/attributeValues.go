@@ -10,9 +10,9 @@ import (
 	"github.com/opentdf/platform/protocol/go/policy/unsafe"
 )
 
-func (h *Handler) ListAttributeValues(attributeId string, state common.ActiveStateEnum, limit, offset int32) ([]*policy.Value, *policy.PageResponse, error) {
-	resp, err := h.sdk.Attributes.ListAttributeValues(h.ctx, &attributes.ListAttributeValuesRequest{
-		AttributeId: attributeId,
+func (h *Handler) ListAttributeValues(ctx context.Context, attributeID string, state common.ActiveStateEnum, limit, offset int32) ([]*policy.Value, *policy.PageResponse, error) {
+	resp, err := h.sdk.Attributes.ListAttributeValues(ctx, &attributes.ListAttributeValuesRequest{
+		AttributeId: attributeID,
 		State:       state,
 		Pagination: &policy.PageRequest{
 			Limit:  limit,
@@ -26,9 +26,9 @@ func (h *Handler) ListAttributeValues(attributeId string, state common.ActiveSta
 }
 
 // Creates and returns the created value
-func (h *Handler) CreateAttributeValue(attributeId string, value string, metadata *common.MetadataMutable) (*policy.Value, error) {
-	resp, err := h.sdk.Attributes.CreateAttributeValue(h.ctx, &attributes.CreateAttributeValueRequest{
-		AttributeId: attributeId,
+func (h *Handler) CreateAttributeValue(ctx context.Context, attributeID string, value string, metadata *common.MetadataMutable) (*policy.Value, error) {
+	resp, err := h.sdk.Attributes.CreateAttributeValue(ctx, &attributes.CreateAttributeValueRequest{
+		AttributeId: attributeID,
 		Value:       value,
 		Metadata:    metadata,
 	})
@@ -36,10 +36,10 @@ func (h *Handler) CreateAttributeValue(attributeId string, value string, metadat
 		return nil, err
 	}
 
-	return h.GetAttributeValue(resp.GetValue().GetId())
+	return h.GetAttributeValue(ctx, resp.GetValue().GetId())
 }
 
-func (h *Handler) GetAttributeValue(identifier string) (*policy.Value, error) {
+func (h *Handler) GetAttributeValue(ctx context.Context, identifier string) (*policy.Value, error) {
 	req := &attributes.GetAttributeValueRequest{
 		Identifier: &attributes.GetAttributeValueRequest_ValueId{
 			ValueId: identifier,
@@ -50,7 +50,7 @@ func (h *Handler) GetAttributeValue(identifier string) (*policy.Value, error) {
 			Fqn: identifier,
 		}
 	}
-	resp, err := h.sdk.Attributes.GetAttributeValue(h.ctx, req)
+	resp, err := h.sdk.Attributes.GetAttributeValue(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -59,8 +59,8 @@ func (h *Handler) GetAttributeValue(identifier string) (*policy.Value, error) {
 }
 
 // Updates and returns updated value
-func (h *Handler) UpdateAttributeValue(id string, metadata *common.MetadataMutable, behavior common.MetadataUpdateEnum) (*policy.Value, error) {
-	resp, err := h.sdk.Attributes.UpdateAttributeValue(h.ctx, &attributes.UpdateAttributeValueRequest{
+func (h *Handler) UpdateAttributeValue(ctx context.Context, id string, metadata *common.MetadataMutable, behavior common.MetadataUpdateEnum) (*policy.Value, error) {
+	resp, err := h.sdk.Attributes.UpdateAttributeValue(ctx, &attributes.UpdateAttributeValueRequest{
 		Id:                     id,
 		Metadata:               metadata,
 		MetadataUpdateBehavior: behavior,
@@ -69,34 +69,34 @@ func (h *Handler) UpdateAttributeValue(id string, metadata *common.MetadataMutab
 		return nil, err
 	}
 
-	return h.GetAttributeValue(resp.GetValue().GetId())
+	return h.GetAttributeValue(ctx, resp.GetValue().GetId())
 }
 
 // Deactivates and returns deactivated value
-func (h *Handler) DeactivateAttributeValue(id string) (*policy.Value, error) {
-	_, err := h.sdk.Attributes.DeactivateAttributeValue(h.ctx, &attributes.DeactivateAttributeValueRequest{
+func (h *Handler) DeactivateAttributeValue(ctx context.Context, id string) (*policy.Value, error) {
+	_, err := h.sdk.Attributes.DeactivateAttributeValue(ctx, &attributes.DeactivateAttributeValueRequest{
 		Id: id,
 	})
 	if err != nil {
 		return nil, err
 	}
-	return h.GetAttributeValue(id)
+	return h.GetAttributeValue(ctx, id)
 }
 
 // Reactivates and returns reactivated attribute
-func (h Handler) UnsafeReactivateAttributeValue(id string) (*policy.Value, error) {
-	_, err := h.sdk.Unsafe.UnsafeReactivateAttributeValue(h.ctx, &unsafe.UnsafeReactivateAttributeValueRequest{
+func (h Handler) UnsafeReactivateAttributeValue(ctx context.Context, id string) (*policy.Value, error) {
+	_, err := h.sdk.Unsafe.UnsafeReactivateAttributeValue(ctx, &unsafe.UnsafeReactivateAttributeValueRequest{
 		Id: id,
 	})
 	if err != nil {
 		return nil, err
 	}
-	return h.GetAttributeValue(id)
+	return h.GetAttributeValue(ctx, id)
 }
 
 // Deletes and returns error if deletion failed
-func (h Handler) UnsafeDeleteAttributeValue(id, fqn string) error {
-	_, err := h.sdk.Unsafe.UnsafeDeleteAttributeValue(h.ctx, &unsafe.UnsafeDeleteAttributeValueRequest{
+func (h Handler) UnsafeDeleteAttributeValue(ctx context.Context, id, fqn string) error {
+	_, err := h.sdk.Unsafe.UnsafeDeleteAttributeValue(ctx, &unsafe.UnsafeDeleteAttributeValueRequest{
 		Id:  id,
 		Fqn: fqn,
 	})
@@ -104,13 +104,13 @@ func (h Handler) UnsafeDeleteAttributeValue(id, fqn string) error {
 }
 
 // Deletes and returns error if deletion failed
-func (h Handler) UnsafeUpdateAttributeValue(id, value string) error {
+func (h Handler) UnsafeUpdateAttributeValue(ctx context.Context, id, value string) error {
 	req := &unsafe.UnsafeUpdateAttributeValueRequest{
 		Id:    id,
 		Value: value,
 	}
 
-	_, err := h.sdk.Unsafe.UnsafeUpdateAttributeValue(h.ctx, req)
+	_, err := h.sdk.Unsafe.UnsafeUpdateAttributeValue(ctx, req)
 	return err
 }
 
@@ -122,7 +122,7 @@ func (h *Handler) AssignKeyToAttributeValue(ctx context.Context, value, keyId st
 	}
 
 	if _, err := uuid.Parse(value); err != nil {
-		attrValue, err := h.GetAttributeValue(value)
+		attrValue, err := h.GetAttributeValue(ctx, value)
 		if err != nil {
 			return nil, err
 		}
@@ -147,7 +147,7 @@ func (h *Handler) RemoveKeyFromAttributeValue(ctx context.Context, value, keyId 
 	}
 
 	if _, err := uuid.Parse(value); err != nil {
-		attrValue, err := h.GetAttributeValue(value)
+		attrValue, err := h.GetAttributeValue(ctx, value)
 		if err != nil {
 			return err
 		}
