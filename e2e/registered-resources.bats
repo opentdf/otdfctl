@@ -44,7 +44,9 @@ teardown_file() {
 }
 
 @test "Create a registered resource" {
-  run_otdfctl_reg_res create --name testRegRes --json
+  run_otdfctl_reg_res create --name test_reg_res --json
     assert_success
-    [ "$( echo "$output" | jq -r '.name' )" = "testRegRes" ]
+    [ "$( echo "$output" | jq -r '.name' )" = "test_reg_res" ]
 }
+
+@test "
