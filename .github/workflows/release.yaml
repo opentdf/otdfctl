@@ -12,21 +12,13 @@ on:
 
 jobs:
   release-please:
+    permissions:
+      contents: write
+      pull-requests: write
+    uses: opentdf/platform/reusable_release-please.yaml@main
+  other:
     runs-on: ubuntu-latest
     steps:
-      - name: Generate a token
-        id: generate_token
-        uses: actions/create-github-app-token@d72941d797fd3113feb6b93fd0dec494b13a2547 # v1.12.0
-        with:
-          app-id: "${{ secrets.APP_ID }}"
-          private-key: "${{ secrets.AUTOMATION_KEY }}"
-      - uses: googleapis/release-please-action@a02a34c4d625f9be7cb89156071d8567266a2445 # v4.2.0
-        id: release
-        with:
-          config-file: .github/release-please.json
-          token: ${{ steps.generate_token.outputs.token }}
-          release-type: go
-
       - uses: actions/checkout@v4
         if: ${{ steps.release.outputs.release_created }}
       - uses: actions/setup-go@v5
