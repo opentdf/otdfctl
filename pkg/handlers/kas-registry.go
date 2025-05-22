@@ -17,19 +17,20 @@ type KasIdentifier struct {
 
 func (h Handler) GetKasRegistryEntry(ctx context.Context, identifer KasIdentifier) (*policy.KeyAccessServer, error) {
 	req := &kasregistry.GetKeyAccessServerRequest{}
-	if identifer.ID != "" {
+	switch {
+	case identifer.ID != "":
 		req.Identifier = &kasregistry.GetKeyAccessServerRequest_KasId{
 			KasId: identifer.ID,
 		}
-	} else if identifer.Name != "" {
+	case identifer.Name != "":
 		req.Identifier = &kasregistry.GetKeyAccessServerRequest_Name{
 			Name: identifer.Name,
 		}
-	} else if identifer.URI != "" {
+	case identifer.URI != "":
 		req.Identifier = &kasregistry.GetKeyAccessServerRequest_Uri{
 			Uri: identifer.URI,
 		}
-	} else {
+	default:
 		return nil, errors.New("id, name or uri must be provided")
 	}
 

@@ -22,6 +22,11 @@ const (
 	defaultAlg           = 0
 	defaultMode          = 0
 	defaultStatus        = 0
+	rsa2048Len           = 2048
+	rsa4096Len           = 4096
+	ecSecp256Len         = 256
+	ecSecp384Len         = 384
+	ecSecp521Len         = 521
 	keyStatusActive      = "active"
 	keyStatusInactive    = "inactive"
 	keyStatusCompromised = "compromised"
@@ -31,7 +36,7 @@ const (
 	keyModePublicKeyOnly = "public_key"
 )
 
-var policy_kasRegistryKeysCmd *cobra.Command
+var policyKasRegistryKeysCmd *cobra.Command
 
 func wrapKey(key string, wrappingKey string) ([]byte, error) {
 	wrappingKeyBytes, err := ocrypto.Base64Decode([]byte(wrappingKey))
@@ -76,15 +81,17 @@ func generateKeyPair(alg policy.Algorithm) (ocrypto.KeyPair, error) {
 	var err error
 	switch alg {
 	case policy.Algorithm_ALGORITHM_RSA_2048:
-		key, err = generateRSAKey(2048)
+		key, err = generateRSAKey(rsa2048Len)
 	case policy.Algorithm_ALGORITHM_RSA_4096:
-		key, err = generateRSAKey(4096)
+		key, err = generateRSAKey(rsa4096Len)
 	case policy.Algorithm_ALGORITHM_EC_P256:
-		key, err = generateECCKey(256)
+		key, err = generateECCKey(ecSecp256Len)
 	case policy.Algorithm_ALGORITHM_EC_P384:
-		key, err = generateECCKey(384)
+		key, err = generateECCKey(ecSecp384Len)
 	case policy.Algorithm_ALGORITHM_EC_P521:
-		key, err = generateECCKey(521)
+		key, err = generateECCKey(ecSecp521Len)
+	case policy.Algorithm_ALGORITHM_UNSPECIFIED:
+		fallthrough
 	default:
 		return nil, errors.New("unsupported algorithm")
 	}
@@ -115,19 +122,6 @@ func enumToStatus(enum policy.KeyStatus) (string, error) {
 		return keyStatusCompromised, nil
 	default:
 		return "", errors.New("invalid enum status")
-	}
-}
-
-func statusToEnum(status string) (policy.KeyStatus, error) {
-	switch strings.ToLower(status) {
-	case keyStatusActive:
-		return policy.KeyStatus_KEY_STATUS_ACTIVE, nil
-	case keyStatusInactive:
-		return policy.KeyStatus_KEY_STATUS_INACTIVE, nil
-	case keyStatusCompromised:
-		return policy.KeyStatus_KEY_STATUS_COMPROMISED, nil
-	default:
-		return policy.KeyStatus_KEY_STATUS_UNSPECIFIED, errors.New("invalid status")
 	}
 }
 
@@ -243,19 +237,19 @@ func getTableRows(kasKey *policy.KasKey) [][]string {
 }
 
 // TODO: Handle wrapping the generated key with provider config.
-func policy_createKASKey(cmd *cobra.Command, args []string) {
+func policyCreateKasKey(cmd *cobra.Command, args []string) {
 	var (
-		wrappingKeyId    string
-		providerConfigId string
+		wrappingKeyID    string
+		providerConfigID string
 	)
 
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
 	defer h.Close()
 
-	keyId := c.Flags.GetRequiredString("keyId")
-	kasId := c.Flags.GetOptionalString("kasId")
-	kasUri := c.Flags.GetOptionalString("kasUri")
+	keyID := c.Flags.GetRequiredString("keyId")
+	kasID := c.Flags.GetOptionalString("kasId")
+	kasURI := c.Flags.GetOptionalString("kasUri")
 	kasName := c.Flags.GetOptionalString("kasName")
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
@@ -269,21 +263,22 @@ func policy_createKASKey(cmd *cobra.Command, args []string) {
 		cli.ExitWithError("Invalid mode", err)
 	}
 
-	wrappingKeyId = c.Flags.GetOptionalString("wrappingKeyId")
-	if mode != policy.KeyMode_KEY_MODE_PUBLIC_KEY_ONLY && wrappingKeyId == "" {
+	wrappingKeyID = c.Flags.GetOptionalString("wrappingKeyId")
+	if mode != policy.KeyMode_KEY_MODE_PUBLIC_KEY_ONLY && wrappingKeyID == "" {
 		formattedMode, _ := enumToMode(mode)
 		cli.ExitWithError(fmt.Sprintf("wrappingKeyId is required for mode %s", formattedMode), nil)
 	}
 
-	providerConfigId = c.Flags.GetOptionalString("providerConfigId")
-	if (mode == policy.KeyMode_KEY_MODE_PROVIDER_ROOT_KEY || mode == policy.KeyMode_KEY_MODE_REMOTE) && providerConfigId == "" {
+	providerConfigID = c.Flags.GetOptionalString("providerConfigId")
+	if (mode == policy.KeyMode_KEY_MODE_PROVIDER_ROOT_KEY || mode == policy.KeyMode_KEY_MODE_REMOTE) && providerConfigID == "" {
 		formattedMode, _ := enumToMode(mode)
 		cli.ExitWithError(fmt.Sprintf("providerConfigId is required for mode %s", formattedMode), nil)
 	}
 
 	var publicKeyCtx *policy.KasPublicKeyCtx
 	var privateKeyCtx *policy.KasPrivateKeyCtx
-	if mode == policy.KeyMode_KEY_MODE_CONFIG_ROOT_KEY {
+	switch mode {
+	case policy.KeyMode_KEY_MODE_CONFIG_ROOT_KEY:
 		wrappingKey := c.Flags.GetRequiredString("wrappingKey")
 		privateKeyPem, publicKeyPem, err := generateKeys(alg)
 		if err != nil {
@@ -309,11 +304,11 @@ func policy_createKASKey(cmd *cobra.Command, args []string) {
 			Pem: pubPemBase64,
 		}
 		privateKeyCtx = &policy.KasPrivateKeyCtx{
-			KeyId:      wrappingKeyId,
+			KeyId:      wrappingKeyID,
 			WrappedKey: privPemBase64,
 		}
-	} else if mode == policy.KeyMode_KEY_MODE_PROVIDER_ROOT_KEY {
-		providerConfigId = c.Flags.GetRequiredString("providerConfigId")
+	case policy.KeyMode_KEY_MODE_PROVIDER_ROOT_KEY:
+		providerConfigID = c.Flags.GetRequiredString("providerConfigId")
 		publicPem := c.Flags.GetRequiredString("pubPem")
 		privatePem := c.Flags.GetRequiredString("privatePem")
 		_, err = base64.StdEncoding.DecodeString(publicPem)
@@ -328,13 +323,12 @@ func policy_createKASKey(cmd *cobra.Command, args []string) {
 			Pem: publicPem,
 		}
 		privateKeyCtx = &policy.KasPrivateKeyCtx{
-			KeyId:      wrappingKeyId,
+			KeyId:      wrappingKeyID,
 			WrappedKey: privatePem,
 		}
-
-	} else if mode == policy.KeyMode_KEY_MODE_REMOTE {
+	case policy.KeyMode_KEY_MODE_REMOTE:
 		pem := c.Flags.GetRequiredString("pubPem")
-		providerConfigId = c.Flags.GetRequiredString("providerConfigId")
+		providerConfigID = c.Flags.GetRequiredString("providerConfigId")
 
 		_, err = base64.StdEncoding.DecodeString(pem)
 		if err != nil {
@@ -345,9 +339,9 @@ func policy_createKASKey(cmd *cobra.Command, args []string) {
 			Pem: pem,
 		}
 		privateKeyCtx = &policy.KasPrivateKeyCtx{
-			KeyId: wrappingKeyId,
+			KeyId: wrappingKeyID,
 		}
-	} else if mode == policy.KeyMode_KEY_MODE_PUBLIC_KEY_ONLY {
+	case policy.KeyMode_KEY_MODE_PUBLIC_KEY_ONLY:
 		pem := c.Flags.GetRequiredString("pubPem")
 		_, err = base64.StdEncoding.DecodeString(pem)
 		if err != nil {
@@ -356,28 +350,32 @@ func policy_createKASKey(cmd *cobra.Command, args []string) {
 		publicKeyCtx = &policy.KasPublicKeyCtx{
 			Pem: pem,
 		}
+	case policy.KeyMode_KEY_MODE_UNSPECIFIED:
+		fallthrough
+	default:
+		cli.ExitWithError("Invalid mode", nil)
 	}
 
-	if kasId == "" {
+	if kasID == "" {
 		kas, err := h.GetKasRegistryEntry(c.Context(), handlers.KasIdentifier{
 			Name: kasName,
-			URI:  kasUri,
+			URI:  kasURI,
 		})
 		if err != nil {
 			cli.ExitWithError("Failed to get kas registry entry", err)
 		}
-		kasId = kas.GetId()
+		kasID = kas.GetId()
 	}
 
 	kasKey, err := h.CreateKasKey(
 		c.Context(),
-		kasId,
-		keyId,
+		kasID,
+		keyID,
 		alg,
 		mode,
 		publicKeyCtx,
 		privateKeyCtx,
-		providerConfigId,
+		providerConfigID,
 		getMetadataMutable(metadataLabels),
 	)
 	if err != nil {
@@ -393,39 +391,35 @@ func policy_createKASKey(cmd *cobra.Command, args []string) {
 }
 
 func getKasKeyIdentifier(c *cli.Cli) *kasregistry.KasKeyIdentifier {
-	keyId := c.Flags.GetOptionalString("keyId")
-	kasId := c.Flags.GetOptionalString("kasId")
+	keyID := c.Flags.GetOptionalString("keyId")
+	kasID := c.Flags.GetOptionalString("kasId")
 	kasName := c.Flags.GetOptionalString("kasName")
-	kasUri := c.Flags.GetOptionalString("kasUri")
-
-	if keyId != "" {
-		identifier := &kasregistry.KasKeyIdentifier{
-			Kid: keyId,
-		}
-
-		if kasId != "" {
-			identifier.Identifier = &kasregistry.KasKeyIdentifier_KasId{
-				KasId: kasId,
-			}
-		} else if kasName != "" {
-			identifier.Identifier = &kasregistry.KasKeyIdentifier_Name{
-				Name: kasName,
-			}
-		} else if kasUri != "" {
-			identifier.Identifier = &kasregistry.KasKeyIdentifier_Uri{
-				Uri: kasUri,
-			}
-		} else {
-			return nil
-		}
-		return identifier
+	kasURI := c.Flags.GetOptionalString("kasUri")
+	identifier := &kasregistry.KasKeyIdentifier{
+		Kid: keyID,
 	}
 
-	return nil
+	switch {
+	case kasID != "":
+		identifier.Identifier = &kasregistry.KasKeyIdentifier_KasId{
+			KasId: kasID,
+		}
+	case kasName != "":
+		identifier.Identifier = &kasregistry.KasKeyIdentifier_Name{
+			Name: kasName,
+		}
+	case kasURI != "":
+		identifier.Identifier = &kasregistry.KasKeyIdentifier_Uri{
+			Uri: kasURI,
+		}
+	default:
+		return nil
+	}
 
+	return identifier
 }
 
-func policy_getKASKey(cmd *cobra.Command, args []string) {
+func policyGetKasKey(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
 	defer h.Close()
@@ -445,31 +439,17 @@ func policy_getKASKey(cmd *cobra.Command, args []string) {
 	HandleSuccess(cmd, kasKey.GetKey().GetId(), t, kasKey)
 }
 
-func policy_updateKASKey(cmd *cobra.Command, args []string) {
+func policyUpdateKasKey(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
 	defer h.Close()
 
 	id := c.Flags.GetRequiredID("id")
-	keyStatusArg := c.Flags.GetOptionalString("status")
-	var err error
-	var keyStatus policy.KeyStatus
-	if keyStatusArg != "" {
-		keyStatus, err = statusToEnum(keyStatusArg)
-		if err != nil {
-			cli.ExitWithError("Invalid status", err)
-		}
-	}
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
-
-	if keyStatus == policy.KeyStatus_KEY_STATUS_UNSPECIFIED && len(metadataLabels) == 0 {
-		cli.ExitWithError("Either status or metadata labels must be specified", nil)
-	}
 
 	resp, err := h.UpdateKasKey(
 		c.Context(),
 		id,
-		keyStatus,
 		getMetadataMutable(metadataLabels),
 		getMetadataUpdateBehavior())
 	if err != nil {
@@ -490,7 +470,7 @@ func policy_updateKASKey(cmd *cobra.Command, args []string) {
 	HandleSuccess(cmd, kasKey.GetKey().GetId(), t, kasKey)
 }
 
-func policy_listKASKey(cmd *cobra.Command, args []string) {
+func policyListKasKeys(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
 	defer h.Close()
@@ -506,12 +486,16 @@ func policy_listKASKey(cmd *cobra.Command, args []string) {
 			cli.ExitWithError("Invalid algorithm", err)
 		}
 	}
-	kasId := c.Flags.GetOptionalString("kasId")
+	kasID := c.Flags.GetOptionalString("kasId")
 	kasName := c.Flags.GetOptionalString("kasName")
-	kasUri := c.Flags.GetOptionalString("kasUri")
+	kasURI := c.Flags.GetOptionalString("kasUri")
 
 	// Get the list of keys.
-	keys, page, err := h.ListKasKeys(c.Context(), limit, offset, alg, kasId, kasName, kasUri)
+	keys, page, err := h.ListKasKeys(c.Context(), limit, offset, alg, handlers.KasIdentifier{
+		ID:   kasID,
+		Name: kasName,
+		URI:  kasURI,
+	})
 	if err != nil {
 		cli.ExitWithError("Failed to list kas keys", err)
 	}
@@ -583,10 +567,9 @@ func policy_listKASKey(cmd *cobra.Command, args []string) {
 }
 
 func init() {
-
 	// Create Kas Key
 	createDoc := man.Docs.GetCommand("policy/kas-registry/key/create",
-		man.WithRun(policy_createKASKey),
+		man.WithRun(policyCreateKasKey),
 	)
 	createDoc.Flags().StringP(
 		createDoc.GetDocFlag("keyId").Name,
@@ -660,7 +643,7 @@ func init() {
 
 	// Get Kas Key
 	getDoc := man.Docs.GetCommand("policy/kas-registry/key/get",
-		man.WithRun(policy_getKASKey),
+		man.WithRun(policyGetKasKey),
 	)
 	getDoc.Flags().StringP(
 		getDoc.GetDocFlag("id").Name,
@@ -697,7 +680,7 @@ func init() {
 
 	// Update Kas Key
 	updateDoc := man.Docs.GetCommand("policy/kas-registry/key/update",
-		man.WithRun(policy_updateKASKey),
+		man.WithRun(policyUpdateKasKey),
 	)
 	updateDoc.Flags().StringP(
 		updateDoc.GetDocFlag("id").Name,
@@ -705,17 +688,11 @@ func init() {
 		updateDoc.GetDocFlag("id").Default,
 		updateDoc.GetDocFlag("id").Description,
 	)
-	updateDoc.Flags().StringP(
-		updateDoc.GetDocFlag("status").Name,
-		updateDoc.GetDocFlag("status").Shorthand,
-		updateDoc.GetDocFlag("status").Default,
-		updateDoc.GetDocFlag("status").Description,
-	)
 	injectLabelFlags(&updateDoc.Command, true)
 
 	// List Kas Keys
 	listDoc := man.Docs.GetCommand("policy/kas-registry/key/list",
-		man.WithRun(policy_listKASKey),
+		man.WithRun(policyListKasKeys),
 	)
 	listDoc.Flags().StringP(
 		listDoc.GetDocFlag("alg").Name,
@@ -746,6 +723,6 @@ func init() {
 
 	doc := man.Docs.GetCommand("policy/kas-registry/key",
 		man.WithSubcommands(createDoc, getDoc, updateDoc, listDoc))
-	policy_kasRegistryKeysCmd = &doc.Command
-	policy_kasRegistryCmd.AddCommand(policy_kasRegistryKeysCmd)
+	policyKasRegistryKeysCmd = &doc.Command
+	policyKasRegCmd.AddCommand(policyKasRegistryKeysCmd)
 }

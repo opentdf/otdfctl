@@ -9,20 +9,9 @@ command:
       shorthand: i
       description: ID of the key to update
       required: true
-    - name: status
-      shorthand: s
-      description: The status of the key
     - name: label
       shorthand: l
       description: Metadata labels for the provider config
 ---
 
-Updates an existing key KAS key.
-
-1. The `"status"` specifies the key status:
-
-| Key Status     |
-| -------------- |
-| `active`       |
-| `inactive`     |
-| `compromised`  |
+Updates an existing key KAS key's metadata.

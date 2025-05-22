@@ -69,7 +69,7 @@ teardown_file() {
   # conflict
     run_otdfctl_ns create -n "$NS_NAME"
     assert_failure
-    assert_output --partial "AlreadyExists"
+    assert_output --partial "already_exists"
 }
 
 @test "Get a namespace - Good" {
@@ -200,7 +200,7 @@ teardown_file() {
   # Test with non-existent namespace ID
   run_otdfctl_ns key assign --namespace "00000000-0000-0000-0000-000000000000" --keyId "$KAS_KEY_ID"
     assert_failure
-    assert_output --partial "error"
+    assert_output --partial "ERROR"
 
   # Test with missing required flags
   run_otdfctl_ns key assign --namespace "$NS_ID"

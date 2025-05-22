@@ -118,9 +118,9 @@ func (h Handler) UnsafeUpdateNamespace(ctx context.Context, id, name string) (*p
 }
 
 // AssignKeyToAttributeNamespace assigns a KAS key to an attribute namespace
-func (h *Handler) AssignKeyToAttributeNamespace(ctx context.Context, namespace, keyId string) (*namespaces.NamespaceKey, error) {
+func (h *Handler) AssignKeyToAttributeNamespace(ctx context.Context, namespace, keyID string) (*namespaces.NamespaceKey, error) {
 	namespaceKey := &namespaces.NamespaceKey{
-		KeyId:       keyId,
+		KeyId:       keyID,
 		NamespaceId: namespace,
 	}
 
@@ -143,9 +143,9 @@ func (h *Handler) AssignKeyToAttributeNamespace(ctx context.Context, namespace, 
 }
 
 // RemoveKeyFromAttributeNamespace removes a KAS key from an attribute namespace
-func (h *Handler) RemoveKeyFromAttributeNamespace(ctx context.Context, namespace, keyId string) error {
+func (h *Handler) RemoveKeyFromAttributeNamespace(ctx context.Context, namespace, keyID string) error {
 	namespaceKey := &namespaces.NamespaceKey{
-		KeyId:       keyId,
+		KeyId:       keyID,
 		NamespaceId: namespace,
 	}
 

@@ -39,8 +39,8 @@ generate_key_id() {
     echo "Error: /dev/urandom not found. Cannot generate random string." >&2
     return 1
   fi
-  LC_ALL=C < /dev/urandom tr -dc 'A-Za-z0-9' | head -c "${length}"
-  echo "$(LC_ALL)"
+  key_id=$(LC_ALL=C < /dev/urandom tr -dc 'A-Za-z0-9' 2>/dev/null  | head -c "${length}")
+  echo "$key_id"
 }
 
 generate_kas_name() {
@@ -51,8 +51,8 @@ generate_kas_name() {
     echo "Error: /dev/urandom not found. Cannot generate random string." >&2
     return 1
   fi
-  LC_ALL=C < /dev/urandom tr -dc 'A-Za-z0-9' | head -c "${length}"
-  echo "$(LC_ALL)"
+  kas_name=$(LC_ALL=C < /dev/urandom tr -dc 'A-Za-z0-9' 2>/dev/null | head -c "${length}")
+  echo "$kas_name"
 }
 
 format_kas_name_as_uri() {
@@ -446,34 +446,6 @@ format_kas_name_as_uri() {
   assert_output --partial "Error: if any flags in the group [kasUri kasId kasName] are set none of the others can be; [kasId kasName] were all set"
 }
 
-
-# UPDATE Tests
-@test "kas-keys: update key status" {
-  KEY_ID_UPDATE=$(generate_key_id)
-  run_otdfctl_key create --kasId "${KAS_REGISTRY_ID}" --keyId "${KEY_ID_UPDATE}" --alg "rsa:2048" --mode "public_key" --pubPem "${PEM_B64}" --json
-  assert_success
-  UPDATE_KEY_SYSTEM_ID=$(echo "$output" | jq -r .key.id)
-  local created_at_seconds=$(echo "$output" | jq -r .key.metadata.created_at.seconds)
-
-  run_otdfctl_key update --id "${UPDATE_KEY_SYSTEM_ID}" --status "inactive" --json
-  assert_success
-  assert_equal "$(echo "$output" | jq -r .kas_id)" "${KAS_REGISTRY_ID}"
-  assert_equal "$(echo "$output" | jq -r .key.id)" "${UPDATE_KEY_SYSTEM_ID}"
-  assert_equal "$(echo "$output" | jq -r .key.key_id)" "${KEY_ID_UPDATE}"
-  assert_equal "$(echo "$output" | jq -r .key.key_algorithm)" "1" # rsa:2048
-  assert_equal "$(echo "$output" | jq -r .key.key_mode)" "4"    # public_key
-  assert_equal "$(echo "$output" | jq -r .key.key_status)" "2"   # inactive
-  assert_equal "$(echo "$output" | jq -r .key.public_key_ctx.pem)" "${PEM_B64}"
-  assert_equal "$(echo "$output" | jq -r .key.private_key_ctx)" "null"
-  assert_equal "$(echo "$output" | jq -r .key.metadata.created_at.seconds)" "${created_at_seconds}"
-
-  # Verify with a subsequent get
-  run_otdfctl_key get --id "${UPDATE_KEY_SYSTEM_ID}" --json
-  assert_success
-  assert_equal "$(echo "$output" | jq -r .key.key_status)" "2" # inactive
-  assert_equal "$(echo "$output" | jq -r .key.public_key_ctx.pem)" "${PEM_B64}"
-}
-
 @test "kas-keys: update key labels (add)" {
   KEY_ID_UPDATE_LABEL=$(generate_key_id)
   run_otdfctl_key create --kasId "${KAS_REGISTRY_ID}" --keyId "${KEY_ID_UPDATE_LABEL}" --alg "rsa:2048" --mode "public_key" --pubPem "${PEM_B64}" --label "initial=true" --json
@@ -531,37 +503,15 @@ format_kas_name_as_uri() {
 }
 
 @test "kas-keys: update key (not found)" {
-  run_otdfctl_key update --id "39af808f-6cac-403f-90d7-6b88e865860d" --status "active" --json
+  run_otdfctl_key update --id "39af808f-6cac-403f-90d7-6b88e865860d" --json
   assert_failure
   assert_output --partial "Failed to update kas key"
 }
 
 @test "kas-keys: update key (missing id)" {
-  run_otdfctl_key update --status "active" --json
+  run_otdfctl_key update --json
   assert_failure
   assert_output --partial "ERROR    Flag '--id' is required"
-}
-
-@test "kas-keys: update key (no status and no labels)" {
-  KEY_ID_UPDATE_NO_OP=$(generate_key_id)
-  run_otdfctl_key create --kasId "${KAS_REGISTRY_ID}" --keyId "${KEY_ID_UPDATE_NO_OP}" --alg "rsa:2048" --mode "public_key" --pubPem "${PEM_B64}" --json
-  assert_success
-  local key_to_update_id=$(echo "$output" | jq -r .key.id)
-
-  run_otdfctl_key update --id "${key_to_update_id}" --json
-  assert_failure
-  assert_output --partial "Either status or metadata labels must be specified"
-}
-
-@test "kas-keys: update key (invalid status)" {
-   KEY_ID_UPDATE_INV_STAT=$(generate_key_id)
-  run_otdfctl_key create --kasId "${KAS_REGISTRY_ID}" --keyId "${KEY_ID_UPDATE_INV_STAT}" --alg "rsa:2048" --mode "public_key" --pubPem "${PEM_B64}" --json
-  assert_success
-  local key_to_update_id_inv_stat=$(echo "$output" | jq -r .key.id)
-
-  run_otdfctl_key update --id "${key_to_update_id_inv_stat}" --status "invalid-status" --json
-  assert_failure
-  assert_output --partial "Invalid status"
 }
 
 # LIST Tests

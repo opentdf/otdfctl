@@ -161,9 +161,9 @@ func (h Handler) UnsafeUpdateAttribute(ctx context.Context, id, name, rule strin
 	return err
 }
 
-func (h Handler) AssignKeyToAttribute(ctx context.Context, attr, keyId string) (*attributes.AttributeKey, error) {
+func (h Handler) AssignKeyToAttribute(ctx context.Context, attr, keyID string) (*attributes.AttributeKey, error) {
 	attrKey := &attributes.AttributeKey{
-		KeyId:       keyId,
+		KeyId:       keyID,
 		AttributeId: attr,
 	}
 	if _, err := uuid.Parse(attr); err != nil {
@@ -183,9 +183,9 @@ func (h Handler) AssignKeyToAttribute(ctx context.Context, attr, keyId string) (
 	return resp.GetAttributeKey(), nil
 }
 
-func (h Handler) RemoveKeyFromAttribute(ctx context.Context, attr, keyId string) error {
+func (h Handler) RemoveKeyFromAttribute(ctx context.Context, attr, keyID string) error {
 	attrKey := &attributes.AttributeKey{
-		KeyId:       keyId,
+		KeyId:       keyID,
 		AttributeId: attr,
 	}
 	if _, err := uuid.Parse(attr); err != nil {

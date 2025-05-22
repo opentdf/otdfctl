@@ -28,7 +28,6 @@ func (h Handler) CreateProviderConfig(
 }
 
 func (h Handler) GetProviderConfig(ctx context.Context, id, name string) (*policy.KeyProviderConfig, error) {
-
 	req := keymanagement.GetProviderConfigRequest{}
 	if id != "" {
 		req.Identifier = &keymanagement.GetProviderConfigRequest_Id{
