@@ -256,5 +256,4 @@ func init() {
 	doc := man.Docs.GetCommand("key/provider-config",
 		man.WithSubcommands(createDoc, getDoc, updateDoc, listDoc, deleteDoc))
 
-	keyCmd.AddCommand(&doc.Command)
 }
