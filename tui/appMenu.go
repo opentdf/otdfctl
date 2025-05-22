@@ -2,6 +2,8 @@
 package tui
 
 import (
+	"context"
+
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/opentdf/otdfctl/pkg/handlers"
@@ -66,6 +68,8 @@ func (m AppMenu) Init() tea.Cmd {
 }
 
 func (m AppMenu) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	ctx := context.Background()
+
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		constants.WindowSize = msg
@@ -85,7 +89,7 @@ func (m AppMenu) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// 	return nl, cmd
 			case attributeMenu:
 				// list attributes
-				al, cmd := InitAttributeList("", m.sdk)
+				al, cmd := InitAttributeList(ctx, "", m.sdk)
 				return al, cmd
 			}
 		}

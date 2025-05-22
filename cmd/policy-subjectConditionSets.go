@@ -87,7 +87,7 @@ func policy_createSubjectConditionSet(cmd *cobra.Command, args []string) {
 		cli.ExitWithError("Error unmarshalling subject sets", err)
 	}
 
-	scs, err := h.CreateSubjectConditionSet(ss, getMetadataMutable(metadataLabels))
+	scs, err := h.CreateSubjectConditionSet(cmd.Context(), ss, getMetadataMutable(metadataLabels))
 	if err != nil {
 		cli.ExitWithError("Error creating subject condition set", err)
 	}
@@ -117,7 +117,7 @@ func policy_getSubjectConditionSet(cmd *cobra.Command, args []string) {
 
 	id := c.Flags.GetRequiredID("id")
 
-	scs, err := h.GetSubjectConditionSet(id)
+	scs, err := h.GetSubjectConditionSet(cmd.Context(), id)
 	if err != nil {
 		cli.ExitWithError(fmt.Sprintf("Subject Condition Set with id %s not found", id), err)
 	}
@@ -146,7 +146,7 @@ func policy_listSubjectConditionSets(cmd *cobra.Command, args []string) {
 	limit := c.Flags.GetRequiredInt32("limit")
 	offset := c.Flags.GetRequiredInt32("offset")
 
-	scsList, page, err := h.ListSubjectConditionSets(limit, offset)
+	scsList, page, err := h.ListSubjectConditionSets(cmd.Context(), limit, offset)
 	if err != nil {
 		cli.ExitWithError("Error listing subject condition sets", err)
 	}
@@ -183,6 +183,7 @@ func policy_updateSubjectConditionSet(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
+	ctx := cmd.Context()
 	id := c.Flags.GetRequiredID("id")
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 	ssFlagJSON := c.Flags.GetOptionalString("subject-sets")
@@ -218,12 +219,12 @@ func policy_updateSubjectConditionSet(cmd *cobra.Command, args []string) {
 		cli.ExitWithError("Error unmarshalling subject sets", err)
 	}
 
-	_, err = h.UpdateSubjectConditionSet(id, ss, getMetadataMutable(metadataLabels), getMetadataUpdateBehavior())
+	_, err = h.UpdateSubjectConditionSet(ctx, id, ss, getMetadataMutable(metadataLabels), getMetadataUpdateBehavior())
 	if err != nil {
 		cli.ExitWithError("Error updating subject condition set", err)
 	}
 
-	scs, err := h.GetSubjectConditionSet(id)
+	scs, err := h.GetSubjectConditionSet(ctx, id)
 	if err != nil {
 		cli.ExitWithError("Error getting subject condition set", err)
 	}
@@ -251,17 +252,18 @@ func policy_deleteSubjectConditionSet(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
+	ctx := cmd.Context()
 	id := c.Flags.GetRequiredID("id")
 	force := c.Flags.GetOptionalBool("force")
 
-	scs, err := h.GetSubjectConditionSet(id)
+	scs, err := h.GetSubjectConditionSet(ctx, id)
 	if err != nil {
 		cli.ExitWithError(fmt.Sprintf("Subject Condition Set with id %s not found", id), err)
 	}
 
 	cli.ConfirmAction(cli.ActionDelete, "Subject Condition Sets", "all unmapped", force)
 
-	if err := h.DeleteSubjectConditionSet(id); err != nil {
+	if err := h.DeleteSubjectConditionSet(ctx, id); err != nil {
 		cli.ExitWithError(fmt.Sprintf("Subject Condition Set with id %s not found", id), err)
 	}
 
@@ -292,7 +294,7 @@ func policy_pruneSubjectConditionSet(cmd *cobra.Command, args []string) {
 
 	cli.ConfirmAction(cli.ActionDelete, "all unmapped Subject Condition Sets", "", force)
 
-	pruned, err := h.PruneSubjectConditionSets()
+	pruned, err := h.PruneSubjectConditionSets(cmd.Context())
 	if err != nil {
 		cli.ExitWithError("Failed to prune unmapped Subject Condition Sets", err)
 	}

@@ -1,6 +1,8 @@
 package tui
 
 import (
+	"context"
+
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/opentdf/otdfctl/pkg/handlers"
 	"github.com/opentdf/platform/protocol/go/common"
@@ -28,6 +30,8 @@ func (m LabelUpdate) Init() tea.Cmd {
 }
 
 func (m LabelUpdate) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	ctx := context.Background()
+
 	if msg, ok := msg.(tea.KeyMsg); ok {
 		switch msg.String() {
 		case "enter":
@@ -43,7 +47,7 @@ func (m LabelUpdate) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				metadata.Labels[newKey] = newVal
 				behavior := common.MetadataUpdateEnum_METADATA_UPDATE_ENUM_REPLACE
 				// TODO: handle and return error view
-				attr, _ := m.sdk.UpdateAttribute(m.attr.GetId(), metadata, behavior)
+				attr, _ := m.sdk.UpdateAttribute(ctx, m.attr.GetId(), metadata, behavior)
 				return InitLabelList(attr, m.sdk)
 			}
 		}
