@@ -40,6 +40,8 @@ The output format (currently `styled` or `json`) is configurable in the `otdfctl
 2. Run the handler which is located in `pkg/handlers` and pass the values as arguments
 3. Handle any errors and return the result in a lite TUI format
 
+For a detailed example of adding a new subcommand (including arguments, flags, and documentation), see [`docs/example-add-subcommand.md`](docs/example-add-subcommand.md).
+
 ### TUI
 
 > [!CAUTION]
@@ -51,6 +53,17 @@ The TUI will be used to create an interactive experience for the user.
 
 Documentation drives the CLI in this project. This can be found in `/docs/man` and is used in the
 CLI via the `man.Docs.GetDoc()` function.
+
+## Documentation-Driven CLI
+
+The CLI help system and usage output are powered by Markdown documentation in `docs/man/`. When adding or changing commands or flags, always update the corresponding Markdown file. The documentation is parsed at runtime and also published to the OpenTDF docs website.
+
+To ensure documentation and code remain in sync:
+- Update the relevant Markdown doc in `docs/man/` when you add or change a command.
+- Review the CLI help output after changes.
+- See `CONTRIBUTOR_GUIDE.md` for more details.
+
+---
 
 ## Testing
 
