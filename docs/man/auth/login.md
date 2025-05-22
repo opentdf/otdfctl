@@ -7,7 +7,7 @@ command:
     - name: client-id
       description: A clientId for use in auth code flow (default = platform well-known public_client_id)
       shorthand: i
-      required: false
+      required: true
 ---
 
 > [!NOTE]

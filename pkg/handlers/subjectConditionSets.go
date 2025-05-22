@@ -1,13 +1,15 @@
 package handlers
 
 import (
+	"context"
+
 	"github.com/opentdf/platform/protocol/go/common"
 	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/opentdf/platform/protocol/go/policy/subjectmapping"
 )
 
-func (h Handler) GetSubjectConditionSet(id string) (*policy.SubjectConditionSet, error) {
-	resp, err := h.sdk.SubjectMapping.GetSubjectConditionSet(h.ctx, &subjectmapping.GetSubjectConditionSetRequest{
+func (h Handler) GetSubjectConditionSet(ctx context.Context, id string) (*policy.SubjectConditionSet, error) {
+	resp, err := h.sdk.SubjectMapping.GetSubjectConditionSet(ctx, &subjectmapping.GetSubjectConditionSetRequest{
 		Id: id,
 	})
 	if err != nil {
@@ -17,8 +19,8 @@ func (h Handler) GetSubjectConditionSet(id string) (*policy.SubjectConditionSet,
 	return resp.GetSubjectConditionSet(), nil
 }
 
-func (h Handler) ListSubjectConditionSets(limit, offset int32) ([]*policy.SubjectConditionSet, *policy.PageResponse, error) {
-	resp, err := h.sdk.SubjectMapping.ListSubjectConditionSets(h.ctx, &subjectmapping.ListSubjectConditionSetsRequest{
+func (h Handler) ListSubjectConditionSets(ctx context.Context, limit, offset int32) ([]*policy.SubjectConditionSet, *policy.PageResponse, error) {
+	resp, err := h.sdk.SubjectMapping.ListSubjectConditionSets(ctx, &subjectmapping.ListSubjectConditionSetsRequest{
 		Pagination: &policy.PageRequest{
 			Limit:  limit,
 			Offset: offset,
@@ -31,8 +33,8 @@ func (h Handler) ListSubjectConditionSets(limit, offset int32) ([]*policy.Subjec
 }
 
 // Creates and returns the created subject condition set
-func (h Handler) CreateSubjectConditionSet(ss []*policy.SubjectSet, metadata *common.MetadataMutable) (*policy.SubjectConditionSet, error) {
-	resp, err := h.sdk.SubjectMapping.CreateSubjectConditionSet(h.ctx, &subjectmapping.CreateSubjectConditionSetRequest{
+func (h Handler) CreateSubjectConditionSet(ctx context.Context, ss []*policy.SubjectSet, metadata *common.MetadataMutable) (*policy.SubjectConditionSet, error) {
+	resp, err := h.sdk.SubjectMapping.CreateSubjectConditionSet(ctx, &subjectmapping.CreateSubjectConditionSetRequest{
 		SubjectConditionSet: &subjectmapping.SubjectConditionSetCreate{
 			SubjectSets: ss,
 			Metadata:    metadata,
@@ -41,12 +43,12 @@ func (h Handler) CreateSubjectConditionSet(ss []*policy.SubjectSet, metadata *co
 	if err != nil {
 		return nil, err
 	}
-	return h.GetSubjectConditionSet(resp.GetSubjectConditionSet().GetId())
+	return h.GetSubjectConditionSet(ctx, resp.GetSubjectConditionSet().GetId())
 }
 
 // Updates and returns the updated subject condition set
-func (h Handler) UpdateSubjectConditionSet(id string, ss []*policy.SubjectSet, metadata *common.MetadataMutable, behavior common.MetadataUpdateEnum) (*policy.SubjectConditionSet, error) {
-	_, err := h.sdk.SubjectMapping.UpdateSubjectConditionSet(h.ctx, &subjectmapping.UpdateSubjectConditionSetRequest{
+func (h Handler) UpdateSubjectConditionSet(ctx context.Context, id string, ss []*policy.SubjectSet, metadata *common.MetadataMutable, behavior common.MetadataUpdateEnum) (*policy.SubjectConditionSet, error) {
+	_, err := h.sdk.SubjectMapping.UpdateSubjectConditionSet(ctx, &subjectmapping.UpdateSubjectConditionSetRequest{
 		Id:                     id,
 		SubjectSets:            ss,
 		Metadata:               metadata,
@@ -55,18 +57,18 @@ func (h Handler) UpdateSubjectConditionSet(id string, ss []*policy.SubjectSet, m
 	if err != nil {
 		return nil, err
 	}
-	return h.GetSubjectConditionSet(id)
+	return h.GetSubjectConditionSet(ctx, id)
 }
 
-func (h Handler) DeleteSubjectConditionSet(id string) error {
-	_, err := h.sdk.SubjectMapping.DeleteSubjectConditionSet(h.ctx, &subjectmapping.DeleteSubjectConditionSetRequest{
+func (h Handler) DeleteSubjectConditionSet(ctx context.Context, id string) error {
+	_, err := h.sdk.SubjectMapping.DeleteSubjectConditionSet(ctx, &subjectmapping.DeleteSubjectConditionSetRequest{
 		Id: id,
 	})
 	return err
 }
 
-func (h Handler) PruneSubjectConditionSets() ([]*policy.SubjectConditionSet, error) {
-	rsp, err := h.sdk.SubjectMapping.DeleteAllUnmappedSubjectConditionSets(h.ctx, &subjectmapping.DeleteAllUnmappedSubjectConditionSetsRequest{})
+func (h Handler) PruneSubjectConditionSets(ctx context.Context) ([]*policy.SubjectConditionSet, error) {
+	rsp, err := h.sdk.SubjectMapping.DeleteAllUnmappedSubjectConditionSets(ctx, &subjectmapping.DeleteAllUnmappedSubjectConditionSetsRequest{})
 	if err != nil {
 		return nil, err
 	}
