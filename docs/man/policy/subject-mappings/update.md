@@ -9,27 +9,20 @@ command:
       description: The ID of the subject mapping to update
       shorthand: i
       required: true
+    - name: action
+      description: Each 'id' or 'name' of an Action to be entitled (i.e. 'create', 'read', 'update', 'delete')
     - name: action-standard
-      description: The standard action to map to a subject set
-      enum:
-        - DECRYPT
-        - TRANSMIT
+      description: Deprecated. Migrated to '--action'.
       shorthand: s
-      required: true
-      default: ''
     - name: action-custom
-      description: The custom action to map to a subject set
+      description: Deprecated. Migrated to '--action'.
       shorthand: c
-      required: false
-      default: ''
     - name: subject-condition-set-id
       description: Known preexisting Subject Condition Set Id
-      required: true
-      default: ''
+      required: false
     - name: label
       description: "Optional metadata 'labels' in the format: key=value"
       shorthand: l
-      default: ''
     - name: force-replace-labels
       description: Destructively replace entire set of existing metadata 'labels' with any provided to this command
       default: false

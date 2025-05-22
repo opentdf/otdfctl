@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"context"
 	"errors"
 
 	"github.com/opentdf/otdfctl/pkg/auth"
@@ -18,9 +17,7 @@ var (
 )
 
 type Handler struct {
-	sdk *sdk.SDK
-	//nolint:containedctx // need to handle in a separate dedicated issue [https://github.com/opentdf/otdfctl/issues/364]
-	ctx              context.Context
+	sdk              *sdk.SDK
 	OIDC_TOKEN       string
 	platformEndpoint string
 }
@@ -95,7 +92,7 @@ func New(opts ...handlerOptsFunc) (Handler, error) {
 		o.sdkOpts = append(o.sdkOpts, sdk.WithInsecurePlaintextConn())
 	}
 
-	s, err := sdk.New(u.Host, o.sdkOpts...)
+	s, err := sdk.New(u.String(), o.sdkOpts...)
 	if err != nil {
 		return Handler{}, err
 	}
@@ -103,7 +100,6 @@ func New(opts ...handlerOptsFunc) (Handler, error) {
 	return Handler{
 		sdk:              s,
 		platformEndpoint: o.endpoint,
-		ctx:              context.Background(),
 	}, nil
 }
 

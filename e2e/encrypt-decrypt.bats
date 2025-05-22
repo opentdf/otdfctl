@@ -48,9 +48,14 @@ setup_file() {
   jq --arg pem "$(<$RS_PUBLIC_KEY)" '.keys.assertion1.key = $pem' $SIGNED_ASSERTION_VERIFICATON_RS256 > tmp.json && mv tmp.json $SIGNED_ASSERTION_VERIFICATON_RS256
 
   
-  SM=$(./otdfctl --host $HOST $WITH_CREDS $DEBUG_LEVEL policy subject-mappings create --action-standard DECRYPT -a "$VAL_ID" --subject-condition-set-new "$SCS")
+  SM=$(./otdfctl --host $HOST $WITH_CREDS $DEBUG_LEVEL policy subject-mappings create --action 'read' -a "$VAL_ID" --subject-condition-set-new "$SCS")
   export FQN="https://testing-enc-dec.io/attr/attr1/value/value1"
   export MIXED_CASE_FQN="https://Testing-Enc-Dec.io/attr/Attr1/value/VALUE1"
+}
+
+setup() {
+    load "${BATS_LIB_PATH}/bats-support/load.bash"
+    load "${BATS_LIB_PATH}/bats-assert/load.bash"
 }
 
 teardown() {
@@ -151,4 +156,44 @@ teardown_file(){
 
   schema_version_present=$(./otdfctl --host $HOST --tls-no-verify $WITH_CREDS inspect $OUTFILE_GO_MOD | jq '.manifest | has("schemaVersion")')
   [[ $schema_version_present == true ]]
+}
+
+@test "roundtrip TDF3, with allowlist containing platform kas" {
+  ./otdfctl encrypt -o $OUTFILE_GO_MOD --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --tdf-type tdf3  $INFILE_GO_MOD
+  run sh -c "./otdfctl decrypt --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --tdf-type tdf3 --kas-allowlist http://localhost:8080/kas $OUTFILE_GO_MOD"
+  assert_success
+}
+
+@test "roundtrip TDF3, with allowlist containing non existent kas (should fail)" {
+  ./otdfctl encrypt -o $OUTFILE_GO_MOD --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --tdf-type tdf3 $INFILE_GO_MOD
+  run sh -c "./otdfctl decrypt --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --tdf-type tdf3 --kas-allowlist http://not-a-real-kas.com/kas $OUTFILE_GO_MOD"
+  assert_failure
+  assert_output --partial "KasAllowlist: kas url http://localhost:8080/kas is not allowed"
+}
+
+@test "roundtrip TDF3, ignoring allowlist" {
+  ./otdfctl encrypt -o $OUTFILE_GO_MOD --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --tdf-type tdf3  $INFILE_GO_MOD
+  run sh -c "./otdfctl decrypt --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --tdf-type tdf3 --kas-allowlist '*' $OUTFILE_GO_MOD"
+  assert_success
+  assert_output --partial "KasAllowlist is ignored"
+}
+
+@test "roundtrip NANO, with allowlist containing platform kas" {
+  ./otdfctl encrypt -o $OUTFILE_GO_MOD --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --tdf-type nano  $INFILE_GO_MOD
+  run sh -c "./otdfctl decrypt --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --tdf-type nano --kas-allowlist http://localhost:8080/kas $OUTFILE_GO_MOD"
+  assert_success
+}
+
+@test "roundtrip NANO, with allowlist containing non existent kas (should fail)" {
+  ./otdfctl encrypt -o $OUTFILE_GO_MOD --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --tdf-type nano $INFILE_GO_MOD
+  run sh -c "./otdfctl decrypt --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --tdf-type nano --kas-allowlist http://not-a-real-kas.com/kas $OUTFILE_GO_MOD"
+  assert_failure
+  assert_output --partial "KasAllowlist: kas url http://localhost:8080/kas is not allowed"
+}
+
+@test "roundtrip NANO, ignoring allowlist" {
+  ./otdfctl encrypt -o $OUTFILE_GO_MOD --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --tdf-type nano  $INFILE_GO_MOD
+  run sh -c "./otdfctl decrypt --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --tdf-type nano --kas-allowlist '*' $OUTFILE_GO_MOD"
+  assert_success
+  assert_output --partial "KasAllowlist is ignored"
 }

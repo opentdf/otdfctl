@@ -23,7 +23,7 @@ func policy_getAttributeNamespace(cmd *cobra.Command, args []string) {
 
 	id := c.Flags.GetRequiredID("id")
 
-	ns, err := h.GetNamespace(id)
+	ns, err := h.GetNamespace(cmd.Context(), id)
 	if err != nil {
 		errMsg := fmt.Sprintf("Failed to get namespace (%s)", id)
 		cli.ExitWithError(errMsg, err)
@@ -48,7 +48,7 @@ func policy_listAttributeNamespaces(cmd *cobra.Command, args []string) {
 	limit := c.Flags.GetRequiredInt32("limit")
 	offset := c.Flags.GetRequiredInt32("offset")
 
-	list, page, err := h.ListNamespaces(state, limit, offset)
+	list, page, err := h.ListNamespaces(cmd.Context(), state, limit, offset)
 	if err != nil {
 		cli.ExitWithError("Failed to list namespaces", err)
 	}
@@ -87,7 +87,7 @@ func policy_createAttributeNamespace(cmd *cobra.Command, args []string) {
 	name := c.Flags.GetRequiredString("name")
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
-	created, err := h.CreateNamespace(name, getMetadataMutable(metadataLabels))
+	created, err := h.CreateNamespace(cmd.Context(), name, getMetadataMutable(metadataLabels))
 	if err != nil {
 		cli.ExitWithError("Failed to create namespace", err)
 	}
@@ -108,10 +108,11 @@ func policy_deactivateAttributeNamespace(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
+	ctx := cmd.Context()
 	force := c.Flags.GetOptionalBool("force")
 	id := c.Flags.GetRequiredID("id")
 
-	ns, err := h.GetNamespace(id)
+	ns, err := h.GetNamespace(ctx, id)
 	if err != nil {
 		errMsg := fmt.Sprintf("Failed to find namespace (%s)", id)
 		cli.ExitWithError(errMsg, err)
@@ -119,7 +120,7 @@ func policy_deactivateAttributeNamespace(cmd *cobra.Command, args []string) {
 
 	cli.ConfirmAction(cli.ActionDeactivate, "namespace", ns.GetName(), force)
 
-	d, err := h.DeactivateNamespace(id)
+	d, err := h.DeactivateNamespace(ctx, id)
 	if err != nil {
 		errMsg := fmt.Sprintf("Failed to deactivate namespace (%s)", id)
 		cli.ExitWithError(errMsg, err)
@@ -144,6 +145,7 @@ func policy_updateAttributeNamespace(cmd *cobra.Command, args []string) {
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
 	ns, err := h.UpdateNamespace(
+		cmd.Context(),
 		id,
 		getMetadataMutable(metadataLabels),
 		getMetadataUpdateBehavior(),
@@ -168,9 +170,10 @@ func policy_unsafeDeleteAttributeNamespace(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
+	ctx := cmd.Context()
 	id := c.Flags.GetRequiredID("id")
 
-	ns, err := h.GetNamespace(id)
+	ns, err := h.GetNamespace(ctx, id)
 	if err != nil {
 		errMsg := fmt.Sprintf("Failed to find namespace (%s)", id)
 		cli.ExitWithError(errMsg, err)
@@ -180,7 +183,7 @@ func policy_unsafeDeleteAttributeNamespace(cmd *cobra.Command, args []string) {
 		cli.ConfirmTextInput(cli.ActionDelete, "namespace", cli.InputNameFQN, ns.GetFqn())
 	}
 
-	if err := h.UnsafeDeleteNamespace(id, ns.GetFqn()); err != nil {
+	if err := h.UnsafeDeleteNamespace(ctx, id, ns.GetFqn()); err != nil {
 		errMsg := fmt.Sprintf("Failed to delete namespace (%s)", id)
 		cli.ExitWithError(errMsg, err)
 	}
@@ -201,9 +204,10 @@ func policy_unsafeReactivateAttributeNamespace(cmd *cobra.Command, args []string
 	h := NewHandler(c)
 	defer h.Close()
 
+	ctx := cmd.Context()
 	id := c.Flags.GetRequiredID("id")
 
-	ns, err := h.GetNamespace(id)
+	ns, err := h.GetNamespace(ctx, id)
 	if err != nil {
 		errMsg := fmt.Sprintf("Failed to find namespace (%s)", id)
 		cli.ExitWithError(errMsg, err)
@@ -213,7 +217,7 @@ func policy_unsafeReactivateAttributeNamespace(cmd *cobra.Command, args []string
 		cli.ConfirmTextInput(cli.ActionReactivate, "namespace", cli.InputNameFQN, ns.GetFqn())
 	}
 
-	ns, err = h.UnsafeReactivateNamespace(id)
+	ns, err = h.UnsafeReactivateNamespace(ctx, id)
 	if err != nil {
 		errMsg := fmt.Sprintf("Failed to reactivate namespace (%s)", id)
 		cli.ExitWithError(errMsg, err)
@@ -235,10 +239,11 @@ func policy_unsafeUpdateAttributeNamespace(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
+	ctx := cmd.Context()
 	id := c.Flags.GetRequiredID("id")
 	name := c.Flags.GetRequiredString("name")
 
-	ns, err := h.GetNamespace(id)
+	ns, err := h.GetNamespace(ctx, id)
 	if err != nil {
 		errMsg := fmt.Sprintf("Failed to find namespace (%s)", id)
 		cli.ExitWithError(errMsg, err)
@@ -248,7 +253,7 @@ func policy_unsafeUpdateAttributeNamespace(cmd *cobra.Command, args []string) {
 		cli.ConfirmTextInput(cli.ActionUpdateUnsafe, "namespace", cli.InputNameFQNUpdated, ns.GetFqn())
 	}
 
-	ns, err = h.UnsafeUpdateNamespace(id, name)
+	ns, err = h.UnsafeUpdateNamespace(ctx, id, name)
 	if err != nil {
 		errMsg := fmt.Sprintf("Failed to reactivate namespace (%s)", id)
 		cli.ExitWithError(errMsg, err)

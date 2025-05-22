@@ -1,13 +1,15 @@
 package handlers
 
 import (
+	"context"
+
 	"github.com/opentdf/platform/protocol/go/common"
 	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/opentdf/platform/protocol/go/policy/kasregistry"
 )
 
-func (h Handler) GetKasRegistryEntry(id string) (*policy.KeyAccessServer, error) {
-	resp, err := h.sdk.KeyAccessServerRegistry.GetKeyAccessServer(h.ctx, &kasregistry.GetKeyAccessServerRequest{
+func (h Handler) GetKasRegistryEntry(ctx context.Context, id string) (*policy.KeyAccessServer, error) {
+	resp, err := h.sdk.KeyAccessServerRegistry.GetKeyAccessServer(ctx, &kasregistry.GetKeyAccessServerRequest{
 		Id: id,
 	})
 	if err != nil {
@@ -17,8 +19,8 @@ func (h Handler) GetKasRegistryEntry(id string) (*policy.KeyAccessServer, error)
 	return resp.GetKeyAccessServer(), nil
 }
 
-func (h Handler) ListKasRegistryEntries(limit, offset int32) ([]*policy.KeyAccessServer, *policy.PageResponse, error) {
-	resp, err := h.sdk.KeyAccessServerRegistry.ListKeyAccessServers(h.ctx, &kasregistry.ListKeyAccessServersRequest{
+func (h Handler) ListKasRegistryEntries(ctx context.Context, limit, offset int32) ([]*policy.KeyAccessServer, *policy.PageResponse, error) {
+	resp, err := h.sdk.KeyAccessServerRegistry.ListKeyAccessServers(ctx, &kasregistry.ListKeyAccessServersRequest{
 		Pagination: &policy.PageRequest{
 			Limit:  limit,
 			Offset: offset,
@@ -32,7 +34,7 @@ func (h Handler) ListKasRegistryEntries(limit, offset int32) ([]*policy.KeyAcces
 }
 
 // Creates the KAS registry and then returns the KAS
-func (h Handler) CreateKasRegistryEntry(uri string, publicKey *policy.PublicKey, name string, metadata *common.MetadataMutable) (*policy.KeyAccessServer, error) {
+func (h Handler) CreateKasRegistryEntry(ctx context.Context, uri string, publicKey *policy.PublicKey, name string, metadata *common.MetadataMutable) (*policy.KeyAccessServer, error) {
 	req := &kasregistry.CreateKeyAccessServerRequest{
 		Uri:       uri,
 		PublicKey: publicKey,
@@ -40,17 +42,17 @@ func (h Handler) CreateKasRegistryEntry(uri string, publicKey *policy.PublicKey,
 		Metadata:  metadata,
 	}
 
-	resp, err := h.sdk.KeyAccessServerRegistry.CreateKeyAccessServer(h.ctx, req)
+	resp, err := h.sdk.KeyAccessServerRegistry.CreateKeyAccessServer(ctx, req)
 	if err != nil {
 		return nil, err
 	}
 
-	return h.GetKasRegistryEntry(resp.GetKeyAccessServer().GetId())
+	return h.GetKasRegistryEntry(ctx, resp.GetKeyAccessServer().GetId())
 }
 
 // Updates the KAS registry and then returns the KAS
-func (h Handler) UpdateKasRegistryEntry(id, uri, name string, pubKey *policy.PublicKey, metadata *common.MetadataMutable, behavior common.MetadataUpdateEnum) (*policy.KeyAccessServer, error) {
-	_, err := h.sdk.KeyAccessServerRegistry.UpdateKeyAccessServer(h.ctx, &kasregistry.UpdateKeyAccessServerRequest{
+func (h Handler) UpdateKasRegistryEntry(ctx context.Context, id, uri, name string, pubKey *policy.PublicKey, metadata *common.MetadataMutable, behavior common.MetadataUpdateEnum) (*policy.KeyAccessServer, error) {
+	_, err := h.sdk.KeyAccessServerRegistry.UpdateKeyAccessServer(ctx, &kasregistry.UpdateKeyAccessServerRequest{
 		Id:                     id,
 		Uri:                    uri,
 		Name:                   name,
@@ -62,16 +64,16 @@ func (h Handler) UpdateKasRegistryEntry(id, uri, name string, pubKey *policy.Pub
 		return nil, err
 	}
 
-	return h.GetKasRegistryEntry(id)
+	return h.GetKasRegistryEntry(ctx, id)
 }
 
 // Deletes the KAS registry and returns the deleted KAS
-func (h Handler) DeleteKasRegistryEntry(id string) (*policy.KeyAccessServer, error) {
+func (h Handler) DeleteKasRegistryEntry(ctx context.Context, id string) (*policy.KeyAccessServer, error) {
 	req := &kasregistry.DeleteKeyAccessServerRequest{
 		Id: id,
 	}
 
-	resp, err := h.sdk.KeyAccessServerRegistry.DeleteKeyAccessServer(h.ctx, req)
+	resp, err := h.sdk.KeyAccessServerRegistry.DeleteKeyAccessServer(ctx, req)
 	if err != nil {
 		return nil, err
 	}

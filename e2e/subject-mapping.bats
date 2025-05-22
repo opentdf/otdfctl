@@ -16,6 +16,11 @@ setup_file() {
 
     export SCS_1='[{"condition_groups":[{"conditions":[{"operator":1,"subject_external_values":["ShinyThing"],"subject_external_selector_value":".team.name"},{"operator":2,"subject_external_values":["marketing"],"subject_external_selector_value":".org.name"}],"boolean_operator":1}]}]'
     export SCS_2='[{"condition_groups":[{"conditions":[{"operator":2,"subject_external_values":["CoolTool","RadService"],"subject_external_selector_value":".team.name"},{"operator":1,"subject_external_values":["sales"],"subject_external_selector_value":".org.name"}],"boolean_operator":2}]}]'
+
+    export ACTION_READ_NAME='read'
+    export ACTION_READ_ID=$(./otdfctl $HOST $WITH_CREDS policy actions get --name "$ACTION_READ_NAME" --json | jq -r '.id')
+    export ACTION_CREATE_NAME='create'
+    export ACTION_CREATE_ID=$(./otdfctl $HOST $WITH_CREDS policy actions get --name "$ACTION_CREATE_NAME" --json | jq -r '.id')
 }
 
 setup() {
@@ -38,29 +43,27 @@ teardown_file() {
 
 @test "Create subject mapping" {
     # create with simultaneous new SCS
-    run ./otdfctl $HOST $WITH_CREDS policy subject-mappings create -a "$VAL1_ID" -s TRANSMIT --action-standard DECRYPT --subject-condition-set-new "$SCS_2"
+    run ./otdfctl $HOST $WITH_CREDS policy subject-mappings create -a "$VAL1_ID" --action "$ACTION_CREATE_NAME" --action "$ACTION_READ_NAME" --subject-condition-set-new "$SCS_2"
         assert_success
         assert_output --partial "Subject Condition Set: Id"
-        assert_output --partial '"Standard":1'
-        assert_output --partial '"Standard":2'
         assert_output --partial ".team.name"
         assert_line --regexp "Attribute Value Id.*$VAL1_ID"
 
     # scs is required
-    run_otdfctl_sm create --attribute-value-id "$VAL2_ID" -s TRANSMIT
+    run_otdfctl_sm create --attribute-value-id "$VAL2_ID" --action "$ACTION_CREATE_NAME"
     assert_failure
     assert_output --partial "At least one Subject Condition Set flag [--subject-condition-set-id, --subject-condition-set-new] must be provided"
 
     # action is required
     run_otdfctl_sm create -a "$VAL1_ID" --subject-condition-set-new "$SCS_2"
     assert_failure
-    assert_output --partial "At least one Standard or Custom Action [--action-standard, --action-custom] is required"
+    assert_output --partial "At least one Action [--action] is required"
 }
 
 @test "Match subject mapping" {
     # create with simultaneous new SCS
     NEW_SCS='[{"condition_groups":[{"conditions":[{"operator":1,"subject_external_values":["sales"],"subject_external_selector_value":".department"}],"boolean_operator":2}]}]'
-    NEW_SM_ID=$(./otdfctl $HOST $WITH_CREDS policy subject-mappings create -a "$VAL2_ID" --action-standard DECRYPT --subject-condition-set-new "$NEW_SCS" --json | jq -r '.id')
+    NEW_SM_ID=$(./otdfctl $HOST $WITH_CREDS policy subject-mappings create -a "$VAL2_ID" --action "$ACTION_READ_NAME" --subject-condition-set-new "$NEW_SCS" --json | jq -r '.id')
 
     run_otdfctl_sm match -x '.department'
     assert_success
@@ -93,7 +96,7 @@ teardown_file() {
 
 @test "Get subject mapping" {
     new_scs=$(./otdfctl $HOST $WITH_CREDS policy scs create -s "$SCS_2" --json | jq -r '.id')
-    created=$(./otdfctl $HOST $WITH_CREDS policy sm create -a "$VAL2_ID" -s TRANSMIT --subject-condition-set-id "$new_scs" --json | jq -r '.id')
+    created=$(./otdfctl $HOST $WITH_CREDS policy sm create -a "$VAL2_ID" --action "$ACTION_CREATE_ID" --subject-condition-set-id "$new_scs" --json | jq -r '.id')
     # table
     run_otdfctl_sm get --id "$created"
         assert_success
@@ -108,17 +111,20 @@ teardown_file() {
         [ "$(echo $output | jq -r '.id')" = "$created" ]
         [ "$(echo $output | jq -r '.attribute_value.id')" = "$VAL2_ID" ]
         [ "$(echo $output | jq -r '.subject_condition_set.id')" = "$new_scs" ]
+        [ "$(echo $output | jq -r '.actions[0].id')" = "$ACTION_CREATE_ID" ]
+        [ "$(echo $output | jq -r '.actions[0].name')" = "$ACTION_CREATE_NAME" ]
 }
 
 @test "Update a subject mapping" {
-    created=$(./otdfctl $HOST $WITH_CREDS policy sm create -a "$VAL1_ID" -s DECRYPT --subject-condition-set-new "$SCS_1" --json | jq -r '.id')
+    created=$(./otdfctl $HOST $WITH_CREDS policy sm create -a "$VAL1_ID" --action "$ACTION_READ_NAME" --subject-condition-set-new "$SCS_1" --json | jq -r '.id')
     additional_scs=$(./otdfctl $HOST $WITH_CREDS policy scs create -s "$SCS_2" --json | jq -r '.id')
 
     # replace the action (always destructive replacement)
-    run_otdfctl_sm update --id "$created" -s TRANSMIT --json
+    run_otdfctl_sm update --id "$created" --action "$ACTION_CREATE_NAME" --json
         assert_success
         [ "$(echo $output | jq -r '.id')" = "$created" ]
-        [ "$(echo $output | jq -r '.actions[0].Value.Standard')" = 2 ]
+        [ "$(echo $output | jq -r '.actions[0].name')" = "$ACTION_CREATE_NAME" ]
+        [ "$(echo $output | jq -r '.actions[0].id')" = "$ACTION_CREATE_ID" ]
 
     # reassign the SCS being mapped to
     run_otdfctl_sm update --id "$created" --subject-condition-set-id "$additional_scs" --json
@@ -128,7 +134,7 @@ teardown_file() {
 }
 
 @test "List subject mappings" {
-    created=$(./otdfctl $HOST $WITH_CREDS policy sm create -a "$VAL1_ID" -s TRANSMIT --subject-condition-set-new "$SCS_2" --json | jq -r '.id')
+    created=$(./otdfctl $HOST $WITH_CREDS policy sm create -a "$VAL1_ID" --action "$ACTION_CREATE_NAME" --subject-condition-set-new "$SCS_2" --json | jq -r '.id')
 
     run_otdfctl_sm list
         assert_success

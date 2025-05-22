@@ -21,6 +21,9 @@ command:
 
 Add a single new value underneath an existing attribute.
 
+An attribute `value` is normalized to lower case and may contain hyphens and underscores
+between other alphanumeric characters.
+
 For a hierarchical attribute, a new value is added in lowest hierarchy (last).
 
 For more information on attribute values, see the `values` subcommand.

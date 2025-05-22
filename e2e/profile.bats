@@ -24,11 +24,11 @@ setup() {
   }
 
   set_test_profile_auth_access_token() {
-    publicClientId=$1
+    clientId=$1
     accessToken=$2
     refreshToken=$3
     expiration=$4
-    echo "{\"publicClientId\":\"$publicClientId\",\"accessToken\":\"$accessToken\",\"refreshToken\":\"$refreshToken\",\"expiration\":\"$expiration\"}"
+    echo "{\"clientId\":\"$clientId\",\"accessToken\":\"$accessToken\",\"refreshToken\":\"$refreshToken\",\"expiration\":\"$expiration\"}"
   }
 
   set_test_config() {
