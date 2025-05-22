@@ -18,7 +18,7 @@ var (
 	actionAttributeValues    []string
 )
 
-const actionAttributeValueFlagSplitCount = 2
+const actionAttributeValueArgSplitCount = 2
 
 //
 // Registered Resources
@@ -207,42 +207,7 @@ func policyCreateRegisteredResourceValue(cmd *cobra.Command, args []string) {
 	actionAttributeValues = c.Flags.GetStringSlice("action-attribute-value", actionAttributeValues, cli.FlagsStringSliceOptions{Min: 0})
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
-	parsedActionAttributeValues := make([]*registeredresources.ActionAttributeValue, len(actionAttributeValues))
-
-	for i, aav := range actionAttributeValues {
-		// split on semicolon
-		split := strings.Split(aav, ";")
-		if len(split) != actionAttributeValueFlagSplitCount {
-			cli.ExitWithError("Invalid action attribute value format", nil)
-		}
-
-		actionIdentifier := split[0]
-		attrValIdentifier := split[1]
-
-		newActionAttrVal := &registeredresources.ActionAttributeValue{}
-
-		if uuid.Validate(actionIdentifier) == nil {
-			newActionAttrVal.ActionIdentifier = &registeredresources.ActionAttributeValue_ActionId{
-				ActionId: actionIdentifier,
-			}
-		} else {
-			newActionAttrVal.ActionIdentifier = &registeredresources.ActionAttributeValue_ActionName{
-				ActionName: actionIdentifier,
-			}
-		}
-
-		if uuid.Validate(attrValIdentifier) == nil {
-			newActionAttrVal.AttributeValueIdentifier = &registeredresources.ActionAttributeValue_AttributeValueId{
-				AttributeValueId: attrValIdentifier,
-			}
-		} else {
-			newActionAttrVal.AttributeValueIdentifier = &registeredresources.ActionAttributeValue_AttributeValueFqn{
-				AttributeValueFqn: attrValIdentifier,
-			}
-		}
-
-		parsedActionAttributeValues[i] = newActionAttrVal
-	}
+	parsedActionAttributeValues := parseActionAttributeValueArgs(actionAttributeValues)
 
 	resourceValue, err := h.CreateRegisteredResourceValue(ctx, resourceID, value, parsedActionAttributeValues, getMetadataMutable(metadataLabels))
 	if err != nil {
@@ -254,7 +219,6 @@ func policyCreateRegisteredResourceValue(cmd *cobra.Command, args []string) {
 	rows := [][]string{
 		{"Id", resourceValue.GetId()},
 		{"Value", resourceValue.GetValue()},
-		// todo: figure out how to stop this output from being cut off
 		{"Action Attribute Values", cli.CommaSeparated(simpleActionAttributeValues)},
 	}
 	if mdRows := getMetadataRows(resourceValue.GetMetadata()); mdRows != nil {
@@ -338,15 +302,16 @@ func policyUpdateRegisteredResourceValue(cmd *cobra.Command, args []string) {
 
 	id := c.Flags.GetRequiredID("id")
 	value := c.Flags.GetOptionalString("value")
-	// todo: figure out how to get action attribute values from command line
-	actionAttributeValues := []*registeredresources.ActionAttributeValue{}
+	actionAttributeValues = c.Flags.GetStringSlice("action-attribute-value", actionAttributeValues, cli.FlagsStringSliceOptions{Min: 0})
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
+
+	parsedActionAttributeValues := parseActionAttributeValueArgs(actionAttributeValues)
 
 	updated, err := h.UpdateRegisteredResourceValue(
 		cmd.Context(),
 		id,
 		value,
-		actionAttributeValues,
+		parsedActionAttributeValues,
 		getMetadataMutable(metadataLabels),
 		getMetadataUpdateBehavior(),
 	)
@@ -354,9 +319,12 @@ func policyUpdateRegisteredResourceValue(cmd *cobra.Command, args []string) {
 		cli.ExitWithError("Failed to update registered resource value", err)
 	}
 
+	simpleActionAttributeValues := cli.GetSimpleRegisteredResourceActionAttributeValues(updated.GetActionAttributeValues())
+
 	rows := [][]string{
 		{"Id", id},
 		{"Value", updated.GetValue()},
+		{"Action Attribute Values", cli.CommaSeparated(simpleActionAttributeValues)},
 	}
 	if mdRows := getMetadataRows(updated.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
@@ -399,6 +367,47 @@ func policyDeleteRegisteredResourceValue(cmd *cobra.Command, args []string) {
 
 	t := cli.NewTabular(rows...)
 	HandleSuccess(cmd, id, t, resource)
+}
+
+func parseActionAttributeValueArgs(args []string) []*registeredresources.ActionAttributeValue {
+	parsed := make([]*registeredresources.ActionAttributeValue, len(args))
+
+	for i, a := range args {
+		// split on semicolon
+		split := strings.Split(a, ";")
+		if len(split) != actionAttributeValueArgSplitCount {
+			cli.ExitWithError("Invalid action attribute value arg format", nil)
+		}
+
+		actionIdentifier := split[0]
+		attrValIdentifier := split[1]
+
+		newActionAttrVal := &registeredresources.ActionAttributeValue{}
+
+		if uuid.Validate(actionIdentifier) == nil {
+			newActionAttrVal.ActionIdentifier = &registeredresources.ActionAttributeValue_ActionId{
+				ActionId: actionIdentifier,
+			}
+		} else {
+			newActionAttrVal.ActionIdentifier = &registeredresources.ActionAttributeValue_ActionName{
+				ActionName: actionIdentifier,
+			}
+		}
+
+		if uuid.Validate(attrValIdentifier) == nil {
+			newActionAttrVal.AttributeValueIdentifier = &registeredresources.ActionAttributeValue_AttributeValueId{
+				AttributeValueId: attrValIdentifier,
+			}
+		} else {
+			newActionAttrVal.AttributeValueIdentifier = &registeredresources.ActionAttributeValue_AttributeValueFqn{
+				AttributeValueFqn: attrValIdentifier,
+			}
+		}
+
+		parsed[i] = newActionAttrVal
+	}
+
+	return parsed
 }
 
 func init() {
@@ -542,6 +551,13 @@ func init() {
 		updateValueDoc.GetDocFlag("value").Shorthand,
 		updateValueDoc.GetDocFlag("value").Default,
 		updateValueDoc.GetDocFlag("value").Description,
+	)
+	updateValueDoc.Flags().StringSliceVarP(
+		&actionAttributeValues,
+		updateValueDoc.GetDocFlag("action-attribute-value").Name,
+		updateValueDoc.GetDocFlag("action-attribute-value").Shorthand,
+		[]string{},
+		updateValueDoc.GetDocFlag("action-attribute-value").Description,
 	)
 	injectLabelFlags(&updateValueDoc.Command, true)
 

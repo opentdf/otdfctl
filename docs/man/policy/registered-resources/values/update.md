@@ -11,6 +11,10 @@ command:
     - name: value
       shorthand: v
       description: Optional updated value of the registered resource value (must be unique within the Registered Resource)
+    - name: action-attribute-value
+      shorthand: a
+      description: "Optional action attribute values in the format: \"<action_id>|<action_name>;<attribute_value_id|attribute_value_fqn>\""
+      default: ''
     - name: label
       description: "Optional metadata 'labels' in the format: key=value"
       shorthand: l
