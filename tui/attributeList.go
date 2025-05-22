@@ -1,6 +1,8 @@
 package tui
 
 import (
+	"context"
+
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -31,14 +33,14 @@ func (m AttributeItem) Description() string {
 	return m.id
 }
 
-func InitAttributeList(id string, h handlers.Handler) (tea.Model, tea.Cmd) {
+func InitAttributeList(ctx context.Context, id string, h handlers.Handler) (tea.Model, tea.Cmd) {
 	l := list.New([]list.Item{}, list.NewDefaultDelegate(), constants.WindowSize.Width, constants.WindowSize.Height)
 	// TODO: handle and return error view and use real command flags limit/offset
 	var (
 		limit  int32 = 100
 		offset int32 = 0
 	)
-	res, _, _ := h.ListAttributes(common.ActiveStateEnum_ACTIVE_STATE_ENUM_ANY, limit, offset)
+	res, _, _ := h.ListAttributes(ctx, common.ActiveStateEnum_ACTIVE_STATE_ENUM_ANY, limit, offset)
 	var attrs []list.Item
 	selectIdx := 0
 	for i, attr := range res {
@@ -83,6 +85,8 @@ func CreateViewFormat(num int) string {
 }
 
 func (m AttributeList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	ctx := context.Background()
+
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		constants.WindowSize = msg
@@ -101,7 +105,7 @@ func (m AttributeList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// create new attribute
 		// return InitAttributeView(m.list.Items(), len(m.list.Items()))
 		case "enter", "e":
-			return InitAttributeView(m.list.Items()[m.list.Index()].(AttributeItem).id, m.h)
+			return InitAttributeView(ctx, m.list.Items()[m.list.Index()].(AttributeItem).id, m.h)
 			// case "ctrl+d":
 			// 	m.list.RemoveItem(m.list.Index())
 			// 	newIndex := m.list.Index() - 1

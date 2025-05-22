@@ -30,7 +30,7 @@ func policy_createAttribute(cmd *cobra.Command, args []string) {
 	namespace := c.Flags.GetRequiredString("namespace")
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
-	attr, err := h.CreateAttribute(name, rule, namespace, values, getMetadataMutable(metadataLabels))
+	attr, err := h.CreateAttribute(cmd.Context(), name, rule, namespace, values, getMetadataMutable(metadataLabels))
 	if err != nil {
 		cli.ExitWithError("Failed to create attribute", err)
 	}
@@ -64,7 +64,7 @@ func policy_getAttribute(cmd *cobra.Command, args []string) {
 
 	id := c.Flags.GetRequiredID("id")
 
-	attr, err := h.GetAttribute(id)
+	attr, err := h.GetAttribute(cmd.Context(), id)
 	if err != nil {
 		errMsg := fmt.Sprintf("Failed to get attribute (%s)", id)
 		cli.ExitWithError(errMsg, err)
@@ -94,7 +94,7 @@ func policy_listAttributes(cmd *cobra.Command, args []string) {
 	limit := c.Flags.GetRequiredInt32("limit")
 	offset := c.Flags.GetRequiredInt32("offset")
 
-	attrs, page, err := h.ListAttributes(state, limit, offset)
+	attrs, page, err := h.ListAttributes(cmd.Context(), state, limit, offset)
 	if err != nil {
 		cli.ExitWithError("Failed to list attributes", err)
 	}
@@ -135,10 +135,11 @@ func policy_deactivateAttribute(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
+	ctx := cmd.Context()
 	id := c.Flags.GetRequiredID("id")
 	force := c.Flags.GetOptionalBool("force")
 
-	attr, err := h.GetAttribute(id)
+	attr, err := h.GetAttribute(ctx, id)
 	if err != nil {
 		errMsg := fmt.Sprintf("Failed to get attribute (%s)", id)
 		cli.ExitWithError(errMsg, err)
@@ -146,7 +147,7 @@ func policy_deactivateAttribute(cmd *cobra.Command, args []string) {
 
 	cli.ConfirmAction(cli.ActionDeactivate, "attribute", attr.GetName(), force)
 
-	attr, err = h.DeactivateAttribute(id)
+	attr, err = h.DeactivateAttribute(ctx, id)
 	if err != nil {
 		errMsg := fmt.Sprintf("Failed to deactivate attribute (%s)", id)
 		cli.ExitWithError(errMsg, err)
@@ -174,7 +175,7 @@ func policy_updateAttribute(cmd *cobra.Command, args []string) {
 	id := c.Flags.GetRequiredID("id")
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
-	if a, err := h.UpdateAttribute(id, getMetadataMutable(metadataLabels), getMetadataUpdateBehavior()); err != nil {
+	if a, err := h.UpdateAttribute(cmd.Context(), id, getMetadataMutable(metadataLabels), getMetadataUpdateBehavior()); err != nil {
 		cli.ExitWithError(fmt.Sprintf("Failed to update attribute (%s)", id), err)
 	} else {
 		rows := [][]string{
@@ -194,9 +195,10 @@ func policy_unsafeReactivateAttribute(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
+	ctx := cmd.Context()
 	id := c.Flags.GetRequiredID("id")
 
-	a, err := h.GetAttribute(id)
+	a, err := h.GetAttribute(ctx, id)
 	if err != nil {
 		errMsg := fmt.Sprintf("Failed to get attribute (%s)", id)
 		cli.ExitWithError(errMsg, err)
@@ -206,7 +208,7 @@ func policy_unsafeReactivateAttribute(cmd *cobra.Command, args []string) {
 		cli.ConfirmTextInput(cli.ActionReactivate, "attribute", cli.InputNameFQN, a.GetFqn())
 	}
 
-	if reactivatedAttr, err := h.UnsafeReactivateAttribute(id); err != nil {
+	if reactivatedAttr, err := h.UnsafeReactivateAttribute(ctx, id); err != nil {
 		cli.ExitWithError(fmt.Sprintf("Failed to reactivate attribute (%s)", id), err)
 	} else {
 		rows := [][]string{
@@ -226,12 +228,13 @@ func policy_unsafeUpdateAttribute(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
+	ctx := cmd.Context()
 	id := c.Flags.GetRequiredID("id")
 	name := c.Flags.GetOptionalString("name")
 	rule := c.Flags.GetOptionalString("rule")
 	valuesOrder = c.Flags.GetStringSlice("values-order", valuesOrder, cli.FlagsStringSliceOptions{})
 
-	a, err := h.GetAttribute(id)
+	a, err := h.GetAttribute(ctx, id)
 	if err != nil {
 		errMsg := fmt.Sprintf("Failed to get attribute (%s)", id)
 		cli.ExitWithError(errMsg, err)
@@ -241,7 +244,7 @@ func policy_unsafeUpdateAttribute(cmd *cobra.Command, args []string) {
 		cli.ConfirmTextInput(cli.ActionUpdateUnsafe, "attribute", cli.InputNameFQN, a.GetFqn())
 	}
 
-	if err := h.UnsafeUpdateAttribute(id, name, rule, valuesOrder); err != nil {
+	if err := h.UnsafeUpdateAttribute(ctx, id, name, rule, valuesOrder); err != nil {
 		cli.ExitWithError(fmt.Sprintf("Failed to update attribute (%s)", id), err)
 	} else {
 		var (
@@ -272,9 +275,10 @@ func policy_unsafeDeleteAttribute(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
+	ctx := cmd.Context()
 	id := c.Flags.GetRequiredID("id")
 
-	a, err := h.GetAttribute(id)
+	a, err := h.GetAttribute(ctx, id)
 	if err != nil {
 		errMsg := fmt.Sprintf("Failed to get attribute (%s)", id)
 		cli.ExitWithError(errMsg, err)
@@ -284,7 +288,7 @@ func policy_unsafeDeleteAttribute(cmd *cobra.Command, args []string) {
 		cli.ConfirmTextInput(cli.ActionDelete, "attribute", cli.InputNameFQN, a.GetFqn())
 	}
 
-	if err := h.UnsafeDeleteAttribute(id, a.GetFqn()); err != nil {
+	if err := h.UnsafeDeleteAttribute(ctx, id, a.GetFqn()); err != nil {
 		cli.ExitWithError(fmt.Sprintf("Failed to delete attribute (%s)", id), err)
 	} else {
 		rows := [][]string{

@@ -54,7 +54,7 @@ func (h Handler) CreateNewSubjectMapping(ctx context.Context, attrValID string, 
 
 // Updates and returns the updated subject mapping
 func (h Handler) UpdateSubjectMapping(ctx context.Context, id string, updatedSCSId string, updatedActions []*policy.Action, metadata *common.MetadataMutable, metadataBehavior common.MetadataUpdateEnum) (*policy.SubjectMapping, error) {
-	_, err := h.sdk.SubjectMapping.UpdateSubjectMapping(h.ctx, &subjectmapping.UpdateSubjectMappingRequest{
+	_, err := h.sdk.SubjectMapping.UpdateSubjectMapping(ctx, &subjectmapping.UpdateSubjectMappingRequest{
 		Id:                     id,
 		SubjectConditionSetId:  updatedSCSId,
 		Actions:                updatedActions,
