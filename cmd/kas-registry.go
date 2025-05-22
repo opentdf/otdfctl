@@ -25,7 +25,7 @@ func policy_getKeyAccessRegistry(cmd *cobra.Command, args []string) {
 
 	id := c.FlagHelper.GetRequiredID("id")
 
-	kas, err := h.GetKasRegistryEntry(id)
+	kas, err := h.GetKasRegistryEntry(id, "", "")
 	if err != nil {
 		errMsg := fmt.Sprintf("Failed to get Registered KAS entry (%s)", id)
 		cli.ExitWithError(errMsg, err)
@@ -213,7 +213,7 @@ func policy_deleteKeyAccessRegistry(cmd *cobra.Command, args []string) {
 	id := c.Flags.GetRequiredID("id")
 	force := c.Flags.GetOptionalBool("force")
 
-	kas, err := h.GetKasRegistryEntry(id)
+	kas, err := h.GetKasRegistryEntry(id, "", "")
 	if err != nil {
 		errMsg := fmt.Sprintf("Failed to get Registered KAS entry (%s)", id)
 		cli.ExitWithError(errMsg, err)

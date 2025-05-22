@@ -23,9 +23,9 @@ Creates a new provider config with the specified name and configuration.
 ## Examples
 
 ```shell
-otdfctl key provider-config create --name <name> --config <json-config>
+otdfctl keymanagement provider create --name <name> --config <json-config>
 ```
 
 ```shell
-otdfctl key provider-config create --name aws --config `{"region": "us-west-2"}`
+otdfctl keymanagement provider create --name aws --config `{"region": "us-west-2"}`
 ```

@@ -52,9 +52,9 @@ func GetSimpleAttribute(a *policy.Attribute) SimpleAttribute {
 	for _, v := range a.GetValues() {
 		values = append(values, v.GetValue())
 	}
-	keyIds := make([]string, len(a.GetKeys()))
-	for i, k := range a.GetKeys() {
-		keyIds[i] = k.GetId()
+	keyIds := make([]string, len(a.GetKasKeys()))
+	for i, k := range a.GetKasKeys() {
+		keyIds[i] = k.GetKey().GetId()
 	}
 
 	return SimpleAttribute{

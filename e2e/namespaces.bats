@@ -16,7 +16,8 @@ setup_file() {
 
     export KAS_URI="https://test-kas-for-namespace.com"
     export KAS_REG_ID=$(./otdfctl $HOST $WITH_CREDS policy kas-registry create --uri "$KAS_URI" --public-key-remote 'https://test-kas-for-namespace.com/pub_key' --json | jq -r '.id')
-    export KAS_KEY_ID=$(./otdfctl $HOST $WITH_CREDS policy kas-registry key create --kasId "$KAS_REG_ID" --keyId test-key-for-namespace --alg "rsa:2048" --mode "remote" --publicKeyCtx  '{"pubKey":"key"}' --json | jq -r '.id')
+    export PEM_B64=$(echo "pem" | base64)
+    export KAS_KEY_ID=$(./otdfctl $HOST $WITH_CREDS policy kas-registry key create --kasId "$KAS_REG_ID" --keyId "test-key-for-namespace" --alg "rsa:2048" --mode "public_key" --pubPem  "${PEM_B64}" --json | jq -r '.key.id')
 }
 
 setup() {
@@ -31,10 +32,11 @@ setup() {
 
 teardown_file() {
   ./otdfctl $HOST $WITH_CREDS policy attributes namespace unsafe delete --id "$NS_ID" --force
-  ./otdfctl $HOST $WITH_CREDS policy kas-registry delete --id "$KAS_REG_ID" --force
+  # Cant delete kas registry with keys attached
+  #./otdfctl $HOST $WITH_CREDS policy kas-registry delete --id "$KAS_REG_ID" --force
 
   # clear out all test env vars
-  unset HOST WITH_CREDS NS_NAME NS_FQN NS_ID NS_ID_FLAG KAS_REG_ID KAS_KEY_ID KAS_URI
+  unset HOST WITH_CREDS NS_NAME NS_FQN NS_ID NS_ID_FLAG KAS_REG_ID KAS_KEY_ID KAS_URI PEM_B64
 }
 
 @test "Create a namespace - Good" {
@@ -146,9 +148,12 @@ teardown_file() {
     [ "$(echo "$output" | jq -r '.key_id')" = "$KAS_KEY_ID" ]
 
   run_otdfctl_ns get --id "$NS_ID" --json
+    echo "$output" >&2
     assert_success
     [ "$(echo "$output" | jq -r '.id')" = "$NS_ID" ]
-    [ "$(echo "$output" | jq -r '.keys[0].id')" = "$KAS_KEY_ID" ]
+    [ "$(echo "$output" | jq -r '.kas_keys[0].key.id')" = "$KAS_KEY_ID" ]
+    [ "$(echo "$output" | jq -r '.kas_keys[0].key.private_key_ctx')" = "null" ]
+    [ "$(echo "$output" | jq -r '.kas_keys[0].key.public_key_ctx.pem')" = "${PEM_B64}" ]
 
   
   run_otdfctl_ns key remove --namespace "$NS_ID" --keyId "$KAS_KEY_ID" --json
@@ -157,14 +162,14 @@ teardown_file() {
   run_otdfctl_ns get --id "$NS_ID" --json
     assert_success
     [ "$(echo "$output" | jq -r '.id')" = "$NS_ID" ]
-    [ "$(echo "$output" | jq -r '.keys | length')" -eq 0 ]
+    [ "$(echo "$output" | jq -r '.kas_keys | length')" -eq 0 ]
 }
 
 @test "Assign/Remove KAS key from namespace - With Namespace FQN" {
   run_otdfctl_ns get --id "$NS_ID" --json
     assert_success
     [ "$(echo "$output" | jq -r '.id')" = "$NS_ID" ]
-    [ "$(echo "$output" | jq -r '.keys | length')" -eq 0 ]
+    [ "$(echo "$output" | jq -r '.kas_keys | length')" -eq 0 ]
     NS_FQN=$(echo "$output" | jq -r '.fqn')
 
 
@@ -176,7 +181,9 @@ teardown_file() {
   run_otdfctl_ns get --id "$NS_ID" --json
     assert_success
     [ "$(echo "$output" | jq -r '.id')" = "$NS_ID" ]
-    [ "$(echo "$output" | jq -r '.keys[0].id')" = "$KAS_KEY_ID" ]
+    [ "$(echo "$output" | jq -r '.kas_keys[0].key.id')" = "$KAS_KEY_ID" ]
+    [ "$(echo "$output" | jq -r '.kas_keys[0].key.private_key_ctx')" = "null" ]
+    [ "$(echo "$output" | jq -r '.kas_keys[0].key.public_key_ctx.pem')" = "${PEM_B64}" ]
 
   
   run_otdfctl_ns key remove --namespace "$NS_ID" --keyId "$KAS_KEY_ID" --json
@@ -185,7 +192,7 @@ teardown_file() {
   run_otdfctl_ns get --id "$NS_ID" --json
     assert_success
     [ "$(echo "$output" | jq -r '.id')" = "$NS_ID" ]
-    [ "$(echo "$output" | jq -r '.keys | length')" -eq 0 ]
+    [ "$(echo "$output" | jq -r '.kas_keys | length')" -eq 0 ]
 }
 
 

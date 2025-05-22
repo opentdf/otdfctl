@@ -183,7 +183,7 @@ func key_deleteProviderConfig(cmd *cobra.Command, args []string) {
 
 func init() {
 	// Create Provider Config
-	createDoc := man.Docs.GetCommand("key/provider-config/create",
+	createDoc := man.Docs.GetCommand("key-management/provider/create",
 		man.WithRun(key_createProviderConfig),
 	)
 	createDoc.Flags().StringP(
@@ -201,7 +201,7 @@ func init() {
 	injectLabelFlags(&createDoc.Command, false)
 
 	// Get Provider Config
-	getDoc := man.Docs.GetCommand("key/provider-config/get",
+	getDoc := man.Docs.GetCommand("key-management/provider/get",
 		man.WithRun(key_getProviderConfig),
 	)
 	getDoc.Flags().StringP(
@@ -220,7 +220,7 @@ func init() {
 	getDoc.MarkFlagsMutuallyExclusive("id", "name")
 
 	// Update Provider Config
-	updateDoc := man.Docs.GetCommand("key/provider-config/update",
+	updateDoc := man.Docs.GetCommand("key-management/provider/update",
 		man.WithRun(key_updateProviderConfig),
 	)
 	updateDoc.Flags().StringP(
@@ -244,13 +244,13 @@ func init() {
 	injectLabelFlags(&updateDoc.Command, true)
 
 	// List Provider Configs
-	listDoc := man.Docs.GetCommand("key/provider-config/list",
+	listDoc := man.Docs.GetCommand("key-management/provider/list",
 		man.WithRun(key_listProviderConfigs),
 	)
 	injectListPaginationFlags(listDoc)
 
 	// Add Delete Provider Config
-	deleteDoc := man.Docs.GetCommand("key/provider-config/delete",
+	deleteDoc := man.Docs.GetCommand("key-management/provider/delete",
 		man.WithRun(key_deleteProviderConfig),
 	)
 	deleteDoc.Flags().StringP(
@@ -260,8 +260,8 @@ func init() {
 		deleteDoc.GetDocFlag("id").Description,
 	)
 
-	doc := man.Docs.GetCommand("key/provider-config",
+	doc := man.Docs.GetCommand("key-management/provider",
 		man.WithSubcommands(createDoc, getDoc, updateDoc, listDoc, deleteDoc))
 
-	keyCmd.AddCommand(&doc.Command)
+	keyMngmtCmd.AddCommand(&doc.Command)
 }

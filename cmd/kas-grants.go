@@ -40,7 +40,7 @@ func policy_assignKasGrant(cmd *cobra.Command, args []string) {
 		rowID []string
 	)
 
-	kas, err := h.GetKasRegistryEntry(kasID)
+	kas, err := h.GetKasRegistryEntry(kasID, "", "")
 	if err != nil || kas == nil {
 		cli.ExitWithError("Failed to get registered KAS", err)
 	}
@@ -99,7 +99,7 @@ func policy_unassignKasGrant(cmd *cobra.Command, args []string) {
 		rowFQN  []string
 	)
 
-	kas, err := h.GetKasRegistryEntry(kasID)
+	kas, err := h.GetKasRegistryEntry(kasID, "", "")
 	if err != nil || kas == nil {
 		cli.ExitWithError("Failed to get registered KAS", err)
 	}

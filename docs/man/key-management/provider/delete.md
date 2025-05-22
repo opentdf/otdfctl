@@ -17,9 +17,9 @@ Deletes a provider config by its unique ID.
 ## Examples
 
 ```shell
-otdfctl key provider-config delete --id <provider-config-id>
+otdfctl keymanagement provider delete --id <provider-config-id>
 ```
 
 ```shell
-otdfctl key provider-config delete --id '04ba179c-2f77-4e0d-90c5-fe4d1c9aa3f7'
+otdfctl keymanagement provider delete --id '04ba179c-2f77-4e0d-90c5-fe4d1c9aa3f7'
 ```

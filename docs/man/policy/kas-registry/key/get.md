@@ -11,6 +11,15 @@ command:
     - name: keyId
       shorthand: k
       description: KeyID of the key to retrieve
+    - name: kasUri
+      shorthand: u
+      description: URI of the Key access server that the key is assigned to.
+    - name: kasName
+      shorthand: n
+      description: Name of the Key access server that the key is assigned to.
+    - name: kasId
+      shorthand: d
+      description: Id of the Key access server that the key is assigned to.
     
 ---
 

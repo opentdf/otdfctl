@@ -16,7 +16,7 @@ setup() {
 
     # invoke binary with credentials
     run_otdfctl_key_pc () {
-      run sh -c "./otdfctl key provider-config $HOST $WITH_CREDS $*"
+      run sh -c "./otdfctl keymanagement provider $HOST $WITH_CREDS $*"
     }
 }
 
@@ -51,7 +51,7 @@ teardown() {
 
 # Test: Create provider configuration
 @test "create provider configuration" {
-    export CREATED=$(./otdfctl $HOST $WITH_CREDS key provider-config create --name test-config --config "$VALID_CONFIG" --json)
+    export CREATED=$(./otdfctl $HOST $WITH_CREDS keymanagement provider create --name test-config --config "$VALID_CONFIG" --json)
     run echo $CREATED
         assert_output --partial "name"
         assert_output --partial "test-config"
@@ -61,7 +61,7 @@ teardown() {
 
  # Test: Get provider configuration by id
  @test "get provider configuration by id" {
-     export CREATED=$(./otdfctl $HOST $WITH_CREDS key provider-config create --name test-config-2 --config "$VALID_CONFIG" --json)
+     export CREATED=$(./otdfctl $HOST $WITH_CREDS keymanagement provider create --name test-config-2 --config "$VALID_CONFIG" --json)
      ID=$(echo "$CREATED" | jq -r '.id')
      run_otdfctl_key_pc get --id "$ID" --json
      assert_success
@@ -70,7 +70,7 @@ teardown() {
 
  # Test: Get provider configuration by name
  @test "get provider configuration by name" {
-     export CREATED=$(./otdfctl $HOST $WITH_CREDS key provider-config create --name test-config-3 --config "$VALID_CONFIG" --json)
+     export CREATED=$(./otdfctl $HOST $WITH_CREDS keymanagement provider create --name test-config-3 --config "$VALID_CONFIG" --json)
      NAME=$(echo "$CREATED" | jq -r '.name')
      run_otdfctl_key_pc get --name "$NAME" --json
      assert_success
@@ -94,7 +94,7 @@ teardown() {
  # Test: List provider configurations
  @test "list provider configurations" {
     NAME=tst-config-4
-    export CREATED=$(./otdfctl $HOST $WITH_CREDS key provider-config create --name "$NAME" --config "$VALID_CONFIG" --json)
+    export CREATED=$(./otdfctl $HOST $WITH_CREDS keymanagement provider create --name "$NAME" --config "$VALID_CONFIG" --json)
     ID=$(echo "$CREATED" | jq -r '.id')
     run_otdfctl_key_pc list --json
         assert_output --partial "$ID"
@@ -113,10 +113,10 @@ teardown() {
      UPDATED_NAME="test-config-5-updated"
      UPDATED_CONFIG=$(printf '{"cached":"key-updated"}')
      BASE64_UPDATED_CONFIG=eyJjYWNoZWQiOiAia2V5LXVwZGF0ZWQifQ==
-     export CREATED=$(./otdfctl $HOST $WITH_CREDS key provider-config create --name test-config-5 --config "$VALID_CONFIG" --json)
+     export CREATED=$(./otdfctl $HOST $WITH_CREDS keymanagement provider create --name test-config-5 --config "$VALID_CONFIG" --json)
      ID=$(echo "$CREATED" | jq -r '.id')
      run_otdfctl_key_pc update --id "$ID" --name $UPDATED_NAME --config "$UPDATED_CONFIG"
-     export UPDATED=$(./otdfctl $HOST $WITH_CREDS key provider-config update --id "$ID" --name $UPDATED_NAME --config "$UPDATED_CONFIG" --json)
+     export UPDATED=$(./otdfctl $HOST $WITH_CREDS keymanagement provider update --id "$ID" --name $UPDATED_NAME --config "$UPDATED_CONFIG" --json)
      run echo $UPDATED
         assert_output --partial "id"
         assert_output --partial "$ID"
@@ -133,7 +133,7 @@ teardown() {
  }
 
  @test "fail to update provider configuration - no optional flags" {
-    export CREATED=$(./otdfctl $HOST $WITH_CREDS key provider-config create --name test-config-6 --config "$VALID_CONFIG" --json)
+    export CREATED=$(./otdfctl $HOST $WITH_CREDS keymanagement provider create --name test-config-6 --config "$VALID_CONFIG" --json)
     ID=$(echo "$CREATED" | jq -r '.id')
     run_otdfctl_key_pc update --id "$ID"
     assert_failure
@@ -141,7 +141,7 @@ teardown() {
  }
 
  @test "fail to update provider configuration - invalid config format" {
-    export CREATED=$(./otdfctl $HOST $WITH_CREDS key provider-config create --name test-config-7 --config "$VALID_CONFIG" --json)
+    export CREATED=$(./otdfctl $HOST $WITH_CREDS keymanagement provider create --name test-config-7 --config "$VALID_CONFIG" --json)
     ID=$(echo "$CREATED" | jq -r '.id')
     run_otdfctl_key_pc update --id "$ID" --config "{invalid: json}"
     assert_failure
@@ -149,7 +149,7 @@ teardown() {
  }
  
   @test "delete provider configuration -- success" {
-    export CREATED=$(./otdfctl $HOST $WITH_CREDS key provider-config create --name test-config-7 --config "$VALID_CONFIG" --json)
+    export CREATED=$(./otdfctl $HOST $WITH_CREDS keymanagement provider create --name test-config-7 --config "$VALID_CONFIG" --json)
     ID=$(echo "$CREATED" | jq -r '.id')
     run_otdfctl_key_pc delete --id "$ID"
     assert_success

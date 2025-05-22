@@ -20,5 +20,5 @@ Lists all provider configs with pagination support.
 ## Examples
 
 ```shell
-otdfctl key provider-config list --limit 10 --offset 0
+otdfctl keymanagement provider list --limit 10 --offset 0
 ```

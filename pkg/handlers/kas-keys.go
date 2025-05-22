@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"errors"
 
 	"github.com/opentdf/platform/protocol/go/common"
 	"github.com/opentdf/platform/protocol/go/policy"
@@ -14,11 +15,11 @@ func (h Handler) CreateKasKey(
 	keyId string,
 	alg policy.Algorithm,
 	mode policy.KeyMode,
-	pubKeyCtx []byte,
-	privKeyCtx []byte,
+	pubKeyCtx *policy.KasPublicKeyCtx,
+	privKeyCtx *policy.KasPrivateKeyCtx,
 	providerConfigId string,
 	metadata *common.MetadataMutable,
-) (*policy.AsymmetricKey, error) {
+) (*policy.KasKey, error) {
 	req := kasregistry.CreateKeyRequest{
 		KasId:            kasId,
 		KeyId:            keyId,
@@ -35,19 +36,21 @@ func (h Handler) CreateKasKey(
 		return nil, err
 	}
 
-	return resp.GetKey(), nil
+	return resp.GetKasKey(), nil
 }
 
-func (h Handler) GetKasKey(ctx context.Context, id string, keyId string) (*policy.AsymmetricKey, error) {
+func (h Handler) GetKasKey(ctx context.Context, id string, key *kasregistry.KasKeyIdentifier) (*policy.KasKey, error) {
 	req := kasregistry.GetKeyRequest{}
 	if id != "" {
 		req.Identifier = &kasregistry.GetKeyRequest_Id{
 			Id: id,
 		}
-	} else if keyId != "" {
-		req.Identifier = &kasregistry.GetKeyRequest_KeyId{
-			KeyId: keyId,
+	} else if key != nil {
+		req.Identifier = &kasregistry.GetKeyRequest_Key{
+			Key: key,
 		}
+	} else {
+		return nil, errors.New("id or key must be provided")
 	}
 
 	resp, err := h.sdk.KeyAccessServerRegistry.GetKey(ctx, &req)
@@ -55,10 +58,10 @@ func (h Handler) GetKasKey(ctx context.Context, id string, keyId string) (*polic
 		return nil, err
 	}
 
-	return resp.GetKey(), nil
+	return resp.GetKasKey(), nil
 }
 
-func (h Handler) UpdateKasKey(ctx context.Context, id string, status policy.KeyStatus, metadata *common.MetadataMutable, behavior common.MetadataUpdateEnum) (*policy.AsymmetricKey, error) {
+func (h Handler) UpdateKasKey(ctx context.Context, id string, status policy.KeyStatus, metadata *common.MetadataMutable, behavior common.MetadataUpdateEnum) (*policy.KasKey, error) {
 	req := kasregistry.UpdateKeyRequest{
 		Id:                     id,
 		KeyStatus:              status,
@@ -71,7 +74,7 @@ func (h Handler) UpdateKasKey(ctx context.Context, id string, status policy.KeyS
 		return nil, err
 	}
 
-	return resp.GetKey(), nil
+	return resp.GetKasKey(), nil
 }
 
 func (h Handler) ListKasKeys(
@@ -80,7 +83,7 @@ func (h Handler) ListKasKeys(
 	algorithm policy.Algorithm,
 	kasId string,
 	kasName string,
-	kasUri string) ([]*policy.AsymmetricKey, *policy.PageResponse, error) {
+	kasUri string) ([]*policy.KasKey, *policy.PageResponse, error) {
 	req := kasregistry.ListKeysRequest{
 		Pagination: &policy.PageRequest{
 			Limit:  limit,
@@ -108,5 +111,5 @@ func (h Handler) ListKasKeys(
 		return nil, nil, err
 	}
 
-	return resp.GetKeys(), resp.GetPagination(), nil
+	return resp.GetKasKeys(), resp.GetPagination(), nil
 }

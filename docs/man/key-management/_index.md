@@ -2,7 +2,7 @@
 title: Key management
 
 command:
-  name: key
+  name: keymanagement
   hidden: true
   aliases:
     - k
@@ -12,4 +12,4 @@ command:
       default: 'false'
 ---
 
-Set of commands for managing all keys, as well as necessary provider configuration, used with OpenTDF platform, such as Key Encryption Keys.
+Set of commands for managing provider configuration.
