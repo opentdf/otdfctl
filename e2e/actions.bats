@@ -53,7 +53,7 @@ teardown_file() {
   # conflict
     run_otdfctl_action create -n "read"
         assert_failure
-        assert_output --partial "AlreadyExists"
+        assert_output --partial "already_exists"
 }
 
 @test "Get an action - Good" {

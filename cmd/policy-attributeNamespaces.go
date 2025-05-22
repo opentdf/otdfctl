@@ -277,18 +277,18 @@ func policy_unsafeUpdateAttributeNamespace(cmd *cobra.Command, args []string) {
 	HandleSuccess(cmd, ns.GetId(), t, ns)
 }
 
-func policy_assignKASKeyToAttributeNamespace(cmd *cobra.Command, args []string) {
+func policyAssignKeyToNamespace(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
 	defer h.Close()
 
 	namespace := c.Flags.GetRequiredString("namespace")
-	keyId := c.Flags.GetRequiredID("keyId")
+	keyID := c.Flags.GetRequiredID("keyId")
 
 	// Get the attribute namespace to show meaningful information in case of error
-	attrKey, err := h.AssignKeyToAttributeNamespace(c.Context(), namespace, keyId)
+	attrKey, err := h.AssignKeyToAttributeNamespace(c.Context(), namespace, keyID)
 	if err != nil {
-		errMsg := fmt.Sprintf("Failed to assign key: (%s) to attribute namespace: (%s)", keyId, namespace)
+		errMsg := fmt.Sprintf("Failed to assign key: (%s) to attribute namespace: (%s)", keyID, namespace)
 		cli.ExitWithError(errMsg, err)
 	}
 
@@ -301,17 +301,17 @@ func policy_assignKASKeyToAttributeNamespace(cmd *cobra.Command, args []string) 
 	HandleSuccess(cmd, namespace, t, attrKey)
 }
 
-func policy_removeKASKeyFromAttributeNamespace(cmd *cobra.Command, args []string) {
+func policyRemoveKeyFromNamespace(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
 	defer h.Close()
 
 	namespace := c.Flags.GetRequiredString("namespace")
-	keyId := c.Flags.GetRequiredID("keyId")
+	keyID := c.Flags.GetRequiredID("keyId")
 
-	err := h.RemoveKeyFromAttributeNamespace(c.Context(), namespace, keyId)
+	err := h.RemoveKeyFromAttributeNamespace(c.Context(), namespace, keyID)
 	if err != nil {
-		errMsg := fmt.Sprintf("Failed to remove key (%s) from attribute namespace (%s)", keyId, namespace)
+		errMsg := fmt.Sprintf("Failed to remove key (%s) from attribute namespace (%s)", keyID, namespace)
 		cli.ExitWithError(errMsg, err)
 	}
 
@@ -319,7 +319,7 @@ func policy_removeKASKeyFromAttributeNamespace(cmd *cobra.Command, args []string
 	rows := [][]string{
 		{"Removed", "true"},
 		{"Namespace", namespace},
-		{"Key ID", keyId},
+		{"Key ID", keyID},
 	}
 	t := cli.NewTabular(rows...)
 	HandleSuccess(cmd, namespace, t, nil)
@@ -430,7 +430,7 @@ func init() {
 
 	// Assign KAS key to attribute namespace
 	assignKasKeyCmd := man.Docs.GetCommand("policy/attributes/namespaces/key/assign",
-		man.WithRun(policy_assignKASKeyToAttributeNamespace),
+		man.WithRun(policyAssignKeyToNamespace),
 	)
 	assignKasKeyCmd.Flags().StringP(
 		assignKasKeyCmd.GetDocFlag("namespace").Name,
@@ -447,7 +447,7 @@ func init() {
 
 	// Remove KAS key from attribute namespace
 	removeKasKeyCmd := man.Docs.GetCommand("policy/attributes/namespaces/key/remove",
-		man.WithRun(policy_removeKASKeyFromAttributeNamespace),
+		man.WithRun(policyRemoveKeyFromNamespace),
 	)
 	removeKasKeyCmd.Flags().StringP(
 		removeKasKeyCmd.GetDocFlag("namespace").Name,

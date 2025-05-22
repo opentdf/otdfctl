@@ -88,7 +88,7 @@ teardown() {
  @test "fail to get provider configuration with non-existent name" {
      run_otdfctl_key_pc get --name non-existent-config
      assert_failure
-     assert_output --partial "Failed to get provider config: not found"
+     assert_output --partial "Failed to get provider config: not_found"
  }
  
  # Test: List provider configurations

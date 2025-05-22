@@ -79,7 +79,7 @@ teardown() {
     run_otdfctl_kasr create --uri "$URI" -r "$REMOTE_KEY"
         assert_failure
         assert_output --partial "Failed to create Registered KAS entry"
-        assert_output --partial "AlreadyExists"
+        assert_output --partial "already_exists"
 }
 
 @test "create KAS registration with duplicate name - fails" {
@@ -89,7 +89,7 @@ teardown() {
     run_otdfctl_kasr create --uri "https://testing-duplication.name.net" -r "$REMOTE_KEY" -n "$NAME"
         assert_failure
         assert_output --partial "Failed to create Registered KAS entry"
-        assert_output --partial "AlreadyExists"
+        assert_output --partial "already_exists"
 }
 
 @test "create KAS registration with invalid name - fails" {

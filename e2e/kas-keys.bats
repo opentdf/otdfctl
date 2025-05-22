@@ -39,8 +39,8 @@ generate_key_id() {
     echo "Error: /dev/urandom not found. Cannot generate random string." >&2
     return 1
   fi
-  LC_ALL=C < /dev/urandom tr -dc 'A-Za-z0-9' | head -c "${length}"
-  echo "$(LC_ALL)"
+  key_id=$(LC_ALL=C < /dev/urandom tr -dc 'A-Za-z0-9' 2>/dev/null  | head -c "${length}")
+  echo "$key_id"
 }
 
 generate_kas_name() {
@@ -51,8 +51,8 @@ generate_kas_name() {
     echo "Error: /dev/urandom not found. Cannot generate random string." >&2
     return 1
   fi
-  LC_ALL=C < /dev/urandom tr -dc 'A-Za-z0-9' | head -c "${length}"
-  echo "$(LC_ALL)"
+  kas_name=$(LC_ALL=C < /dev/urandom tr -dc 'A-Za-z0-9' 2>/dev/null | head -c "${length}")
+  echo "$kas_name"
 }
 
 format_kas_name_as_uri() {

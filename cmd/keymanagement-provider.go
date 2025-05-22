@@ -14,7 +14,7 @@ func isJSON(str string) bool {
 	return json.Unmarshal([]byte(str), &js) == nil
 }
 
-func key_createProviderConfig(cmd *cobra.Command, args []string) {
+func createProviderConfig(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
 	defer h.Close()
@@ -48,7 +48,7 @@ func key_createProviderConfig(cmd *cobra.Command, args []string) {
 	HandleSuccess(cmd, pc.GetId(), t, pc)
 }
 
-func key_getProviderConfig(cmd *cobra.Command, args []string) {
+func getProviderConfig(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
 	defer h.Close()
@@ -76,7 +76,7 @@ func key_getProviderConfig(cmd *cobra.Command, args []string) {
 	HandleSuccess(cmd, pc.GetId(), t, pc)
 }
 
-func key_updateProviderConfig(cmd *cobra.Command, args []string) {
+func updateProviderConfig(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
 	defer h.Close()
@@ -94,13 +94,13 @@ func key_updateProviderConfig(cmd *cobra.Command, args []string) {
 		cli.ExitWithError("Cannot update provider config with invalid json", nil)
 	}
 
-	pc, err := h.UpdateProviderConfig(c.Context(), id, name, []byte(config), getMetadataMutable(metadataLabels), getMetadataUpdateBehavior())
+	_, err := h.UpdateProviderConfig(c.Context(), id, name, []byte(config), getMetadataMutable(metadataLabels), getMetadataUpdateBehavior())
 	if err != nil {
 		cli.ExitWithError("Failed to update provider config", err)
 	}
 
 	// Get updated provider config.
-	pc, err = h.GetProviderConfig(c.Context(), id, "")
+	pc, err := h.GetProviderConfig(c.Context(), id, "")
 	if err != nil {
 		cli.ExitWithError("Failed to get provider config", err)
 	}
@@ -120,7 +120,7 @@ func key_updateProviderConfig(cmd *cobra.Command, args []string) {
 	HandleSuccess(cmd, pc.GetId(), t, pc)
 }
 
-func key_listProviderConfigs(cmd *cobra.Command, args []string) {
+func listProviderConfig(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
 	defer h.Close()
@@ -160,7 +160,7 @@ func key_listProviderConfigs(cmd *cobra.Command, args []string) {
 	HandleSuccess(cmd, "", t, providerConfigs)
 }
 
-func key_deleteProviderConfig(cmd *cobra.Command, args []string) {
+func deleteProviderConfig(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
 	defer h.Close()
@@ -184,7 +184,7 @@ func key_deleteProviderConfig(cmd *cobra.Command, args []string) {
 func init() {
 	// Create Provider Config
 	createDoc := man.Docs.GetCommand("key-management/provider/create",
-		man.WithRun(key_createProviderConfig),
+		man.WithRun(createProviderConfig),
 	)
 	createDoc.Flags().StringP(
 		createDoc.GetDocFlag("name").Name,
@@ -202,7 +202,7 @@ func init() {
 
 	// Get Provider Config
 	getDoc := man.Docs.GetCommand("key-management/provider/get",
-		man.WithRun(key_getProviderConfig),
+		man.WithRun(getProviderConfig),
 	)
 	getDoc.Flags().StringP(
 		getDoc.GetDocFlag("id").Name,
@@ -221,7 +221,7 @@ func init() {
 
 	// Update Provider Config
 	updateDoc := man.Docs.GetCommand("key-management/provider/update",
-		man.WithRun(key_updateProviderConfig),
+		man.WithRun(updateProviderConfig),
 	)
 	updateDoc.Flags().StringP(
 		updateDoc.GetDocFlag("id").Name,
@@ -245,13 +245,13 @@ func init() {
 
 	// List Provider Configs
 	listDoc := man.Docs.GetCommand("key-management/provider/list",
-		man.WithRun(key_listProviderConfigs),
+		man.WithRun(listProviderConfig),
 	)
 	injectListPaginationFlags(listDoc)
 
 	// Add Delete Provider Config
 	deleteDoc := man.Docs.GetCommand("key-management/provider/delete",
-		man.WithRun(key_deleteProviderConfig),
+		man.WithRun(deleteProviderConfig),
 	)
 	deleteDoc.Flags().StringP(
 		deleteDoc.GetDocFlag("id").Name,

@@ -338,7 +338,7 @@ teardown_file() {
   # Test with non-existent attribute ID
   run_otdfctl_attr key assign --attribute "00000000-0000-0000-0000-000000000000" --keyId "$KAS_KEY_ID"
     assert_failure
-    assert_output --partial "error"
+    assert_output --partial "ERROR"
 
   # Test with missing required flags
   run_otdfctl_attr key assign --attribute "$ATTR_ID"
@@ -354,7 +354,7 @@ teardown_file() {
   # Test with non-existent value ID
   run_otdfctl_attr values key assign --value "00000000-0000-0000-0000-000000000000" --keyId "$KAS_KEY_ID"
     assert_failure
-    assert_output --partial "error"
+    assert_output --partial "ERROR"
 
   # Test with missing required flags
   run_otdfctl_attr values key assign --keyId "$KAS_KEY_ID"

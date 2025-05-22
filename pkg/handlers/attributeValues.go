@@ -115,9 +115,9 @@ func (h Handler) UnsafeUpdateAttributeValue(ctx context.Context, id, value strin
 }
 
 // AssignKeyToAttributeValue assigns a KAS key to an attribute value
-func (h *Handler) AssignKeyToAttributeValue(ctx context.Context, value, keyId string) (*attributes.ValueKey, error) {
+func (h *Handler) AssignKeyToAttributeValue(ctx context.Context, value, keyID string) (*attributes.ValueKey, error) {
 	valueKey := &attributes.ValueKey{
-		KeyId:   keyId,
+		KeyId:   keyID,
 		ValueId: value,
 	}
 
@@ -140,9 +140,9 @@ func (h *Handler) AssignKeyToAttributeValue(ctx context.Context, value, keyId st
 }
 
 // RemoveKeyFromAttributeValue removes a KAS key from an attribute value
-func (h *Handler) RemoveKeyFromAttributeValue(ctx context.Context, value, keyId string) error {
+func (h *Handler) RemoveKeyFromAttributeValue(ctx context.Context, value, keyID string) error {
 	valueKey := &attributes.ValueKey{
-		KeyId:   keyId,
+		KeyId:   keyID,
 		ValueId: value,
 	}
 

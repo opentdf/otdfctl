@@ -232,17 +232,17 @@ func policy_unsafeDeleteAttributeValue(cmd *cobra.Command, args []string) {
 	}
 }
 
-func policy_assignKASKeyToAttributeValue(cmd *cobra.Command, args []string) {
+func policyAssignKeyToAttrValue(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
 	defer h.Close()
 
 	value := c.Flags.GetRequiredString("value")
-	keyId := c.Flags.GetRequiredID("keyId")
+	keyID := c.Flags.GetRequiredID("keyId")
 
-	attrKey, err := h.AssignKeyToAttributeValue(c.Context(), value, keyId)
+	attrKey, err := h.AssignKeyToAttributeValue(c.Context(), value, keyID)
 	if err != nil {
-		errMsg := fmt.Sprintf("Failed to assign key: (%s) to attribute value: (%s)", keyId, value)
+		errMsg := fmt.Sprintf("Failed to assign key: (%s) to attribute value: (%s)", keyID, value)
 		cli.ExitWithError(errMsg, err)
 	}
 
@@ -254,24 +254,24 @@ func policy_assignKASKeyToAttributeValue(cmd *cobra.Command, args []string) {
 	HandleSuccess(cmd, value, t, attrKey)
 }
 
-func policy_removeKASKeyFromAttributeValue(cmd *cobra.Command, args []string) {
+func policyRemoveKeyFromAttrValue(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
 	defer h.Close()
 
 	value := c.Flags.GetRequiredString("value")
-	keyId := c.Flags.GetRequiredID("keyId")
+	keyID := c.Flags.GetRequiredID("keyId")
 
-	err := h.RemoveKeyFromAttributeValue(c.Context(), value, keyId)
+	err := h.RemoveKeyFromAttributeValue(c.Context(), value, keyID)
 	if err != nil {
-		errMsg := fmt.Sprintf("Failed to remove key (%s) from attribute value (%s)", keyId, value)
+		errMsg := fmt.Sprintf("Failed to remove key (%s) from attribute value (%s)", keyID, value)
 		cli.ExitWithError(errMsg, err)
 	}
 
 	rows := [][]string{
 		{"Removed", "true"},
 		{"Value", value},
-		{"Key ID", keyId},
+		{"Key ID", keyID},
 	}
 	t := cli.NewTabular(rows...)
 	HandleSuccess(cmd, value, t, nil)
@@ -346,7 +346,7 @@ func init() {
 	keyCmd := man.Docs.GetCommand("policy/attributes/values/key")
 
 	assignKasKeyCmd := man.Docs.GetCommand("policy/attributes/values/key/assign",
-		man.WithRun(policy_assignKASKeyToAttributeValue),
+		man.WithRun(policyAssignKeyToAttrValue),
 	)
 	assignKasKeyCmd.Flags().StringP(
 		assignKasKeyCmd.GetDocFlag("value").Name,
@@ -362,7 +362,7 @@ func init() {
 	)
 
 	removeKasKeyCmd := man.Docs.GetCommand("policy/attributes/values/key/remove",
-		man.WithRun(policy_removeKASKeyFromAttributeValue),
+		man.WithRun(policyRemoveKeyFromAttrValue),
 	)
 	removeKasKeyCmd.Flags().StringP(
 		removeKasKeyCmd.GetDocFlag("value").Name,
