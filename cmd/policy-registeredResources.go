@@ -290,7 +290,7 @@ func policyListRegisteredResourceValues(cmd *cobra.Command, args []string) {
 	}
 	list := append([]*policy.RegisteredResourceValue{}, values...)
 
-	t.WithRows(rows)
+	t = t.WithRows(rows)
 	t = cli.WithListPaginationFooter(t, page)
 	HandleSuccess(cmd, "", t, list)
 }
