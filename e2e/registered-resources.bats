@@ -6,6 +6,19 @@ setup_file() {
     echo -n '{"clientId":"opentdf","clientSecret":"secret"}' > creds.json
     export WITH_CREDS='--with-client-creds-file ./creds.json'
     export HOST='--host http://localhost:8080'
+
+    # create registered resource used in registered resource values tests
+    export RR_ID=$(./otdfctl $HOST $WITH_CREDS policy registered-resources create --name test_rr_for_values --json | jq -r '.id')
+
+    # create custom action to be used in registered resource values tests
+    export CUSTOM_ACTION_NAME="test_action_for_values"
+    export CUSTOM_ACTION_ID=$(./otdfctl $HOST $WITH_CREDS policy actions create --name "$CUSTOM_ACTION_NAME" --json | jq -r '.id')
+
+    # create attribute value to be used in registered resource values tests
+    export NS_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes namespaces create --name "test-reg-res.org" --json | jq -r '.id')
+    attr_id=$(./otdfctl $HOST $WITH_CREDS policy attributes create --namespace "$NS_ID" --name test_reg_res_attr --rule ANY_OF -l key=value --json | jq -r '.id')
+    export ATTR_VAL_1_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes values create --attribute-id "$attr_id" --value test_reg_res_attr__val_1 --json | jq -r '.id')
+    export ATTR_VAL_2_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes values create --attribute-id "$attr_id" --value test_reg_res_attr__val_2 --json | jq -r '.id')
 }
 
 setup() {
@@ -22,8 +35,17 @@ setup() {
 }
 
 teardown_file() {
+  # remove the registered resource used in registered resource values tests
+  ./otdfctl $HOST $WITH_CREDS policy registered-resources delete --id "$RR_ID" --force
+
+  # remove the custom action used in registered resource values tests
+  ./otdfctl $HOST $WITH_CREDS policy actions delete --id "$CUSTOM_ACTION_ID" --force
+
+  # remove the namespace and cascade delete attributes and values used in registered resource values tests
+  ./otdfctl $HOST $WITH_CREDS policy attributes namespaces unsafe delete --id "$NS_ID" --force
+
   # clear out all test env vars
-  unset HOST WITH_CREDS NS_NAME NS_ID ATTR_NAME_RANDOM
+  unset HOST WITH_CREDS RR_ID CUSTOM_ACTION_NAME CUSTOM_ACTION_ID NS_ID ATTR_VAL_1_ID ATTR_VAL_2_ID
 }
 
 @test "Create a registered resource - Good" {
