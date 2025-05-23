@@ -2,6 +2,8 @@ module github.com/opentdf/otdfctl
 
 go 1.24.0
 
+replace github.com/opentdf/platform => github.com/opentdf/platform v0.0.0-20250519154311-901215244153
+
 toolchain go1.24.2
 
 require (
