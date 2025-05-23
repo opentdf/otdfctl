@@ -42,7 +42,7 @@ func policy_getAttributeValue(cmd *cobra.Command, args []string) {
 
 	id := c.FlagHelper.GetRequiredID("id")
 
-	v, err := h.GetAttributeValue(cmd.Context(), id)
+	v, err := h.GetAttributeValue(cmd.Context(), id, "")
 	if err != nil {
 		cli.ExitWithError("Failed to find attribute value", err)
 	}
@@ -98,7 +98,7 @@ func policy_updateAttributeValue(cmd *cobra.Command, args []string) {
 	id := c.Flags.GetRequiredID("id")
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
-	_, err := h.GetAttributeValue(ctx, id)
+	_, err := h.GetAttributeValue(ctx, id, "")
 	if err != nil {
 		cli.ExitWithError(fmt.Sprintf("Failed to get attribute value (%s)", id), err)
 	}
@@ -119,7 +119,7 @@ func policy_deactivateAttributeValue(cmd *cobra.Command, args []string) {
 	ctx := cmd.Context()
 	id := c.Flags.GetRequiredID("id")
 
-	value, err := h.GetAttributeValue(ctx, id)
+	value, err := h.GetAttributeValue(ctx, id, "")
 	if err != nil {
 		cli.ExitWithError(fmt.Sprintf("Failed to get attribute value (%s)", id), err)
 	}
@@ -142,7 +142,7 @@ func policy_unsafeReactivateAttributeValue(cmd *cobra.Command, args []string) {
 	ctx := cmd.Context()
 	id := c.Flags.GetRequiredID("id")
 
-	v, err := h.GetAttributeValue(ctx, id)
+	v, err := h.GetAttributeValue(ctx, id, "")
 	if err != nil {
 		cli.ExitWithError(fmt.Sprintf("Failed to get attribute value (%s)", id), err)
 	}
@@ -175,7 +175,7 @@ func policy_unsafeUpdateAttributeValue(cmd *cobra.Command, args []string) {
 	id := c.Flags.GetRequiredID("id")
 	value := c.Flags.GetOptionalString("value")
 
-	v, err := h.GetAttributeValue(ctx, id)
+	v, err := h.GetAttributeValue(ctx, id, "")
 	if err != nil {
 		cli.ExitWithError(fmt.Sprintf("Failed to get attribute value (%s)", id), err)
 	}
@@ -207,7 +207,7 @@ func policy_unsafeDeleteAttributeValue(cmd *cobra.Command, args []string) {
 	ctx := cmd.Context()
 	id := c.Flags.GetRequiredID("id")
 
-	v, err := h.GetAttributeValue(ctx, id)
+	v, err := h.GetAttributeValue(ctx, id, "")
 	if err != nil {
 		cli.ExitWithError(fmt.Sprintf("Failed to get attribute value (%s)", id), err)
 	}
