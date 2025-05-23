@@ -120,7 +120,7 @@ func policyListRegisteredResources(cmd *cobra.Command, args []string) {
 			// todo: do we need to show metadata labels and created/updated at?
 		}))
 	}
-	t.WithRows(rows)
+	t = t.WithRows(rows)
 	t = cli.WithListPaginationFooter(t, page)
 	HandleSuccess(cmd, "", t, resources)
 }

@@ -6,14 +6,8 @@ setup_file() {
     echo -n '{"clientId":"opentdf","clientSecret":"secret"}' > creds.json
     export WITH_CREDS='--with-client-creds-file ./creds.json'
     export HOST='--host http://localhost:8080'
-
-    # Create the namespace to be used by other tests
-
-    export NS_NAME="testing-reg-res.co"
-    export NS_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes namespaces create -n "$NS_NAME" --json | jq -r '.id')
 }
 
-# always create a randomly named attribute
 setup() {
     load "${BATS_LIB_PATH}/bats-support/load.bash"
     load "${BATS_LIB_PATH}/bats-assert/load.bash"
@@ -25,28 +19,149 @@ setup() {
     run_otdfctl_reg_res_values () {
       run sh -c "./otdfctl $HOST $WITH_CREDS policy registered-resources values $*"
     }
-
-    export ATTR_NAME_RANDOM=$(LC_ALL=C tr -dc 'a-zA-Z' < /dev/urandom | head -c 16)
-    export ATTR_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes create --namespace "$NS_ID" --name "$ATTR_NAME_RANDOM" --rule ANY_OF -l key=value --json | jq -r '.id')
-}
-
-# always unsafely delete the created attribute
-teardown() {
-    ./otdfctl $HOST $WITH_CREDS policy attributes unsafe delete --force --id "$ATTR_ID"
 }
 
 teardown_file() {
-  # remove the namespace
-  ./otdfctl $HOST $WITH_CREDS policy attributes namespaces unsafe delete --id "$NS_ID" --force
-
   # clear out all test env vars
   unset HOST WITH_CREDS NS_NAME NS_ID ATTR_NAME_RANDOM
 }
 
-@test "Create a registered resource" {
-  run_otdfctl_reg_res create --name test_reg_res --json
-    assert_success
-    [ "$( echo "$output" | jq -r '.name' )" = "test_reg_res" ]
+@test "Create a registered resource - Good" {
+  run_otdfctl_reg_res create --name test_create_rr
+  assert_output --partial "SUCCESS"
+  assert_line --regexp "Name.*test_create_rr"
+  assert_output --partial "Id"
+  assert_output --partial "Created At"
+  assert_line --partial "Updated At"
+
+  # cleanup
+  created_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
+  run_otdfctl_reg_res delete --id $created_id --force
 }
 
-@test "
+@test "Create a registered resource - Bad" {
+  # bad resource names
+  run_otdfctl_reg_res create --name ends_underscored_
+    assert_failure
+  run_otdfctl_reg_res create --name -first-char-hyphen
+    assert_failure
+  run_otdfctl_reg_res create --name inval!d.chars
+    assert_failure
+
+  # missing flag
+  run_otdfctl_reg_res create
+    assert_failure
+    assert_output --partial "Flag '--name' is required"
+  
+  # conflict
+  run_otdfctl_reg_res create --name test_create_rr_conflict
+    assert_output --partial "SUCCESS"
+  created_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
+  run_otdfctl_reg_res create --name test_create_rr_conflict
+      assert_failure
+      assert_output --partial "AlreadyExists"
+
+  # cleanup
+  run_otdfctl_reg_res delete --id $created_id --force
+}
+
+@test "Get a registered resource - Good" {
+  # setup a resource to get
+  run_otdfctl_reg_res create --name test_get_rr
+    assert_success
+  created_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
+
+  # get by id
+  run_otdfctl_reg_res get --id "$created_id" --json
+    assert_success
+    [ "$(echo "$output" | jq -r '.id')" = "$created_id" ]
+    [ "$(echo "$output" | jq -r '.name')" = "test_get_rr" ]
+
+  # get by name
+  run_otdfctl_reg_res get --name test_get_rr --json
+    assert_success
+    [ "$(echo "$output" | jq -r '.id')" = "$created_id" ]
+    [ "$(echo "$output" | jq -r '.name')" = "test_get_rr" ]
+
+  # cleanup
+  run_otdfctl_reg_res delete --id $created_id --force
+}
+
+@test "Get a registered resource - Bad" {
+  run_otdfctl_reg_res get
+    assert_failure
+    assert_output --partial "Either 'id' or 'name' must be provided"
+
+  run_otdfctl_reg_res get --id 'not_a_uuid'
+    assert_failure
+    assert_output --partial "must be a valid UUID"
+}
+
+@test "List registered resources" {
+  # setup registered resources to list
+  run_otdfctl_reg_res create --name test_list_rr_1
+  reg_res1_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
+  run_otdfctl_reg_res create --name test_list_rr_2
+  reg_res2_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
+
+  run_otdfctl_reg_res list
+    assert_success
+    assert_output --partial "$reg_res1_id"
+    assert_output --partial "test_list_rr_1"
+    assert_output --partial "$reg_res2_id"
+    assert_output --partial "test_list_rr_2"
+    assert_output --partial "Total"
+    assert_line --regexp "Current Offset.*0"
+
+  # cleanup
+  run_otdfctl_reg_res delete --id $reg_res1_id --force
+  run_otdfctl_reg_res delete --id $reg_res2_id --force
+}
+
+@test "Update registered resource" {
+  # setup a resource to update
+  run_otdfctl_reg_res create --name test_update_rr
+    assert_success
+  created_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
+
+  # force replace labels
+  run_otdfctl_reg_res update --id "$created_id" -l key=other --force-replace-labels
+    assert_success
+    assert_line --regexp "Id.*$created_id"
+    assert_line --regexp "Name.*test_update_rr"
+    assert_line --regexp "Labels.*key: other"
+    refute_output --regexp "Labels.*key: value"
+    refute_output --regexp "Labels.*test: true"
+    refute_output --regexp "Labels.*test: true"
+
+  # renamed
+  run_otdfctl_reg_res update --id "$created_id" --name test_renamed_rr
+    assert_success
+    assert_line --regexp "Id.*$created_id"
+    assert_line --regexp "Name.*test_renamed_rr"
+    refute_output --regexp "Name.*test_update_rr"
+
+  # cleanup
+  run_otdfctl_reg_res delete --id $created_id --force
+}
+
+@test "Delete registered resource - Good" {
+  # setup a resource to delete
+  run_otdfctl_reg_res create --name test_delete_rr
+  created_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
+
+  run_otdfctl_reg_res delete --id "$created_id" --force
+    assert_success
+}
+
+@test "Delete registered resource - Bad" {
+  # no id
+  run_otdfctl_reg_res delete
+    assert_failure
+    assert_output --partial "Flag '--id' is required"
+
+  # invalid id
+  run_otdfctl_reg_res delete --id 'not_a_uuid'
+    assert_failure
+    assert_output --partial "must be a valid UUID"
+}
