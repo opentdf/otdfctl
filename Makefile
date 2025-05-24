@@ -87,7 +87,7 @@ build-test:
 
 .PHONY: test-bats
 test-bats: build-test
-	./e2e/resize_terminal.sh && bats ./tests
+	./e2e/resize_terminal.sh && bats ./e2e
 
 # Target for cleaning up the target directory
 .PHONY: clean

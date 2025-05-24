@@ -81,6 +81,11 @@ func (f flagHelper) GetRequiredInt32(flag string) int32 {
 	return v
 }
 
+func (f flagHelper) GetOptionalInt32(flag string) int32 {
+	v, _ := f.cmd.Flags().GetInt32(flag)
+	return v
+}
+
 func (f flagHelper) GetOptionalBool(flag string) bool {
 	v, _ := f.cmd.Flags().GetBool(flag)
 	return v
@@ -99,9 +104,10 @@ func GetState(cmd *cobra.Command) common.ActiveStateEnum {
 	state := common.ActiveStateEnum_ACTIVE_STATE_ENUM_ACTIVE
 	stateFlag := strings.ToUpper(cmd.Flag("state").Value.String())
 	if stateFlag != "" {
-		if stateFlag == "INACTIVE" {
+		switch stateFlag {
+		case "INACTIVE":
 			state = common.ActiveStateEnum_ACTIVE_STATE_ENUM_INACTIVE
-		} else if stateFlag == "ANY" {
+		case "ANY":
 			state = common.ActiveStateEnum_ACTIVE_STATE_ENUM_ANY
 		}
 	}

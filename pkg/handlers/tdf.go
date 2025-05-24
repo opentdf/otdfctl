@@ -257,10 +257,11 @@ func correctKeyType(assertionKey sdk.AssertionKey, public bool) (interface{}, er
 		return nil, errors.New("unable to convert assertion key to string")
 	}
 	//nolint:nestif // nested its within switch mainly for error catching
-	if assertionKey.Alg == sdk.AssertionKeyAlgHS256 {
+	switch assertionKey.Alg {
+	case sdk.AssertionKeyAlgHS256:
 		// convert the hs256 key to []byte
 		return []byte(strKey), nil
-	} else if assertionKey.Alg == sdk.AssertionKeyAlgRS256 {
+	case sdk.AssertionKeyAlgRS256:
 		// Decode the PEM block
 		block, _ := pem.Decode([]byte(strKey))
 		if block == nil {

@@ -3,16 +3,26 @@ package handlers
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/opentdf/platform/protocol/go/common"
 	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/opentdf/platform/protocol/go/policy/namespaces"
 	"github.com/opentdf/platform/protocol/go/policy/unsafe"
 )
 
-func (h Handler) GetNamespace(ctx context.Context, id string) (*policy.Namespace, error) {
-	resp, err := h.sdk.Namespaces.GetNamespace(ctx, &namespaces.GetNamespaceRequest{
-		Id: id,
-	})
+func (h Handler) GetNamespace(ctx context.Context, identifier string) (*policy.Namespace, error) {
+	req := &namespaces.GetNamespaceRequest{
+		Identifier: &namespaces.GetNamespaceRequest_NamespaceId{
+			NamespaceId: identifier,
+		},
+	}
+	if _, err := uuid.Parse(identifier); err != nil {
+		req.Identifier = &namespaces.GetNamespaceRequest_Fqn{
+			Fqn: identifier,
+		}
+	}
+
+	resp, err := h.sdk.Namespaces.GetNamespace(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -105,4 +115,50 @@ func (h Handler) UnsafeUpdateNamespace(ctx context.Context, id, name string) (*p
 	}
 
 	return h.GetNamespace(ctx, id)
+}
+
+// AssignKeyToAttributeNamespace assigns a KAS key to an attribute namespace
+func (h *Handler) AssignKeyToAttributeNamespace(ctx context.Context, namespace, keyID string) (*namespaces.NamespaceKey, error) {
+	namespaceKey := &namespaces.NamespaceKey{
+		KeyId:       keyID,
+		NamespaceId: namespace,
+	}
+
+	if _, err := uuid.Parse(namespace); err != nil {
+		ns, err := h.GetNamespace(ctx, namespace)
+		if err != nil {
+			return nil, err
+		}
+		namespaceKey.NamespaceId = ns.GetId()
+	}
+
+	resp, err := h.sdk.Namespaces.AssignPublicKeyToNamespace(ctx, &namespaces.AssignPublicKeyToNamespaceRequest{
+		NamespaceKey: namespaceKey,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.GetNamespaceKey(), nil
+}
+
+// RemoveKeyFromAttributeNamespace removes a KAS key from an attribute namespace
+func (h *Handler) RemoveKeyFromAttributeNamespace(ctx context.Context, namespace, keyID string) error {
+	namespaceKey := &namespaces.NamespaceKey{
+		KeyId:       keyID,
+		NamespaceId: namespace,
+	}
+
+	if _, err := uuid.Parse(namespace); err != nil {
+		ns, err := h.GetNamespace(ctx, namespace)
+		if err != nil {
+			return err
+		}
+		namespaceKey.NamespaceId = ns.GetId()
+	}
+
+	_, err := h.sdk.Namespaces.RemovePublicKeyFromNamespace(ctx, &namespaces.RemovePublicKeyFromNamespaceRequest{
+		NamespaceKey: namespaceKey,
+	})
+	return err
 }

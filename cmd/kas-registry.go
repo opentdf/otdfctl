@@ -8,13 +8,16 @@ import (
 
 	"github.com/evertras/bubble-table/table"
 	"github.com/opentdf/otdfctl/pkg/cli"
+	"github.com/opentdf/otdfctl/pkg/handlers"
 	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/spf13/cobra"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
-var policy_kasRegistryCmd *cobra.Command
+var (
+	policyKasRegCmd = man.Docs.GetCommand("policy/kas-registry")
+)
 
 func policy_getKeyAccessRegistry(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
@@ -23,7 +26,9 @@ func policy_getKeyAccessRegistry(cmd *cobra.Command, args []string) {
 
 	id := c.FlagHelper.GetRequiredID("id")
 
-	kas, err := h.GetKasRegistryEntry(cmd.Context(), id)
+	kas, err := h.GetKasRegistryEntry(cmd.Context(), handlers.KasIdentifier{
+		ID: id,
+	})
 	if err != nil {
 		errMsg := fmt.Sprintf("Failed to get Registered KAS entry (%s)", id)
 		cli.ExitWithError(errMsg, err)
@@ -214,7 +219,9 @@ func policy_deleteKeyAccessRegistry(cmd *cobra.Command, args []string) {
 	id := c.Flags.GetRequiredID("id")
 	force := c.Flags.GetOptionalBool("force")
 
-	kas, err := h.GetKasRegistryEntry(ctx, id)
+	kas, err := h.GetKasRegistryEntry(ctx, handlers.KasIdentifier{
+		ID: id,
+	})
 	if err != nil {
 		errMsg := fmt.Sprintf("Failed to get Registered KAS entry (%s)", id)
 		cli.ExitWithError(errMsg, err)
@@ -356,9 +363,6 @@ func init() {
 		deleteDoc.GetDocFlag("force").Description,
 	)
 
-	doc := man.Docs.GetCommand("policy/kas-registry",
-		man.WithSubcommands(createDoc, getDoc, listDoc, updateDoc, deleteDoc),
-	)
-	policy_kasRegistryCmd = &doc.Command
-	policyCmd.AddCommand(policy_kasRegistryCmd)
+	policyKasRegCmd.AddSubcommands(createDoc, getDoc, listDoc, updateDoc, deleteDoc)
+	policyCmd.AddCommand(&policyKasRegCmd.Command)
 }
