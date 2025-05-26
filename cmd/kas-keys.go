@@ -639,6 +639,7 @@ func init() {
 		getDoc.GetDocFlag("kasName").Description,
 	)
 	getDoc.MarkFlagsMutuallyExclusive("id", "keyId")
+	getDoc.MarkFlagsOneRequired("id", "keyId")
 	getDoc.MarkFlagsMutuallyExclusive("kasUri", "kasId", "kasName")
 
 	// Update Kas Key

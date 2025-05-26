@@ -144,7 +144,7 @@ teardown_file() {
 @test "base-key: set (missing kas identifier: kasId, kasName, or kasUri)" {
   run_otdfctl_base_key set --keyId "${REGULAR_KEY_ID_FOR_BASE_TEST}"
   assert_failure
-  assert_output --partial "at least one of 'kasId', 'kasName', or 'kasUri' must be provided"
+  assert_output --partial "at least one of 'kasId', 'kasName', or 'kasUri' must be provided with 'keyId'"
 }
 
 @test "base-key: set (missing key identifier: id or keyId)" {

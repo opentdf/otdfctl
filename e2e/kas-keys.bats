@@ -412,7 +412,7 @@ format_kas_name_as_uri() {
   run_otdfctl_key get --keyId "${KEY_ID_FAIL_GET}" --json
   assert_failure
   # Error message might vary, but it should indicate an issue with resolving the key or missing parameters
-  assert_output --partial "Failed to get kas key" # Or a more specific error about missing KAS identifier
+  assert_output --partial "at least one of 'kasId', 'kasName', or 'kasUri' must be provided with 'keyId'" # Or a more specific error about missing KAS identifier
 }
 
 @test "kas-keys: get key (failure: only kasId, missing keyId or system id)" {

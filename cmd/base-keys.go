@@ -52,7 +52,7 @@ func getKasKeyIdentifier(c *cli.Cli) (*kasregistry.KasKeyIdentifier, error) {
 	default:
 		var err error
 		if keyID != "" {
-			err = errors.New("at least one of 'kasId', 'kasName', or 'kasUri' must be provided")
+			err = errors.New("at least one of 'kasId', 'kasName', or 'kasUri' must be provided with 'keyId'")
 		}
 		return nil, err
 	}
