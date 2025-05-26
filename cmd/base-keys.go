@@ -50,10 +50,11 @@ func getKasKeyIdentifier(c *cli.Cli) (*kasregistry.KasKeyIdentifier, error) {
 			Uri: kasURI,
 		}
 	default:
+		var err error
 		if keyID != "" {
-			return nil, errors.New("at least one of 'kasId', 'kasName', or 'kasUri' must be provided")
+			err = errors.New("at least one of 'kasId', 'kasName', or 'kasUri' must be provided")
 		}
-		return nil, nil
+		return nil, err
 	}
 
 	return identifier, nil
