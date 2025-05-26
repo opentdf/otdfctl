@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	kasUriKey       = "kas_uri"
-	kasUriColumn    = "Kas URI"
+	kasURIKey       = "kas_uri"
+	kasURIColumn    = "Kas URI"
 	algKey          = "algorithm"
 	algColumn       = "Algorithm"
 	pubPemKey       = "public_key_pem"
@@ -65,7 +65,7 @@ func getBaseKeyTableRows(simpleKey *kasregistry.SimpleKasKey, additionalInfo map
 		kasKidKey: simpleKey.GetPublicKey().GetKid(),
 		pubPemKey: simpleKey.GetPublicKey().GetPem(),
 		algKey:    simpleKey.GetPublicKey().GetAlgorithm(),
-		kasUriKey: simpleKey.GetKasUri(),
+		kasURIKey: simpleKey.GetKasUri(),
 	}
 
 	if len(additionalInfo) > 0 {
@@ -79,7 +79,7 @@ func getBaseKeyTableRows(simpleKey *kasregistry.SimpleKasKey, additionalInfo map
 
 func getBaseKeyTable(additionalColumns []table.Column) table.Model {
 	columns := []table.Column{
-		table.NewFlexColumn(kasUriKey, kasUriColumn, cli.FlexColumnWidthOne),
+		table.NewFlexColumn(kasURIKey, kasURIColumn, cli.FlexColumnWidthOne),
 		table.NewFlexColumn(kasKidKey, kasKidColumn, cli.FlexColumnWidthOne),
 		table.NewFlexColumn(pubPemKey, pubPemColumn, cli.FlexColumnWidthOne),
 		table.NewFlexColumn(algKey, algColumn, cli.FlexColumnWidthOne),

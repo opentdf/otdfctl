@@ -3,7 +3,7 @@ title: Base Key Operations
 
 command:
   name: base
-  hidden: false
+  hidden: true
   aliases:
     - k
   flags:
