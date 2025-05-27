@@ -28,8 +28,7 @@ const (
 	ecSecp384Len         = 384
 	ecSecp521Len         = 521
 	keyStatusActive      = "active"
-	keyStatusInactive    = "inactive"
-	keyStatusCompromised = "compromised"
+	keyStatusRotated     = "rotated"
 	keyModeLocal         = "local"
 	keyModeProvider      = "provider"
 	keyModeRemote        = "remote"
@@ -116,10 +115,8 @@ func enumToStatus(enum policy.KeyStatus) (string, error) {
 	switch enum { //nolint:exhaustive // UNSPECIFIED is not needed here
 	case policy.KeyStatus_KEY_STATUS_ACTIVE:
 		return keyStatusActive, nil
-	case policy.KeyStatus_KEY_STATUS_INACTIVE:
-		return keyStatusInactive, nil
-	case policy.KeyStatus_KEY_STATUS_COMPROMISED:
-		return keyStatusCompromised, nil
+	case policy.KeyStatus_KEY_STATUS_ROTATED:
+		return keyStatusRotated, nil
 	default:
 		return "", errors.New("invalid enum status")
 	}
@@ -275,8 +272,8 @@ func policyCreateKasKey(cmd *cobra.Command, args []string) {
 		cli.ExitWithError(fmt.Sprintf("providerConfigId is required for mode %s", formattedMode), nil)
 	}
 
-	var publicKeyCtx *policy.KasPublicKeyCtx
-	var privateKeyCtx *policy.KasPrivateKeyCtx
+	var publicKeyCtx *policy.PublicKeyCtx
+	var privateKeyCtx *policy.PrivateKeyCtx
 	switch mode {
 	case policy.KeyMode_KEY_MODE_CONFIG_ROOT_KEY:
 		wrappingKey := c.Flags.GetRequiredString("wrappingKey")
@@ -300,10 +297,10 @@ func policyCreateKasKey(cmd *cobra.Command, args []string) {
 			cli.ExitWithError("Failed to base64 encode private key", err)
 		}
 
-		publicKeyCtx = &policy.KasPublicKeyCtx{
+		publicKeyCtx = &policy.PublicKeyCtx{
 			Pem: pubPemBase64,
 		}
-		privateKeyCtx = &policy.KasPrivateKeyCtx{
+		privateKeyCtx = &policy.PrivateKeyCtx{
 			KeyId:      wrappingKeyID,
 			WrappedKey: privPemBase64,
 		}
@@ -319,10 +316,10 @@ func policyCreateKasKey(cmd *cobra.Command, args []string) {
 		if err != nil {
 			cli.ExitWithError("pem must be base64 encoded", err)
 		}
-		publicKeyCtx = &policy.KasPublicKeyCtx{
+		publicKeyCtx = &policy.PublicKeyCtx{
 			Pem: publicPem,
 		}
-		privateKeyCtx = &policy.KasPrivateKeyCtx{
+		privateKeyCtx = &policy.PrivateKeyCtx{
 			KeyId:      wrappingKeyID,
 			WrappedKey: privatePem,
 		}
@@ -335,10 +332,10 @@ func policyCreateKasKey(cmd *cobra.Command, args []string) {
 			cli.ExitWithError("pem must be base64 encoded", err)
 		}
 
-		publicKeyCtx = &policy.KasPublicKeyCtx{
+		publicKeyCtx = &policy.PublicKeyCtx{
 			Pem: pem,
 		}
-		privateKeyCtx = &policy.KasPrivateKeyCtx{
+		privateKeyCtx = &policy.PrivateKeyCtx{
 			KeyId: wrappingKeyID,
 		}
 	case policy.KeyMode_KEY_MODE_PUBLIC_KEY_ONLY:
@@ -347,7 +344,7 @@ func policyCreateKasKey(cmd *cobra.Command, args []string) {
 		if err != nil {
 			cli.ExitWithError("pem must be base64 encoded", err)
 		}
-		publicKeyCtx = &policy.KasPublicKeyCtx{
+		publicKeyCtx = &policy.PublicKeyCtx{
 			Pem: pem,
 		}
 	case policy.KeyMode_KEY_MODE_UNSPECIFIED:

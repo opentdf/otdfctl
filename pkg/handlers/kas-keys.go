@@ -15,8 +15,8 @@ func (h Handler) CreateKasKey(
 	keyID string,
 	alg policy.Algorithm,
 	mode policy.KeyMode,
-	pubKeyCtx *policy.KasPublicKeyCtx,
-	privKeyCtx *policy.KasPrivateKeyCtx,
+	pubKeyCtx *policy.PublicKeyCtx,
+	privKeyCtx *policy.PrivateKeyCtx,
 	providerConfigID string,
 	metadata *common.MetadataMutable,
 ) (*policy.KasKey, error) {
