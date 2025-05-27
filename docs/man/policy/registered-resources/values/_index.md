@@ -5,7 +5,7 @@ command:
   aliases:
     - val
     - value
-  # hidden: true
+  hidden: true
 ---
 
 Registered Resource Values are the values associated with a registered resource.
