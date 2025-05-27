@@ -60,7 +60,7 @@ teardown_file() {
   # conflict
     run_otdfctl_ns create -n "$NS_NAME"
     assert_failure
-    assert_output --partial "AlreadyExists"
+    assert_output --partial "already_exists"
 }
 
 @test "Get a namespace - Good" {
