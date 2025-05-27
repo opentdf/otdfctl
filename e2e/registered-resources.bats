@@ -216,14 +216,8 @@ teardown_file() {
     assert_success
     [ "$(echo "$output" | jq -r '.id')" != "" ]
     [ "$(echo "$output" | jq -r '.value')" = "test_create_rr_val_with_action_attr_vals" ]
-    [ "$(echo "$output" | jq -r '.action_attribute_values[0].action.id')" = "$READ_ACTION_ID" ]
-    [ "$(echo "$output" | jq -r '.action_attribute_values[0].action.name')" = "$READ_ACTION_NAME" ]
-    [ "$(echo "$output" | jq -r '.action_attribute_values[0].attribute_value.id')" = "$ATTR_VAL_1_ID" ]
-    [ "$(echo "$output" | jq -r '.action_attribute_values[0].attribute_value.fqn')" = "$ATTR_VAL_1_FQN" ]
-    [ "$(echo "$output" | jq -r '.action_attribute_values[1].action.id')" = "$CUSTOM_ACTION_ID" ]
-    [ "$(echo "$output" | jq -r '.action_attribute_values[1].action.name')" = "$CUSTOM_ACTION_NAME" ]
-    [ "$(echo "$output" | jq -r '.action_attribute_values[1].attribute_value.id')" = "$ATTR_VAL_2_ID" ]
-    [ "$(echo "$output" | jq -r '.action_attribute_values[1].attribute_value.fqn')" = "$ATTR_VAL_2_FQN" ]
+    [ "$(echo "$output" | jq -r 'any(.action_attribute_values[]; .action.id == "'"$READ_ACTION_ID"'" and .action.name == "'"$READ_ACTION_NAME"'" and .attribute_value.id == "'"$ATTR_VAL_1_ID"'" and .attribute_value.fqn == "'"$ATTR_VAL_1_FQN"'")')" = "true" ]
+    [ "$(echo "$output" | jq -r 'any(.action_attribute_values[]; .action.id == "'"$CUSTOM_ACTION_ID"'" and .action.name == "'"$CUSTOM_ACTION_NAME"'" and .attribute_value.id == "'"$ATTR_VAL_2_ID"'" and .attribute_value.fqn == "'"$ATTR_VAL_2_FQN"'")')" = "true" ]
   created_id_with_action_attr_vals=$(echo "$output" | jq -r '.id')
 
   # cleanup
@@ -353,14 +347,8 @@ teardown_file() {
   run_otdfctl_reg_res_values update --id "$created_id" --action-attribute-value "\"$READ_ACTION_NAME;$ATTR_VAL_1_FQN\"" --action-attribute-value "\"$CUSTOM_ACTION_ID;$ATTR_VAL_2_ID\"" --json
     assert_success
     [ "$(echo "$output" | jq -r '.id')" = "$created_id" ]
-    [ "$(echo "$output" | jq -r '.action_attribute_values[0].action.id')" = "$READ_ACTION_ID" ]
-    [ "$(echo "$output" | jq -r '.action_attribute_values[0].action.name')" = "$READ_ACTION_NAME" ]
-    [ "$(echo "$output" | jq -r '.action_attribute_values[0].attribute_value.id')" = "$ATTR_VAL_1_ID" ]
-    [ "$(echo "$output" | jq -r '.action_attribute_values[0].attribute_value.fqn')" = "$ATTR_VAL_1_FQN" ]
-    [ "$(echo "$output" | jq -r '.action_attribute_values[1].action.id')" = "$CUSTOM_ACTION_ID" ]
-    [ "$(echo "$output" | jq -r '.action_attribute_values[1].action.name')" = "$CUSTOM_ACTION_NAME" ]
-    [ "$(echo "$output" | jq -r '.action_attribute_values[1].attribute_value.id')" = "$ATTR_VAL_2_ID" ]
-    [ "$(echo "$output" | jq -r '.action_attribute_values[1].attribute_value.fqn')" = "$ATTR_VAL_2_FQN" ]
+    [ "$(echo "$output" | jq -r 'any(.action_attribute_values[]; .action.id == "'"$READ_ACTION_ID"'" and .action.name == "'"$READ_ACTION_NAME"'" and .attribute_value.id == "'"$ATTR_VAL_1_ID"'" and .attribute_value.fqn == "'"$ATTR_VAL_1_FQN"'")')" = "true" ]
+    [ "$(echo "$output" | jq -r 'any(.action_attribute_values[]; .action.id == "'"$CUSTOM_ACTION_ID"'" and .action.name == "'"$CUSTOM_ACTION_NAME"'" and .attribute_value.id == "'"$ATTR_VAL_2_ID"'" and .attribute_value.fqn == "'"$ATTR_VAL_2_FQN"'")')" = "true" ]
 
   # cleanup
   run_otdfctl_reg_res_values delete --id $created_id --force
