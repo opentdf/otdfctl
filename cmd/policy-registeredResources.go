@@ -251,9 +251,12 @@ func policyGetRegisteredResourceValue(cmd *cobra.Command, args []string) {
 		cli.ExitWithError(errMsg, err)
 	}
 
+	simpleActionAttributeValues := cli.GetSimpleRegisteredResourceActionAttributeValues(value.GetActionAttributeValues())
+
 	rows := [][]string{
 		{"Id", value.GetId()},
 		{"Value", value.GetValue()},
+		{"Action Attribute Values", cli.CommaSeparated(simpleActionAttributeValues)},
 	}
 	if mdRows := getMetadataRows(value.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
@@ -280,12 +283,16 @@ func policyListRegisteredResourceValues(cmd *cobra.Command, args []string) {
 	t := cli.NewTable(
 		cli.NewUUIDColumn(),
 		table.NewFlexColumn("value", "Value", cli.FlexColumnWidthFour),
+		table.NewFlexColumn("action-attribute-values", "Action Attribute Values", cli.FlexColumnWidthFour),
 	)
 	rows := []table.Row{}
 	for _, v := range values {
+		simpleActionAttributeValues := cli.GetSimpleRegisteredResourceActionAttributeValues(v.GetActionAttributeValues())
+
 		rows = append(rows, table.NewRow(table.RowData{
-			"id":    v.GetId(),
-			"value": v.GetValue(),
+			"id":                      v.GetId(),
+			"value":                   v.GetValue(),
+			"action-attribute-values": cli.CommaSeparated(simpleActionAttributeValues),
 		}))
 	}
 	list := append([]*policy.RegisteredResourceValue{}, values...)
