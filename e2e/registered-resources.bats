@@ -234,6 +234,11 @@ teardown_file() {
   run_otdfctl_reg_res_values create --resource-id "$RR_ID" --value inval!d.chars
     assert_failure
 
+  # bad action attribute value arg separator (not a semicolon)
+  run_otdfctl_reg_res_values create --resource-id "$RR_ID" --value test_create_rr_val_bad_aav --action-attribute-value "\"$READ_ACTION_ID:$ATTR_VAL_1_ID\""
+    assert_failure
+    assert_output --partial "Invalid action attribute value arg format"
+
   # missing flag
   run_otdfctl_reg_res_values create --resource-id "$RR_ID"
     assert_failure
