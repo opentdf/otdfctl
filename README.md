@@ -71,10 +71,7 @@ BATS is used to test the CLI from an end-to-end perspective. To run the tests yo
 prerequisites are met:
 
 - bats is installed on your system
-  - MacOS: `brew install bats-core`
-  - Clone the following repos in `/opt/homebrew/lib` if you installed bats-core with homebrew
-    - `git clone git@github.com:bats-core/bats-assert.git`
-    - `git clone https://github.com/bats-core/bats-support`
+  - Follow bats-core advice [here](https://github.com/bats-core/homebrew-bats-core?tab=readme-ov-file#homebrew-bats-core)
 - The platform is running and provisioned with basic keycloak clients/users
   - See the [platform README](https://github.com/opentdf/platform) for instructions
 

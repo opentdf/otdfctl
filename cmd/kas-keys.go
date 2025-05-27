@@ -288,15 +288,7 @@ func policyCreateKasKey(cmd *cobra.Command, args []string) {
 		}
 
 		pubPemBase64 := base64.StdEncoding.EncodeToString([]byte(publicKeyPem))
-		if err != nil {
-			cli.ExitWithError("Failed to base64 encode public key", err)
-		}
-
 		privPemBase64 := base64.StdEncoding.EncodeToString(privateKey)
-		if err != nil {
-			cli.ExitWithError("Failed to base64 encode private key", err)
-		}
-
 		publicKeyCtx = &policy.PublicKeyCtx{
 			Pem: pubPemBase64,
 		}

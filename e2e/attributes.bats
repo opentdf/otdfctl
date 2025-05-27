@@ -218,15 +218,15 @@ teardown_file() {
   # Test assigning KAS key to attribute
   run_otdfctl_attr key assign --attribute "$ATTR_ID" --keyId "$KAS_KEY_ID" --json
     assert_success
-    [ "$(echo "$output" | jq -r '.attribute_id')" = "$ATTR_ID" ]
-    [ "$(echo "$output" | jq -r '.key_id')" = "$KAS_KEY_ID" ]
+    assert_equal "$(echo "$output" | jq -r '.attribute_id')" "$ATTR_ID"
+    assert_equal "$(echo "$output" | jq -r '.key_id')" "$KAS_KEY_ID"
   
   run_otdfctl_attr get --id "$ATTR_ID" --json
     assert_success
-    [ "$(echo "$output" | jq -r '.id')" = "$ATTR_ID" ]
-    [ "$(echo "$output" | jq -r '.kas_keys[0].key.id')" = "$KAS_KEY_ID" ]
-    [ "$(echo "$output" | jq -r '.kas_keys[0].key.private_key_ctx')" = "null" ]
-    [ "$(echo "$output" | jq -r '.kas_keys[0].key.public_key_ctx.pem')" = "${PEM_B64}" ]
+    assert_equal "$(echo "$output" | jq -r '.id')" "$ATTR_ID" 
+    assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.id')" "$KAS_KEY_ID" 
+    assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.private_key_ctx')" "null" 
+    assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.public_key_ctx.pem')" "${PEM_B64}" 
 
   # Assign the key to the attribute
   run_otdfctl_attr key remove --attribute "$ATTR_ID" --keyId "$KAS_KEY_ID"
@@ -234,8 +234,8 @@ teardown_file() {
   
   run_otdfctl_attr get --id "$ATTR_ID" --json
     assert_success
-    [ "$(echo "$output" | jq -r '.id')" = "$ATTR_ID" ]
-    [ "$(echo "$output" | jq -r '.kas_keys | length')" -eq 0 ]
+    assert_equal "$(echo "$output" | jq -r '.id')" "$ATTR_ID" 
+    assert_equal "$(echo "$output" | jq -r '.kas_keys | length')" 0 
 }
 
 @test "Assign/Remove KAS key from attribute definition - With Attribute FQN" {
@@ -243,20 +243,20 @@ teardown_file() {
   # Get the attribute by ID to retrieve its FQN
   run_otdfctl_attr get --id "$ATTR_ID" --json
     assert_success
-    [ "$(echo "$output" | jq -r '.keys | length')" -eq 0 ]
+    assert_equal "$(echo "$output" | jq -r '.keys | length')" 0
     ATTR_FQN=$(echo "$output" | jq -r '.fqn')
 
   run_otdfctl_attr key assign --attribute "$ATTR_FQN" --keyId "$KAS_KEY_ID" --json
     assert_success
-    [ "$(echo "$output" | jq -r '.attribute_id')" = "$ATTR_ID" ]
-    [ "$(echo "$output" | jq -r '.key_id')" = "$KAS_KEY_ID" ]
+    assert_equal "$(echo "$output" | jq -r '.attribute_id')" "$ATTR_ID"
+    assert_equal "$(echo "$output" | jq -r '.key_id')" "$KAS_KEY_ID"
   
   run_otdfctl_attr get --id "$ATTR_ID" --json
     assert_success
-    [ "$(echo "$output" | jq -r '.id')" = "$ATTR_ID" ]
-    [ "$(echo "$output" | jq -r '.kas_keys[0].key.id')" = "$KAS_KEY_ID" ]
-    [ "$(echo "$output" | jq -r '.kas_keys[0].key.private_key_ctx')" = "null" ]
-    [ "$(echo "$output" | jq -r '.kas_keys[0].key.public_key_ctx.pem')" = "${PEM_B64}" ]
+    assert_equal "$(echo "$output" | jq -r '.id')" "$ATTR_ID" 
+    assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.id')" "$KAS_KEY_ID" 
+    assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.private_key_ctx')" "null" 
+    assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.public_key_ctx.pem')" "${PEM_B64}" 
 
   # Assign the key to the attribute
   run_otdfctl_attr key remove --attribute "$ATTR_FQN" --keyId "$KAS_KEY_ID"
@@ -264,8 +264,8 @@ teardown_file() {
   
   run_otdfctl_attr get --id "$ATTR_ID" --json
     assert_success
-    [ "$(echo "$output" | jq -r '.id')" = "$ATTR_ID" ]
-    [ "$(echo "$output" | jq -r '.kas_keys | length')" -eq 0 ]
+    assert_equal "$(echo "$output" | jq -r '.id')" "$ATTR_ID" 
+    assert_equal "$(echo "$output" | jq -r '.kas_keys | length')" 0 
 }
 
 @test "Assign/Remove KAS key from attribute value - With Value Id" {
@@ -278,15 +278,15 @@ teardown_file() {
   # Test assigning KAS key to attribute value
   run_otdfctl_attr values key assign --value "$VALUE_ID" --keyId "$KAS_KEY_ID" --json
     assert_success
-    [ "$(echo "$output" | jq -r '.value_id')" = "$VALUE_ID" ]
-    [ "$(echo "$output" | jq -r '.key_id')" = "$KAS_KEY_ID" ]
+    assert_equal "$(echo "$output" | jq -r '.value_id')" "$VALUE_ID"
+    assert_equal "$(echo "$output" | jq -r '.key_id')" "$KAS_KEY_ID"
   
   run_otdfctl_attr values get --id "$VALUE_ID" --json
     assert_success
-    [ "$(echo "$output" | jq -r '.id')" = "$VALUE_ID" ]
-    [ "$(echo "$output" | jq -r '.kas_keys[0].key.id')" = "$KAS_KEY_ID" ]
-    [ "$(echo "$output" | jq -r '.kas_keys[0].key.private_key_ctx')" = "null" ]
-    [ "$(echo "$output" | jq -r '.kas_keys[0].key.public_key_ctx.pem')" = "${PEM_B64}" ]
+    assert_equal "$(echo "$output" | jq -r '.id')" "$VALUE_ID" 
+    assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.id')" "$KAS_KEY_ID" 
+    assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.private_key_ctx')" "null" 
+    assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.public_key_ctx.pem')" "${PEM_B64}" 
 
   # Remove key from attribute value
   run_otdfctl_attr values key remove --value "$VALUE_ID" --keyId "$KAS_KEY_ID"
@@ -294,8 +294,8 @@ teardown_file() {
   
   run_otdfctl_attr values get --id "$VALUE_ID" --json
     assert_success
-    [ "$(echo "$output" | jq -r '.id')" = "$VALUE_ID" ]
-    [ "$(echo "$output" | jq -r '.kas_keys | length')" -eq 0 ]
+    assert_equal "$(echo "$output" | jq -r '.id')" "$VALUE_ID"
+    assert_equal "$(echo "$output" | jq -r '.kas_keys | length')" 0
 
   ./otdfctl $HOST $WITH_CREDS policy attributes unsafe delete --force --id "$ATTR_WITH_VALUE_ID"
 }
@@ -311,15 +311,15 @@ teardown_file() {
   # Assign with value FQN
   run_otdfctl_attr values key assign --value "$VALUE_FQN" --keyId "$KAS_KEY_ID" --json
     assert_success
-    [ "$(echo "$output" | jq -r '.value_id')" = "$VALUE_ID" ]
-    [ "$(echo "$output" | jq -r '.key_id')" = "$KAS_KEY_ID" ]
+    assert_equal "$(echo "$output" | jq -r '.value_id')" "$VALUE_ID"
+    assert_equal "$(echo "$output" | jq -r '.key_id')" "$KAS_KEY_ID"
   
   run_otdfctl_attr values get --id "$VALUE_ID" --json
     assert_success
-    [ "$(echo "$output" | jq -r '.id')" = "$VALUE_ID" ]
-    [ "$(echo "$output" | jq -r '.kas_keys[0].key.id')" = "$KAS_KEY_ID" ]
-    [ "$(echo "$output" | jq -r '.kas_keys[0].key.private_key_ctx')" = "null" ]
-    [ "$(echo "$output" | jq -r '.kas_keys[0].key.public_key_ctx.pem')" = "${PEM_B64}" ]
+    assert_equal "$(echo "$output" | jq -r '.id')" "$VALUE_ID"
+    assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.id')" "$KAS_KEY_ID"
+    assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.private_key_ctx')" "null"
+    assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.public_key_ctx.pem')" "${PEM_B64}"
 
   # Remove key from attribute value by FQN
   run_otdfctl_attr values key remove --value "$VALUE_FQN" --keyId "$KAS_KEY_ID"
@@ -327,8 +327,8 @@ teardown_file() {
   
   run_otdfctl_attr values get --id "$VALUE_ID" --json
     assert_success
-    [ "$(echo "$output" | jq -r '.id')" = "$VALUE_ID" ]
-    [ "$(echo "$output" | jq -r '.kas_keys | length')" -eq 0 ]
+    assert_equal "$(echo "$output" | jq -r '.id')" "$VALUE_ID"
+    assert_equal "$(echo "$output" | jq -r '.kas_keys | length')" 0
 
   ./otdfctl $HOST $WITH_CREDS policy attributes unsafe delete --force --id "$ATTR_WITH_VALUE_ID"
 }

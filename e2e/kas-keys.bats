@@ -32,7 +32,7 @@ teardown_file() {
 
 # Helper function to generate a unique key ID
 generate_key_id() {
-  local length="${1:-36}" # Default to 50 if no argument is provided
+  local length="${1:-8}"
 
   # Check if /dev/urandom is available
   if [ ! -c /dev/urandom ]; then
@@ -44,7 +44,7 @@ generate_key_id() {
 }
 
 generate_kas_name() {
-  local length="${1:-60}" # Default to 50 if no argument is provided
+  local length="${1:-6}"
 
   # Check if /dev/urandom is available
   if [ ! -c /dev/urandom ]; then

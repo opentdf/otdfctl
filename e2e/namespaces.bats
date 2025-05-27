@@ -144,16 +144,16 @@ teardown_file() {
 @test "Assign/Remove KAS key from namespace - With Namespace ID" {
   run_otdfctl_ns key assign --namespace "$NS_ID" --keyId "$KAS_KEY_ID" --json
     assert_success
-    [ "$(echo "$output" | jq -r '.namespace_id')" = "$NS_ID" ]
-    [ "$(echo "$output" | jq -r '.key_id')" = "$KAS_KEY_ID" ]
+    assert_equal "$(echo "$output" | jq -r '.namespace_id')" "$NS_ID"
+    assert_equal "$(echo "$output" | jq -r '.key_id')" "$KAS_KEY_ID"
 
   run_otdfctl_ns get --id "$NS_ID" --json
     echo "$output" >&2
     assert_success
-    [ "$(echo "$output" | jq -r '.id')" = "$NS_ID" ]
-    [ "$(echo "$output" | jq -r '.kas_keys[0].key.id')" = "$KAS_KEY_ID" ]
-    [ "$(echo "$output" | jq -r '.kas_keys[0].key.private_key_ctx')" = "null" ]
-    [ "$(echo "$output" | jq -r '.kas_keys[0].key.public_key_ctx.pem')" = "${PEM_B64}" ]
+    assert_equal "$(echo "$output" | jq -r '.id')" "$NS_ID"
+    assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.id')" "$KAS_KEY_ID"
+    assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.private_key_ctx')" "null"
+    assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.public_key_ctx.pem')" "${PEM_B64}"
 
   
   run_otdfctl_ns key remove --namespace "$NS_ID" --keyId "$KAS_KEY_ID" --json
@@ -161,29 +161,29 @@ teardown_file() {
   
   run_otdfctl_ns get --id "$NS_ID" --json
     assert_success
-    [ "$(echo "$output" | jq -r '.id')" = "$NS_ID" ]
-    [ "$(echo "$output" | jq -r '.kas_keys | length')" -eq 0 ]
+    assert_equal "$(echo "$output" | jq -r '.id')" "$NS_ID"
+    assert_equal "$(echo "$output" | jq -r '.kas_keys | length')" 0
 }
 
 @test "Assign/Remove KAS key from namespace - With Namespace FQN" {
   run_otdfctl_ns get --id "$NS_ID" --json
     assert_success
-    [ "$(echo "$output" | jq -r '.id')" = "$NS_ID" ]
-    [ "$(echo "$output" | jq -r '.kas_keys | length')" -eq 0 ]
+    assert_equal "$(echo "$output" | jq -r '.id')" "$NS_ID"
+    assert_equal "$(echo "$output" | jq -r '.kas_keys | length')" 0
     NS_FQN=$(echo "$output" | jq -r '.fqn')
 
 
   run_otdfctl_ns key assign --namespace "$NS_FQN" --keyId "$KAS_KEY_ID" --json
     assert_success
-    [ "$(echo "$output" | jq -r '.namespace_id')" = "$NS_ID" ]
-    [ "$(echo "$output" | jq -r '.key_id')" = "$KAS_KEY_ID" ]
+    assert_equal "$(echo "$output" | jq -r '.namespace_id')" "$NS_ID"
+    assert_equal "$(echo "$output" | jq -r '.key_id')" "$KAS_KEY_ID"
 
   run_otdfctl_ns get --id "$NS_ID" --json
     assert_success
-    [ "$(echo "$output" | jq -r '.id')" = "$NS_ID" ]
-    [ "$(echo "$output" | jq -r '.kas_keys[0].key.id')" = "$KAS_KEY_ID" ]
-    [ "$(echo "$output" | jq -r '.kas_keys[0].key.private_key_ctx')" = "null" ]
-    [ "$(echo "$output" | jq -r '.kas_keys[0].key.public_key_ctx.pem')" = "${PEM_B64}" ]
+    assert_equal "$(echo "$output" | jq -r '.id')" "$NS_ID"
+    assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.id')" "$KAS_KEY_ID"
+    assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.private_key_ctx')" "null"
+    assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.public_key_ctx.pem')" "${PEM_B64}"
 
   
   run_otdfctl_ns key remove --namespace "$NS_ID" --keyId "$KAS_KEY_ID" --json
@@ -191,8 +191,8 @@ teardown_file() {
   
   run_otdfctl_ns get --id "$NS_ID" --json
     assert_success
-    [ "$(echo "$output" | jq -r '.id')" = "$NS_ID" ]
-    [ "$(echo "$output" | jq -r '.kas_keys | length')" -eq 0 ]
+    assert_equal "$(echo "$output" | jq -r '.id')" "$NS_ID"
+    assert_equal "$(echo "$output" | jq -r '.kas_keys | length')" 0
 }
 
 
