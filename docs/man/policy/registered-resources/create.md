@@ -31,5 +31,5 @@ For more information, see the `registered-resources` subcommand.
 Create a registered resource named 'my_resource' with value 'my_value':
 
 ```shell
-otdfctl policy registered-resources create --name my_resource --v my_value
+otdfctl policy registered-resources create --name my_resource --value my_value
 ```
