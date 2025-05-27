@@ -20,9 +20,10 @@ setup_file() {
     export READ_ACTION_ID=$(./otdfctl $HOST $WITH_CREDS policy actions get --name "$READ_ACTION_NAME" --json | jq -r '.id')
 
     # create attribute value to be used in registered resource values tests
-    export NS_NAME="test-reg-res.org"
+    export NS_NAME="test-rr.org"
     export NS_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes namespaces create --name "$NS_NAME" --json | jq -r '.id')
-    attr_id=$(./otdfctl $HOST $WITH_CREDS policy attributes create --namespace "$NS_ID" --name test_reg_res_attr --rule ANY_OF -l key=value --json | jq -r '.id')
+    export ATTR_NAME=test_rr_attr
+    attr_id=$(./otdfctl $HOST $WITH_CREDS policy attributes create --namespace "$NS_ID" --name "$ATTR_NAME" --rule ANY_OF -l key=value --json | jq -r '.id')
     export ATTR_VAL_1_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes values create --attribute-id "$attr_id" --value test_reg_res_attr__val_1 --json | jq -r '.id')
     export ATTR_VAL_1_FQN=$(./otdfctl $HOST $WITH_CREDS policy attributes values get --id "$ATTR_VAL_1_ID" --json | jq -r '.fqn')
     export ATTR_VAL_2_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes values create --attribute-id "$attr_id" --value test_reg_res_attr__val_2 --json | jq -r '.id')
@@ -55,7 +56,7 @@ teardown_file() {
   ./otdfctl $HOST $WITH_CREDS policy attributes namespaces unsafe delete --id "$NS_ID" --force
 
   # clear out all test env vars
-  unset HOST WITH_CREDS RR_NAME RR_ID CUSTOM_ACTION_NAME CUSTOM_ACTION_ID READ_ACTION_NAME READ_ACTION_ID NS_NAME NS_ID ATTR_VAL_1_ID ATTR_VAL_1_FQN ATTR_VAL_2_ID ATTR_VAL_2_FQN
+  unset HOST WITH_CREDS RR_NAME RR_ID CUSTOM_ACTION_NAME CUSTOM_ACTION_ID READ_ACTION_NAME READ_ACTION_ID NS_NAME NS_ID ATTR_NAME ATTR_VAL_1_ID ATTR_VAL_1_FQN ATTR_VAL_2_ID ATTR_VAL_2_FQN
 }
 
 @test "Create a registered resource - Good" {
@@ -313,7 +314,8 @@ teardown_file() {
     assert_success
     assert_output --partial "$reg_res_val1_id"
     assert_output --partial "test_list_rr_val_1"
-    assert_output --partial "$READ_ACTION_NAME -> $ATTR_VAL_1_FQN"
+    # check for partial FQN due to possible trimmed output
+    assert_output --partial "$READ_ACTION_NAME -> https://$NS_NAME/attr/$ATTR_NAME"
     assert_output --partial "$reg_res_val2_id"
     assert_output --partial "test_list_rr_val_2"
     assert_output --partial "Total"
