@@ -2,16 +2,39 @@ package handlers
 
 import (
 	"context"
+	"errors"
 
 	"github.com/opentdf/platform/protocol/go/common"
 	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/opentdf/platform/protocol/go/policy/kasregistry"
 )
 
-func (h Handler) GetKasRegistryEntry(ctx context.Context, id string) (*policy.KeyAccessServer, error) {
-	resp, err := h.sdk.KeyAccessServerRegistry.GetKeyAccessServer(ctx, &kasregistry.GetKeyAccessServerRequest{
-		Id: id,
-	})
+type KasIdentifier struct {
+	ID   string
+	Name string
+	URI  string
+}
+
+func (h Handler) GetKasRegistryEntry(ctx context.Context, identifer KasIdentifier) (*policy.KeyAccessServer, error) {
+	req := &kasregistry.GetKeyAccessServerRequest{}
+	switch {
+	case identifer.ID != "":
+		req.Identifier = &kasregistry.GetKeyAccessServerRequest_KasId{
+			KasId: identifer.ID,
+		}
+	case identifer.Name != "":
+		req.Identifier = &kasregistry.GetKeyAccessServerRequest_Name{
+			Name: identifer.Name,
+		}
+	case identifer.URI != "":
+		req.Identifier = &kasregistry.GetKeyAccessServerRequest_Uri{
+			Uri: identifer.URI,
+		}
+	default:
+		return nil, errors.New("id, name or uri must be provided")
+	}
+
+	resp, err := h.sdk.KeyAccessServerRegistry.GetKeyAccessServer(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +70,9 @@ func (h Handler) CreateKasRegistryEntry(ctx context.Context, uri string, publicK
 		return nil, err
 	}
 
-	return h.GetKasRegistryEntry(ctx, resp.GetKeyAccessServer().GetId())
+	return h.GetKasRegistryEntry(ctx, KasIdentifier{
+		ID: resp.GetKeyAccessServer().GetId(),
+	})
 }
 
 // Updates the KAS registry and then returns the KAS
@@ -64,7 +89,9 @@ func (h Handler) UpdateKasRegistryEntry(ctx context.Context, id, uri, name strin
 		return nil, err
 	}
 
-	return h.GetKasRegistryEntry(ctx, id)
+	return h.GetKasRegistryEntry(ctx, KasIdentifier{
+		ID: id,
+	})
 }
 
 // Deletes the KAS registry and returns the deleted KAS

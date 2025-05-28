@@ -18,6 +18,7 @@ type SimpleAttribute struct {
 	Namespace string
 	Active    string
 	Metadata  map[string]string
+	KeyIds    []string
 }
 
 type SimpleAttributeValue struct {
@@ -52,6 +53,10 @@ func GetSimpleAttribute(a *policy.Attribute) SimpleAttribute {
 	for _, v := range a.GetValues() {
 		values = append(values, v.GetValue())
 	}
+	keyIds := make([]string, len(a.GetKasKeys()))
+	for i, k := range a.GetKasKeys() {
+		keyIds[i] = k.GetKey().GetId()
+	}
 
 	return SimpleAttribute{
 		Id:        a.GetId(),
@@ -61,6 +66,7 @@ func GetSimpleAttribute(a *policy.Attribute) SimpleAttribute {
 		Namespace: a.GetNamespace().GetName(),
 		Active:    strconv.FormatBool(a.GetActive().GetValue()),
 		Metadata:  ConstructMetadata(a.GetMetadata()),
+		KeyIds:    keyIds,
 	}
 }
 
