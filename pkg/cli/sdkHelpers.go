@@ -54,7 +54,9 @@ func GetSimpleAttribute(a *policy.Attribute) SimpleAttribute {
 	}
 	keyIds := make([]string, len(a.GetKasKeys()))
 	for i, k := range a.GetKasKeys() {
-		keyIds[i] = k.GetKey().GetId()
+		if k.GetKey() != nil && k.GetKey().GetId() != "" {
+			keyIds[i] = k.GetKey().GetId()
+		}
 	}
 
 	return SimpleAttribute{

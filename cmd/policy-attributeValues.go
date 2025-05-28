@@ -432,7 +432,9 @@ func init() {
 func handleValueSuccess(cmd *cobra.Command, v *policy.Value) {
 	keyIds := make([]string, len(v.GetKasKeys()))
 	for i, k := range v.GetKasKeys() {
-		keyIds[i] = k.GetKey().GetId()
+		if k.GetKey() != nil && k.GetKey().GetId() != "" {
+			keyIds[i] = k.GetKey().GetId()
+		}
 	}
 
 	rows := [][]string{
