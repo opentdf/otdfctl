@@ -202,8 +202,8 @@ teardown_file() {
 # Tests for registered resource values
 
 @test "Create a registered resource value - Good" {
-  # simple
-  run_otdfctl_reg_res_values create --resource-id "$RR_ID" --value test_create_rr_val
+  # simple by resource ID
+  run_otdfctl_reg_res_values create --resource "$RR_ID" --value test_create_rr_val
     assert_output --partial "SUCCESS"
     assert_line --regexp "Value.*test_create_rr_val"
     assert_output --partial "Id"
@@ -211,8 +211,17 @@ teardown_file() {
     assert_line --partial "Updated At"
   created_id_simple=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
 
+  # simple by resource name
+  run_otdfctl_reg_res_values create --resource "$RR_NAME" --value test_create_rr_val_by_res_name
+    assert_output --partial "SUCCESS"
+    assert_line --regexp "Value.*test_create_rr_val"
+    assert_output --partial "Id"
+    assert_output --partial "Created At"
+    assert_line --partial "Updated At"
+  created_id_simple_by_res_name=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
+
   # with action attribute values
-  run_otdfctl_reg_res_values create --resource-id "$RR_ID" --value test_create_rr_val_with_action_attr_vals --action-attribute-value "\"$READ_ACTION_ID;$ATTR_VAL_1_FQN\"" --action-attribute-value "\"$CUSTOM_ACTION_NAME;$ATTR_VAL_2_ID\"" --json
+  run_otdfctl_reg_res_values create --resource "$RR_ID" --value test_create_rr_val_with_action_attr_vals --action-attribute-value "\"$READ_ACTION_ID;$ATTR_VAL_1_FQN\"" --action-attribute-value "\"$CUSTOM_ACTION_NAME;$ATTR_VAL_2_ID\"" --json
     assert_success
     [ "$(echo "$output" | jq -r '.id')" != "" ]
     [ "$(echo "$output" | jq -r '.value')" = "test_create_rr_val_with_action_attr_vals" ]
@@ -222,33 +231,42 @@ teardown_file() {
 
   # cleanup
   run_otdfctl_reg_res_values delete --id $created_id_simple --force
+  run_otdfctl_reg_res_values delete --id $created_id_simple_by_res_name --force
   run_otdfctl_reg_res_values delete --id $created_id_with_action_attr_vals --force
 }
 
 @test "Create a registered resource value - Bad" {
   # bad resource value names
-  run_otdfctl_reg_res_values create --resource-id "$RR_ID" --value ends_underscored_
+  run_otdfctl_reg_res_values create --resource "$RR_ID" --value ends_underscored_
     assert_failure
-  run_otdfctl_reg_res_values create --resource-id "$RR_ID" --value -first-char-hyphen
+  run_otdfctl_reg_res_values create --resource "$RR_ID" --value -first-char-hyphen
     assert_failure
-  run_otdfctl_reg_res_values create --resource-id "$RR_ID" --value inval!d.chars
+  run_otdfctl_reg_res_values create --resource "$RR_ID" --value inval!d.chars
     assert_failure
 
+  # missing flag
+  run_otdfctl_reg_res_values create
+    assert_failure
+    assert_output --partial "Flag '--resource' is required"
+  run_otdfctl_reg_res_values create --resource "$RR_ID"
+    assert_failure
+    assert_output --partial "Flag '--value' is required"
+
   # bad action attribute value arg separator (not a semicolon)
-  run_otdfctl_reg_res_values create --resource-id "$RR_ID" --value test_create_rr_val_bad_aav --action-attribute-value "\"$READ_ACTION_ID:$ATTR_VAL_1_ID\""
+  run_otdfctl_reg_res_values create --resource "$RR_ID" --value test_create_rr_val_bad_aav --action-attribute-value "\"$READ_ACTION_ID:$ATTR_VAL_1_ID\""
     assert_failure
     assert_output --partial "Invalid action attribute value arg format"
 
-  # missing flag
-  run_otdfctl_reg_res_values create --resource-id "$RR_ID"
+  # non-existent resource name
+  run_otdfctl_reg_res_values create --resource invalid_rr --value test_create_rr_val_bad_aav_action_name
     assert_failure
-    assert_output --partial "Flag '--value' is required"
+    assert_output --partial "Failed to find registered resource (name: invalid_rr)"
   
   # conflict
-  run_otdfctl_reg_res_values create --resource-id "$RR_ID" --value test_create_rr_val_conflict
+  run_otdfctl_reg_res_values create --resource "$RR_ID" --value test_create_rr_val_conflict
     assert_output --partial "SUCCESS"
   created_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
-  run_otdfctl_reg_res_values create --resource-id "$RR_ID" --value test_create_rr_val_conflict
+  run_otdfctl_reg_res_values create --resource "$RR_ID" --value test_create_rr_val_conflict
       assert_failure
       assert_output --partial "AlreadyExists"
 
@@ -258,7 +276,7 @@ teardown_file() {
 
 @test "Get a registered resource value - Good" {
   # setup a resource value to get
-  run_otdfctl_reg_res_values create --resource-id "$RR_ID" --value test_get_rr_val --action-attribute-value "\"$READ_ACTION_ID;$ATTR_VAL_1_ID\""
+  run_otdfctl_reg_res_values create --resource "$RR_ID" --value test_get_rr_val --action-attribute-value "\"$READ_ACTION_ID;$ATTR_VAL_1_ID\""
     assert_success
   created_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
 
@@ -302,14 +320,27 @@ teardown_file() {
     assert_output --partial "must be a valid URI"
 }
 
-@test "List registered resource values" {
+@test "List registered resource values - Good" {
   # setup values to list
-  run_otdfctl_reg_res_values create --resource-id "$RR_ID" --value test_list_rr_val_1 --action-attribute-value "\"$READ_ACTION_ID;$ATTR_VAL_1_ID\""
+  run_otdfctl_reg_res_values create --resource "$RR_ID" --value test_list_rr_val_1 --action-attribute-value "\"$READ_ACTION_ID;$ATTR_VAL_1_ID\""
   reg_res_val1_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
-  run_otdfctl_reg_res_values create --resource-id "$RR_ID" --value test_list_rr_val_2
+  run_otdfctl_reg_res_values create --resource "$RR_ID" --value test_list_rr_val_2
   reg_res_val2_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
 
-  run_otdfctl_reg_res_values list --resource-id "$RR_ID"
+  # by resource ID
+  run_otdfctl_reg_res_values list --resource "$RR_ID"
+    assert_success
+    assert_output --partial "$reg_res_val1_id"
+    assert_output --partial "test_list_rr_val_1"
+    # check for partial FQN due to possible trimmed output
+    assert_output --partial "$READ_ACTION_NAME -> https://$NS_NAME/attr/$ATTR_NAME"
+    assert_output --partial "$reg_res_val2_id"
+    assert_output --partial "test_list_rr_val_2"
+    assert_output --partial "Total"
+    assert_line --regexp "Current Offset.*0"
+
+  # by resource name
+  run_otdfctl_reg_res_values list --resource "$RR_NAME"
     assert_success
     assert_output --partial "$reg_res_val1_id"
     assert_output --partial "test_list_rr_val_1"
@@ -325,9 +356,16 @@ teardown_file() {
   run_otdfctl_reg_res_values delete --id $reg_res_val2_id --force
 }
 
+@test "List registered resource values - Bad" {
+  # non-existent resource name
+  run_otdfctl_reg_res_values list --resource 'invalid_rr'
+    assert_failure
+    assert_output --partial "Failed to find registered resource (name: invalid_rr)"
+}
+
 @test "Update registered resource values" {
   # setup a resource value to update
-  run_otdfctl_reg_res_values create --resource-id "$RR_ID" --value test_update_rr_val --action-attribute-value "\"$READ_ACTION_ID;$ATTR_VAL_1_ID\""
+  run_otdfctl_reg_res_values create --resource "$RR_ID" --value test_update_rr_val --action-attribute-value "\"$READ_ACTION_ID;$ATTR_VAL_1_ID\""
     assert_success
   created_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
 
@@ -349,9 +387,8 @@ teardown_file() {
     refute_output --regexp "Value.*test_update_rr_val"
 
   # ensure previous updates without action attribute value args did not clear action attribute values
-  # TODO: uncomment once bug is fixed in platform code
-  # run_otdfctl_reg_res_values get --id "$created_id" --json
-    # [ "$(echo "$output" | jq -r 'any(.action_attribute_values[]; .action.id == "'"$READ_ACTION_ID"'" and .action.name == "'"$READ_ACTION_NAME"'" and .attribute_value.id == "'"$ATTR_VAL_1_ID"'" and .attribute_value.fqn == "'"$ATTR_VAL_1_FQN"'")')" = "true" ]
+  run_otdfctl_reg_res_values get --id "$created_id" --json
+    [ "$(echo "$output" | jq -r 'any(.action_attribute_values[]; .action.id == "'"$READ_ACTION_ID"'" and .action.name == "'"$READ_ACTION_NAME"'" and .attribute_value.id == "'"$ATTR_VAL_1_ID"'" and .attribute_value.fqn == "'"$ATTR_VAL_1_FQN"'")')" = "true" ]
 
   # update action attribute values
   run_otdfctl_reg_res_values update --id "$created_id" --action-attribute-value "\"$READ_ACTION_NAME;$ATTR_VAL_1_FQN\"" --action-attribute-value "\"$CUSTOM_ACTION_ID;$ATTR_VAL_2_ID\"" --json
@@ -366,7 +403,7 @@ teardown_file() {
 
 @test "Delete registered resource value - Good" {
   # setup a value to delete
-  run_otdfctl_reg_res_values create --resource-id "$RR_ID" --value test_delete_rr_val
+  run_otdfctl_reg_res_values create --resource "$RR_ID" --value test_delete_rr_val
   created_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
 
   run_otdfctl_reg_res_values delete --id "$created_id" --force

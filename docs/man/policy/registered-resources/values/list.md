@@ -5,9 +5,9 @@ command:
   aliases:
     - l
   flags:
-    - name: resource-id
-      shorthand: i
-      description: ID of the associated registered resource
+    - name: resource
+      shorthand: r
+      description: Identifier of the associated registered resource (ID or name)
     - name: limit
       shorthand: l
       description: Limit retrieved count

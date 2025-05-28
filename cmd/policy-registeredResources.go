@@ -202,10 +202,21 @@ func policyCreateRegisteredResourceValue(cmd *cobra.Command, args []string) {
 	defer h.Close()
 
 	ctx := cmd.Context()
-	resourceID := c.Flags.GetRequiredID("resource-id")
+	resource := c.Flags.GetRequiredString("resource")
 	value := c.Flags.GetRequiredString("value")
 	actionAttributeValues = c.Flags.GetStringSlice("action-attribute-value", actionAttributeValues, cli.FlagsStringSliceOptions{Min: 0})
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
+
+	var resourceID string
+	if uuid.Validate(resource) == nil {
+		resourceID = resource
+	} else {
+		resourceByName, err := h.GetRegisteredResource(ctx, "", resource)
+		if err != nil {
+			cli.ExitWithError(fmt.Sprintf("Failed to find registered resource (name: %s)", resource), err)
+		}
+		resourceID = resourceByName.GetId()
+	}
 
 	parsedActionAttributeValues := parseActionAttributeValueArgs(actionAttributeValues)
 
@@ -271,11 +282,23 @@ func policyListRegisteredResourceValues(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
-	resourceID := c.Flags.GetOptionalString("resource-id")
+	ctx := cmd.Context()
+	resource := c.Flags.GetRequiredString("resource")
 	limit := c.Flags.GetRequiredInt32("limit")
 	offset := c.Flags.GetRequiredInt32("offset")
 
-	values, page, err := h.ListRegisteredResourceValues(cmd.Context(), resourceID, limit, offset)
+	var resourceID string
+	if uuid.Validate(resource) == nil {
+		resourceID = resource
+	} else {
+		resourceByName, err := h.GetRegisteredResource(ctx, "", resource)
+		if err != nil {
+			cli.ExitWithError(fmt.Sprintf("Failed to find registered resource (name: %s)", resource), err)
+		}
+		resourceID = resourceByName.GetId()
+	}
+
+	values, page, err := h.ListRegisteredResourceValues(ctx, resourceID, limit, offset)
 	if err != nil {
 		cli.ExitWithError("Failed to list registered resource values", err)
 	}
@@ -513,10 +536,10 @@ func init() {
 		man.WithRun(policyListRegisteredResourceValues),
 	)
 	listValuesDoc.Flags().StringP(
-		listValuesDoc.GetDocFlag("resource-id").Name,
-		listValuesDoc.GetDocFlag("resource-id").Shorthand,
-		listValuesDoc.GetDocFlag("resource-id").Default,
-		listValuesDoc.GetDocFlag("resource-id").Description,
+		listValuesDoc.GetDocFlag("resource").Name,
+		listValuesDoc.GetDocFlag("resource").Shorthand,
+		listValuesDoc.GetDocFlag("resource").Default,
+		listValuesDoc.GetDocFlag("resource").Description,
 	)
 	injectListPaginationFlags(listValuesDoc)
 
@@ -524,10 +547,10 @@ func init() {
 		man.WithRun(policyCreateRegisteredResourceValue),
 	)
 	createValueDoc.Flags().StringP(
-		createValueDoc.GetDocFlag("resource-id").Name,
-		createValueDoc.GetDocFlag("resource-id").Shorthand,
-		createValueDoc.GetDocFlag("resource-id").Default,
-		createValueDoc.GetDocFlag("resource-id").Description,
+		createValueDoc.GetDocFlag("resource").Name,
+		createValueDoc.GetDocFlag("resource").Shorthand,
+		createValueDoc.GetDocFlag("resource").Default,
+		createValueDoc.GetDocFlag("resource").Description,
 	)
 	createValueDoc.Flags().StringP(
 		createValueDoc.GetDocFlag("value").Name,
