@@ -418,8 +418,7 @@ format_kas_name_as_uri() {
 @test "kas-keys: get key (failure: only kasId, missing keyId or system id)" {
   run_otdfctl_key get --kasId "${KAS_REGISTRY_ID}" --json
   assert_failure
-  # This should fail because neither system --id nor user --key-id is provided
-  assert_output --partial "Failed to get kas key" # Or a specific error about missing key identifier
+  assert_output --partial "at least one of the flags in the group [id keyId] is required"
 }
 
 @test "kas-keys: get key (not found by system ID)" {

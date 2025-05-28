@@ -35,7 +35,6 @@ func getKasKeyIdentifier(c *cli.Cli) (*kasregistry.KasKeyIdentifier, error) {
 	identifier := &kasregistry.KasKeyIdentifier{
 		Kid: keyID,
 	}
-
 	switch {
 	case kasID != "":
 		identifier.Identifier = &kasregistry.KasKeyIdentifier_KasId{

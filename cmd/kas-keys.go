@@ -387,7 +387,7 @@ func policyGetKasKey(cmd *cobra.Command, args []string) {
 
 	identifier, err := getKasKeyIdentifier(c)
 	if err != nil {
-		c.ExitWithError("Invalid key identifier", err)
+		cli.ExitWithError("Invalid key identifier", err)
 	}
 	kasKey, err := h.GetKasKey(c.Context(), id, identifier)
 	if err != nil {
