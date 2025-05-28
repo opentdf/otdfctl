@@ -92,7 +92,7 @@ teardown_file() {
   created_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
   run_otdfctl_reg_res create --name test_create_rr_conflict
       assert_failure
-      assert_output --partial "AlreadyExists"
+      assert_output --partial "already_exists"
 
   # cleanup
   run_otdfctl_reg_res delete --id $created_id --force
@@ -268,7 +268,7 @@ teardown_file() {
   created_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
   run_otdfctl_reg_res_values create --resource "$RR_ID" --value test_create_rr_val_conflict
       assert_failure
-      assert_output --partial "AlreadyExists"
+      assert_output --partial "already_exists"
 
   # cleanup
   run_otdfctl_reg_res_values delete --id $created_id --force
