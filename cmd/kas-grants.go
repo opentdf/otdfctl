@@ -7,6 +7,7 @@ import (
 	"github.com/evertras/bubble-table/table"
 	"github.com/google/uuid"
 	"github.com/opentdf/otdfctl/pkg/cli"
+	"github.com/opentdf/otdfctl/pkg/handlers"
 	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/spf13/cobra"
 )
@@ -41,7 +42,9 @@ func policy_assignKasGrant(cmd *cobra.Command, args []string) {
 		rowID []string
 	)
 
-	kas, err := h.GetKasRegistryEntry(ctx, kasID)
+	kas, err := h.GetKasRegistryEntry(ctx, handlers.KasIdentifier{
+		ID: kasID,
+	})
 	if err != nil || kas == nil {
 		cli.ExitWithError("Failed to get registered KAS", err)
 	}
@@ -100,7 +103,9 @@ func policy_unassignKasGrant(cmd *cobra.Command, args []string) {
 		rowFQN  []string
 	)
 
-	kas, err := h.GetKasRegistryEntry(ctx, kasID)
+	kas, err := h.GetKasRegistryEntry(ctx, handlers.KasIdentifier{
+		ID: kasID,
+	})
 	if err != nil || kas == nil {
 		cli.ExitWithError("Failed to get registered KAS", err)
 	}
