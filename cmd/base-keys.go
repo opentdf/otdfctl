@@ -32,28 +32,27 @@ func getKasKeyIdentifier(c *cli.Cli) (*kasregistry.KasKeyIdentifier, error) {
 	kasName := c.Flags.GetOptionalString("kasName")
 	kasURI := c.Flags.GetOptionalString("kasUri")
 
-	identifier := &kasregistry.KasKeyIdentifier{
-		Kid: keyID,
-	}
-	switch {
-	case kasID != "":
-		identifier.Identifier = &kasregistry.KasKeyIdentifier_KasId{
-			KasId: kasID,
+	var identifier *kasregistry.KasKeyIdentifier
+	if keyID != "" {
+		identifier = &kasregistry.KasKeyIdentifier{
+			Kid: keyID,
 		}
-	case kasName != "":
-		identifier.Identifier = &kasregistry.KasKeyIdentifier_Name{
-			Name: kasName,
+		switch {
+		case kasID != "":
+			identifier.Identifier = &kasregistry.KasKeyIdentifier_KasId{
+				KasId: kasID,
+			}
+		case kasName != "":
+			identifier.Identifier = &kasregistry.KasKeyIdentifier_Name{
+				Name: kasName,
+			}
+		case kasURI != "":
+			identifier.Identifier = &kasregistry.KasKeyIdentifier_Uri{
+				Uri: kasURI,
+			}
+		default:
+			return nil, errors.New("at least one of 'kasId', 'kasName', or 'kasUri' must be provided with 'keyId'")
 		}
-	case kasURI != "":
-		identifier.Identifier = &kasregistry.KasKeyIdentifier_Uri{
-			Uri: kasURI,
-		}
-	default:
-		var err error
-		if keyID != "" {
-			err = errors.New("at least one of 'kasId', 'kasName', or 'kasUri' must be provided with 'keyId'")
-		}
-		return nil, err
 	}
 
 	return identifier, nil
