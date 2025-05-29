@@ -13,8 +13,8 @@ import (
 
 var (
 	forceReplaceMetadataLabels bool
-	values                     []string
-	valuesOrder                []string
+	attributeValues            []string
+	attributeValuesOrder       []string
 
 	policy_attributesCmd = man.Docs.GetCommand("policy/attributes")
 )
@@ -26,11 +26,11 @@ func policy_createAttribute(cmd *cobra.Command, args []string) {
 
 	name := c.Flags.GetRequiredString("name")
 	rule := c.Flags.GetRequiredString("rule")
-	values = c.Flags.GetStringSlice("value", values, cli.FlagsStringSliceOptions{})
+	attributeValues = c.Flags.GetStringSlice("value", attributeValues, cli.FlagsStringSliceOptions{})
 	namespace := c.Flags.GetRequiredString("namespace")
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
-	attr, err := h.CreateAttribute(cmd.Context(), name, rule, namespace, values, getMetadataMutable(metadataLabels))
+	attr, err := h.CreateAttribute(cmd.Context(), name, rule, namespace, attributeValues, getMetadataMutable(metadataLabels))
 	if err != nil {
 		cli.ExitWithError("Failed to create attribute", err)
 	}
@@ -233,7 +233,7 @@ func policy_unsafeUpdateAttribute(cmd *cobra.Command, args []string) {
 	id := c.Flags.GetRequiredID("id")
 	name := c.Flags.GetOptionalString("name")
 	rule := c.Flags.GetOptionalString("rule")
-	valuesOrder = c.Flags.GetStringSlice("values-order", valuesOrder, cli.FlagsStringSliceOptions{})
+	attributeValuesOrder = c.Flags.GetStringSlice("values-order", attributeValuesOrder, cli.FlagsStringSliceOptions{})
 
 	a, err := h.GetAttribute(ctx, id)
 	if err != nil {
@@ -245,7 +245,7 @@ func policy_unsafeUpdateAttribute(cmd *cobra.Command, args []string) {
 		cli.ConfirmTextInput(cli.ActionUpdateUnsafe, "attribute", cli.InputNameFQN, a.GetFqn())
 	}
 
-	if err := h.UnsafeUpdateAttribute(ctx, id, name, rule, valuesOrder); err != nil {
+	if err := h.UnsafeUpdateAttribute(ctx, id, name, rule, attributeValuesOrder); err != nil {
 		cli.ExitWithError(fmt.Sprintf("Failed to update attribute (%s)", id), err)
 	} else {
 		var (
@@ -371,7 +371,7 @@ func init() {
 		createDoc.GetDocFlag("rule").Description,
 	)
 	createDoc.Flags().StringSliceVarP(
-		&values,
+		&attributeValues,
 		createDoc.GetDocFlag("value").Name,
 		createDoc.GetDocFlag("value").Shorthand,
 		[]string{},
@@ -484,7 +484,7 @@ func init() {
 		unsafeUpdateCmd.GetDocFlag("rule").Description,
 	)
 	unsafeUpdateCmd.Flags().StringSliceVarP(
-		&valuesOrder,
+		&attributeValuesOrder,
 		unsafeUpdateCmd.GetDocFlag("values-order").Name,
 		unsafeUpdateCmd.GetDocFlag("values-order").Shorthand,
 		[]string{},
