@@ -31,7 +31,9 @@ func policy_getAttributeNamespace(cmd *cobra.Command, args []string) {
 
 	keyIds := make([]string, len(ns.GetKasKeys()))
 	for i, k := range ns.GetKasKeys() {
-		keyIds[i] = k.GetKey().GetId()
+		if k.GetKey() != nil && k.GetKey().GetId() != "" {
+			keyIds[i] = k.GetKey().GetId()
+		}
 	}
 
 	rows := [][]string{

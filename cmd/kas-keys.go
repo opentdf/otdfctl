@@ -12,7 +12,6 @@ import (
 	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/opentdf/platform/lib/ocrypto"
 	"github.com/opentdf/platform/protocol/go/policy"
-	"github.com/opentdf/platform/protocol/go/policy/kasregistry"
 	"github.com/spf13/cobra"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
@@ -35,7 +34,7 @@ const (
 	keyModePublicKeyOnly = "public_key"
 )
 
-var policyKasRegistryKeysCmd *cobra.Command
+var policyKasRegistryKeysCmd = man.Docs.GetCommand("policy/kas-registry/key")
 
 func wrapKey(key string, wrappingKey string) ([]byte, error) {
 	wrappingKeyBytes, err := ocrypto.Base64Decode([]byte(wrappingKey))
@@ -379,35 +378,6 @@ func policyCreateKasKey(cmd *cobra.Command, args []string) {
 	HandleSuccess(cmd, kasKey.GetKey().GetId(), t, kasKey)
 }
 
-func getKasKeyIdentifier(c *cli.Cli) *kasregistry.KasKeyIdentifier {
-	keyID := c.Flags.GetOptionalString("keyId")
-	kasID := c.Flags.GetOptionalString("kasId")
-	kasName := c.Flags.GetOptionalString("kasName")
-	kasURI := c.Flags.GetOptionalString("kasUri")
-	identifier := &kasregistry.KasKeyIdentifier{
-		Kid: keyID,
-	}
-
-	switch {
-	case kasID != "":
-		identifier.Identifier = &kasregistry.KasKeyIdentifier_KasId{
-			KasId: kasID,
-		}
-	case kasName != "":
-		identifier.Identifier = &kasregistry.KasKeyIdentifier_Name{
-			Name: kasName,
-		}
-	case kasURI != "":
-		identifier.Identifier = &kasregistry.KasKeyIdentifier_Uri{
-			Uri: kasURI,
-		}
-	default:
-		return nil
-	}
-
-	return identifier
-}
-
 func policyGetKasKey(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
@@ -415,7 +385,11 @@ func policyGetKasKey(cmd *cobra.Command, args []string) {
 
 	id := c.Flags.GetOptionalID("id")
 
-	kasKey, err := h.GetKasKey(c.Context(), id, getKasKeyIdentifier(c))
+	identifier, err := getKasKeyIdentifier(c)
+	if err != nil {
+		cli.ExitWithError("Invalid key identifier", err)
+	}
+	kasKey, err := h.GetKasKey(c.Context(), id, identifier)
 	if err != nil {
 		cli.ExitWithError("Failed to get kas key", err)
 	}
@@ -665,6 +639,7 @@ func init() {
 		getDoc.GetDocFlag("kasName").Description,
 	)
 	getDoc.MarkFlagsMutuallyExclusive("id", "keyId")
+	getDoc.MarkFlagsOneRequired("id", "keyId")
 	getDoc.MarkFlagsMutuallyExclusive("kasUri", "kasId", "kasName")
 
 	// Update Kas Key
@@ -710,8 +685,6 @@ func init() {
 	injectListPaginationFlags(listDoc)
 	listDoc.MarkFlagsMutuallyExclusive("kasId", "kasName", "kasUri")
 
-	doc := man.Docs.GetCommand("policy/kas-registry/key",
-		man.WithSubcommands(createDoc, getDoc, updateDoc, listDoc))
-	policyKasRegistryKeysCmd = &doc.Command
-	policyKasRegCmd.AddCommand(policyKasRegistryKeysCmd)
+	policyKasRegistryKeysCmd.AddSubcommands(createDoc, getDoc, updateDoc, listDoc)
+	policyKasRegCmd.AddCommand(&policyKasRegistryKeysCmd.Command)
 }
