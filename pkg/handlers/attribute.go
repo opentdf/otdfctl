@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/opentdf/platform/protocol/go/common"
 	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/opentdf/platform/protocol/go/policy/attributes"
@@ -32,10 +33,19 @@ func (e *CreateAttributeError) Error() string {
 	return "Error creating attribute"
 }
 
-func (h Handler) GetAttribute(ctx context.Context, id string) (*policy.Attribute, error) {
-	resp, err := h.sdk.Attributes.GetAttribute(ctx, &attributes.GetAttributeRequest{
-		Id: id,
-	})
+func (h Handler) GetAttribute(ctx context.Context, identifier string) (*policy.Attribute, error) {
+	req := &attributes.GetAttributeRequest{
+		Identifier: &attributes.GetAttributeRequest_AttributeId{
+			AttributeId: identifier,
+		},
+	}
+	if _, err := uuid.Parse(identifier); err != nil {
+		req.Identifier = &attributes.GetAttributeRequest_Fqn{
+			Fqn: identifier,
+		}
+	}
+
+	resp, err := h.sdk.Attributes.GetAttribute(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -149,6 +159,50 @@ func (h Handler) UnsafeUpdateAttribute(ctx context.Context, id, name, rule strin
 
 	_, err := h.sdk.Unsafe.UnsafeUpdateAttribute(ctx, req)
 	return err
+}
+
+func (h Handler) AssignKeyToAttribute(ctx context.Context, attr, keyID string) (*attributes.AttributeKey, error) {
+	attrKey := &attributes.AttributeKey{
+		KeyId:       keyID,
+		AttributeId: attr,
+	}
+	if _, err := uuid.Parse(attr); err != nil {
+		attr, err := h.GetAttribute(ctx, attr)
+		if err != nil {
+			return nil, err
+		}
+		attrKey.AttributeId = attr.GetId()
+	}
+	resp, err := h.sdk.Attributes.AssignPublicKeyToAttribute(ctx, &attributes.AssignPublicKeyToAttributeRequest{
+		AttributeKey: attrKey,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.GetAttributeKey(), nil
+}
+
+func (h Handler) RemoveKeyFromAttribute(ctx context.Context, attr, keyID string) error {
+	attrKey := &attributes.AttributeKey{
+		KeyId:       keyID,
+		AttributeId: attr,
+	}
+	if _, err := uuid.Parse(attr); err != nil {
+		attr, err := h.GetAttribute(ctx, attr)
+		if err != nil {
+			return err
+		}
+		attrKey.AttributeId = attr.GetId()
+	}
+	_, err := h.sdk.Attributes.RemovePublicKeyFromAttribute(ctx, &attributes.RemovePublicKeyFromAttributeRequest{
+		AttributeKey: attrKey,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func GetAttributeFqn(namespace string, name string) string {

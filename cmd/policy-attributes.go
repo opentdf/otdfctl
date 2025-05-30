@@ -13,8 +13,8 @@ import (
 
 var (
 	forceReplaceMetadataLabels bool
-	values                     []string
-	valuesOrder                []string
+	attributeValues            []string
+	attributeValuesOrder       []string
 
 	policy_attributesCmd = man.Docs.GetCommand("policy/attributes")
 )
@@ -26,11 +26,11 @@ func policy_createAttribute(cmd *cobra.Command, args []string) {
 
 	name := c.Flags.GetRequiredString("name")
 	rule := c.Flags.GetRequiredString("rule")
-	values = c.Flags.GetStringSlice("value", values, cli.FlagsStringSliceOptions{})
+	attributeValues = c.Flags.GetStringSlice("value", attributeValues, cli.FlagsStringSliceOptions{})
 	namespace := c.Flags.GetRequiredString("namespace")
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
-	attr, err := h.CreateAttribute(cmd.Context(), name, rule, namespace, values, getMetadataMutable(metadataLabels))
+	attr, err := h.CreateAttribute(cmd.Context(), name, rule, namespace, attributeValues, getMetadataMutable(metadataLabels))
 	if err != nil {
 		cli.ExitWithError("Failed to create attribute", err)
 	}
@@ -77,6 +77,7 @@ func policy_getAttribute(cmd *cobra.Command, args []string) {
 		{"Rule", a.Rule},
 		{"Values", cli.CommaSeparated(a.Values)},
 		{"Namespace", a.Namespace},
+		{"Associated Keys", cli.CommaSeparated(a.KeyIds)},
 	}
 	if mdRows := getMetadataRows(attr.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
@@ -232,7 +233,7 @@ func policy_unsafeUpdateAttribute(cmd *cobra.Command, args []string) {
 	id := c.Flags.GetRequiredID("id")
 	name := c.Flags.GetOptionalString("name")
 	rule := c.Flags.GetOptionalString("rule")
-	valuesOrder = c.Flags.GetStringSlice("values-order", valuesOrder, cli.FlagsStringSliceOptions{})
+	attributeValuesOrder = c.Flags.GetStringSlice("values-order", attributeValuesOrder, cli.FlagsStringSliceOptions{})
 
 	a, err := h.GetAttribute(ctx, id)
 	if err != nil {
@@ -244,7 +245,7 @@ func policy_unsafeUpdateAttribute(cmd *cobra.Command, args []string) {
 		cli.ConfirmTextInput(cli.ActionUpdateUnsafe, "attribute", cli.InputNameFQN, a.GetFqn())
 	}
 
-	if err := h.UnsafeUpdateAttribute(ctx, id, name, rule, valuesOrder); err != nil {
+	if err := h.UnsafeUpdateAttribute(ctx, id, name, rule, attributeValuesOrder); err != nil {
 		cli.ExitWithError(fmt.Sprintf("Failed to update attribute (%s)", id), err)
 	} else {
 		var (
@@ -304,6 +305,54 @@ func policy_unsafeDeleteAttribute(cmd *cobra.Command, args []string) {
 	}
 }
 
+func policyAssignKeyToAttribute(cmd *cobra.Command, args []string) {
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
+	defer h.Close()
+
+	attribute := c.Flags.GetRequiredString("attribute")
+	keyID := c.Flags.GetRequiredID("keyId")
+
+	// Get the attribute to show meaningful information in case of error
+	attrKey, err := h.AssignKeyToAttribute(c.Context(), attribute, keyID)
+	if err != nil {
+		errMsg := fmt.Sprintf("Failed to assign key: (%s) to attribue: (%s)", keyID, attribute)
+		cli.ExitWithError(errMsg, err)
+	}
+
+	// Prepare and display the result
+	rows := [][]string{
+		{"Attribute ID", attrKey.GetAttributeId()},
+		{"Key ID", attrKey.GetKeyId()},
+	}
+	t := cli.NewTabular(rows...)
+	HandleSuccess(cmd, attribute, t, attrKey)
+}
+
+func policyRemoveKeyFromAttribute(cmd *cobra.Command, args []string) {
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
+	defer h.Close()
+
+	attribute := c.Flags.GetRequiredString("attribute")
+	keyID := c.Flags.GetRequiredID("keyId")
+
+	err := h.RemoveKeyFromAttribute(c.Context(), attribute, keyID)
+	if err != nil {
+		errMsg := fmt.Sprintf("Failed to remove key (%s) from attribute (%s)", keyID, attribute)
+		cli.ExitWithError(errMsg, err)
+	}
+
+	// Prepare and display the result
+	rows := [][]string{
+		{"Removed", "true"},
+		{"Attribute", attribute},
+		{"Key ID", keyID},
+	}
+	t := cli.NewTabular(rows...)
+	HandleSuccess(cmd, attribute, t, nil)
+}
+
 func init() {
 	// Create an attribute
 	createDoc := man.Docs.GetCommand("policy/attributes/create",
@@ -322,7 +371,7 @@ func init() {
 		createDoc.GetDocFlag("rule").Description,
 	)
 	createDoc.Flags().StringSliceVarP(
-		&values,
+		&attributeValues,
 		createDoc.GetDocFlag("value").Name,
 		createDoc.GetDocFlag("value").Shorthand,
 		[]string{},
@@ -435,14 +484,50 @@ func init() {
 		unsafeUpdateCmd.GetDocFlag("rule").Description,
 	)
 	unsafeUpdateCmd.Flags().StringSliceVarP(
-		&valuesOrder,
+		&attributeValuesOrder,
 		unsafeUpdateCmd.GetDocFlag("values-order").Name,
 		unsafeUpdateCmd.GetDocFlag("values-order").Shorthand,
 		[]string{},
 		unsafeUpdateCmd.GetDocFlag("values-order").Description,
 	)
 
+	keyCmd := man.Docs.GetCommand("policy/attributes/key")
+
+	// Assign KAS key to attribute
+	assignKasKeyCmd := man.Docs.GetCommand("policy/attributes/key/assign",
+		man.WithRun(policyAssignKeyToAttribute),
+	)
+	assignKasKeyCmd.Flags().StringP(
+		assignKasKeyCmd.GetDocFlag("attribute").Name,
+		assignKasKeyCmd.GetDocFlag("attribute").Shorthand,
+		assignKasKeyCmd.GetDocFlag("attribute").Default,
+		assignKasKeyCmd.GetDocFlag("attribute").Description,
+	)
+	assignKasKeyCmd.Flags().StringP(
+		assignKasKeyCmd.GetDocFlag("keyId").Name,
+		assignKasKeyCmd.GetDocFlag("keyId").Shorthand,
+		assignKasKeyCmd.GetDocFlag("keyId").Default,
+		assignKasKeyCmd.GetDocFlag("keyId").Description,
+	)
+
+	removeKasKeyCmd := man.Docs.GetCommand("policy/attributes/key/remove",
+		man.WithRun(policyRemoveKeyFromAttribute),
+	)
+	removeKasKeyCmd.Flags().StringP(
+		removeKasKeyCmd.GetDocFlag("attribute").Name,
+		removeKasKeyCmd.GetDocFlag("attribute").Shorthand,
+		removeKasKeyCmd.GetDocFlag("attribute").Default,
+		removeKasKeyCmd.GetDocFlag("attribute").Description,
+	)
+	removeKasKeyCmd.Flags().StringP(
+		removeKasKeyCmd.GetDocFlag("keyId").Name,
+		removeKasKeyCmd.GetDocFlag("keyId").Shorthand,
+		removeKasKeyCmd.GetDocFlag("keyId").Default,
+		removeKasKeyCmd.GetDocFlag("keyId").Description,
+	)
+
+	keyCmd.AddSubcommands(assignKasKeyCmd, removeKasKeyCmd)
 	unsafeCmd.AddSubcommands(reactivateCmd, deleteCmd, unsafeUpdateCmd)
-	policy_attributesCmd.AddSubcommands(createDoc, getDoc, listDoc, updateDoc, deactivateDoc, unsafeCmd)
+	policy_attributesCmd.AddSubcommands(createDoc, getDoc, listDoc, updateDoc, deactivateDoc, unsafeCmd, keyCmd)
 	policyCmd.AddCommand(&policy_attributesCmd.Command)
 }

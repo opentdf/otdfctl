@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/opentdf/platform/protocol/go/common"
 	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/opentdf/platform/protocol/go/policy/attributes"
@@ -38,10 +39,18 @@ func (h *Handler) CreateAttributeValue(ctx context.Context, attributeID string, 
 	return h.GetAttributeValue(ctx, resp.GetValue().GetId())
 }
 
-func (h *Handler) GetAttributeValue(ctx context.Context, id string) (*policy.Value, error) {
-	resp, err := h.sdk.Attributes.GetAttributeValue(ctx, &attributes.GetAttributeValueRequest{
-		Id: id,
-	})
+func (h *Handler) GetAttributeValue(ctx context.Context, identifier string) (*policy.Value, error) {
+	req := &attributes.GetAttributeValueRequest{
+		Identifier: &attributes.GetAttributeValueRequest_ValueId{
+			ValueId: identifier,
+		},
+	}
+	if _, err := uuid.Parse(identifier); err != nil {
+		req.Identifier = &attributes.GetAttributeValueRequest_Fqn{
+			Fqn: identifier,
+		}
+	}
+	resp, err := h.sdk.Attributes.GetAttributeValue(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -102,5 +111,51 @@ func (h Handler) UnsafeUpdateAttributeValue(ctx context.Context, id, value strin
 	}
 
 	_, err := h.sdk.Unsafe.UnsafeUpdateAttributeValue(ctx, req)
+	return err
+}
+
+// AssignKeyToAttributeValue assigns a KAS key to an attribute value
+func (h *Handler) AssignKeyToAttributeValue(ctx context.Context, value, keyID string) (*attributes.ValueKey, error) {
+	valueKey := &attributes.ValueKey{
+		KeyId:   keyID,
+		ValueId: value,
+	}
+
+	if _, err := uuid.Parse(value); err != nil {
+		attrValue, err := h.GetAttributeValue(ctx, value)
+		if err != nil {
+			return nil, err
+		}
+		valueKey.ValueId = attrValue.GetId()
+	}
+
+	resp, err := h.sdk.Attributes.AssignPublicKeyToValue(ctx, &attributes.AssignPublicKeyToValueRequest{
+		ValueKey: valueKey,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.GetValueKey(), nil
+}
+
+// RemoveKeyFromAttributeValue removes a KAS key from an attribute value
+func (h *Handler) RemoveKeyFromAttributeValue(ctx context.Context, value, keyID string) error {
+	valueKey := &attributes.ValueKey{
+		KeyId:   keyID,
+		ValueId: value,
+	}
+
+	if _, err := uuid.Parse(value); err != nil {
+		attrValue, err := h.GetAttributeValue(ctx, value)
+		if err != nil {
+			return err
+		}
+		valueKey.ValueId = attrValue.GetId()
+	}
+
+	_, err := h.sdk.Attributes.RemovePublicKeyFromValue(ctx, &attributes.RemovePublicKeyFromValueRequest{
+		ValueKey: valueKey,
+	})
 	return err
 }

@@ -28,9 +28,18 @@ func policy_getAttributeNamespace(cmd *cobra.Command, args []string) {
 		errMsg := fmt.Sprintf("Failed to get namespace (%s)", id)
 		cli.ExitWithError(errMsg, err)
 	}
+
+	keyIds := make([]string, len(ns.GetKasKeys()))
+	for i, k := range ns.GetKasKeys() {
+		if k.GetKey() != nil && k.GetKey().GetId() != "" {
+			keyIds[i] = k.GetKey().GetId()
+		}
+	}
+
 	rows := [][]string{
 		{"Id", ns.GetId()},
 		{"Name", ns.GetName()},
+		{"Associated Keys", cli.CommaSeparated(keyIds)},
 	}
 	if mdRows := getMetadataRows(ns.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
@@ -270,6 +279,54 @@ func policy_unsafeUpdateAttributeNamespace(cmd *cobra.Command, args []string) {
 	HandleSuccess(cmd, ns.GetId(), t, ns)
 }
 
+func policyAssignKeyToNamespace(cmd *cobra.Command, args []string) {
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
+	defer h.Close()
+
+	namespace := c.Flags.GetRequiredString("namespace")
+	keyID := c.Flags.GetRequiredID("keyId")
+
+	// Get the attribute namespace to show meaningful information in case of error
+	attrKey, err := h.AssignKeyToAttributeNamespace(c.Context(), namespace, keyID)
+	if err != nil {
+		errMsg := fmt.Sprintf("Failed to assign key: (%s) to attribute namespace: (%s)", keyID, namespace)
+		cli.ExitWithError(errMsg, err)
+	}
+
+	// Prepare and display the result
+	rows := [][]string{
+		{"Namespace ID", attrKey.GetNamespaceId()},
+		{"Key ID", attrKey.GetKeyId()},
+	}
+	t := cli.NewTabular(rows...)
+	HandleSuccess(cmd, namespace, t, attrKey)
+}
+
+func policyRemoveKeyFromNamespace(cmd *cobra.Command, args []string) {
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
+	defer h.Close()
+
+	namespace := c.Flags.GetRequiredString("namespace")
+	keyID := c.Flags.GetRequiredID("keyId")
+
+	err := h.RemoveKeyFromAttributeNamespace(c.Context(), namespace, keyID)
+	if err != nil {
+		errMsg := fmt.Sprintf("Failed to remove key (%s) from attribute namespace (%s)", keyID, namespace)
+		cli.ExitWithError(errMsg, err)
+	}
+
+	// Prepare and display the result
+	rows := [][]string{
+		{"Removed", "true"},
+		{"Namespace", namespace},
+		{"Key ID", keyID},
+	}
+	t := cli.NewTabular(rows...)
+	HandleSuccess(cmd, namespace, t, nil)
+}
+
 func init() {
 	getCmd := man.Docs.GetCommand("policy/attributes/namespaces/get",
 		man.WithRun(policy_getAttributeNamespace),
@@ -370,8 +427,46 @@ func init() {
 		unsafeUpdateCmd.GetDocFlag("name").Default,
 		unsafeUpdateCmd.GetDocFlag("name").Description,
 	)
+
+	keyCmd := man.Docs.GetCommand("policy/attributes/namespaces/key")
+
+	// Assign KAS key to attribute namespace
+	assignKasKeyCmd := man.Docs.GetCommand("policy/attributes/namespaces/key/assign",
+		man.WithRun(policyAssignKeyToNamespace),
+	)
+	assignKasKeyCmd.Flags().StringP(
+		assignKasKeyCmd.GetDocFlag("namespace").Name,
+		assignKasKeyCmd.GetDocFlag("namespace").Shorthand,
+		assignKasKeyCmd.GetDocFlag("namespace").Default,
+		assignKasKeyCmd.GetDocFlag("namespace").Description,
+	)
+	assignKasKeyCmd.Flags().StringP(
+		assignKasKeyCmd.GetDocFlag("keyId").Name,
+		assignKasKeyCmd.GetDocFlag("keyId").Shorthand,
+		assignKasKeyCmd.GetDocFlag("keyId").Default,
+		assignKasKeyCmd.GetDocFlag("keyId").Description,
+	)
+
+	// Remove KAS key from attribute namespace
+	removeKasKeyCmd := man.Docs.GetCommand("policy/attributes/namespaces/key/remove",
+		man.WithRun(policyRemoveKeyFromNamespace),
+	)
+	removeKasKeyCmd.Flags().StringP(
+		removeKasKeyCmd.GetDocFlag("namespace").Name,
+		removeKasKeyCmd.GetDocFlag("namespace").Shorthand,
+		removeKasKeyCmd.GetDocFlag("namespace").Default,
+		removeKasKeyCmd.GetDocFlag("namespace").Description,
+	)
+	removeKasKeyCmd.Flags().StringP(
+		removeKasKeyCmd.GetDocFlag("keyId").Name,
+		removeKasKeyCmd.GetDocFlag("keyId").Shorthand,
+		removeKasKeyCmd.GetDocFlag("keyId").Default,
+		removeKasKeyCmd.GetDocFlag("keyId").Description,
+	)
+
+	keyCmd.AddSubcommands(assignKasKeyCmd, removeKasKeyCmd)
 	unsafeCmd.AddSubcommands(deleteCmd, reactivateCmd, unsafeUpdateCmd)
 
-	policy_attributeNamespacesCmd.AddSubcommands(getCmd, listCmd, createDoc, updateCmd, deactivateCmd, unsafeCmd)
+	policy_attributeNamespacesCmd.AddSubcommands(getCmd, listCmd, createDoc, updateCmd, deactivateCmd, unsafeCmd, keyCmd)
 	policy_attributesCmd.AddCommand(&policy_attributeNamespacesCmd.Command)
 }
