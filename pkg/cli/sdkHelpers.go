@@ -2,6 +2,7 @@ package cli
 
 import (
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/opentdf/otdfctl/pkg/handlers"
@@ -17,6 +18,7 @@ type SimpleAttribute struct {
 	Namespace string
 	Active    string
 	Metadata  map[string]string
+	KeyIds    []string
 }
 
 type SimpleAttributeValue struct {
@@ -51,6 +53,12 @@ func GetSimpleAttribute(a *policy.Attribute) SimpleAttribute {
 	for _, v := range a.GetValues() {
 		values = append(values, v.GetValue())
 	}
+	keyIds := make([]string, len(a.GetKasKeys()))
+	for i, k := range a.GetKasKeys() {
+		if k.GetKey() != nil && k.GetKey().GetId() != "" {
+			keyIds[i] = k.GetKey().GetId()
+		}
+	}
 
 	return SimpleAttribute{
 		Id:        a.GetId(),
@@ -60,6 +68,7 @@ func GetSimpleAttribute(a *policy.Attribute) SimpleAttribute {
 		Namespace: a.GetNamespace().GetName(),
 		Active:    strconv.FormatBool(a.GetActive().GetValue()),
 		Metadata:  ConstructMetadata(a.GetMetadata()),
+		KeyIds:    keyIds,
 	}
 }
 
@@ -70,4 +79,31 @@ func GetSimpleAttributeValue(v *policy.Value) SimpleAttributeValue {
 		Active:   strconv.FormatBool(v.GetActive().GetValue()),
 		Metadata: ConstructMetadata(v.GetMetadata()),
 	}
+}
+
+func GetSimpleRegisteredResourceValues(v []*policy.RegisteredResourceValue) []string {
+	values := make([]string, len(v))
+	for i, val := range v {
+		values[i] = val.GetValue()
+	}
+	return values
+}
+
+func GetSimpleRegisteredResourceActionAttributeValues(v []*policy.RegisteredResourceValue_ActionAttributeValue) []string {
+	values := make([]string, len(v))
+	sb := new(strings.Builder)
+
+	for i, val := range v {
+		action := val.GetAction()
+		attrVal := val.GetAttributeValue()
+
+		sb.WriteString(action.GetName())
+		sb.WriteString(" -> ")
+		sb.WriteString(attrVal.GetFqn())
+
+		values[i] = sb.String()
+		sb.Reset()
+	}
+
+	return values
 }
