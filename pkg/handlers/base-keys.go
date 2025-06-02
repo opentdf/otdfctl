@@ -20,7 +20,7 @@ func (h Handler) GetBaseKey(ctx context.Context) (*kasregistry.SimpleKasKey, err
 func (h Handler) SetBaseKey(ctx context.Context, id string, key *kasregistry.KasKeyIdentifier) (*kasregistry.SetBaseKeyResponse, error) {
 	req := kasregistry.SetBaseKeyRequest{}
 
-	if id != "" {
+	if id != "" && key == nil {
 		req.ActiveKey = &kasregistry.SetBaseKeyRequest_Id{
 			Id: id,
 		}

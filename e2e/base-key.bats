@@ -119,7 +119,7 @@ teardown_file() {
   assert_equal "$(echo "$output" | jq -r .public_key.algorithm)" "rsa:2048"
 
   SECOND_KEY_ID_FOR_BASE_TEST="second-key-for-base-$(date +%s)"
-  SECOND_KAS_KEY_SYSTEM_ID=$(./otdfctl $HOST $WITH_CREDS policy kas-registry key create --kasId "${KAS_REGISTRY_ID_BASE_KEY_TEST}" --keyId "${SECOND_KEY_ID_FOR_BASE_TEST}" --alg ec:secp256r1 --mode local --wrappingKey "${WRAPPING_KEY}" --wrappingKeyId "test-key" --json | jq -r '.key.id')
+  SECOND_KAS_KEY_SYSTEM_ID=$(./otdfctl $HOST $WITH_CREDS policy kas-registry key create --kas "${KAS_REGISTRY_ID_BASE_KEY_TEST}" --key-id "${SECOND_KEY_ID_FOR_BASE_TEST}" --algorithm ec:secp256r1 --mode local --wrapping-key "${WRAPPING_KEY}" --wrapping-key-id "test-key" --json | jq -r '.key.id')
 
   run_otdfctl_base_key set --key "${SECOND_KAS_KEY_SYSTEM_ID}" --json
   assert_success
