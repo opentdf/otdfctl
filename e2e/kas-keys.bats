@@ -68,9 +68,9 @@ format_kas_name_as_uri() {
   assert_success
   assert_equal "$(echo "$output" | jq -r .kas_id)" "${KAS_REGISTRY_ID}"
   assert_equal "$(echo "$output" | jq -r .key.key_id)" "${KEY_ID}"
-  assert_equal "$(echo "$output" | jq -r .key.key_algorithmorithm)" "1" # rsa:2048
-  assert_equal "$(echo "$output" | jq -r .key.key_mode)" "1"            # local
-  assert_equal "$(echo "$output" | jq -r .key.key_status)" "1"          # active (assuming default)
+  assert_equal "$(echo "$output" | jq -r .key.key_algorithm)" "1" # rsa:2048
+  assert_equal "$(echo "$output" | jq -r .key.key_mode)" "1"      # local
+  assert_equal "$(echo "$output" | jq -r .key.key_status)" "1"    # active (assuming default)
   # Assert public_key_ctx.pem is present and not empty
   assert_not_equal "$(echo "$output" | jq -r .key.public_key_ctx.pem)" "null"
   assert_not_equal "$(echo "$output" | jq -r .key.public_key_ctx.pem)" ""
@@ -91,9 +91,9 @@ format_kas_name_as_uri() {
   assert_success
   assert_equal "$(echo "$output" | jq -r .kas_id)" "${KAS_REGISTRY_ID}"
   assert_equal "$(echo "$output" | jq -r .key.key_id)" "${KEY_ID}"
-  assert_equal "$(echo "$output" | jq -r .key.key_algorithmorithm)" "3" # ec:secp256r1
-  assert_equal "$(echo "$output" | jq -r .key.key_mode)" "1"            # local
-  assert_equal "$(echo "$output" | jq -r .key.key_status)" "1"          # active
+  assert_equal "$(echo "$output" | jq -r .key.key_algorithm)" "3" # ec:secp256r1
+  assert_equal "$(echo "$output" | jq -r .key.key_mode)" "1"      # local
+  assert_equal "$(echo "$output" | jq -r .key.key_status)" "1"    # active
   assert_not_equal "$(echo "$output" | jq -r .key.public_key_ctx.pem)" "null"
   assert_not_equal "$(echo "$output" | jq -r .key.public_key_ctx.pem)" ""
   assert_equal "$(echo "$output" | jq -r .key.private_key_ctx.key_id)" "wrapping-key-1"
@@ -109,9 +109,9 @@ format_kas_name_as_uri() {
   assert_success
   assert_equal "$(echo "$output" | jq -r .kas_id)" "${KAS_REGISTRY_ID}"
   assert_equal "$(echo "$output" | jq -r .key.key_id)" "${KEY_ID}"
-  assert_equal "$(echo "$output" | jq -r .key.key_algorithmorithm)" "1" # rsa:2048
-  assert_equal "$(echo "$output" | jq -r .key.key_mode)" "4"            # public_key
-  assert_equal "$(echo "$output" | jq -r .key.key_status)" "1"          # active
+  assert_equal "$(echo "$output" | jq -r .key.key_algorithm)" "1" # rsa:2048
+  assert_equal "$(echo "$output" | jq -r .key.key_mode)" "4"      # public_key
+  assert_equal "$(echo "$output" | jq -r .key.key_status)" "1"    # active
   assert_equal "$(echo "$output" | jq -r .key.public_key_ctx.pem)" "${PEM_B64}"
   # Assert private_key_ctx is null or not present for public_key mode
   assert_equal "$(echo "$output" | jq -r .key.private_key_ctx)" "null"
@@ -125,9 +125,9 @@ format_kas_name_as_uri() {
   assert_success
   assert_equal "$(echo "$output" | jq -r .kas_id)" "${KAS_REGISTRY_ID}"
   assert_equal "$(echo "$output" | jq -r .key.key_id)" "${KEY_ID}"
-  assert_equal "$(echo "$output" | jq -r .key.key_algorithmorithm)" "1" # rsa:2048
-  assert_equal "$(echo "$output" | jq -r .key.key_mode)" "3"            # remote
-  assert_equal "$(echo "$output" | jq -r .key.key_status)" "1"          # active
+  assert_equal "$(echo "$output" | jq -r .key.key_algorithm)" "1" # rsa:2048
+  assert_equal "$(echo "$output" | jq -r .key.key_mode)" "3"      # remote
+  assert_equal "$(echo "$output" | jq -r .key.key_status)" "1"    # active
   assert_equal "$(echo "$output" | jq -r .key.public_key_ctx.pem)" "${PEM_B64}"
   # Assert private_key_ctx is not what it is for local mode, but check its key_id as per previous logic
   # Based on kas-keys.go, remote mode sets privateKeyCtx.key-id = wrapping-key-id
@@ -144,9 +144,9 @@ format_kas_name_as_uri() {
   assert_success
   assert_equal "$(echo "$output" | jq -r .kas_id)" "${KAS_REGISTRY_ID}"
   assert_equal "$(echo "$output" | jq -r .key.key_id)" "${KEY_ID}"
-  assert_equal "$(echo "$output" | jq -r .key.key_algorithmorithm)" "1" # rsa:2048
-  assert_equal "$(echo "$output" | jq -r .key.key_mode)" "2"            # public_key
-  assert_equal "$(echo "$output" | jq -r .key.key_status)" "1"          # active
+  assert_equal "$(echo "$output" | jq -r .key.key_algorithm)" "1" # rsa:2048
+  assert_equal "$(echo "$output" | jq -r .key.key_mode)" "2"      # public_key
+  assert_equal "$(echo "$output" | jq -r .key.key_status)" "1"    # active
   assert_equal "$(echo "$output" | jq -r .key.public_key_ctx.pem)" "${PEM_B64}"
   assert_equal "$(echo "$output" | jq -r .key.private_key_ctx.wrapped_key)" "${PEM_B64}"
   assert_equal "$(echo "$output" | jq -r .key.private_key_ctx.key_id)" "${WRAPPING_KEY_ID}"
@@ -160,9 +160,9 @@ format_kas_name_as_uri() {
   assert_success
   assert_equal "$(echo "$output" | jq -r .kas_id)" "${KAS_REGISTRY_ID}"
   assert_equal "$(echo "$output" | jq -r .key.key_id)" "${KEY_ID}"
-  assert_equal "$(echo "$output" | jq -r .key.key_algorithmorithm)" "1" # rsa:2048
-  assert_equal "$(echo "$output" | jq -r .key.key_mode)" "4"            # public_key
-  assert_equal "$(echo "$output" | jq -r .key.key_status)" "1"          # active
+  assert_equal "$(echo "$output" | jq -r .key.key_algorithm)" "1" # rsa:2048
+  assert_equal "$(echo "$output" | jq -r .key.key_mode)" "4"      # public_key
+  assert_equal "$(echo "$output" | jq -r .key.key_status)" "1"    # active
   assert_equal "$(echo "$output" | jq -r .key.public_key_ctx.pem)" "${PEM_B64}"
   assert_equal "$(echo "$output" | jq -r .key.private_key_ctx)" "null"
   assert_equal "$(echo "$output" | jq -r '.key.metadata.labels."env"')" "dev"
@@ -276,9 +276,9 @@ format_kas_name_as_uri() {
   assert_success
   assert_equal "$(echo "$output" | jq -r .kas_id)" "${KAS_REGISTRY_ID}"
   assert_equal "$(echo "$output" | jq -r .key.key_id)" "${KEY_ID}"
-  assert_equal "$(echo "$output" | jq -r .key.key_algorithmorithm)" "1" # rsa:2048
-  assert_equal "$(echo "$output" | jq -r .key.key_mode)" "4"            # public_key
-  assert_equal "$(echo "$output" | jq -r .key.key_status)" "1"          # active
+  assert_equal "$(echo "$output" | jq -r .key.key_algorithm)" "1" # rsa:2048
+  assert_equal "$(echo "$output" | jq -r .key.key_mode)" "4"      # public_key
+  assert_equal "$(echo "$output" | jq -r .key.key_status)" "1"    # active
   assert_equal "$(echo "$output" | jq -r .key.public_key_ctx.pem)" "${PEM_B64}"
   assert_equal "$(echo "$output" | jq -r .key.private_key_ctx)" "null"
   assert_not_equal "$(echo "$output" | jq -r .key.metadata.created_at)" "null"
@@ -291,9 +291,9 @@ format_kas_name_as_uri() {
   assert_success
   assert_equal "$(echo "$output" | jq -r .kas_id)" "${KAS_REGISTRY_ID}"
   assert_equal "$(echo "$output" | jq -r .key.key_id)" "${KEY_ID}"
-  assert_equal "$(echo "$output" | jq -r .key.key_algorithmorithm)" "1" # rsa:2048
-  assert_equal "$(echo "$output" | jq -r .key.key_mode)" "4"            # public_key
-  assert_equal "$(echo "$output" | jq -r .key.key_status)" "1"          # active
+  assert_equal "$(echo "$output" | jq -r .key.key_algorithm)" "1" # rsa:2048
+  assert_equal "$(echo "$output" | jq -r .key.key_mode)" "4"      # public_key
+  assert_equal "$(echo "$output" | jq -r .key.key_status)" "1"    # active
   assert_equal "$(echo "$output" | jq -r .key.public_key_ctx.pem)" "${PEM_B64}"
   assert_equal "$(echo "$output" | jq -r .key.private_key_ctx)" "null"
   assert_not_equal "$(echo "$output" | jq -r .key.metadata.created_at)" "null"
@@ -332,9 +332,9 @@ format_kas_name_as_uri() {
   assert_equal "$(echo "$output" | jq -r .kas_id)" "${KAS_REGISTRY_ID}"
   assert_equal "$(echo "$output" | jq -r .key.id)" "${CREATED_KEY_SYSTEM_ID}"
   assert_equal "$(echo "$output" | jq -r .key.key_id)" "${KEY_ID_GET}"
-  assert_equal "$(echo "$output" | jq -r .key.key_algorithmorithm)" "1" # rsa:2048
-  assert_equal "$(echo "$output" | jq -r .key.key_mode)" "4"            # public_key
-  assert_equal "$(echo "$output" | jq -r .key.key_status)" "1"          # active
+  assert_equal "$(echo "$output" | jq -r .key.key_algorithm)" "1" # rsa:2048
+  assert_equal "$(echo "$output" | jq -r .key.key_mode)" "4"      # public_key
+  assert_equal "$(echo "$output" | jq -r .key.key_status)" "1"    # active
   assert_equal "$(echo "$output" | jq -r .key.public_key_ctx.pem)" "${PEM_B64}"
   assert_equal "$(echo "$output" | jq -r .key.private_key_ctx)" "null"
   assert_not_equal "$(echo "$output" | jq -r .key.metadata.created_at)" "null"
@@ -353,9 +353,9 @@ format_kas_name_as_uri() {
   assert_equal "$(echo "$output" | jq -r .kas_id)" "${KAS_REGISTRY_ID}"
   assert_equal "$(echo "$output" | jq -r .key.id)" "${created_key_system_id_for_get}"
   assert_equal "$(echo "$output" | jq -r .key.key_id)" "${KEY_ID_GET_USER}"
-  assert_equal "$(echo "$output" | jq -r .key.key_algorithmorithm)" "3" # ec:secp256r1
-  assert_equal "$(echo "$output" | jq -r .key.key_mode)" "4"            # public_key
-  assert_equal "$(echo "$output" | jq -r .key.key_status)" "1"          # active
+  assert_equal "$(echo "$output" | jq -r .key.key_algorithm)" "3" # ec:secp256r1
+  assert_equal "$(echo "$output" | jq -r .key.key_mode)" "4"      # public_key
+  assert_equal "$(echo "$output" | jq -r .key.key_status)" "1"    # active
   assert_equal "$(echo "$output" | jq -r .key.public_key_ctx.pem)" "${PEM_B64}"
   assert_equal "$(echo "$output" | jq -r .key.private_key_ctx)" "null"
   assert_not_equal "$(echo "$output" | jq -r .key.metadata.created_at)" "null"
@@ -373,9 +373,9 @@ format_kas_name_as_uri() {
   assert_equal "$(echo "$output" | jq -r .kas_id)" "${KAS_REGISTRY_ID}"
   assert_equal "$(echo "$output" | jq -r .key.id)" "${created_key_system_id_for_kas_get}"
   assert_equal "$(echo "$output" | jq -r .key.key_id)" "${KEY_ID_GET_USER_kas}"
-  assert_equal "$(echo "$output" | jq -r .key.key_algorithmorithm)" "1" # rsa:2048
-  assert_equal "$(echo "$output" | jq -r .key.key_mode)" "4"            # public_key
-  assert_equal "$(echo "$output" | jq -r .key.key_status)" "1"          # active
+  assert_equal "$(echo "$output" | jq -r .key.key_algorithm)" "1" # rsa:2048
+  assert_equal "$(echo "$output" | jq -r .key.key_mode)" "4"      # public_key
+  assert_equal "$(echo "$output" | jq -r .key.key_status)" "1"    # active
   assert_equal "$(echo "$output" | jq -r .key.public_key_ctx.pem)" "${PEM_B64}"
   assert_equal "$(echo "$output" | jq -r .key.private_key_ctx)" "null"
   assert_not_equal "$(echo "$output" | jq -r .key.metadata.created_at)" "null"
@@ -393,9 +393,9 @@ format_kas_name_as_uri() {
   assert_equal "$(echo "$output" | jq -r .kas_id)" "${KAS_REGISTRY_ID}" # Should resolve to the same KAS
   assert_equal "$(echo "$output" | jq -r .key.id)" "${created_key_system_id_for_kas_get}"
   assert_equal "$(echo "$output" | jq -r .key.key_id)" "${KEY_ID_GET_USER_kas}"
-  assert_equal "$(echo "$output" | jq -r .key.key_algorithmorithm)" "3" # ec:secp256r1
-  assert_equal "$(echo "$output" | jq -r .key.key_mode)" "4"            # public_key
-  assert_equal "$(echo "$output" | jq -r .key.key_status)" "1"          # active
+  assert_equal "$(echo "$output" | jq -r .key.key_algorithm)" "3" # ec:secp256r1
+  assert_equal "$(echo "$output" | jq -r .key.key_mode)" "4"      # public_key
+  assert_equal "$(echo "$output" | jq -r .key.key_status)" "1"    # active
   assert_equal "$(echo "$output" | jq -r .key.public_key_ctx.pem)" "${PEM_B64}"
   assert_equal "$(echo "$output" | jq -r .key.private_key_ctx)" "null"
   assert_not_equal "$(echo "$output" | jq -r .key.metadata.created_at)" "null"
@@ -457,9 +457,9 @@ format_kas_name_as_uri() {
   assert_equal "$(echo "$output" | jq -r .kas_id)" "${KAS_REGISTRY_ID}"
   assert_equal "$(echo "$output" | jq -r .key.id)" "${UPDATE_KEY_LABEL_SYSTEM_ID}"
   assert_equal "$(echo "$output" | jq -r .key.key_id)" "${KEY_ID_UPDATE_LABEL}"
-  assert_equal "$(echo "$output" | jq -r .key.key_algorithmorithm)" "1" # rsa:2048
-  assert_equal "$(echo "$output" | jq -r .key.key_mode)" "4"            # public_key
-  assert_equal "$(echo "$output" | jq -r .key.key_status)" "1"          # active (should not change)
+  assert_equal "$(echo "$output" | jq -r .key.key_algorithm)" "1" # rsa:2048
+  assert_equal "$(echo "$output" | jq -r .key.key_mode)" "4"      # public_key
+  assert_equal "$(echo "$output" | jq -r .key.key_status)" "1"    # active (should not change)
   assert_equal "$(echo "$output" | jq -r .key.public_key_ctx.pem)" "${PEM_B64}"
   assert_equal "$(echo "$output" | jq -r .key.private_key_ctx)" "null"
   assert_equal "$(echo "$output" | jq -r '.key.metadata.labels."initial"')" "true"
@@ -485,9 +485,9 @@ format_kas_name_as_uri() {
   assert_equal "$(echo "$output" | jq -r .kas_id)" "${KAS_REGISTRY_ID}"
   assert_equal "$(echo "$output" | jq -r .key.id)" "${UPDATE_KEY_LABEL_REPLACE_SYSTEM_ID}"
   assert_equal "$(echo "$output" | jq -r .key.key_id)" "${KEY_ID_UPDATE_LABEL_REPLACE}"
-  assert_equal "$(echo "$output" | jq -r .key.key_algorithmorithm)" "1" # rsa:2048
-  assert_equal "$(echo "$output" | jq -r .key.key_mode)" "4"            # public_key
-  assert_equal "$(echo "$output" | jq -r .key.key_status)" "1"          # active
+  assert_equal "$(echo "$output" | jq -r .key.key_algorithm)" "1" # rsa:2048
+  assert_equal "$(echo "$output" | jq -r .key.key_mode)" "4"      # public_key
+  assert_equal "$(echo "$output" | jq -r .key.key_status)" "1"    # active
   assert_equal "$(echo "$output" | jq -r '.key.metadata.labels."replaced"')" "true"
   assert_equal "$(echo "$output" | jq -r '.key.metadata.labels."initial" // "null"')" "null"
   assert_equal "$(echo "$output" | jq -r .key.metadata.created_at.seconds)" "${initial_created_at_replace_seconds}"
@@ -531,7 +531,7 @@ format_kas_name_as_uri() {
   # For key1:
   assert_equal "$(echo "$output" | jq -r --arg id "${key1_system_id}" '.[] | select(.key.id == $id) | .key.id')" "${key1_system_id}"
   assert_equal "$(echo "$output" | jq -r --arg id "${key1_system_id}" '.[] | select(.key.id == $id) | .key.key_id')" "${KEY_ID_LIST_1}"
-  assert_equal "$(echo "$output" | jq -r --arg id "${key1_system_id}" '.[] | select(.key.id == $id) | .key.key_algorithmorithm')" "1"
+  assert_equal "$(echo "$output" | jq -r --arg id "${key1_system_id}" '.[] | select(.key.id == $id) | .key.key_algorithm')" "1"
   assert_equal "$(echo "$output" | jq -r --arg id "${key1_system_id}" '.[] | select(.key.id == $id) | .key.key_mode')" "4"
   assert_equal "$(echo "$output" | jq -r --arg id "${key1_system_id}" '.[] | select(.key.id == $id) | .key.key_status')" "1"
   assert_equal "$(echo "$output" | jq -r --arg id "${key1_system_id}" '.[] | select(.key.id == $id) | .key.public_key_ctx.pem')" "${PEM_B64}"
@@ -542,7 +542,7 @@ format_kas_name_as_uri() {
   # For key2:
   assert_equal "$(echo "$output" | jq -r --arg id "${key2_system_id}" '.[] | select(.key.id == $id) | .key.id')" "${key2_system_id}"
   assert_equal "$(echo "$output" | jq -r --arg id "${key2_system_id}" '.[] | select(.key.id == $id) | .key.key_id')" "${KEY_ID_LIST_2}"
-  assert_equal "$(echo "$output" | jq -r --arg id "${key2_system_id}" '.[] | select(.key.id == $id) | .key.key_algorithmorithm')" "3"
+  assert_equal "$(echo "$output" | jq -r --arg id "${key2_system_id}" '.[] | select(.key.id == $id) | .key.key_algorithm')" "3"
   assert_equal "$(echo "$output" | jq -r --arg id "${key2_system_id}" '.[] | select(.key.id == $id) | .key.key_mode')" "4"
   assert_equal "$(echo "$output" | jq -r --arg id "${key2_system_id}" '.[] | select(.key.id == $id) | .key.key_status')" "1"
   assert_equal "$(echo "$output" | jq -r --arg id "${key2_system_id}" '.[] | select(.key.id == $id) | .key.public_key_ctx.pem')" "${PEM_B64}"
@@ -624,7 +624,7 @@ format_kas_name_as_uri() {
   # And our specific RSA key should be present
   assert_equal "$(echo "$output" | jq -r --arg id "${rsa_key_sys_id}" '.[] | select(.key.id == $id) | .key.id')" "${rsa_key_sys_id}"
   assert_equal "$(echo "$output" | jq -r --arg id "${rsa_key_sys_id}" '.[] | select(.key.id == $id) | .key.key_id')" "${KEY_ID_LIST_RSA}"
-  assert_equal "$(echo "$output" | jq -r --arg id "${rsa_key_sys_id}" '.[] | select(.key.id == $id) | .key.key_algorithmorithm')" "1"
+  assert_equal "$(echo "$output" | jq -r --arg id "${rsa_key_sys_id}" '.[] | select(.key.id == $id) | .key.key_algorithm')" "1"
   assert_equal "$(echo "$output" | jq -r --arg id "${rsa_key_sys_id}" '.[] | select(.key.id == $id) | .key.key_mode')" "4"
   assert_equal "$(echo "$output" | jq -r --arg id "${rsa_key_sys_id}" '.[] | select(.key.id == $id) | .key.key_status')" "1"
   assert_equal "$(echo "$output" | jq -r --arg id "${rsa_key_sys_id}" '.[] | select(.key.id == $id) | .key.public_key_ctx.pem')" "${PEM_B64}"
@@ -632,8 +632,8 @@ format_kas_name_as_uri() {
   assert_not_equal "$(echo "$output" | jq -r --arg id "${rsa_key_sys_id}" '.[] | select(.key.id == $id) | .key.metadata.created_at')" "null"
   assert_not_equal "$(echo "$output" | jq -r --arg id "${rsa_key_sys_id}" '.[] | select(.key.id == $id) | .key.metadata.updated_at')" "null"
 
-  # Check that all listed keys have key_algorithmorithm 1 (algorithmORITHM_RSA_2048)
-  local count_non_rsa=$(echo "$output" | jq '[.[] | select(.key.key_algorithmorithm != 1)] | length')
+  # Check that all listed keys have key_algorithm 1 (algorithmORITHM_RSA_2048)
+  local count_non_rsa=$(echo "$output" | jq '[.[] | select(.key.key_algorithm != 1)] | length')
   assert_equal "$count_non_rsa" "0"
 }
 
@@ -654,7 +654,7 @@ format_kas_name_as_uri() {
   assert_equal "$(echo "$output" | jq -r '.[0].kas_id')" "${KAS_ID_LIST}"
   assert_equal "$(echo "$output" | jq -r '.[0].key.id')" "${kas_filter_key_sys_id}"
   assert_equal "$(echo "$output" | jq -r '.[0].key.key_id')" "${KEY_ID_LIST_KAS_FILTER}"
-  assert_equal "$(echo "$output" | jq -r '.[0].key.key_algorithmorithm')" "1"
+  assert_equal "$(echo "$output" | jq -r '.[0].key.key_algorithm')" "1"
   assert_equal "$(echo "$output" | jq -r '.[0].key.key_mode')" "4"
   assert_equal "$(echo "$output" | jq -r '.[0].key.key_status')" "1"
   assert_equal "$(echo "$output" | jq -r '.[0].key.public_key_ctx.pem')" "${PEM_B64}"
@@ -687,7 +687,7 @@ format_kas_name_as_uri() {
   assert_equal "$(echo "$output" | jq -r '.[0].kas_id')" "${KAS_ID_LIST}"
   assert_equal "$(echo "$output" | jq -r '.[0].key.id')" "${kas_name_filter_key_sys_id}"
   assert_equal "$(echo "$output" | jq -r '.[0].key.key_id')" "${KEY_ID_LIST_KAS_NAME_FILTER}"
-  assert_equal "$(echo "$output" | jq -r '.[0].key.key_algorithmorithm')" "1"
+  assert_equal "$(echo "$output" | jq -r '.[0].key.key_algorithm')" "1"
   assert_equal "$(echo "$output" | jq -r '.[0].key.key_mode')" "4"
   assert_equal "$(echo "$output" | jq -r '.[0].key.key_status')" "1"
   assert_equal "$(echo "$output" | jq -r '.[0].key.public_key_ctx.pem')" "${PEM_B64}"
@@ -713,7 +713,7 @@ format_kas_name_as_uri() {
   assert_equal "$(echo "$output" | jq -r '.[0].kas_id')" "${KAS_ID_LIST}"
   assert_equal "$(echo "$output" | jq -r '.[0].key.id')" "${kas_uri_filter_key_sys_id}"
   assert_equal "$(echo "$output" | jq -r '.[0].key.key_id')" "${KEY_ID_LIST_KAS_URI_FILTER}"
-  assert_equal "$(echo "$output" | jq -r '.[0].key.key_algorithmorithm')" "1"
+  assert_equal "$(echo "$output" | jq -r '.[0].key.key_algorithm')" "1"
   assert_equal "$(echo "$output" | jq -r '.[0].key.key_mode')" "4"
   assert_equal "$(echo "$output" | jq -r '.[0].key.key_status')" "1"
   assert_equal "$(echo "$output" | jq -r '.[0].key.public_key_ctx.pem')" "${PEM_B64}"
