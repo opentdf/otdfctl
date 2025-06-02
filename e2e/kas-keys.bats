@@ -327,7 +327,7 @@ format_kas_name_as_uri() {
   assert_success
   CREATED_KEY_SYSTEM_ID=$(echo "$output" | jq -r .key.id)
 
-  run_otdfctl_key get --id "${CREATED_KEY_SYSTEM_ID}" --json
+  run_otdfctl_key get --key "${CREATED_KEY_SYSTEM_ID}" --json
   assert_success
   assert_equal "$(echo "$output" | jq -r .kas_id)" "${KAS_REGISTRY_ID}"
   assert_equal "$(echo "$output" | jq -r .key.id)" "${CREATED_KEY_SYSTEM_ID}"
@@ -421,7 +421,7 @@ format_kas_name_as_uri() {
 }
 
 @test "kas-keys: get key (not found by system ID)" {
-  run_otdfctl_key get --id "39af808f-6cac-403f-90d7-6b88e865860d" --json
+  run_otdfctl_key get --key "39af808f-6cac-403f-90d7-6b88e865860d" --json
   assert_failure
   assert_output --partial "Failed to get kas key" # Error should indicate not found or similar
 }
@@ -433,7 +433,7 @@ format_kas_name_as_uri() {
 }
 
 @test "kas-keys: get key (mutually exclusive: id and key-id)" {
-  run_otdfctl_key get --id "some-system-id" --key-id "some-user-key-id" --kas "${KAS_REGISTRY_ID}" --json
+  run_otdfctl_key get --key "some-system-id" --key-id "some-user-key-id" --kas "${KAS_REGISTRY_ID}" --json
   assert_failure
   assert_output --partial "Error: if any flags in the group [id key-id] are set none of the others can be"
 }
@@ -467,7 +467,7 @@ format_kas_name_as_uri() {
   assert_equal "$(echo "$output" | jq -r .key.metadata.created_at.seconds)" "${initial_created_at_seconds}" # created_at should not change
 
   # Verify with a subsequent get
-  run_otdfctl_key get --id "${UPDATE_KEY_LABEL_SYSTEM_ID}" --json
+  run_otdfctl_key get --key "${UPDATE_KEY_LABEL_SYSTEM_ID}" --json
   assert_success
   assert_equal "$(echo "$output" | jq -r '.key.metadata.labels."initial"')" "true"
   assert_equal "$(echo "$output" | jq -r '.key.metadata.labels."added"')" "true"
@@ -493,14 +493,14 @@ format_kas_name_as_uri() {
   assert_equal "$(echo "$output" | jq -r .key.metadata.created_at.seconds)" "${initial_created_at_replace_seconds}"
 
   # Verify with a subsequent get
-  run_otdfctl_key get --id "${UPDATE_KEY_LABEL_REPLACE_SYSTEM_ID}" --json
+  run_otdfctl_key get --key "${UPDATE_KEY_LABEL_REPLACE_SYSTEM_ID}" --json
   assert_success
   assert_equal "$(echo "$output" | jq -r '.key.metadata.labels."replaced"')" "true"
   assert_equal "$(echo "$output" | jq -r '.key.metadata.labels."initial" // "null"')" "null"
 }
 
 @test "kas-keys: update key (not found)" {
-  run_otdfctl_key update --id "39af808f-6cac-403f-90d7-6b88e865860d" --json
+  run_otdfctl_key update --key "39af808f-6cac-403f-90d7-6b88e865860d" --json
   assert_failure
   assert_output --partial "Failed to update kas key"
 }
