@@ -529,7 +529,7 @@ func resolveKasIdentifier(ctx context.Context, ident string, h handlers.Handler)
 	kasLookup := handlers.KasIdentifier{}
 	kasInputType := utils.ClassifyString(ident)
 
-	switch kasInputType { // nolint:exhaustive // default catches unknown
+	switch kasInputType { //nolint:exhaustive // default catches unknown
 	case utils.StringTypeUUID:
 		return ident, nil
 	case utils.StringTypeURI:
