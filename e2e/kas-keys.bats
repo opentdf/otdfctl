@@ -1,5 +1,21 @@
 #!/usr/bin/env bats
 
+load "${BATS_LIB_PATH}/bats-support/load.bash"
+load "${BATS_LIB_PATH}/bats-assert/load.bash"
+
+# Helper functions for otdfctl commands
+run_otdfctl_key() {
+  run sh -c "./otdfctl policy kas-registry key $HOST $WITH_CREDS $*"
+}
+
+run_otdfctl_kas_registry_create() {
+  run sh -c "./otdfctl policy kas-registry create $HOST $WITH_CREDS $*"
+}
+
+run_otdfctl_provider_create() {
+  run sh -c "./otdfctl keymanagement provider create $HOST $WITH_CREDS $*"
+}
+
 setup_file() {
   echo -n '{"clientId":"opentdf","clientSecret":"secret"}' >creds.json
   export WITH_CREDS='--with-client-creds-file ./creds.json'
@@ -7,24 +23,25 @@ setup_file() {
   # This command is not a 'kas-registry key' subcommand, so it won't use run_otdfctl_key
   export KAS_URI="https://test-kas-with-keys.com"
   export KAS_NAME="kas-registry-for-keys-test"
-  export KAS_REGISTRY_ID=$(./otdfctl $HOST $WITH_CREDS policy kas-registry create --name $KAS_NAME --uri "$KAS_URI" --public-key-remote 'https://test-kas-with-keys.com' --json | jq -r '.id')
-  export PC_ID=$(./otdfctl $HOST $WITH_CREDS keymanagement provider create --name "test-provider-config-kas-keys" --config '{}' --json | jq -r '.id')
+
+  run_otdfctl_kas_registry_create --name $KAS_NAME --uri "$KAS_URI" --public-key-remote 'https://test-kas-with-keys.com' --json
+  assert_success
+  export KAS_REGISTRY_ID=$(echo "$output" | jq -r '.id')
+
+  run_otdfctl_provider_create --name "test-provider-config-kas-keys" --config '{}' --json
+  assert_success
+  export PC_ID=$(echo "$output" | jq -r '.id')
   export WRAPPING_KEY="gp6TcYb/ZrgkQOYPdiYFRj11jZwbevy+r2KFbAYM0GE="
   export PEM_B64=$(echo "pem" | base64)
 }
 
 setup() {
-  load "${BATS_LIB_PATH}/bats-support/load.bash"
-  load "${BATS_LIB_PATH}/bats-assert/load.bash"
-
-  # invoke binary with credentials
-  run_otdfctl_key() {
-    run sh -c "./otdfctl policy kas-registry key $HOST $WITH_CREDS $*"
-  }
+  # No setup specific to individual tests needed here currently
+  : # No-op
 }
 
 teardown_file() {
-  ./otdctl keymanagement provider "$HOST" "$WITH_CREDS" delete --id "$PC_ID"
+  ./otdfctl keymanagement provider "$HOST" "$WITH_CREDS" delete --id "$PC_ID"
   # Cannot cleanup KAS registry and keys, since keys cannot be deleted currently.
   unset HOST WITH_CREDS KAS_REGISTRY_ID KAS_NAME KAS_URI PEM_B64 WRAPPING_KEY PC_ID
 }
@@ -312,6 +329,23 @@ format_kas_name_as_uri() {
   run_otdfctl_key create --kas "${KAS_REGISTRY_ID}" --key-id "${KEY_ID}" --algorithm "rsa:2048" --mode "invalid-mode-value" --public-key-pem "${PEM_B64}" --json
   assert_failure
   assert_output --partial "Invalid mode"
+}
+
+@test "kas-keys: create key (duplicate key-id)" {
+  KEY_ID_DUPLICATE=$(generate_key_id)
+  run_otdfctl_key create --kas "${KAS_REGISTRY_ID}" --key-id "${KEY_ID_DUPLICATE}" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "${PEM_B64}" --json
+  assert_success
+
+  run_otdfctl_key create --kas "${KAS_REGISTRY_ID}" --key-id "${KEY_ID_DUPLICATE}" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "${PEM_B64}" --json
+  assert_failure
+  assert_output --partial "Failed to create kas key"
+}
+
+@test "kas-keys: create key (invalid kas identifier)" {
+  KEY_ID=$(generate_key_id)
+  run_otdfctl_key create --kas "invalid-kas-id" --key-id "${KEY_ID}" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "${PEM_B64}" --json
+  assert_failure
+  assert_output --partial "Failed to resolve KAS identifier 'invalid-kas-id': not_found: resource not found"
 }
 
 @test "kas-keys: get key by system ID" {

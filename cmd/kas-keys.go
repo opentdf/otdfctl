@@ -345,14 +345,26 @@ func policyCreateKasKey(cmd *cobra.Command, args []string) {
 		cli.ExitWithError("Invalid mode", nil)
 	}
 
-	kasLookUp, err := resolveKasIdentifier(c.Context(), kasIdentifier, h)
+	kasLookup, err := resolveKasIdentifier(c.Context(), kasIdentifier, h)
 	if err != nil {
 		cli.ExitWithError("Invalid kas identifier", err)
 	}
 
+	var resolvedKasID string
+	if kasLookup.ID != "" {
+		resolvedKasID = kasLookup.ID
+	} else {
+		// If not a UUID, resolve it to get the UUID
+		kasEntry, err := h.GetKasRegistryEntry(c.Context(), kasLookup)
+		if err != nil {
+			cli.ExitWithError(fmt.Sprintf("Failed to resolve KAS identifier '%s'", kasIdentifier), err)
+		}
+		resolvedKasID = kasEntry.GetId()
+	}
+
 	kasKey, err := h.CreateKasKey(
 		c.Context(),
-		kasLookUp.GetIdentifierValue(),
+		resolvedKasID,
 		keyIdentifier,
 		alg,
 		mode,
@@ -529,6 +541,12 @@ func policyListKasKeys(cmd *cobra.Command, args []string) {
 }
 
 func resolveKasIdentifier(ctx context.Context, ident string, h handlers.Handler) (handlers.KasIdentifier, error) {
+	// If the identifier is empty, it means no KAS filter is applied.
+	// Return an empty KasIdentifier and no error.
+	if ident == "" {
+		return handlers.KasIdentifier{}, nil
+	}
+
 	// Use the ClassifyString helper to determine how to look up the KAS
 	kasLookup := handlers.KasIdentifier{}
 	kasInputType := utils.ClassifyString(ident)
