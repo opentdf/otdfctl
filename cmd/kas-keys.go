@@ -249,7 +249,7 @@ func policyCreateKasKey(cmd *cobra.Command, args []string) {
 	kasIdentifier := c.Flags.GetRequiredString("kas")
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
-alg, err := algToEnum(c.Flags.GetRequiredString("algorithm"))
+	alg, err := algToEnum(c.Flags.GetRequiredString("algorithm"))
 	if err != nil {
 		cli.ExitWithError("Invalid algorithm", err)
 	}
@@ -316,7 +316,7 @@ alg, err := algToEnum(c.Flags.GetRequiredString("algorithm"))
 		}
 	case policy.KeyMode_KEY_MODE_REMOTE:
 		pem := c.Flags.GetRequiredString("public-key-pem")
-providerConfigID = c.Flags.GetRequiredString("provider-config-id")
+		providerConfigID = c.Flags.GetRequiredString("provider-config-id")
 
 		_, err = base64.StdEncoding.DecodeString(pem)
 		if err != nil {
@@ -529,7 +529,7 @@ func resolveKasIdentifier(ctx context.Context, ident string, h handlers.Handler)
 	kasLookup := handlers.KasIdentifier{}
 	kasInputType := utils.ClassifyString(ident)
 
-	switch kasInputType {
+	switch kasInputType { // nolint:exhaustive // default catches unknown
 	case utils.StringTypeUUID:
 		return ident, nil
 	case utils.StringTypeURI:

@@ -47,7 +47,7 @@ func getKasKeyIdentifier(c *cli.Cli) (*kasregistry.KasKeyIdentifier, error) {
 	}
 
 	kasInputType := utils.ClassifyString(kasIdentifierInput)
-	switch kasInputType {
+	switch kasInputType { // nolint:exhaustive // default catches unknown
 	case utils.StringTypeUUID:
 		identifier.Identifier = &kasregistry.KasKeyIdentifier_KasId{KasId: kasIdentifierInput}
 	case utils.StringTypeURI:
