@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"context"
 	"encoding/base64"
 	"errors"
 	"fmt"
@@ -345,7 +344,7 @@ func policyCreateKasKey(cmd *cobra.Command, args []string) {
 		cli.ExitWithError("Invalid mode", nil)
 	}
 
-	kasLookup, err := resolveKasIdentifier(c.Context(), kasIdentifier, h)
+	kasLookup, err := resolveKasIdentifier(kasIdentifier, h)
 	if err != nil {
 		cli.ExitWithError("Invalid kas identifier", err)
 	}
@@ -463,7 +462,7 @@ func policyListKasKeys(cmd *cobra.Command, args []string) {
 	}
 	kasIdentifier := c.Flags.GetOptionalString("kas")
 
-	kasLookup, err := resolveKasIdentifier(c.Context(), kasIdentifier, h)
+	kasLookup, err := resolveKasIdentifier(kasIdentifier, h)
 	if err != nil {
 		cli.ExitWithError("Invalid kas identifier", err)
 	}
@@ -540,7 +539,7 @@ func policyListKasKeys(cmd *cobra.Command, args []string) {
 	HandleSuccess(cmd, "", t, keys)
 }
 
-func resolveKasIdentifier(ctx context.Context, ident string, h handlers.Handler) (handlers.KasIdentifier, error) {
+func resolveKasIdentifier(ident string, h handlers.Handler) (handlers.KasIdentifier, error) {
 	// If the identifier is empty, it means no KAS filter is applied.
 	// Return an empty KasIdentifier and no error.
 	if ident == "" {
