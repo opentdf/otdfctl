@@ -42,8 +42,8 @@ teardown_file() {
 
 # --- set base key tests ---
 
-@test "base-key: set by --id" {
-  run_otdfctl_base_key set --id "${KAS_KEY_SYSTEM_ID}" --json
+@test "base-key: set by --key (uuid)" {
+  run_otdfctl_base_key set --key "${KAS_KEY_SYSTEM_ID}" --json
   assert_success
   # Verify the new base key part of the response
   assert_equal "$(echo "$output" | jq -r .new_base_key.public_key.kid)" "${REGULAR_KEY_ID_FOR_BASE_TEST}"
@@ -67,7 +67,7 @@ teardown_file() {
 }
 
 @test "base-key: get (after setting a base key)" {
-  run_otdfctl_base_key set --id "${KAS_KEY_SYSTEM_ID}" --json
+  run_otdfctl_base_key set --key "${KAS_KEY_SYSTEM_ID}" --json
   assert_success
 
   run_otdfctl_base_key get --json

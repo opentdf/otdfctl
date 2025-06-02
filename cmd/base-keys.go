@@ -115,11 +115,19 @@ func setBaseKey(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
-	identifier, err := getKasKeyIdentifier(c)
-	if err != nil {
-		c.ExitWithError("Invalid key identifier", err)
+	var identifier *kasregistry.KasKeyIdentifier
+	var err error
+
+	id := c.Flags.GetOptionalString("key")
+	fmt.Println("id: ", id)
+	if utils.ClassifyString(id) != utils.StringTypeUUID {
+		fmt.Println("calling getKasKeyIdentifier")
+		identifier, err = getKasKeyIdentifier(c)
+		if err != nil {
+			c.ExitWithError("Invalid key identifier", err)
+		}
 	}
-	baseKey, err := h.SetBaseKey(c.Context(), identifier)
+	baseKey, err := h.SetBaseKey(c.Context(), id, identifier)
 	if err != nil {
 		cli.ExitWithError("Failed to set base key", err)
 	}

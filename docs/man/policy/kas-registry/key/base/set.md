@@ -10,9 +10,7 @@ command:
       description: The KeyID (human-readable identifier) or the internal UUID of an existing key within the specified KAS. This key will be designated as the platform base key. The system will attempt to resolve the provided value as either a UUID or a KeyID.
       required: true
     - name: kas
-      description: Specify the Key Access Server (KAS) where the key (identified by `--key`) is registered. The KAS can be identified by its ID, URI, or Name.
-      required: true
-    
+      description: Specify the Key Access Server (KAS) where the key (identified by `--key`) is registered. The KAS can be identified by its ID, URI, or Name.    
 ---
 
 Command for setting a base key to be used for encryption operations on data where no attributes are present or where no keys are present on found attributes. The key to be set as the base key must be identified using its KeyID or UUID via the `--key` flag, and the KAS it belongs to must be specified with the `--kas` flag.
