@@ -488,7 +488,7 @@ format_kas_name_as_uri() {
 }
 
 @test "kas-keys: update key (not found)" {
-  run_otdfctl_key update --key "39af808f-6cac-403f-90d7-6b88e865860d" --json
+  run_otdfctl_key update --id "39af808f-6cac-403f-90d7-6b88e865860d" --json
   assert_failure
   assert_output --partial "Failed to update kas key"
 }

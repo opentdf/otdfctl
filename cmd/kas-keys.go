@@ -14,6 +14,7 @@ import (
 	"github.com/opentdf/otdfctl/pkg/utils"
 	"github.com/opentdf/platform/lib/ocrypto"
 	"github.com/opentdf/platform/protocol/go/policy"
+	"github.com/opentdf/platform/protocol/go/policy/kasregistry"
 	"github.com/spf13/cobra"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
@@ -377,11 +378,16 @@ func policyGetKasKey(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
-	id := c.Flags.GetOptionalID("id")
+	id := c.Flags.GetOptionalID("key")
 
-	identifier, err := getKasKeyIdentifier(c)
-	if err != nil {
-		cli.ExitWithError("Invalid key identifier", err)
+	var identifier *kasregistry.KasKeyIdentifier
+	var err error
+
+	if utils.ClassifyString(id) != utils.StringTypeUUID {
+		identifier, err = getKasKeyIdentifier(c)
+		if err != nil {
+			cli.ExitWithError("Invalid key identifier", err)
+		}
 	}
 	kasKey, err := h.GetKasKey(c.Context(), id, identifier)
 	if err != nil {
