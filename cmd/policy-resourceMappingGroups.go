@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	_ "embed"
 	"fmt"
 
 	"github.com/evertras/bubble-table/table"
