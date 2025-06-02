@@ -152,38 +152,17 @@ func init() {
 		man.WithRun(setBaseKey),
 	)
 	setDoc.Flags().StringP(
-		setDoc.GetDocFlag("id").Name,
-		setDoc.GetDocFlag("id").Shorthand,
-		setDoc.GetDocFlag("id").Default,
-		setDoc.GetDocFlag("id").Description,
+		setDoc.GetDocFlag("key").Name,
+		setDoc.GetDocFlag("key").Shorthand,
+		setDoc.GetDocFlag("key").Default,
+		setDoc.GetDocFlag("key").Description,
 	)
 	setDoc.Flags().StringP(
-		setDoc.GetDocFlag("keyId").Name,
-		setDoc.GetDocFlag("keyId").Shorthand,
-		setDoc.GetDocFlag("keyId").Default,
-		setDoc.GetDocFlag("keyId").Description,
+		setDoc.GetDocFlag("kas").Name,
+		setDoc.GetDocFlag("kas").Shorthand,
+		setDoc.GetDocFlag("kas").Default,
+		setDoc.GetDocFlag("kas").Description,
 	)
-	setDoc.Flags().StringP(
-		setDoc.GetDocFlag("kasUri").Name,
-		setDoc.GetDocFlag("kasUri").Shorthand,
-		setDoc.GetDocFlag("kasUri").Default,
-		setDoc.GetDocFlag("kasUri").Description,
-	)
-	setDoc.Flags().StringP(
-		setDoc.GetDocFlag("kasId").Name,
-		setDoc.GetDocFlag("kasId").Shorthand,
-		setDoc.GetDocFlag("kasId").Default,
-		setDoc.GetDocFlag("kasId").Description,
-	)
-	setDoc.Flags().StringP(
-		setDoc.GetDocFlag("kasName").Name,
-		setDoc.GetDocFlag("kasName").Shorthand,
-		setDoc.GetDocFlag("kasName").Default,
-		setDoc.GetDocFlag("kasName").Description,
-	)
-	setDoc.MarkFlagsMutuallyExclusive("id", "keyId")
-	setDoc.MarkFlagsOneRequired("id", "keyId")
-	setDoc.MarkFlagsMutuallyExclusive("kasUri", "kasId", "kasName")
 
 	doc := man.Docs.GetCommand("policy/kas-registry/key/base",
 		man.WithSubcommands(getDoc, setDoc))

@@ -556,16 +556,16 @@ func init() {
 		man.WithRun(policyCreateKasKey),
 	)
 	createDoc.Flags().StringP(
-		createDoc.GetDocFlag("keyId").Name,
-		createDoc.GetDocFlag("keyId").Shorthand,
-		createDoc.GetDocFlag("keyId").Default,
-		createDoc.GetDocFlag("keyId").Description,
+		createDoc.GetDocFlag("key-id").Name,
+		createDoc.GetDocFlag("key-id").Shorthand,
+		createDoc.GetDocFlag("key-id").Default,
+		createDoc.GetDocFlag("key-id").Description,
 	)
 	createDoc.Flags().StringP(
-		createDoc.GetDocFlag("alg").Name,
-		createDoc.GetDocFlag("alg").Shorthand,
-		createDoc.GetDocFlag("alg").Default,
-		createDoc.GetDocFlag("alg").Description,
+		createDoc.GetDocFlag("algorithm").Name,
+		createDoc.GetDocFlag("algorithm").Shorthand,
+		createDoc.GetDocFlag("algorithm").Default,
+		createDoc.GetDocFlag("algorithm").Description,
 	)
 	createDoc.Flags().StringP(
 		createDoc.GetDocFlag("mode").Name,
@@ -574,55 +574,41 @@ func init() {
 		createDoc.GetDocFlag("mode").Description,
 	)
 	createDoc.Flags().StringP(
-		createDoc.GetDocFlag("kasId").Name,
-		createDoc.GetDocFlag("kasId").Shorthand,
-		createDoc.GetDocFlag("kasId").Default,
-		createDoc.GetDocFlag("kasId").Description,
+		createDoc.GetDocFlag("kas").Name,
+		createDoc.GetDocFlag("kas").Shorthand,
+		createDoc.GetDocFlag("kas").Default,
+		createDoc.GetDocFlag("kas").Description,
 	)
 	createDoc.Flags().StringP(
-		createDoc.GetDocFlag("kasUri").Name,
-		createDoc.GetDocFlag("kasUri").Shorthand,
-		createDoc.GetDocFlag("kasUri").Default,
-		createDoc.GetDocFlag("kasUri").Description,
+		createDoc.GetDocFlag("wrapping-key-id").Name,
+		createDoc.GetDocFlag("wrapping-key-id").Shorthand,
+		createDoc.GetDocFlag("wrapping-key-id").Default,
+		createDoc.GetDocFlag("wrapping-key-id").Description,
 	)
 	createDoc.Flags().StringP(
-		createDoc.GetDocFlag("kasName").Name,
-		createDoc.GetDocFlag("kasName").Shorthand,
-		createDoc.GetDocFlag("kasName").Default,
-		createDoc.GetDocFlag("kasName").Description,
+		createDoc.GetDocFlag("wrapping-key").Name,
+		createDoc.GetDocFlag("wrapping-key").Shorthand,
+		createDoc.GetDocFlag("wrapping-key").Default,
+		createDoc.GetDocFlag("wrapping-key").Description,
 	)
 	createDoc.Flags().StringP(
-		createDoc.GetDocFlag("wrappingKeyId").Name,
-		createDoc.GetDocFlag("wrappingKeyId").Shorthand,
-		createDoc.GetDocFlag("wrappingKeyId").Default,
-		createDoc.GetDocFlag("wrappingKeyId").Description,
+		createDoc.GetDocFlag("provider-config-id").Name,
+		createDoc.GetDocFlag("provider-config-id").Shorthand,
+		createDoc.GetDocFlag("provider-config-id").Default,
+		createDoc.GetDocFlag("provider-config-id").Description,
 	)
 	createDoc.Flags().StringP(
-		createDoc.GetDocFlag("wrappingKey").Name,
-		createDoc.GetDocFlag("wrappingKey").Shorthand,
-		createDoc.GetDocFlag("wrappingKey").Default,
-		createDoc.GetDocFlag("wrappingKey").Description,
+		createDoc.GetDocFlag("public-key-pem").Name,
+		createDoc.GetDocFlag("public-key-pem").Shorthand,
+		createDoc.GetDocFlag("public-key-pem").Default,
+		createDoc.GetDocFlag("public-key-pem").Description,
 	)
 	createDoc.Flags().StringP(
-		createDoc.GetDocFlag("providerConfigId").Name,
-		createDoc.GetDocFlag("providerConfigId").Shorthand,
-		createDoc.GetDocFlag("providerConfigId").Default,
-		createDoc.GetDocFlag("providerConfigId").Description,
+		createDoc.GetDocFlag("private-key-pem").Name,
+		createDoc.GetDocFlag("private-key-pem").Shorthand,
+		createDoc.GetDocFlag("private-key-pem").Default,
+		createDoc.GetDocFlag("private-key-pem").Description,
 	)
-	createDoc.Flags().StringP(
-		createDoc.GetDocFlag("pubPem").Name,
-		createDoc.GetDocFlag("pubPem").Shorthand,
-		createDoc.GetDocFlag("pubPem").Default,
-		createDoc.GetDocFlag("pubPem").Description,
-	)
-	createDoc.Flags().StringP(
-		createDoc.GetDocFlag("privatePem").Name,
-		createDoc.GetDocFlag("privatePem").Shorthand,
-		createDoc.GetDocFlag("privatePem").Default,
-		createDoc.GetDocFlag("privatePem").Description,
-	)
-	createDoc.MarkFlagsOneRequired("kasId", "kasUri", "kasName")
-	createDoc.MarkFlagsMutuallyExclusive("kasId", "kasUri", "kasName")
 	injectLabelFlags(&createDoc.Command, false)
 
 	// Get Kas Key
@@ -630,39 +616,17 @@ func init() {
 		man.WithRun(policyGetKasKey),
 	)
 	getDoc.Flags().StringP(
-		getDoc.GetDocFlag("id").Name,
-		getDoc.GetDocFlag("id").Shorthand,
-		getDoc.GetDocFlag("id").Default,
-		getDoc.GetDocFlag("id").Description,
+		getDoc.GetDocFlag("key").Name,
+		getDoc.GetDocFlag("key").Shorthand,
+		getDoc.GetDocFlag("key").Default,
+		getDoc.GetDocFlag("key").Description,
 	)
 	getDoc.Flags().StringP(
-		getDoc.GetDocFlag("keyId").Name,
-		getDoc.GetDocFlag("keyId").Shorthand,
-		getDoc.GetDocFlag("keyId").Default,
-		getDoc.GetDocFlag("keyId").Description,
+		getDoc.GetDocFlag("kas").Name,
+		getDoc.GetDocFlag("kas").Shorthand,
+		getDoc.GetDocFlag("kas").Default,
+		getDoc.GetDocFlag("kas").Description,
 	)
-	getDoc.Flags().StringP(
-		getDoc.GetDocFlag("kasUri").Name,
-		getDoc.GetDocFlag("kasUri").Shorthand,
-		getDoc.GetDocFlag("kasUri").Default,
-		getDoc.GetDocFlag("kasUri").Description,
-	)
-	getDoc.Flags().StringP(
-		getDoc.GetDocFlag("kasId").Name,
-		getDoc.GetDocFlag("kasId").Shorthand,
-		getDoc.GetDocFlag("kasId").Default,
-		getDoc.GetDocFlag("kasId").Description,
-	)
-	getDoc.Flags().StringP(
-		getDoc.GetDocFlag("kasName").Name,
-		getDoc.GetDocFlag("kasName").Shorthand,
-		getDoc.GetDocFlag("kasName").Default,
-		getDoc.GetDocFlag("kasName").Description,
-	)
-	getDoc.MarkFlagsMutuallyExclusive("id", "keyId")
-	getDoc.MarkFlagsOneRequired("id", "keyId")
-	getDoc.MarkFlagsMutuallyExclusive("kasUri", "kasId", "kasName")
-
 	// Update Kas Key
 	updateDoc := man.Docs.GetCommand("policy/kas-registry/key/update",
 		man.WithRun(policyUpdateKasKey),
@@ -680,31 +644,18 @@ func init() {
 		man.WithRun(policyListKasKeys),
 	)
 	listDoc.Flags().StringP(
-		listDoc.GetDocFlag("alg").Name,
-		listDoc.GetDocFlag("alg").Shorthand,
-		listDoc.GetDocFlag("alg").Default,
-		listDoc.GetDocFlag("alg").Description,
+		listDoc.GetDocFlag("algorithm").Name,
+		listDoc.GetDocFlag("algorithm").Shorthand,
+		listDoc.GetDocFlag("algorithm").Default,
+		listDoc.GetDocFlag("algorithm").Description,
 	)
 	listDoc.Flags().StringP(
-		listDoc.GetDocFlag("kasId").Name,
-		listDoc.GetDocFlag("kasId").Shorthand,
-		listDoc.GetDocFlag("kasId").Default,
-		listDoc.GetDocFlag("kasId").Description,
-	)
-	listDoc.Flags().StringP(
-		listDoc.GetDocFlag("kasName").Name,
-		listDoc.GetDocFlag("kasName").Shorthand,
-		listDoc.GetDocFlag("kasName").Default,
-		listDoc.GetDocFlag("kasName").Description,
-	)
-	listDoc.Flags().StringP(
-		listDoc.GetDocFlag("kasUri").Name,
-		listDoc.GetDocFlag("kasUri").Shorthand,
-		listDoc.GetDocFlag("kasUri").Default,
-		listDoc.GetDocFlag("kasUri").Description,
+		listDoc.GetDocFlag("kas").Name,
+		listDoc.GetDocFlag("kas").Shorthand,
+		listDoc.GetDocFlag("kas").Default,
+		listDoc.GetDocFlag("kas").Description,
 	)
 	injectListPaginationFlags(listDoc)
-	listDoc.MarkFlagsMutuallyExclusive("kasId", "kasName", "kasUri")
 
 	policyKasRegistryKeysCmd.AddSubcommands(createDoc, getDoc, updateDoc, listDoc)
 	policyKasRegCmd.AddCommand(&policyKasRegistryKeysCmd.Command)

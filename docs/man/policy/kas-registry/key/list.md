@@ -13,7 +13,7 @@ command:
       shorthand: o
       description: Number of keys to skip before starting to return results
       required: true
-    - name: alg
+    - name: algorithm
       shorthand: a
       description: Key Algorithm to filter for
     - name: kas
