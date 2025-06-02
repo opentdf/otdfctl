@@ -245,7 +245,7 @@ func policyCreateKasKey(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
-	keyIdentifier := c.Flags.GetRequiredString("key")
+	keyIdentifier := c.Flags.GetRequiredString("key-id")
 	kasIdentifier := c.Flags.GetRequiredString("kas")
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
