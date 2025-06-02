@@ -316,7 +316,7 @@ func policyCreateKasKey(cmd *cobra.Command, args []string) {
 		}
 	case policy.KeyMode_KEY_MODE_REMOTE:
 		pem := c.Flags.GetRequiredString("public-key-pem")
-		providerConfigID = c.Flags.GetRequiredString("provider-config-pem")
+providerConfigID = c.Flags.GetRequiredString("provider-config-id")
 
 		_, err = base64.StdEncoding.DecodeString(pem)
 		if err != nil {
