@@ -270,7 +270,7 @@ format_kas_name_as_uri() {
   assert_output --partial "Error: at least one of the flags in the group [kas kas kas] is required"
 }
 
-@test "kas-keys: create key (using kas)" {
+@test "kas-keys: create key (using kasName)" {
   KEY_ID=$(generate_key_id)
   run_otdfctl_key create --kas "${KAS_NAME}" --key-id "${KEY_ID}" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "${PEM_B64}" --json
   assert_success
@@ -285,7 +285,7 @@ format_kas_name_as_uri() {
   assert_not_equal "$(echo "$output" | jq -r .key.metadata.updated_at)" "null"
 }
 
-@test "kas-keys: create key (using kas)" {
+@test "kas-keys: create key (using kasUri)" {
   KEY_ID=$(generate_key_id)
   run_otdfctl_key create --kas "${KAS_URI}" --key-id "${KEY_ID}" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "${PEM_B64}" --json
   assert_success
@@ -341,7 +341,7 @@ format_kas_name_as_uri() {
   assert_not_equal "$(echo "$output" | jq -r .key.metadata.updated_at)" "null"
 }
 
-@test "kas-keys: get key by user key-id and kas" {
+@test "kas-keys: get key by user key-id and kasId" {
   KEY_ID_GET_USER=$(generate_key_id)
   # Using ec:secp256r1 and public_key mode for variety
   run_otdfctl_key create --kas "${KAS_REGISTRY_ID}" --key-id "${KEY_ID_GET_USER}" --algorithm "ec:secp256r1" --mode "public_key" --public-key-pem "${PEM_B64}" --json
@@ -362,7 +362,7 @@ format_kas_name_as_uri() {
   assert_not_equal "$(echo "$output" | jq -r .key.metadata.updated_at)" "null"
 }
 
-@test "kas-keys: get key by user key-id and kas" {
+@test "kas-keys: get key by user key-id and kasName" {
   KEY_ID_GET_USER_kas=$(generate_key_id)
   run_otdfctl_key create --kas "kas-registry-for-keys-test" --key-id "${KEY_ID_GET_USER_kas}" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "${PEM_B64}" --json
   assert_success
@@ -382,7 +382,7 @@ format_kas_name_as_uri() {
   assert_not_equal "$(echo "$output" | jq -r .key.metadata.updated_at)" "null"
 }
 
-@test "kas-keys: get key by user key-id and kas" {
+@test "kas-keys: get key by user key-id and kasUri" {
   KEY_ID_GET_USER_kas=$(generate_key_id)
   run_otdfctl_key create --kas "${KAS_URI}" --key-id "${KEY_ID_GET_USER_kas}" --algorithm "ec:secp256r1" --mode "public_key" --public-key-pem "${PEM_B64}" --json
   assert_success
@@ -669,7 +669,7 @@ format_kas_name_as_uri() {
   assert_equal "$(echo "$output" | jq -r --arg id "${kas_filter_key_sys_id}" '[.[] | select(.key.id == $id)] | length')" "0"
 }
 
-@test "kas-keys: list keys (filter by kas)" {
+@test "kas-keys: list keys (filter by kasName)" {
   KAS_NAME_LIST=$(generate_kas_name)
   echo "DEBUG: KAS_NAME_LIST: ${KAS_NAME_LIST}" >&2
   KAS_URI_LIST=$(format_kas_name_as_uri "${KAS_NAME_LIST}")
@@ -696,7 +696,7 @@ format_kas_name_as_uri() {
   assert_not_equal "$(echo "$output" | jq -r '.[0].key.metadata.updated_at')" "null"
 }
 
-@test "kas-keys: list keys (filter by kas)" {
+@test "kas-keys: list keys (filter by kasUri)" {
   # This command is not a 'kas-registry key' subcommand, so it won't use run_otdfctl_key
   KAS_NAME_LIST=$(generate_kas_name)
   KAS_URI_LIST=$(format_kas_name_as_uri "${KAS_NAME_LIST}")
