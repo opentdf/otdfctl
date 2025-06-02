@@ -89,7 +89,12 @@ teardown_file() {
 }
 
 @test "Update a resource mapping group" {
-    NEW_RMG_ID=$(./otdfctl $HOST $WITH_CREDS policy resource-mapping-groups create --namespace-id "$NS_ID" --name "test-rsmg" --json | jq -r '.id')
+    CREATE_RESP=$(./otdfctl $HOST $WITH_CREDS policy resource-mapping-groups create --namespace-id "$NS_ID" --name test-rsmg --json)
+    run sh -c "echo '$CREATE_RESP'"
+    assert_output --partial "new-rsmg-name"
+    NEW_RMG_ID=$(echo "$CREATE_RESP" | jq -r '.id')
+    run sh -c "echo '$CREATE_RESP'"
+    assert_output --partial "5"
     
     # replace the terms
     run_otdfctl_rmg update --id "$NEW_RM_ID" --name "new-rsmg-name"
