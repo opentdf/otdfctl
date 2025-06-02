@@ -345,14 +345,14 @@ func policyCreateKasKey(cmd *cobra.Command, args []string) {
 		cli.ExitWithError("Invalid mode", nil)
 	}
 
-	kasIdentifier, err = resolveKasIdentifier(c.Context(), kasIdentifier, h)
+	kasLookUp, err := resolveKasIdentifier(c.Context(), kasIdentifier, h)
 	if err != nil {
 		cli.ExitWithError("Invalid kas identifier", err)
 	}
 
 	kasKey, err := h.CreateKasKey(
 		c.Context(),
-		kasIdentifier,
+		kasLookUp.GetIdentifierValue(),
 		keyIdentifier,
 		alg,
 		mode,
@@ -451,15 +451,13 @@ func policyListKasKeys(cmd *cobra.Command, args []string) {
 	}
 	kasIdentifier := c.Flags.GetOptionalString("kas")
 
-	kasIdentifier, err := resolveKasIdentifier(c.Context(), kasIdentifier, h)
+	kasLookup, err := resolveKasIdentifier(c.Context(), kasIdentifier, h)
 	if err != nil {
 		cli.ExitWithError("Invalid kas identifier", err)
 	}
 
 	// Get the list of keys.
-	keys, page, err := h.ListKasKeys(c.Context(), limit, offset, alg, handlers.KasIdentifier{
-		ID: kasIdentifier,
-	})
+	keys, page, err := h.ListKasKeys(c.Context(), limit, offset, alg, kasLookup)
 	if err != nil {
 		cli.ExitWithError("Failed to list kas keys", err)
 	}
@@ -530,30 +528,23 @@ func policyListKasKeys(cmd *cobra.Command, args []string) {
 	HandleSuccess(cmd, "", t, keys)
 }
 
-func resolveKasIdentifier(ctx context.Context, ident string, h handlers.Handler) (string, error) {
+func resolveKasIdentifier(ctx context.Context, ident string, h handlers.Handler) (handlers.KasIdentifier, error) {
 	// Use the ClassifyString helper to determine how to look up the KAS
 	kasLookup := handlers.KasIdentifier{}
 	kasInputType := utils.ClassifyString(ident)
 
 	switch kasInputType { //nolint:exhaustive // default catches unknown
 	case utils.StringTypeUUID:
-		return ident, nil
+		kasLookup.ID = ident
 	case utils.StringTypeURI:
 		kasLookup.URI = ident
 	case utils.StringTypeGeneric:
 		kasLookup.Name = ident
 	default:
-		return "", errors.New("invalid kas identifier")
+		return kasLookup, errors.New("invalid kas identifier")
 	}
 
-	if kasInputType != utils.StringTypeUUID {
-		resolvedKas, err := h.GetKasRegistryEntry(ctx, kasLookup)
-		if err != nil {
-			return "", errors.Join(errors.New("failed to get kas registry entry"), err)
-		}
-		return resolvedKas.GetId(), nil
-	}
-	return "", nil
+	return kasLookup, nil
 }
 
 func init() {

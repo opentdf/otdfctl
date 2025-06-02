@@ -15,6 +15,19 @@ type KasIdentifier struct {
 	URI  string
 }
 
+func (k KasIdentifier) GetIdentifierValue() string {
+	if k.ID != "" {
+		return k.ID
+	}
+	if k.Name != "" {
+		return k.Name
+	}
+	if k.URI != "" {
+		return k.URI
+	}
+	return ""
+}
+
 func (h Handler) GetKasRegistryEntry(ctx context.Context, identifer KasIdentifier) (*policy.KeyAccessServer, error) {
 	req := &kasregistry.GetKeyAccessServerRequest{}
 	switch {
