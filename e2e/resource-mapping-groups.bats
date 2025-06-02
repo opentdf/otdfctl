@@ -10,6 +10,8 @@ setup_file() {
     # Create two namespaced values to be used in other tests
         NS_NAME="resource-mapping-groups.io"
         export NS_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes namespaces create -n "$NS_NAME" --json | jq -r '.id')
+        NS_NAME2="resource-mapping-groups-2.io"
+        export NS2_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes namespaces create -n "$NS_NAME2" --json | jq -r '.id')
         ATTR_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes create --namespace "$NS_ID" --name attr1 --rule ANY_OF --json | jq -r '.id')
         export VAL1_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes values create --attribute-id "$ATTR_ID" --value val1 --json | jq -r '.id')
         export VAL2_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes values create --attribute-id "$ATTR_ID" --value val2 --json | jq -r '.id')
@@ -40,7 +42,7 @@ teardown_file() {
     # remove the created namespace with all underneath upon test suite completion
     ./otdfctl $HOST $WITH_CREDS policy attributes namespaces unsafe delete --force --id "$NS_ID"
 
-    unset HOST WITH_CREDS VAL1_ID VAL2_ID NS_ID RM1_TERMS RM1_ID
+    unset HOST WITH_CREDS VAL1_ID VAL2_ID NS_ID NS_NAME2 NS2_ID RM1_TERMS RM1_ID RM1_OTHER_TERMS RM1_OTHER_ID RMG1_NAME RMG1_ID
 }
 
 @test "Create resource mapping group" {
@@ -61,7 +63,7 @@ teardown_file() {
     assert_output --partial "Flag '--name' is required"
 }
 
-@test "Get resource mapping" {
+@test "Get resource mapping group" {
     # table
     run_otdfctl_rmg get --id "$RMG1_ID"
         assert_success
@@ -70,9 +72,9 @@ teardown_file() {
         assert_line --regexp "Name.*$RMG1_NAME"
     
     # json
-    run_otdfctl_rmg get --id "$RM1_ID" --json
+    run_otdfctl_rmg get --id "$RMG1_ID" --json
         assert_success
-        [ $(echo $output | jq -r '.id') = "$RM1_ID" ]
+        [ $(echo $output | jq -r '.id') = "$RMG1_ID" ]
         [ $(echo $output | jq -r '.ns_id') = "$NS_ID" ]
         [ $(echo $output | jq -r '.name') = "$RMG1_NAME" ]
     
@@ -83,4 +85,42 @@ teardown_file() {
     run_otdfctl_rmg get --id "test"
         assert_failure
         assert_output --partial "must be a valid UUID"
+}
+
+@test "Update a resource mapping group" {
+    NEW_RMG_ID=$(./otdfctl $HOST $WITH_CREDS policy resource-mapping-groups create --namespace-id "$NS_ID" --name "test-rsmg" --json | jq -r '.id')
+    
+    # replace the terms
+    run_otdfctl_rmg update --id "$NEW_RM_ID" --name "new-rsmg-name"
+        assert_success
+        refute_output --partial "test-rsmg"
+        assert_output --partial "new-rsmg-name"
+        assert_output --partial "$NS_ID"
+
+    # reassign the namespace being mapped
+    run_otdfctl_rmg update --id "$NEW_RM_ID" --namespace-id "$NS2_ID"
+        assert_success
+        refute_output --partial "test-rsmg"
+        assert_output --partial "new-rsmg-name"
+        refute_output --partial "$NS_ID"
+        assert_output --partial "$NS2_ID"
+}
+
+@test "List resource mapping groups" {
+    run_otdfctl_rmg list
+        assert_success
+        assert_output --partial "$RMG1_ID"
+        assert_output --partial "$NS_ID"
+        assert_output --partial "$RMG1_NAME"
+        assert_output --partial "Total"
+        assert_line --regexp "Current Offset.*0"
+}
+
+@test "Delete resource mapping group" {
+    # --force to avoid indefinite hang waiting for confirmation
+    run_otdfctl_rmg delete --id "$RMG1_ID" --force
+        assert_success
+        assert_line --regexp "Id.*$RMG1_ID"
+        assert_line --regexp "Namespace Id.*$NS_ID"
+        assert_line --regexp "Name.*$RMG1_NAME"
 }

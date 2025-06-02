@@ -20,6 +20,7 @@ setup_file() {
 
     # Create a resource mapping group
         export RMG1_ID=$(./otdfctl $HOST $WITH_CREDS policy resource-mapping-groups create --namespace-id "$NS_ID" --name rmgrp-test --json | jq -r '.id')
+        export RMG2_ID=$(./otdfctl $HOST $WITH_CREDS policy resource-mapping-groups create --namespace-id "$NS_ID" --name rmgrp-test-2 --json | jq -r '.id')
 }
 
 setup() {
@@ -37,7 +38,7 @@ teardown_file() {
     # remove the created namespace with all underneath upon test suite completion
     ./otdfctl $HOST $WITH_CREDS policy attributes namespaces unsafe delete --force --id "$NS_ID"
 
-    unset HOST WITH_CREDS VAL1_ID VAL2_ID NS_ID RM1_TERMS RM1_ID
+    unset HOST WITH_CREDS VAL1_ID VAL2_ID NS_ID RM1_TERMS RM1_ID RMG1_ID RMG2_ID
 }
 
 @test "Create resource mapping" {
@@ -100,7 +101,7 @@ teardown_file() {
 }
 
 @test "Update a resource mapping" {
-    NEW_RM_ID=$(./otdfctl $HOST $WITH_CREDS policy resource-mappings create --attribute-value-id "$VAL2_ID" --terms test --terms found --json | jq -r '.id')
+    NEW_RM_ID=$(./otdfctl $HOST $WITH_CREDS policy resource-mappings create --attribute-value-id "$VAL2_ID" --terms test --terms found --group-id "$RMG1_ID" --json | jq -r '.id')
     
     # replace the terms
     run_otdfctl_rm update --id "$NEW_RM_ID" --terms replaced,new 
@@ -120,6 +121,16 @@ teardown_file() {
         assert_output --partial "new"
         refute_output --partial "$VAL2_ID"
         assert_output --partial "$VAL1_ID"
+
+    # reassign the group
+    run_otdfctl_rm update --id "$NEW_RM_ID" --group-id "$RMG2_ID"
+        assert_success
+        refute_output --partial "test"
+        refute_output --partial "found"
+        assert_output --partial "replaced"
+        assert_output --partial "new"
+        refute_output --partial "$RMG2_ID"
+        assert_output --partial "$RMG1_ID"
 }
 
 @test "List resource mappings" {

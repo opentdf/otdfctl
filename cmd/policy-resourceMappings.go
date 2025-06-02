@@ -88,11 +88,11 @@ func policy_listResourceMappings(cmd *cobra.Command, args []string) {
 
 	t := cli.NewTable(
 		cli.NewUUIDColumn(),
-		table.NewFlexColumn("attr_value_id", "Attribute Value Id", cli.FlexColumnWidthFour),
-		table.NewFlexColumn("attr_value", "Attribute Value", cli.FlexColumnWidthFour),
+		table.NewFlexColumn("attr_value_id", "Attribute Value Id", cli.FlexColumnWidthFive),
+		table.NewFlexColumn("attr_value", "Attribute Value", cli.FlexColumnWidthTwo),
 		table.NewFlexColumn("terms", "Terms", cli.FlexColumnWidthThree),
-		table.NewFlexColumn("group_id", "Group Id", cli.FlexColumnWidthFour),
-		table.NewFlexColumn("group_name", "Group Name", cli.FlexColumnWidthFour),
+		table.NewFlexColumn("group_id", "Group Id", cli.FlexColumnWidthFive),
+		table.NewFlexColumn("group_name", "Group Name", cli.FlexColumnWidthTwo),
 		table.NewFlexColumn("labels", "Labels", cli.FlexColumnWidthOne),
 		table.NewFlexColumn("created_at", "Created At", cli.FlexColumnWidthOne),
 		table.NewFlexColumn("updated_at", "Updated At", cli.FlexColumnWidthOne),
