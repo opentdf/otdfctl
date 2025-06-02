@@ -106,8 +106,8 @@ func policyUpdateResourceMappingGroup(cmd *cobra.Command, args []string) {
 	defer h.Close()
 
 	id := c.Flags.GetRequiredID("id")
-	nsID := c.Flags.GetRequiredID("namespace-id")
-	name := c.Flags.GetRequiredString("name")
+	nsID := c.Flags.GetOptionalID("namespace-id")
+	name := c.Flags.GetOptionalString("name")
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
 	resourceMappingGroup, err := h.UpdateResourceMappingGroup(id, nsID, name, getMetadataMutable(metadataLabels), getMetadataUpdateBehavior())

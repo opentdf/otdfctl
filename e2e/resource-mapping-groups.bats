@@ -76,7 +76,7 @@ teardown_file() {
     run_otdfctl_rmg get --id "$RMG1_ID" --json
         assert_success
         [ $(echo $output | jq -r '.id') = "$RMG1_ID" ]
-        [ $(echo $output | jq -r '.ns_id') = "$NS_ID" ]
+        [ $(echo $output | jq -r '.namespace_id') = "$NS_ID" ]
         [ $(echo $output | jq -r '.name') = "$RMG1_NAME" ]
     
     # id required
