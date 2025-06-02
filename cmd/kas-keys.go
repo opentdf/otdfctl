@@ -249,7 +249,7 @@ func policyCreateKasKey(cmd *cobra.Command, args []string) {
 	kasIdentifier := c.Flags.GetRequiredString("kas")
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
-	alg, err := algToEnum(c.Flags.GetRequiredString("alg"))
+alg, err := algToEnum(c.Flags.GetRequiredString("algorithm"))
 	if err != nil {
 		cli.ExitWithError("Invalid algorithm", err)
 	}
