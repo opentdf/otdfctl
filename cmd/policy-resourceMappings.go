@@ -22,13 +22,13 @@ func policy_createResourceMapping(cmd *cobra.Command, args []string) {
 	defer h.Close()
 
 	attrId := c.Flags.GetRequiredID("attribute-value-id")
-	grpId := c.Flags.GetOptionalID("group-id")
+	grpID := c.Flags.GetOptionalID("group-id")
 	terms = c.Flags.GetStringSlice("terms", terms, cli.FlagsStringSliceOptions{
 		Min: 1,
 	})
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
-	resourceMapping, err := h.CreateResourceMapping(attrId, terms, grpId, getMetadataMutable(metadataLabels))
+	resourceMapping, err := h.CreateResourceMapping(attrId, terms, grpID, getMetadataMutable(metadataLabels))
 	if err != nil {
 		cli.ExitWithError("Failed to create resource mapping", err)
 	}
@@ -124,11 +124,11 @@ func policy_updateResourceMapping(cmd *cobra.Command, args []string) {
 
 	id := c.Flags.GetRequiredID("id")
 	attrValueId := c.Flags.GetOptionalID("attribute-value-id")
-	grpId := c.Flags.GetOptionalID("group-id")
+	grpID := c.Flags.GetOptionalID("group-id")
 	terms = c.Flags.GetStringSlice("terms", terms, cli.FlagsStringSliceOptions{})
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
-	resourceMapping, err := h.UpdateResourceMapping(id, attrValueId, grpId, terms, getMetadataMutable(metadataLabels), getMetadataUpdateBehavior())
+	resourceMapping, err := h.UpdateResourceMapping(id, attrValueId, grpID, terms, getMetadataMutable(metadataLabels), getMetadataUpdateBehavior())
 	if err != nil {
 		cli.ExitWithError(fmt.Sprintf("Failed to update resource mapping (%s)", id), err)
 	}

@@ -8,16 +8,10 @@ import (
 	"github.com/opentdf/platform/protocol/go/policy/resourcemapping"
 )
 
-type ResourceMappingGroup struct {
-	Id          string
-	NamespaceId string
-	Name        string
-}
-
 // Creates and returns the created resource mapping
-func (h *Handler) CreateResourceMappingGroup(namespaceId string, name string, metadata *common.MetadataMutable) (*policy.ResourceMappingGroup, error) {
+func (h *Handler) CreateResourceMappingGroup(namespaceID string, name string, metadata *common.MetadataMutable) (*policy.ResourceMappingGroup, error) {
 	res, err := h.sdk.ResourceMapping.CreateResourceMappingGroup(context.Background(), &resourcemapping.CreateResourceMappingGroupRequest{
-		NamespaceId: namespaceId,
+		NamespaceId: namespaceID,
 		Name:        name,
 		Metadata:    metadata,
 	})
@@ -55,10 +49,10 @@ func (h *Handler) ListResourceMappingGroups(ctx context.Context, limit, offset i
 
 // TODO: verify updation behavior
 // Updates and returns the updated resource mapping
-func (h *Handler) UpdateResourceMappingGroup(id string, namespaceId string, name string, metadata *common.MetadataMutable, behavior common.MetadataUpdateEnum) (*policy.ResourceMappingGroup, error) {
+func (h *Handler) UpdateResourceMappingGroup(id string, namespaceID string, name string, metadata *common.MetadataMutable, behavior common.MetadataUpdateEnum) (*policy.ResourceMappingGroup, error) {
 	_, err := h.sdk.ResourceMapping.UpdateResourceMappingGroup(context.Background(), &resourcemapping.UpdateResourceMappingGroupRequest{
 		Id:                     id,
-		NamespaceId:            namespaceId,
+		NamespaceId:            namespaceID,
 		Name:                   name,
 		Metadata:               metadata,
 		MetadataUpdateBehavior: behavior,

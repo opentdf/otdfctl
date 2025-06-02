@@ -11,19 +11,19 @@ import (
 )
 
 var (
-	policy_resourceMappingGroupsCmd *cobra.Command
+	policyResourceMappingGroupsCmd *cobra.Command
 )
 
-func policy_createResourceMappingGroup(cmd *cobra.Command, args []string) {
+func policyCreateResourceMappingGroup(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
 	defer h.Close()
 
-	nsId := c.Flags.GetRequiredID("namespace-id")
+	nsID := c.Flags.GetRequiredID("namespace-id")
 	name := c.Flags.GetRequiredString("name")
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
-	resourceMappingGroup, err := h.CreateResourceMappingGroup(nsId, name, getMetadataMutable(metadataLabels))
+	resourceMappingGroup, err := h.CreateResourceMappingGroup(nsID, name, getMetadataMutable(metadataLabels))
 	if err != nil {
 		cli.ExitWithError("Failed to create resource mapping group", err)
 	}
@@ -39,7 +39,7 @@ func policy_createResourceMappingGroup(cmd *cobra.Command, args []string) {
 	HandleSuccess(cmd, resourceMappingGroup.GetId(), t, resourceMappingGroup)
 }
 
-func policy_getResourceMappingGroup(cmd *cobra.Command, args []string) {
+func policyGetResourceMappingGroup(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
 	defer h.Close()
@@ -62,7 +62,7 @@ func policy_getResourceMappingGroup(cmd *cobra.Command, args []string) {
 	HandleSuccess(cmd, resourceMappingGroup.GetId(), t, resourceMappingGroup)
 }
 
-func policy_listResourceMappingGroups(cmd *cobra.Command, args []string) {
+func policyListResourceMappingGroups(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
 	defer h.Close()
@@ -100,17 +100,17 @@ func policy_listResourceMappingGroups(cmd *cobra.Command, args []string) {
 	HandleSuccess(cmd, "", t, rmgList)
 }
 
-func policy_updateResourceMappingGroup(cmd *cobra.Command, args []string) {
+func policyUpdateResourceMappingGroup(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
 	defer h.Close()
 
 	id := c.Flags.GetRequiredID("id")
-	nsId := c.Flags.GetRequiredID("namespace-id")
+	nsID := c.Flags.GetRequiredID("namespace-id")
 	name := c.Flags.GetRequiredString("name")
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
-	resourceMappingGroup, err := h.UpdateResourceMappingGroup(id, nsId, name, getMetadataMutable(metadataLabels), getMetadataUpdateBehavior())
+	resourceMappingGroup, err := h.UpdateResourceMappingGroup(id, nsID, name, getMetadataMutable(metadataLabels), getMetadataUpdateBehavior())
 	if err != nil {
 		cli.ExitWithError(fmt.Sprintf("Failed to update resource mapping group (%s)", id), err)
 	}
@@ -126,7 +126,7 @@ func policy_updateResourceMappingGroup(cmd *cobra.Command, args []string) {
 	HandleSuccess(cmd, resourceMappingGroup.GetId(), t, resourceMappingGroup)
 }
 
-func policy_deleteResourceMappingGroup(cmd *cobra.Command, args []string) {
+func policyDeleteResourceMappingGroup(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
 	defer h.Close()
@@ -156,7 +156,7 @@ func policy_deleteResourceMappingGroup(cmd *cobra.Command, args []string) {
 
 func init() {
 	createDoc := man.Docs.GetCommand("policy/resource-mapping-groups/create",
-		man.WithRun(policy_createResourceMappingGroup),
+		man.WithRun(policyCreateResourceMappingGroup),
 	)
 	createDoc.Flags().String(
 		createDoc.GetDocFlag("namespace-id").Name,
@@ -171,7 +171,7 @@ func init() {
 	injectLabelFlags(&createDoc.Command, false)
 
 	getDoc := man.Docs.GetCommand("policy/resource-mapping-groups/get",
-		man.WithRun(policy_getResourceMappingGroup),
+		man.WithRun(policyGetResourceMappingGroup),
 	)
 	getDoc.Flags().String(
 		getDoc.GetDocFlag("id").Name,
@@ -180,12 +180,12 @@ func init() {
 	)
 
 	listDoc := man.Docs.GetCommand("policy/resource-mapping-groups/list",
-		man.WithRun(policy_listResourceMappingGroups),
+		man.WithRun(policyListResourceMappingGroups),
 	)
 	injectListPaginationFlags(listDoc)
 
 	updateDoc := man.Docs.GetCommand("policy/resource-mapping-groups/update",
-		man.WithRun(policy_updateResourceMappingGroup),
+		man.WithRun(policyUpdateResourceMappingGroup),
 	)
 	updateDoc.Flags().String(
 		updateDoc.GetDocFlag("id").Name,
@@ -205,7 +205,7 @@ func init() {
 	injectLabelFlags(&updateDoc.Command, true)
 
 	deleteDoc := man.Docs.GetCommand("policy/resource-mapping-groups/delete",
-		man.WithRun(policy_deleteResourceMappingGroup),
+		man.WithRun(policyDeleteResourceMappingGroup),
 	)
 	deleteDoc.Flags().String(
 		deleteDoc.GetDocFlag("id").Name,
@@ -221,6 +221,6 @@ func init() {
 	doc := man.Docs.GetCommand("policy/resource-mapping-groups",
 		man.WithSubcommands(createDoc, getDoc, listDoc, updateDoc, deleteDoc),
 	)
-	policy_resourceMappingGroupsCmd = &doc.Command
-	policyCmd.AddCommand(policy_resourceMappingGroupsCmd)
+	policyResourceMappingGroupsCmd = &doc.Command
+	policyCmd.AddCommand(policyResourceMappingGroupsCmd)
 }
