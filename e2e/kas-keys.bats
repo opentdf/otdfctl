@@ -7,7 +7,7 @@ setup_file() {
   # This command is not a 'kas-registry key' subcommand, so it won't use run_otdfctl_key
   export KAS_URI="https://test-kas-with-keys.com"
   export KAS_NAME="kas-registry-for-keys-test"
-  export KAS_REGISTRY_ID=$(./otdfctl $HOST $WITH_CREDS policy kas-registry create --name $KAS_NAME --uri "$KAS_URI" --json | jq -r '.id')
+  export KAS_REGISTRY_ID=$(./otdfctl $HOST $WITH_CREDS policy kas-registry create --name $KAS_NAME --uri "$KAS_URI" --public-key-remote 'https://test-kas-with-keys.com' --json | jq -r '.id')
   export PC_ID=$(./otdfctl $HOST $WITH_CREDS keymanagement provider create --name "test-provider-config-kas-keys" --config '{}' --json | jq -r '.id')
   export WRAPPING_KEY="gp6TcYb/ZrgkQOYPdiYFRj11jZwbevy+r2KFbAYM0GE="
   export PEM_B64=$(echo "pem" | base64)

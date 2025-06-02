@@ -8,7 +8,7 @@ setup_file() {
   # Create a KAS registry entry for testing base keys
   export KAS_NAME_BASE_KEY_TEST="kas-registry-for-base-key-tests"
   export KAS_URI_BASE_KEY_TEST="https://test-kas-for-base-keys.com"
-  export KAS_REGISTRY_ID_BASE_KEY_TEST=$(./otdfctl $HOST $WITH_CREDS policy kas-registry create --name "${KAS_NAME_BASE_KEY_TEST}" --uri "${KAS_URI_BASE_KEY_TEST}" --json | jq -r '.id')
+  export KAS_REGISTRY_ID_BASE_KEY_TEST=$(./otdfctl $HOST $WITH_CREDS policy kas-registry create --name "${KAS_NAME_BASE_KEY_TEST}" --uri "${KAS_URI_BASE_KEY_TEST}" --public-key-remote "${KAS_URI_BASE_KEY_TEST}" --json | jq -r '.id')
 
   # Create a regular KAS key to be set as a base key
   # This key will be used by the 'set' command tests

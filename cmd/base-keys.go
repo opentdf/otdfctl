@@ -119,9 +119,7 @@ func setBaseKey(cmd *cobra.Command, args []string) {
 	var err error
 
 	id := c.Flags.GetOptionalString("key")
-	fmt.Println("id: ", id)
 	if utils.ClassifyString(id) != utils.StringTypeUUID {
-		fmt.Println("calling getKasKeyIdentifier")
 		identifier, err = getKasKeyIdentifier(c)
 		if err != nil {
 			c.ExitWithError("Invalid key identifier", err)
