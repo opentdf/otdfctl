@@ -8,8 +8,10 @@ command:
     - k
   flags:
     - name: json
-      description: output single command in JSON (overrides configured output format)
+      description: Output the result of a subcommand in JSON format (overrides configured output format). This is an inherited flag.
       default: 'false'
 ---
 
-Set of commands for managing KAS keys used with OpenTDF platform.
+Provides a set of subcommands for managing cryptographic keys within the Key Access Server (KAS) registry.
+These keys are essential for encryption and decryption operations within the OpenTDF platform.
+Operations include creating, retrieving, listing, updating, and managing the platform's base key.

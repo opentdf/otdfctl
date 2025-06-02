@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"encoding/base64"
 	"errors"
 	"fmt"
@@ -10,6 +11,7 @@ import (
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/handlers"
 	"github.com/opentdf/otdfctl/pkg/man"
+	"github.com/opentdf/otdfctl/pkg/utils"
 	"github.com/opentdf/platform/lib/ocrypto"
 	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/spf13/cobra"
@@ -243,10 +245,8 @@ func policyCreateKasKey(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
-	keyID := c.Flags.GetRequiredString("keyId")
-	kasID := c.Flags.GetOptionalString("kasId")
-	kasURI := c.Flags.GetOptionalString("kasUri")
-	kasName := c.Flags.GetOptionalString("kasName")
+	keyIdentifier := c.Flags.GetRequiredString("key")
+	kasIdentifier := c.Flags.GetRequiredString("kas")
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
 	alg, err := algToEnum(c.Flags.GetRequiredString("alg"))
@@ -259,23 +259,23 @@ func policyCreateKasKey(cmd *cobra.Command, args []string) {
 		cli.ExitWithError("Invalid mode", err)
 	}
 
-	wrappingKeyID = c.Flags.GetOptionalString("wrappingKeyId")
+	wrappingKeyID = c.Flags.GetOptionalString("wrapping-key-id")
 	if mode != policy.KeyMode_KEY_MODE_PUBLIC_KEY_ONLY && wrappingKeyID == "" {
 		formattedMode, _ := enumToMode(mode)
-		cli.ExitWithError(fmt.Sprintf("wrappingKeyId is required for mode %s", formattedMode), nil)
+		cli.ExitWithError(fmt.Sprintf("wrapping-key-id is required for mode %s", formattedMode), nil)
 	}
 
-	providerConfigID = c.Flags.GetOptionalString("providerConfigId")
+	providerConfigID = c.Flags.GetOptionalString("provider-config-id")
 	if (mode == policy.KeyMode_KEY_MODE_PROVIDER_ROOT_KEY || mode == policy.KeyMode_KEY_MODE_REMOTE) && providerConfigID == "" {
 		formattedMode, _ := enumToMode(mode)
-		cli.ExitWithError(fmt.Sprintf("providerConfigId is required for mode %s", formattedMode), nil)
+		cli.ExitWithError(fmt.Sprintf("provider-config-id is required for mode %s", formattedMode), nil)
 	}
 
 	var publicKeyCtx *policy.PublicKeyCtx
 	var privateKeyCtx *policy.PrivateKeyCtx
 	switch mode {
 	case policy.KeyMode_KEY_MODE_CONFIG_ROOT_KEY:
-		wrappingKey := c.Flags.GetRequiredString("wrappingKey")
+		wrappingKey := c.Flags.GetRequiredString("wrapping-key")
 		privateKeyPem, publicKeyPem, err := generateKeys(alg)
 		if err != nil {
 			cli.ExitWithError("Failed to generate keys", err)
@@ -296,9 +296,9 @@ func policyCreateKasKey(cmd *cobra.Command, args []string) {
 			WrappedKey: privPemBase64,
 		}
 	case policy.KeyMode_KEY_MODE_PROVIDER_ROOT_KEY:
-		providerConfigID = c.Flags.GetRequiredString("providerConfigId")
-		publicPem := c.Flags.GetRequiredString("pubPem")
-		privatePem := c.Flags.GetRequiredString("privatePem")
+		providerConfigID = c.Flags.GetRequiredString("provider-config-id")
+		publicPem := c.Flags.GetRequiredString("public-key-pem")
+		privatePem := c.Flags.GetRequiredString("private-key-pem")
 		_, err = base64.StdEncoding.DecodeString(publicPem)
 		if err != nil {
 			cli.ExitWithError("pem must be base64 encoded", err)
@@ -315,8 +315,8 @@ func policyCreateKasKey(cmd *cobra.Command, args []string) {
 			WrappedKey: privatePem,
 		}
 	case policy.KeyMode_KEY_MODE_REMOTE:
-		pem := c.Flags.GetRequiredString("pubPem")
-		providerConfigID = c.Flags.GetRequiredString("providerConfigId")
+		pem := c.Flags.GetRequiredString("public-key-pem")
+		providerConfigID = c.Flags.GetRequiredString("provider-config-pem")
 
 		_, err = base64.StdEncoding.DecodeString(pem)
 		if err != nil {
@@ -330,7 +330,7 @@ func policyCreateKasKey(cmd *cobra.Command, args []string) {
 			KeyId: wrappingKeyID,
 		}
 	case policy.KeyMode_KEY_MODE_PUBLIC_KEY_ONLY:
-		pem := c.Flags.GetRequiredString("pubPem")
+		pem := c.Flags.GetRequiredString("public-key-pem")
 		_, err = base64.StdEncoding.DecodeString(pem)
 		if err != nil {
 			cli.ExitWithError("pem must be base64 encoded", err)
@@ -344,21 +344,15 @@ func policyCreateKasKey(cmd *cobra.Command, args []string) {
 		cli.ExitWithError("Invalid mode", nil)
 	}
 
-	if kasID == "" {
-		kas, err := h.GetKasRegistryEntry(c.Context(), handlers.KasIdentifier{
-			Name: kasName,
-			URI:  kasURI,
-		})
-		if err != nil {
-			cli.ExitWithError("Failed to get kas registry entry", err)
-		}
-		kasID = kas.GetId()
+	kasIdentifier, err = resolveKasIdentifier(c.Context(), kasIdentifier, h)
+	if err != nil {
+		cli.ExitWithError("Invalid kas identifier", err)
 	}
 
 	kasKey, err := h.CreateKasKey(
 		c.Context(),
-		kasID,
-		keyID,
+		kasIdentifier,
+		keyIdentifier,
 		alg,
 		mode,
 		publicKeyCtx,
@@ -440,7 +434,7 @@ func policyListKasKeys(cmd *cobra.Command, args []string) {
 
 	limit := c.Flags.GetRequiredInt32("limit")
 	offset := c.Flags.GetRequiredInt32("offset")
-	algArg := c.Flags.GetOptionalString("alg")
+	algArg := c.Flags.GetOptionalString("algorithm")
 	var alg policy.Algorithm
 	if algArg != "" {
 		var err error
@@ -449,15 +443,16 @@ func policyListKasKeys(cmd *cobra.Command, args []string) {
 			cli.ExitWithError("Invalid algorithm", err)
 		}
 	}
-	kasID := c.Flags.GetOptionalString("kasId")
-	kasName := c.Flags.GetOptionalString("kasName")
-	kasURI := c.Flags.GetOptionalString("kasUri")
+	kasIdentifier := c.Flags.GetRequiredString("kas")
+
+	kasIdentifier, err := resolveKasIdentifier(c.Context(), kasIdentifier, h)
+	if err != nil {
+		cli.ExitWithError("Invalid kas identifier", err)
+	}
 
 	// Get the list of keys.
 	keys, page, err := h.ListKasKeys(c.Context(), limit, offset, alg, handlers.KasIdentifier{
-		ID:   kasID,
-		Name: kasName,
-		URI:  kasURI,
+		ID: kasIdentifier,
 	})
 	if err != nil {
 		cli.ExitWithError("Failed to list kas keys", err)
@@ -527,6 +522,32 @@ func policyListKasKeys(cmd *cobra.Command, args []string) {
 	t = t.WithRows(rows)
 	t = cli.WithListPaginationFooter(t, page)
 	HandleSuccess(cmd, "", t, keys)
+}
+
+func resolveKasIdentifier(ctx context.Context, ident string, h handlers.Handler) (string, error) {
+	// Use the ClassifyString helper to determine how to look up the KAS
+	kasLookup := handlers.KasIdentifier{}
+	kasInputType := utils.ClassifyString(ident)
+
+	switch kasInputType {
+	case utils.StringTypeUUID:
+		return ident, nil
+	case utils.StringTypeURI:
+		kasLookup.URI = ident
+	case utils.StringTypeGeneric:
+		kasLookup.Name = ident
+	default:
+		return "", errors.New("invalid kas identifier")
+	}
+
+	if kasInputType != utils.StringTypeUUID {
+		resolvedKas, err := h.GetKasRegistryEntry(ctx, kasLookup)
+		if err != nil {
+			return "", errors.Join(errors.New("failed to get kas registry entry"), err)
+		}
+		return resolvedKas.GetId(), nil
+	}
+	return "", nil
 }
 
 func init() {
