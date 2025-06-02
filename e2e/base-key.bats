@@ -80,7 +80,7 @@ teardown_file() {
 }
 
 @test "base-key: set by --key(id) and --kas(name)" {
-  run_otdfctl_base_key set --key "${REGULAR_KEY_ID_FOR_BASE_TEST}" --kasName "${KAS_NAME_BASE_KEY_TEST}" --json
+  run_otdfctl_base_key set --key "${REGULAR_KEY_ID_FOR_BASE_TEST}" --kas "${KAS_NAME_BASE_KEY_TEST}" --json
   assert_success
   assert_equal "$(echo "$output" | jq -r .new_base_key.public_key.kid)" "${REGULAR_KEY_ID_FOR_BASE_TEST}"
   assert_equal "$(echo "$output" | jq -r .new_base_key.kas_uri)" "${KAS_URI_BASE_KEY_TEST}" # KAS URI should remain the same for the KAS Name
@@ -136,16 +136,16 @@ teardown_file() {
   assert_equal "$(echo "$output" | jq -r .previous_base_key.public_key.algorithm)" "rsa:2048"
 }
 
-@test "base-key: set (missing kas identifier: kasId, kasName, or kasUri)" {
+@test "base-key: set (missing kas identifier)" {
   run_otdfctl_base_key set --key "${REGULAR_KEY_ID_FOR_BASE_TEST}"
   assert_failure
-  assert_output --partial "at least one of 'kasId', 'kasName', or 'kasUri' must be provided with 'keyId'"
+  assert_output --partial "Flag '--kas' is required"
 }
 
 @test "base-key: set (missing key identifier: id or keyId)" {
   run_otdfctl_base_key set --kas "${KAS_REGISTRY_ID_BASE_KEY_TEST}"
   assert_failure
-  assert_output --partial "Error: at least one of the flags in the group [id keyId] is required"
+  assert_output --partial "Flag '--key' is required"
 }
 
 @test "base-key: set (using non-existent keyId)" {
