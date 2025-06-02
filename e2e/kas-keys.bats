@@ -267,7 +267,7 @@ format_kas_name_as_uri() {
   KEY_ID=$(generate_key_id)
   run_otdfctl_key create --key-id "${KEY_ID}" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "${PEM_B64}"
   assert_failure
-  assert_output --partial "Error: at least one of the flags in the group [kas kas kas] is required"
+  assert_output --partial "Flag '--kas' is required"
 }
 
 @test "kas-keys: create key (using kasName)" {
@@ -300,18 +300,11 @@ format_kas_name_as_uri() {
   assert_not_equal "$(echo "$output" | jq -r .key.metadata.updated_at)" "null"
 }
 
-@test "kas-keys: create key (mutually exclusive KAS identifiers)" {
+@test "kas-keys: create key (invalid algorithm value)" {
   KEY_ID=$(generate_key_id)
-  run_otdfctl_key create --kas "${KAS_REGISTRY_ID}" --kas "some-other-kas" --key-id "${KEY_ID}" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "${PEM_B64}" --json
+  run_otdfctl_key create --kas "${KAS_REGISTRY_ID}" --key-id "${KEY_ID}" --algorithm "invalid-algorithm-value" --mode "public_key" --public-key-pem "${PEM_B64}" --json
   assert_failure
-  assert_output --partial "Error: if any flags in the group [kas kas kas] are set none of the others can be; [kas kas] were all set"
-}
-
-@test "kas-keys: create key (invalid algorithmorithm value)" {
-  KEY_ID=$(generate_key_id)
-  run_otdfctl_key create --kas "${KAS_REGISTRY_ID}" --key-id "${KEY_ID}" --algorithm "invalid-algorithmorithm-value" --mode "public_key" --public-key-pem "${PEM_B64}" --json
-  assert_failure
-  assert_output --partial "Invalid algorithmorithm"
+  assert_output --partial "Invalid algorithm: invalid algorithm"
 }
 
 @test "kas-keys: create key (invalid mode value)" {
@@ -348,7 +341,7 @@ format_kas_name_as_uri() {
   assert_success
   local created_key_system_id_for_get=$(echo "$output" | jq -r .key.id)
 
-  run_otdfctl_key get --key-id "${KEY_ID_GET_USER}" --kas "${KAS_REGISTRY_ID}" --json
+  run_otdfctl_key get --key "${KEY_ID_GET_USER}" --kas "${KAS_REGISTRY_ID}" --json
   assert_success
   assert_equal "$(echo "$output" | jq -r .kas_id)" "${KAS_REGISTRY_ID}"
   assert_equal "$(echo "$output" | jq -r .key.id)" "${created_key_system_id_for_get}"
@@ -368,7 +361,7 @@ format_kas_name_as_uri() {
   assert_success
   local created_key_system_id_for_kas_get=$(echo "$output" | jq -r .key.id)
 
-  run_otdfctl_key get --key-id "${KEY_ID_GET_USER_kas}" --kas "kas-registry-for-keys-test" --json
+  run_otdfctl_key get --key "${KEY_ID_GET_USER_kas}" --kas "kas-registry-for-keys-test" --json
   assert_success
   assert_equal "$(echo "$output" | jq -r .kas_id)" "${KAS_REGISTRY_ID}"
   assert_equal "$(echo "$output" | jq -r .key.id)" "${created_key_system_id_for_kas_get}"
@@ -388,7 +381,7 @@ format_kas_name_as_uri() {
   assert_success
   local created_key_system_id_for_kas_get=$(echo "$output" | jq -r .key.id)
 
-  run_otdfctl_key get --key-id "${KEY_ID_GET_USER_kas}" --kas "${KAS_URI}" --json
+  run_otdfctl_key get --key "${KEY_ID_GET_USER_kas}" --kas "${KAS_URI}" --json
   assert_success
   assert_equal "$(echo "$output" | jq -r .kas_id)" "${KAS_REGISTRY_ID}" # Should resolve to the same KAS
   assert_equal "$(echo "$output" | jq -r .key.id)" "${created_key_system_id_for_kas_get}"
@@ -408,7 +401,7 @@ format_kas_name_as_uri() {
   run_otdfctl_key create --kas "${KAS_REGISTRY_ID}" --key-id "${KEY_ID_FAIL_GET}" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "${PEM_B64}" --json
   assert_success
 
-  run_otdfctl_key get --key-id "${KEY_ID_FAIL_GET}" --json
+  run_otdfctl_key get --key "${KEY_ID_FAIL_GET}" --json
   assert_failure
   # Error message might vary, but it should indicate an issue with resolving the key or missing parameters
   assert_output --partial "at least one of 'kas', 'kas', or 'kas' must be provided with 'key-id'" # Or a more specific error about missing KAS identifier
@@ -417,7 +410,7 @@ format_kas_name_as_uri() {
 @test "kas-keys: get key (failure: only kas, missing key-id or system id)" {
   run_otdfctl_key get --kas "${KAS_REGISTRY_ID}" --json
   assert_failure
-  assert_output --partial "at least one of the flags in the group [id key-id] is required"
+  assert_output --partial "Flag '--key' is required"
 }
 
 @test "kas-keys: get key (not found by system ID)" {

@@ -378,7 +378,7 @@ func policyGetKasKey(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
-	id := c.Flags.GetOptionalID("key")
+	id := c.Flags.GetOptionalString("key")
 
 	var identifier *kasregistry.KasKeyIdentifier
 	var err error
@@ -449,7 +449,7 @@ func policyListKasKeys(cmd *cobra.Command, args []string) {
 			cli.ExitWithError("Invalid algorithm", err)
 		}
 	}
-	kasIdentifier := c.Flags.GetRequiredString("kas")
+	kasIdentifier := c.Flags.GetOptionalString("kas")
 
 	kasIdentifier, err := resolveKasIdentifier(c.Context(), kasIdentifier, h)
 	if err != nil {
