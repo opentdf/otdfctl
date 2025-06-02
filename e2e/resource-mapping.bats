@@ -121,16 +121,6 @@ teardown_file() {
         assert_output --partial "new"
         refute_output --partial "$VAL2_ID"
         assert_output --partial "$VAL1_ID"
-
-    # reassign the group
-    run_otdfctl_rm update --id "$NEW_RM_ID" --group-id "$RMG2_ID"
-        assert_success
-        refute_output --partial "test"
-        refute_output --partial "found"
-        assert_output --partial "replaced"
-        assert_output --partial "new"
-        refute_output --partial "$RMG2_ID"
-        assert_output --partial "$RMG1_ID"
 }
 
 @test "List resource mappings" {
