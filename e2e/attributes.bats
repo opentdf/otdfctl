@@ -15,7 +15,7 @@ setup_file() {
   export KAS_URI="https://test-kas-for-attributes.com"
   export KAS_REG_ID=$(./otdfctl $HOST $WITH_CREDS policy kas-registry create --uri "$KAS_URI" --public-key-remote 'https://test-kas-for-attributes.com/pub_key' --json | jq -r '.id')
   export PEM_B64=$(echo "pem" | base64)
-  export KAS_KEY_ID=$(./otdfctl $HOST $WITH_CREDS policy kas-registry key create --kasId "$KAS_REG_ID" --key-id "test-key-for-attr" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "${PEM_B64}" --json | jq -r '.key.id')
+  export KAS_KEY_ID=$(./otdfctl $HOST $WITH_CREDS policy kas-registry key create --kas "$KAS_REG_ID" --key-id "test-key-for-attr" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "${PEM_B64}" --json | jq -r '.key.id')
 }
 
 # always create a randomly named attribute
