@@ -41,8 +41,9 @@ setup() {
 teardown_file() {
     # remove the created namespace with all underneath upon test suite completion
     ./otdfctl $HOST $WITH_CREDS policy attributes namespaces unsafe delete --force --id "$NS_ID"
+    ./otdfctl $HOST $WITH_CREDS policy attributes namespaces unsafe delete --force --id "$NS2_ID"
 
-    unset HOST WITH_CREDS VAL1_ID VAL2_ID NS_ID NS_NAME2 NS2_ID RM1_TERMS RM1_ID RM1_OTHER_TERMS RM1_OTHER_ID RMG1_NAME RMG1_ID
+    unset HOST WITH_CREDS VAL1_ID VAL2_ID NS_ID NS2_ID RM1_TERMS RM1_ID RM1_OTHER_TERMS RM1_OTHER_ID RMG1_NAME RMG1_ID
 }
 
 @test "Create resource mapping group" {
