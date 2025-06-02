@@ -25,11 +25,11 @@ func policy_createResourceMappingGroup(cmd *cobra.Command, args []string) {
 
 	resourceMappingGroup, err := h.CreateResourceMappingGroup(nsId, name, getMetadataMutable(metadataLabels))
 	if err != nil {
-		cli.ExitWithError("Failed to create resource mapping", err)
+		cli.ExitWithError("Failed to create resource mapping group", err)
 	}
 	rows := [][]string{
 		{"Id", resourceMappingGroup.GetId()},
-		{"Namespace ID", resourceMappingGroup.GetId()},
+		{"Namespace Id", resourceMappingGroup.GetNamespaceId()},
 		{"Group Name", resourceMappingGroup.GetName()},
 	}
 	if mdRows := getMetadataRows(resourceMappingGroup.GetMetadata()); mdRows != nil {
@@ -48,11 +48,11 @@ func policy_getResourceMappingGroup(cmd *cobra.Command, args []string) {
 
 	resourceMappingGroup, err := h.GetResourceMappingGroup(id)
 	if err != nil {
-		cli.ExitWithError(fmt.Sprintf("Failed to get resource mapping (%s)", id), err)
+		cli.ExitWithError(fmt.Sprintf("Failed to get resource mapping group (%s)", id), err)
 	}
 	rows := [][]string{
 		{"Id", resourceMappingGroup.GetId()},
-		{"Namespace ID", resourceMappingGroup.GetId()},
+		{"Namespace Id", resourceMappingGroup.GetNamespaceId()},
 		{"Group Name", resourceMappingGroup.GetName()},
 	}
 	if mdRows := getMetadataRows(resourceMappingGroup.GetMetadata()); mdRows != nil {
@@ -72,7 +72,7 @@ func policy_listResourceMappingGroups(cmd *cobra.Command, args []string) {
 
 	rmgList, page, err := h.ListResourceMappingGroups(cmd.Context(), limit, offset)
 	if err != nil {
-		cli.ExitWithError("Failed to list resource mappings", err)
+		cli.ExitWithError("Failed to list resource mapping groups", err)
 	}
 
 	t := cli.NewTable(
@@ -112,11 +112,11 @@ func policy_updateResourceMappingGroup(cmd *cobra.Command, args []string) {
 
 	resourceMappingGroup, err := h.UpdateResourceMappingGroup(id, nsId, name, getMetadataMutable(metadataLabels), getMetadataUpdateBehavior())
 	if err != nil {
-		cli.ExitWithError(fmt.Sprintf("Failed to update resource mapping (%s)", id), err)
+		cli.ExitWithError(fmt.Sprintf("Failed to update resource mapping group (%s)", id), err)
 	}
 	rows := [][]string{
 		{"Id", resourceMappingGroup.GetId()},
-		{"Namespace ID", resourceMappingGroup.GetId()},
+		{"Namespace Id", resourceMappingGroup.GetNamespaceId()},
 		{"Group Name", resourceMappingGroup.GetName()},
 	}
 	if mdRows := getMetadataRows(resourceMappingGroup.GetMetadata()); mdRows != nil {
@@ -138,16 +138,16 @@ func policy_deleteResourceMappingGroup(cmd *cobra.Command, args []string) {
 
 	resourceMappingGroup, err := h.GetResourceMappingGroup(id)
 	if err != nil {
-		cli.ExitWithError(fmt.Sprintf("Failed to get resource mapping for delete (%s)", id), err)
+		cli.ExitWithError(fmt.Sprintf("Failed to get resource mapping group for delete (%s)", id), err)
 	}
 
 	_, err = h.DeleteResourceMappingGroup(id)
 	if err != nil {
-		cli.ExitWithError(fmt.Sprintf("Failed to delete resource mapping (%s)", id), err)
+		cli.ExitWithError(fmt.Sprintf("Failed to delete resource mapping group (%s)", id), err)
 	}
 	rows := [][]string{
 		{"Id", resourceMappingGroup.GetId()},
-		{"Namespace ID", resourceMappingGroup.GetId()},
+		{"Namespace Id", resourceMappingGroup.GetNamespaceId()},
 		{"Group Name", resourceMappingGroup.GetName()},
 	}
 	t := cli.NewTabular(rows...)
@@ -180,7 +180,7 @@ func init() {
 	)
 
 	listDoc := man.Docs.GetCommand("policy/resource-mapping-groups/list",
-		man.WithRun(policy_listResourceMappings),
+		man.WithRun(policy_listResourceMappingGroups),
 	)
 	injectListPaginationFlags(listDoc)
 

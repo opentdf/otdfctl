@@ -18,5 +18,5 @@ For more information about resource mapping groups, see the `resource-mapping-gr
 ## Examples
 
 ```shell
-otdfctl policy resource-mapping-groups get --id=3ff446fb-8fb1-4c04-8023-47592c90370c
+otdfctl policy resource-mapping-groups list
 ```

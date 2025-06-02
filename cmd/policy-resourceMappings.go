@@ -37,7 +37,7 @@ func policy_createResourceMapping(cmd *cobra.Command, args []string) {
 		{"Attribute Value Id", resourceMapping.GetAttributeValue().GetId()},
 		{"Attribute Value", resourceMapping.GetAttributeValue().GetValue()},
 		{"Terms", strings.Join(resourceMapping.GetTerms(), ", ")},
-		{"Group ID", resourceMapping.GetGroup().GetId()},
+		{"Group Id", resourceMapping.GetGroup().GetId()},
 		{"Group Name", resourceMapping.GetGroup().GetName()},
 	}
 	if mdRows := getMetadataRows(resourceMapping.GetMetadata()); mdRows != nil {
@@ -63,7 +63,7 @@ func policy_getResourceMapping(cmd *cobra.Command, args []string) {
 		{"Attribute Value Id", resourceMapping.GetAttributeValue().GetId()},
 		{"Attribute Value", resourceMapping.GetAttributeValue().GetValue()},
 		{"Terms", strings.Join(resourceMapping.GetTerms(), ", ")},
-		{"Group ID", resourceMapping.GetGroup().GetId()},
+		{"Group Id", resourceMapping.GetGroup().GetId()},
 		{"Group Name", resourceMapping.GetGroup().GetName()},
 	}
 	if mdRows := getMetadataRows(resourceMapping.GetMetadata()); mdRows != nil {
@@ -137,7 +137,7 @@ func policy_updateResourceMapping(cmd *cobra.Command, args []string) {
 		{"Attribute Value Id", resourceMapping.GetAttributeValue().GetId()},
 		{"Attribute Value", resourceMapping.GetAttributeValue().GetValue()},
 		{"Terms", strings.Join(resourceMapping.GetTerms(), ", ")},
-		{"Group ID", resourceMapping.GetGroup().GetId()},
+		{"Group Id", resourceMapping.GetGroup().GetId()},
 		{"Group Name", resourceMapping.GetGroup().GetName()},
 	}
 	if mdRows := getMetadataRows(resourceMapping.GetMetadata()); mdRows != nil {
@@ -171,7 +171,7 @@ func policy_deleteResourceMapping(cmd *cobra.Command, args []string) {
 		{"Attribute Value Id", resourceMapping.GetAttributeValue().GetId()},
 		{"Attribute Value", resourceMapping.GetAttributeValue().GetValue()},
 		{"Terms", strings.Join(resourceMapping.GetTerms(), ", ")},
-		{"Group ID", resourceMapping.GetGroup().GetId()},
+		{"Group Id", resourceMapping.GetGroup().GetId()},
 		{"Group Name", resourceMapping.GetGroup().GetName()},
 	}
 	t := cli.NewTabular(rows...)

@@ -17,6 +17,9 @@ setup_file() {
     # Create a single resource mapping to val1 - comma separated
         export RM1_TERMS="valueone,valuefirst,first,one"
         export RM1_ID=$(./otdfctl $HOST $WITH_CREDS policy resource-mappings create --attribute-value-id "$VAL1_ID" --terms "$RM1_TERMS" --json | jq -r '.id')
+
+    # Create a resource mapping group
+        export RMG1_ID=$(./otdfctl $HOST $WITH_CREDS policy resource-mapping-groups create --namespace-id "$NS_ID" --name rmgrp-test --json | jq -r '.id')
 }
 
 setup() {
@@ -54,6 +57,21 @@ teardown_file() {
     run_otdfctl_rm create --attribute-value-id $VAL2_ID
     assert_failure
     assert_output --partial "must have at least 1 non-empty values"
+}
+
+@test "Create resource mapping in a group" {
+    # create with multiple terms flags instead of comma-separated
+    run_otdfctl_rm create --attribute-value-id "$VAL2_ID" --terms "second,TWO" --group-id "$RMG1_ID"
+    assert_success
+    assert_output --partial "second"
+    assert_output --partial "TWO"
+    assert_line --regexp "Attribute Value Id.*$VAL2_ID"
+     assert_line --regexp "Group Id.*$RMG1_ID"
+
+    # group id flag must be uuid
+    run_otdfctl_rm create --attribute-value-id "$VAL2_ID" --terms "testing" --group-id "grp1"
+    assert_failure
+    assert_output --partial "must be a valid UUID"
 }
 
 @test "Get resource mapping" {

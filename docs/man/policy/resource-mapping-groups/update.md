@@ -1,5 +1,5 @@
 ---
-title: Update a resource mapping
+title: Update a resource mapping group
 command:
   name: update
   aliases:
@@ -9,7 +9,7 @@ command:
       description: The ID of the resource mapping group to update.
       default: ''
     - name: namespace-id
-      description: The ID of the namesapce of the group
+      description: The ID of the namespace of the group
       default: ''
     - name: name
       description: The name of the group

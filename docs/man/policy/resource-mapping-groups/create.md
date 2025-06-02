@@ -8,7 +8,7 @@ command:
     - c
   flags:
     - name: namespace-id
-      description: The ID of the namesapce of the group
+      description: The ID of the namespace of the group
       default: ''
     - name: name
       description: The name of the group
@@ -19,7 +19,7 @@ command:
       default: ''
 ---
 
-Associate an attribute value with a set of plaintext string terms.
+Create a new group to organize resource mappings. Resource mapping groups belong to a namespace and are identified by a name.
 
 For more information about resource mapping groups, see the `resource-mapping-groups` subcommand.
 
