@@ -115,13 +115,11 @@ func setBaseKey(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
-	id := c.Flags.GetOptionalID("id")
-
 	identifier, err := getKasKeyIdentifier(c)
 	if err != nil {
 		c.ExitWithError("Invalid key identifier", err)
 	}
-	baseKey, err := h.SetBaseKey(c.Context(), id, identifier)
+	baseKey, err := h.SetBaseKey(c.Context(), identifier)
 	if err != nil {
 		cli.ExitWithError("Failed to set base key", err)
 	}
