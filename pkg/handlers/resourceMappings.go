@@ -15,9 +15,10 @@ type ResourceMapping struct {
 }
 
 // Creates and returns the created resource mapping
-func (h *Handler) CreateResourceMapping(attributeId string, terms []string, metadata *common.MetadataMutable) (*policy.ResourceMapping, error) {
+func (h *Handler) CreateResourceMapping(attributeID string, terms []string, grpID string, metadata *common.MetadataMutable) (*policy.ResourceMapping, error) {
 	res, err := h.sdk.ResourceMapping.CreateResourceMapping(context.Background(), &resourcemapping.CreateResourceMappingRequest{
-		AttributeValueId: attributeId,
+		AttributeValueId: attributeID,
+		GroupId:          grpID,
 		Terms:            terms,
 		Metadata:         metadata,
 	})
@@ -55,11 +56,12 @@ func (h *Handler) ListResourceMappings(ctx context.Context, limit, offset int32)
 
 // TODO: verify updation behavior
 // Updates and returns the updated resource mapping
-func (h *Handler) UpdateResourceMapping(id string, attrValueId string, terms []string, metadata *common.MetadataMutable, behavior common.MetadataUpdateEnum) (*policy.ResourceMapping, error) {
+func (h *Handler) UpdateResourceMapping(id string, attrValueID string, grpID string, terms []string, metadata *common.MetadataMutable, behavior common.MetadataUpdateEnum) (*policy.ResourceMapping, error) {
 	_, err := h.sdk.ResourceMapping.UpdateResourceMapping(context.Background(), &resourcemapping.UpdateResourceMappingRequest{
 		Id:                     id,
-		AttributeValueId:       attrValueId,
+		AttributeValueId:       attrValueID,
 		Terms:                  terms,
+		GroupId:                grpID,
 		Metadata:               metadata,
 		MetadataUpdateBehavior: behavior,
 	})
