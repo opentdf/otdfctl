@@ -242,7 +242,7 @@ format_kas_name_as_uri() {
   KEY_ID=$(generate_key_id)
   run_otdfctl_key create --kas "${KAS_REGISTRY_ID}" --key-id "${KEY_ID}" --algorithm "rsa:2048" --mode "remote" --public-key-pem "${PEM_B64}" --wrapping-key-id "wk-1"
   assert_failure
-  assert_output --partial "provider-config-id is required for mode remote"
+  assert_output --partial "Flag '--provider-config-id' is required"
 }
 
 @test "kas-keys: create key (remote mode, missing wrapping-key-id)" {
@@ -263,7 +263,7 @@ format_kas_name_as_uri() {
   KEY_ID=$(generate_key_id)
   run_otdfctl_key create --kas "${KAS_REGISTRY_ID}" --key-id "${KEY_ID}" --algorithm "rsa:2048" --mode "provider" --wrapping-key-id "wk-1"
   assert_failure
-  assert_output --partial "provider-config-id is required for mode provider"
+  assert_output --partial "Flag '--provider-config-id' is required"
 }
 
 @test "kas-keys: create key (remote mode, pem not base64)" {
@@ -321,14 +321,14 @@ format_kas_name_as_uri() {
   KEY_ID=$(generate_key_id)
   run_otdfctl_key create --kas "${KAS_REGISTRY_ID}" --key-id "${KEY_ID}" --algorithm "invalid-algorithm-value" --mode "public_key" --public-key-pem "${PEM_B64}" --json
   assert_failure
-  assert_output --partial "Invalid algorithm: invalid algorithm"
+  assert_output --partial "invalid algorithm"
 }
 
 @test "kas-keys: create key (invalid mode value)" {
   KEY_ID=$(generate_key_id)
   run_otdfctl_key create --kas "${KAS_REGISTRY_ID}" --key-id "${KEY_ID}" --algorithm "rsa:2048" --mode "invalid-mode-value" --public-key-pem "${PEM_B64}" --json
   assert_failure
-  assert_output --partial "Invalid mode"
+  assert_output --partial "invalid mode"
 }
 
 @test "kas-keys: create key (duplicate key-id)" {
@@ -738,4 +738,112 @@ format_kas_name_as_uri() {
   run_otdfctl_key list --algorithm "invalid-algorithm" --json
   assert_failure
   assert_output --partial "Invalid algorithm"
+}
+
+
+@test "kas-keys: rotate key" {
+  # Create a key first
+  OLD_KEY_ID=$(generate_key_id)
+  run_otdfctl_key create --kas "${KAS_REGISTRY_ID}" --key-id "${OLD_KEY_ID}" --algorithm "rsa:2048" --mode "local" --wrapping-key-id "wrapping-key-1" --wrapping-key "${WRAPPING_KEY}" --json
+  assert_success
+  OLD_KEY_SYSTEM_ID=$(echo "$output" | jq -r .key.id)
+  
+  # Rotate the key
+  NEW_KEY_ID=$(generate_key_id)
+  run_otdfctl_key rotate --key "${OLD_KEY_SYSTEM_ID}" --key-id "${NEW_KEY_ID}" --algorithm "rsa:2048" --mode "local" --wrapping-key-id "wrapping-key-2" --wrapping-key "${WRAPPING_KEY}" --json
+  assert_success
+  
+  # Verify the new key in kas_key section
+  NEW_KEY_SYSTEM_ID=$(echo "$output" | jq -r .kas_key.key.id)
+  assert_not_equal "${OLD_KEY_SYSTEM_ID}" "${NEW_KEY_SYSTEM_ID}"
+  assert_equal "$(echo "$output" | jq -r .kas_key.key.key_id)" "${NEW_KEY_ID}"
+  assert_equal "$(echo "$output" | jq -r .kas_key.key.key_algorithm)" "1" # rsa:2048
+  assert_equal "$(echo "$output" | jq -r .kas_key.key.key_mode)" "1"      # local
+  assert_equal "$(echo "$output" | jq -r .kas_key.key.key_status)" "1"    # active (new key should be active)
+  assert_not_equal "$(echo "$output" | jq -r .kas_key.key.public_key_ctx.pem)" "null"
+  assert_not_equal "$(echo "$output" | jq -r .kas_key.key.public_key_ctx.pem)" ""
+  assert_equal "$(echo "$output" | jq -r .kas_key.key.private_key_ctx.key_id)" "wrapping-key-2"
+  assert_not_equal "$(echo "$output" | jq -r .kas_key.key.private_key_ctx.wrapped_key)" "null"
+  assert_not_equal "$(echo "$output" | jq -r .kas_key.key.private_key_ctx.wrapped_key)" ""
+  assert_not_equal "$(echo "$output" | jq -r .kas_key.key.metadata.created_at)" "null"
+  assert_not_equal "$(echo "$output" | jq -r .kas_key.key.metadata.updated_at)" "null"
+  
+  # Verify the old rotated key in rotated_resources section
+  assert_equal "$(echo "$output" | jq -r .rotated_resources.rotated_out_key.key.id)" "${OLD_KEY_SYSTEM_ID}"
+  assert_equal "$(echo "$output" | jq -r .rotated_resources.rotated_out_key.key.key_id)" "${OLD_KEY_ID}"
+  assert_equal "$(echo "$output" | jq -r .rotated_resources.rotated_out_key.key.key_status)" "2"    # rotated (old key should be marked as rotated)
+}
+
+@test "kas-keys: rotate key (missing key)" {
+  run_otdfctl_key rotate --key-id "new-key-id" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "${PEM_B64}"
+  assert_failure
+  assert_output --partial "Flag '--key' is required"
+}
+
+@test "kas-keys: rotate key (missing key-id)" {
+  run_otdfctl_key rotate --key "old-key-id" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "${PEM_B64}"
+  assert_failure
+  assert_output --partial "Flag '--key-id' is required"
+}
+
+@test "kas-keys: rotate key (missing algorithm)" {
+  run_otdfctl_key rotate --key "old-key-id" --key-id "new-key-id" --mode "public_key" --public-key-pem "${PEM_B64}"
+  assert_failure
+  assert_output --partial "Flag '--algorithm' is required"
+}
+
+@test "kas-keys: rotate key (missing mode)" {
+  run_otdfctl_key rotate --key "old-key-id" --key-id "new-key-id" --algorithm "rsa:2048" --public-key-pem "${PEM_B64}"
+  assert_failure
+  assert_output --partial "Flag '--mode' is required"
+}
+
+@test "kas-keys: rotate key (local mode, missing wrapping-key-id)" {
+  run_otdfctl_key rotate --key "old-key-id" --key-id "new-key-id" --algorithm "rsa:2048" --mode "local" --wrapping-key "${WRAPPING_KEY}"
+  assert_failure
+  assert_output --partial "wrapping-key-id is required for mode local"
+}
+
+@test "kas-keys: rotate key (local mode, missing wrapping-key)" {
+  run_otdfctl_key rotate --key "old-key-id" --key-id "new-key-id" --algorithm "rsa:2048" --mode "local" --wrapping-key-id "wrapping-key-1"
+  assert_failure
+  assert_output --partial "Flag '--wrapping-key' is required"
+}
+
+@test "kas-keys: rotate key (public_key mode, missing public-key-pem)" {
+  run_otdfctl_key rotate --key "old-key-id" --key-id "new-key-id" --algorithm "rsa:2048" --mode "public_key"
+  assert_failure
+  assert_output --partial "Flag '--public-key-pem' is required"
+}
+
+@test "kas-keys: rotate key (remote mode, missing provider-config-id)" {
+  run_otdfctl_key rotate --key "old-key-id" --key-id "new-key-id" --algorithm "rsa:2048" --mode "remote" --public-key-pem "${PEM_B64}" --wrapping-key-id "wk-1"
+  assert_failure
+  assert_output --partial "Flag '--provider-config-id' is required"
+}
+
+@test "kas-keys: rotate key (invalid algorithm)" {
+  # Create a key first that we can try to rotate
+  OLD_KEY_ID=$(generate_key_id)
+  run_otdfctl_key create --kas "${KAS_REGISTRY_ID}" --key-id "${OLD_KEY_ID}" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "${PEM_B64}" --json
+  assert_success
+  
+  # Try to rotate with invalid algorithm
+  NEW_KEY_ID=$(generate_key_id)
+  run_otdfctl_key rotate --key "${OLD_KEY_ID}" --key-id "${NEW_KEY_ID}" --algorithm "invalid-algorithm" --mode "public_key" --public-key-pem "${PEM_B64}"
+  assert_failure
+  assert_output --partial "invalid algorithm"
+}
+
+@test "kas-keys: rotate key (invalid mode)" {
+  # Create a key first that we can try to rotate
+  OLD_KEY_ID=$(generate_key_id)
+  run_otdfctl_key create --kas "${KAS_REGISTRY_ID}" --key-id "${OLD_KEY_ID}" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "${PEM_B64}" --json
+  assert_success
+  
+  # Try to rotate with invalid mode
+  NEW_KEY_ID=$(generate_key_id)
+  run_otdfctl_key rotate --key "${OLD_KEY_ID}" --key-id "${NEW_KEY_ID}" --algorithm "rsa:2048" --mode "invalid-mode" --public-key-pem "${PEM_B64}"
+  assert_failure
+  assert_output --partial "invalid mode"
 }
