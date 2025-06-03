@@ -829,6 +829,4 @@ func init() {
 
 	policyKasRegistryKeysCmd.AddSubcommands(createDoc, getDoc, updateDoc, listDoc, rotateDoc)
 	policyKasRegCmd.AddCommand(&policyKasRegistryKeysCmd.Command)
-
-	policyKasRegistryKeysCmd.AddCommand(&rotateDoc.Command)
 }

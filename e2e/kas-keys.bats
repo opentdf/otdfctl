@@ -832,7 +832,7 @@ format_kas_name_as_uri() {
   NEW_KEY_ID=$(generate_key_id)
   run_otdfctl_key rotate --key "${OLD_KEY_ID}" --key-id "${NEW_KEY_ID}" --algorithm "invalid-algorithm" --mode "public_key" --public-key-pem "${PEM_B64}"
   assert_failure
-  assert_output --partial "Invalid key parameters"
+  assert_output --partial "invalid algorithm"
 }
 
 @test "kas-keys: rotate key (invalid mode)" {
@@ -845,5 +845,5 @@ format_kas_name_as_uri() {
   NEW_KEY_ID=$(generate_key_id)
   run_otdfctl_key rotate --key "${OLD_KEY_ID}" --key-id "${NEW_KEY_ID}" --algorithm "rsa:2048" --mode "invalid-mode" --public-key-pem "${PEM_B64}"
   assert_failure
-  assert_output --partial "Invalid key parameters"
+  assert_output --partial "invalid mode"
 }
