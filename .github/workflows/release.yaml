@@ -19,6 +19,7 @@ jobs:
     with:
       config-file-main-branch: ".github/release-please_main-branch.json"
       config-file-release-branches: ".github/release-please_release-branches.json"
+      manifest-file: ''
     secrets:
       APP_ID: ${{ secrets.APP_ID }}
       AUTOMATION_KEY: ${{ secrets.AUTOMATION_KEY }}
