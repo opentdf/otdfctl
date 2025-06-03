@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/evertras/bubble-table/table"
@@ -29,33 +28,23 @@ const (
 var policyKasRegistryBaseKeysCmd *cobra.Command
 
 func getKasKeyIdentifier(c *cli.Cli) (*kasregistry.KasKeyIdentifier, error) {
-	// This function is called when the user provides a human-readable key ID
-	// via the --key flag and identifies the KAS it belongs to via the --kas flag.
-	humanReadableKeyID := c.Flags.GetRequiredString("key") // Flag for the key's human-readable ID
-	kasIdentifierInput := c.Flags.GetRequiredString("kas") // Flag for KAS ID, URI, or Name
-
-	// Basic validation, though GetRequiredString should handle empty inputs.
-	if humanReadableKeyID == "" {
-		return nil, errors.New("--key (human-readable key ID) cannot be empty")
-	}
-	if kasIdentifierInput == "" {
-		return nil, errors.New("--kas (KAS identifier) cannot be empty")
-	}
+	keyIdentifier := c.Flags.GetRequiredString("key")
+	kasIdentifier := c.Flags.GetRequiredString("kas")
 
 	identifier := &kasregistry.KasKeyIdentifier{
-		Kid: humanReadableKeyID,
+		Kid: keyIdentifier,
 	}
 
-	kasInputType := utils.ClassifyString(kasIdentifierInput)
+	kasInputType := utils.ClassifyString(kasIdentifier)
 	switch kasInputType { //nolint:exhaustive // default catches unknown
 	case utils.StringTypeUUID:
-		identifier.Identifier = &kasregistry.KasKeyIdentifier_KasId{KasId: kasIdentifierInput}
+		identifier.Identifier = &kasregistry.KasKeyIdentifier_KasId{KasId: kasIdentifier}
 	case utils.StringTypeURI:
-		identifier.Identifier = &kasregistry.KasKeyIdentifier_Uri{Uri: kasIdentifierInput}
+		identifier.Identifier = &kasregistry.KasKeyIdentifier_Uri{Uri: kasIdentifier}
 	case utils.StringTypeGeneric:
-		identifier.Identifier = &kasregistry.KasKeyIdentifier_Name{Name: kasIdentifierInput}
+		identifier.Identifier = &kasregistry.KasKeyIdentifier_Name{Name: kasIdentifier}
 	default: // Catches StringTypeUnknown and any other unexpected types
-		return nil, fmt.Errorf("invalid KAS identifier: '%s'. Must be a KAS UUID, URI, or Name", kasIdentifierInput)
+		return nil, fmt.Errorf("invalid KAS identifier: '%s'. Must be a KAS UUID, URI, or Name", kasIdentifier)
 	}
 	return identifier, nil
 }
