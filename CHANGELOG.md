@@ -15,6 +15,9 @@
 * **core:** key management operations ([#533](https://github.com/opentdf/otdfctl/issues/533)) ([d4f6aaa](https://github.com/opentdf/otdfctl/commit/d4f6aaac3f6fc1b50fbc988e5d34a32de0ed9f64))
 * **main:** add actions CRUD and e2e tests ([#523](https://github.com/opentdf/otdfctl/issues/523)) ([2fb9ec7](https://github.com/opentdf/otdfctl/commit/2fb9ec7336da5731b868da94f0bbd5b2f226ede1))
 * **main:** refactor actions within existing CLI policy object CRUD ([#543](https://github.com/opentdf/otdfctl/issues/543)) ([9ab1a58](https://github.com/opentdf/otdfctl/commit/9ab1a58418643ea709aefb08e3f5ca8bd06235f4))
+* **core:** Resource mapping groups ([#567](https://github.com/opentdf/otdfctl/issues/567)) ([03fa307](https://github.com/opentdf/otdfctl/commit/03fa307b3ab91f25baeb74e30fde6eeec6d479a1))
+* **core:** Update key mgmt flags to consistent format ([#570](https://github.com/opentdf/otdfctl/issues/570)) ([#846f96c](https://github.com/opentdf/otdfctl/commit/846f96cb9adfe03e355c9e64b559f1c11d84a86f))
+* **core:** Rotate Key ([#572](https://github.com/opentdf/otdfctl/issues/572)) ([afd0043](https://github.com/opentdf/otdfctl/commit/afd0043f1ea66f0b371a95b556320551f73749bb))
 
 
 ### Bug Fixes
