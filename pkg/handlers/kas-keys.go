@@ -42,7 +42,7 @@ func (h Handler) CreateKasKey(
 func (h Handler) GetKasKey(ctx context.Context, id string, key *kasregistry.KasKeyIdentifier) (*policy.KasKey, error) {
 	req := kasregistry.GetKeyRequest{}
 	switch {
-	case id != "":
+	case id != "" && key == nil:
 		req.Identifier = &kasregistry.GetKeyRequest_Id{
 			Id: id,
 		}

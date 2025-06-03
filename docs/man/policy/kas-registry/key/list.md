@@ -13,18 +13,31 @@ command:
       shorthand: o
       description: Number of keys to skip before starting to return results
       required: true
-    - name: alg
+    - name: algorithm
       shorthand: a
       description: Key Algorithm to filter for
-    - name: kasId
-      shorthand: i
-      description: The id of the kas to filter for
-    - name: kasName
-      shorthand: n
-      description: The name of the kas to filter for
-    - name: kasUri
-      shorthand: u
-      description: The uri of the kas to filter for
+    - name: kas
+      description: Specify the Key Access Server (KAS) where the key (identified by `--key`) is registered. The KAS can be identified by its ID, URI, or Name.
+      required: true
 ---
 
-List KAS Keys. You can filter based on algorithm, and kas id, name, or uri.
+This command lists keys registered within a specified Key Access Server (KAS). You must specify the KAS using its ID, URI, or Name.
+
+The list can be filtered by key algorithm. Pagination is supported using `limit` and `offset` flags to manage the number of results returned.
+
+## Examples
+
+List the first 10 keys from a KAS specified by its URI:
+```
+otdfctl policy kas-registry key list --kas "https://kas.example.com/kas" --limit 10 --offset 0
+```
+
+List keys from a KAS named "Primary KAS", filtering for keys using the "RSA:2048" algorithm, and output in JSON format:
+```
+otdfctl policy kas-registry key list --kas "Primary KAS" --alg "RSA:2048" --limit 20 --offset 0 --json
+```
+
+List the next 5 keys (skipping the first 5) from a KAS identified by its ID:
+```
+otdfctl policy kas-registry key list --kas "kas-id-12345" --limit 5 --offset 5
+```

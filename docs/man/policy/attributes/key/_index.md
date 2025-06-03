@@ -5,4 +5,4 @@ command:
   name: key
 ---
 
-Assigns a KAS key to an attribute definition.
+Manages KAS key associations for attribute definitions.
