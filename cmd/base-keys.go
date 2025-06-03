@@ -1,11 +1,12 @@
 package cmd
 
 import (
-	"errors"
+	"fmt"
 
 	"github.com/evertras/bubble-table/table"
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/man"
+	"github.com/opentdf/otdfctl/pkg/utils"
 	"github.com/opentdf/platform/protocol/go/policy/kasregistry"
 	"github.com/spf13/cobra"
 )
@@ -27,34 +28,24 @@ const (
 var policyKasRegistryBaseKeysCmd *cobra.Command
 
 func getKasKeyIdentifier(c *cli.Cli) (*kasregistry.KasKeyIdentifier, error) {
-	keyID := c.Flags.GetOptionalString("keyId")
-	kasID := c.Flags.GetOptionalString("kasId")
-	kasName := c.Flags.GetOptionalString("kasName")
-	kasURI := c.Flags.GetOptionalString("kasUri")
+	keyIdentifier := c.Flags.GetRequiredString("key")
+	kasIdentifier := c.Flags.GetRequiredString("kas")
 
-	var identifier *kasregistry.KasKeyIdentifier
-	if keyID != "" {
-		identifier = &kasregistry.KasKeyIdentifier{
-			Kid: keyID,
-		}
-		switch {
-		case kasID != "":
-			identifier.Identifier = &kasregistry.KasKeyIdentifier_KasId{
-				KasId: kasID,
-			}
-		case kasName != "":
-			identifier.Identifier = &kasregistry.KasKeyIdentifier_Name{
-				Name: kasName,
-			}
-		case kasURI != "":
-			identifier.Identifier = &kasregistry.KasKeyIdentifier_Uri{
-				Uri: kasURI,
-			}
-		default:
-			return nil, errors.New("at least one of 'kasId', 'kasName', or 'kasUri' must be provided with 'keyId'")
-		}
+	identifier := &kasregistry.KasKeyIdentifier{
+		Kid: keyIdentifier,
 	}
 
+	kasInputType := utils.ClassifyString(kasIdentifier)
+	switch kasInputType { //nolint:exhaustive // default catches unknown
+	case utils.StringTypeUUID:
+		identifier.Identifier = &kasregistry.KasKeyIdentifier_KasId{KasId: kasIdentifier}
+	case utils.StringTypeURI:
+		identifier.Identifier = &kasregistry.KasKeyIdentifier_Uri{Uri: kasIdentifier}
+	case utils.StringTypeGeneric:
+		identifier.Identifier = &kasregistry.KasKeyIdentifier_Name{Name: kasIdentifier}
+	default: // Catches StringTypeUnknown and any other unexpected types
+		return nil, fmt.Errorf("invalid KAS identifier: '%s'. Must be a KAS UUID, URI, or Name", kasIdentifier)
+	}
 	return identifier, nil
 }
 
@@ -113,11 +104,15 @@ func setBaseKey(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
-	id := c.Flags.GetOptionalID("id")
+	var identifier *kasregistry.KasKeyIdentifier
+	var err error
 
-	identifier, err := getKasKeyIdentifier(c)
-	if err != nil {
-		c.ExitWithError("Invalid key identifier", err)
+	id := c.Flags.GetOptionalString("key")
+	if utils.ClassifyString(id) != utils.StringTypeUUID {
+		identifier, err = getKasKeyIdentifier(c)
+		if err != nil {
+			c.ExitWithError("Invalid key identifier", err)
+		}
 	}
 	baseKey, err := h.SetBaseKey(c.Context(), id, identifier)
 	if err != nil {
@@ -152,38 +147,17 @@ func init() {
 		man.WithRun(setBaseKey),
 	)
 	setDoc.Flags().StringP(
-		setDoc.GetDocFlag("id").Name,
-		setDoc.GetDocFlag("id").Shorthand,
-		setDoc.GetDocFlag("id").Default,
-		setDoc.GetDocFlag("id").Description,
+		setDoc.GetDocFlag("key").Name,
+		setDoc.GetDocFlag("key").Shorthand,
+		setDoc.GetDocFlag("key").Default,
+		setDoc.GetDocFlag("key").Description,
 	)
 	setDoc.Flags().StringP(
-		setDoc.GetDocFlag("keyId").Name,
-		setDoc.GetDocFlag("keyId").Shorthand,
-		setDoc.GetDocFlag("keyId").Default,
-		setDoc.GetDocFlag("keyId").Description,
+		setDoc.GetDocFlag("kas").Name,
+		setDoc.GetDocFlag("kas").Shorthand,
+		setDoc.GetDocFlag("kas").Default,
+		setDoc.GetDocFlag("kas").Description,
 	)
-	setDoc.Flags().StringP(
-		setDoc.GetDocFlag("kasUri").Name,
-		setDoc.GetDocFlag("kasUri").Shorthand,
-		setDoc.GetDocFlag("kasUri").Default,
-		setDoc.GetDocFlag("kasUri").Description,
-	)
-	setDoc.Flags().StringP(
-		setDoc.GetDocFlag("kasId").Name,
-		setDoc.GetDocFlag("kasId").Shorthand,
-		setDoc.GetDocFlag("kasId").Default,
-		setDoc.GetDocFlag("kasId").Description,
-	)
-	setDoc.Flags().StringP(
-		setDoc.GetDocFlag("kasName").Name,
-		setDoc.GetDocFlag("kasName").Shorthand,
-		setDoc.GetDocFlag("kasName").Default,
-		setDoc.GetDocFlag("kasName").Description,
-	)
-	setDoc.MarkFlagsMutuallyExclusive("id", "keyId")
-	setDoc.MarkFlagsOneRequired("id", "keyId")
-	setDoc.MarkFlagsMutuallyExclusive("kasUri", "kasId", "kasName")
 
 	doc := man.Docs.GetCommand("policy/kas-registry/key/base",
 		man.WithSubcommands(getDoc, setDoc))

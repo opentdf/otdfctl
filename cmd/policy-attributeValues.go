@@ -238,7 +238,7 @@ func policyAssignKeyToAttrValue(cmd *cobra.Command, args []string) {
 	defer h.Close()
 
 	value := c.Flags.GetRequiredString("value")
-	keyID := c.Flags.GetRequiredID("keyId")
+	keyID := c.Flags.GetRequiredID("key-id")
 
 	attrKey, err := h.AssignKeyToAttributeValue(c.Context(), value, keyID)
 	if err != nil {
@@ -260,7 +260,7 @@ func policyRemoveKeyFromAttrValue(cmd *cobra.Command, args []string) {
 	defer h.Close()
 
 	value := c.Flags.GetRequiredString("value")
-	keyID := c.Flags.GetRequiredID("keyId")
+	keyID := c.Flags.GetRequiredID("key-id")
 
 	err := h.RemoveKeyFromAttributeValue(c.Context(), value, keyID)
 	if err != nil {
@@ -355,10 +355,10 @@ func init() {
 		assignKasKeyCmd.GetDocFlag("value").Description,
 	)
 	assignKasKeyCmd.Flags().StringP(
-		assignKasKeyCmd.GetDocFlag("keyId").Name,
-		assignKasKeyCmd.GetDocFlag("keyId").Shorthand,
-		assignKasKeyCmd.GetDocFlag("keyId").Default,
-		assignKasKeyCmd.GetDocFlag("keyId").Description,
+		assignKasKeyCmd.GetDocFlag("key-id").Name,
+		assignKasKeyCmd.GetDocFlag("key-id").Shorthand,
+		assignKasKeyCmd.GetDocFlag("key-id").Default,
+		assignKasKeyCmd.GetDocFlag("key-id").Description,
 	)
 
 	removeKasKeyCmd := man.Docs.GetCommand("policy/attributes/values/key/remove",
@@ -371,10 +371,10 @@ func init() {
 		removeKasKeyCmd.GetDocFlag("value").Description,
 	)
 	removeKasKeyCmd.Flags().StringP(
-		removeKasKeyCmd.GetDocFlag("keyId").Name,
-		removeKasKeyCmd.GetDocFlag("keyId").Shorthand,
-		removeKasKeyCmd.GetDocFlag("keyId").Default,
-		removeKasKeyCmd.GetDocFlag("keyId").Description,
+		removeKasKeyCmd.GetDocFlag("key-id").Name,
+		removeKasKeyCmd.GetDocFlag("key-id").Shorthand,
+		removeKasKeyCmd.GetDocFlag("key-id").Default,
+		removeKasKeyCmd.GetDocFlag("key-id").Description,
 	)
 
 	unsafeReactivateCmd := man.Docs.GetCommand("policy/attributes/values/unsafe/reactivate",

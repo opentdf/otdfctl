@@ -285,7 +285,7 @@ func policyAssignKeyToNamespace(cmd *cobra.Command, args []string) {
 	defer h.Close()
 
 	namespace := c.Flags.GetRequiredString("namespace")
-	keyID := c.Flags.GetRequiredID("keyId")
+	keyID := c.Flags.GetRequiredID("key-id")
 
 	// Get the attribute namespace to show meaningful information in case of error
 	attrKey, err := h.AssignKeyToAttributeNamespace(c.Context(), namespace, keyID)
@@ -309,7 +309,7 @@ func policyRemoveKeyFromNamespace(cmd *cobra.Command, args []string) {
 	defer h.Close()
 
 	namespace := c.Flags.GetRequiredString("namespace")
-	keyID := c.Flags.GetRequiredID("keyId")
+	keyID := c.Flags.GetRequiredID("key-id")
 
 	err := h.RemoveKeyFromAttributeNamespace(c.Context(), namespace, keyID)
 	if err != nil {
@@ -441,10 +441,10 @@ func init() {
 		assignKasKeyCmd.GetDocFlag("namespace").Description,
 	)
 	assignKasKeyCmd.Flags().StringP(
-		assignKasKeyCmd.GetDocFlag("keyId").Name,
-		assignKasKeyCmd.GetDocFlag("keyId").Shorthand,
-		assignKasKeyCmd.GetDocFlag("keyId").Default,
-		assignKasKeyCmd.GetDocFlag("keyId").Description,
+		assignKasKeyCmd.GetDocFlag("key-id").Name,
+		assignKasKeyCmd.GetDocFlag("key-id").Shorthand,
+		assignKasKeyCmd.GetDocFlag("key-id").Default,
+		assignKasKeyCmd.GetDocFlag("key-id").Description,
 	)
 
 	// Remove KAS key from attribute namespace
@@ -458,10 +458,10 @@ func init() {
 		removeKasKeyCmd.GetDocFlag("namespace").Description,
 	)
 	removeKasKeyCmd.Flags().StringP(
-		removeKasKeyCmd.GetDocFlag("keyId").Name,
-		removeKasKeyCmd.GetDocFlag("keyId").Shorthand,
-		removeKasKeyCmd.GetDocFlag("keyId").Default,
-		removeKasKeyCmd.GetDocFlag("keyId").Description,
+		removeKasKeyCmd.GetDocFlag("key-id").Name,
+		removeKasKeyCmd.GetDocFlag("key-id").Shorthand,
+		removeKasKeyCmd.GetDocFlag("key-id").Default,
+		removeKasKeyCmd.GetDocFlag("key-id").Description,
 	)
 
 	keyCmd.AddSubcommands(assignKasKeyCmd, removeKasKeyCmd)
