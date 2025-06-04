@@ -34,7 +34,7 @@ jobs:
         with: 
           go-version-file: go.mod
 
-      ## TODO get this working again 
+      ##  TODO get this working again 
       ## fatal: unable to access 'https://github.com/opentdf/otdfctl/': The requested URL returned error: 403
       # - name: Tag semver and push to repo
       #   if: ${{ needs.release-please.outputs.release_created }}
