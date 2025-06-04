@@ -13,7 +13,7 @@ setup_file() {
   # Create a regular KAS key to be set as a base key
   # This key will be used by the 'set' command tests
   export REGULAR_KEY_ID_FOR_BASE_TEST="regular-key-for-base-$(date +%s)"
-  export WRAPPING_KEY="gp6TcYb/ZrgkQOYPdiYFRj11jZwbevy+r2KFbAYM0GE="
+  export WRAPPING_KEY="9453b4d7cc55cf27926ae8f98a9d5aa159d51b7a4d478e440271ab261792a2bd"
   export KAS_KEY_SYSTEM_ID=$(./otdfctl $HOST $WITH_CREDS policy kas-registry key create --kas "${KAS_REGISTRY_ID_BASE_KEY_TEST}" --key-id "${REGULAR_KEY_ID_FOR_BASE_TEST}" --algorithm rsa:2048 --mode local --wrapping-key "${WRAPPING_KEY}" --wrapping-key-id "wrapping-key-id" --json | jq -r '.key.id')
 }
 
