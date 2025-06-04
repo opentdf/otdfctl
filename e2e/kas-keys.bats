@@ -31,7 +31,7 @@ setup_file() {
   run_otdfctl_provider_create --name "test-provider-config-kas-keys" --config '{}' --json
   assert_success
   export PC_ID=$(echo "$output" | jq -r '.id')
-  export WRAPPING_KEY="829e937186ff66b82440e60f762605463d758d9c1b7afcbeaf62856c060cd061"
+  export WRAPPING_KEY="9453b4d7cc55cf27926ae8f98a9d5aa159d51b7a4d478e440271ab261792a2bd"
   export PEM_B64=$(echo "pem" | base64)
 }
 
@@ -863,7 +863,7 @@ format_kas_name_as_uri() {
 
   # Try to rotate with invalid wrapping-key
   NEW_KEY_ID=$(generate_key_id)
-  run_otdfctl_key rotate --key "${OLD_KEY_ID}" --key-id "${NEW_KEY_ID}" --algorithm "rsa:2048" --mode "local" --public-key-pem "${PEM_B64}" --wrapping-key "not-hex-encoded"
+  run_otdfctl_key rotate --key "${OLD_KEY_ID}" --key-id "${NEW_KEY_ID}" --algorithm "rsa:2048" --mode "local" --public-key-pem "${PEM_B64}" --wrapping-key "not-hex-encoded" --wrapping-key-id "wrapping-key-1"
   assert_failure
   assert_output --partial "wrapping-key must be hex encoded"
 }
