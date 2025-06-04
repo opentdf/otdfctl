@@ -39,13 +39,8 @@ const (
 
 var policyKasRegistryKeysCmd = man.Docs.GetCommand("policy/kas-registry/key")
 
-func wrapKey(key string, wrappingKey string) ([]byte, error) {
-	wrappingKeyBytes, err := ocrypto.Base64Decode([]byte(wrappingKey))
-	if err != nil {
-		return nil, errors.Join(errors.New("failed to decode wrapping key"), err)
-	}
-
-	aesKey, err := ocrypto.NewAESGcm(wrappingKeyBytes)
+func wrapKey(key string, wrappingKey []byte) ([]byte, error) {
+	aesKey, err := ocrypto.NewAESGcm(wrappingKey)
 	if err != nil {
 		return nil, errors.Join(errors.New("failed to create AES key"), err)
 	}
@@ -584,15 +579,17 @@ func prepareKeyContexts(
 	case policy.KeyMode_KEY_MODE_CONFIG_ROOT_KEY:
 		// Local mode: generate keys locally and wrap with provided wrapping key
 		wrappingKey := c.Flags.GetRequiredString("wrapping-key")
-		if _, err := hex.DecodeString(wrappingKey); err != nil {
+		wrappedKeyBytes, err := hex.DecodeString(wrappingKey)
+		if err != nil {
 			return nil, nil, "", errors.Join(errors.New("wrapping-key must be hex encoded"), err)
 		}
+
 		privateKeyPem, publicKeyPem, err := generateKeys(alg)
 		if err != nil {
 			return nil, nil, "", errors.Join(errors.New("failed to generate keys"), err)
 		}
 
-		privateKey, err := wrapKey(privateKeyPem, wrappingKey)
+		privateKey, err := wrapKey(privateKeyPem, wrappedKeyBytes)
 		if err != nil {
 			return nil, nil, "", errors.Join(errors.New("failed to wrap key"), err)
 		}
