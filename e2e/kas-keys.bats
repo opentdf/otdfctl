@@ -353,7 +353,7 @@ format_kas_name_as_uri() {
   run_otdfctl_key create --kas "${KAS_REGISTRY_ID}" --key-id "${KEY_ID}" --algorithm "ec:secp256r1" --mode "local" --wrapping-key-id "wrapping-key-1" --wrapping-key "not-hex-encoded" --json
   assert_failure
 
-  assert_output --partial "wrapping-key must be hex encoded "
+  assert_output --partial "wrapping-key must be hex encoded"
 }
 
 @test "kas-keys: get key by system ID" {
@@ -861,9 +861,9 @@ format_kas_name_as_uri() {
   run_otdfctl_key create --kas "${KAS_REGISTRY_ID}" --key-id "${OLD_KEY_ID}" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "${PEM_B64}" --json
   assert_success
 
-  # Try to rotate with invalid mode
+  # Try to rotate with invalid wrapping-key
   NEW_KEY_ID=$(generate_key_id)
-  run_otdfctl_key rotate --key "${OLD_KEY_ID}" --key-id "${NEW_KEY_ID}" --algorithm "rsa:2048" --mode "invalid-mode" --public-key-pem "${PEM_B64}" --wrapping-key "not-hex-encoded"
+  run_otdfctl_key rotate --key "${OLD_KEY_ID}" --key-id "${NEW_KEY_ID}" --algorithm "rsa:2048" --mode "local" --public-key-pem "${PEM_B64}" --wrapping-key "not-hex-encoded"
   assert_failure
   assert_output --partial "wrapping-key must be hex encoded"
 }
