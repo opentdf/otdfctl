@@ -17,6 +17,10 @@ setup_file() {
     # Create a single resource mapping to val1 - comma separated
         export RM1_TERMS="valueone,valuefirst,first,one"
         export RM1_ID=$(./otdfctl $HOST $WITH_CREDS policy resource-mappings create --attribute-value-id "$VAL1_ID" --terms "$RM1_TERMS" --json | jq -r '.id')
+
+    # Create a resource mapping group
+        export RMG1_ID=$(./otdfctl $HOST $WITH_CREDS policy resource-mapping-groups create --namespace-id "$NS_ID" --name rmgrp-test --json | jq -r '.id')
+        export RMG2_ID=$(./otdfctl $HOST $WITH_CREDS policy resource-mapping-groups create --namespace-id "$NS_ID" --name rmgrp-test-2 --json | jq -r '.id')
 }
 
 setup() {
@@ -34,7 +38,7 @@ teardown_file() {
     # remove the created namespace with all underneath upon test suite completion
     ./otdfctl $HOST $WITH_CREDS policy attributes namespaces unsafe delete --force --id "$NS_ID"
 
-    unset HOST WITH_CREDS VAL1_ID VAL2_ID NS_ID RM1_TERMS RM1_ID
+    unset HOST WITH_CREDS VAL1_ID VAL2_ID NS_ID RM1_TERMS RM1_ID RMG1_ID RMG2_ID
 }
 
 @test "Create resource mapping" {
@@ -54,6 +58,21 @@ teardown_file() {
     run_otdfctl_rm create --attribute-value-id $VAL2_ID
     assert_failure
     assert_output --partial "must have at least 1 non-empty values"
+}
+
+@test "Create resource mapping in a group" {
+    # create with multiple terms flags instead of comma-separated
+    run_otdfctl_rm create --attribute-value-id "$VAL2_ID" --terms "second,TWO" --group-id "$RMG1_ID"
+    assert_success
+    assert_output --partial "second"
+    assert_output --partial "TWO"
+    assert_line --regexp "Attribute Value Id.*$VAL2_ID"
+     assert_line --regexp "Group Id.*$RMG1_ID"
+
+    # group id flag must be uuid
+    run_otdfctl_rm create --attribute-value-id "$VAL2_ID" --terms "testing" --group-id "grp1"
+    assert_failure
+    assert_output --partial "must be a valid UUID"
 }
 
 @test "Get resource mapping" {
@@ -82,7 +101,7 @@ teardown_file() {
 }
 
 @test "Update a resource mapping" {
-    NEW_RM_ID=$(./otdfctl $HOST $WITH_CREDS policy resource-mappings create --attribute-value-id "$VAL2_ID" --terms test --terms found --json | jq -r '.id')
+    NEW_RM_ID=$(./otdfctl $HOST $WITH_CREDS policy resource-mappings create --attribute-value-id "$VAL2_ID" --terms test --terms found --group-id "$RMG1_ID" --json | jq -r '.id')
     
     # replace the terms
     run_otdfctl_rm update --id "$NEW_RM_ID" --terms replaced,new 

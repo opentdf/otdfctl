@@ -4,13 +4,6 @@ on:
   pull_request:
     branches:
       - main
-    paths-ignore:
-      - '**/*.yaml'
-      - '!.github/**/*.yaml' 
-      - '**/*.md'
-      - LICENSE
-      - CODEOWNERS
-      - '.gitignore'
 
 jobs:
   govulncheck:

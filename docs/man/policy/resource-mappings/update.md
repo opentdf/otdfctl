@@ -14,6 +14,9 @@ command:
     - name: terms
       description: The synonym terms to match for the resource mapping.
       default: ''
+    - name: group-id
+      description: The ID of the resource mapping group to assign this mapping to
+      default: ''
     - name: label
       description: "Optional metadata 'labels' in the format: key=value"
       shorthand: l
@@ -23,7 +26,7 @@ command:
       default: false
 ---
 
-Alter the attribute value associated with a resource mapping's terms, or fully replace the terms in a given resource mapping.
+Alter the attribute value associated with a resource mapping's terms, change its group, or fully replace the terms in a given resource mapping.
 
 For more information about resource mappings, see the `resource-mappings` subcommand.
 

@@ -5,4 +5,4 @@ command:
   name: key
 ---
 
-Assigns a KAS key to an attribute namespace.
+Manages KAS key associations for attribute namespaces.

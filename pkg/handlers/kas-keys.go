@@ -9,6 +9,11 @@ import (
 	"github.com/opentdf/platform/protocol/go/policy/kasregistry"
 )
 
+type RotateKeyResult struct {
+	KasKey           *policy.KasKey                `json:"kas_key"`
+	RotatedResources *kasregistry.RotatedResources `json:"rotated_resources"`
+}
+
 func (h Handler) CreateKasKey(
 	ctx context.Context,
 	kasID string,
@@ -42,7 +47,7 @@ func (h Handler) CreateKasKey(
 func (h Handler) GetKasKey(ctx context.Context, id string, key *kasregistry.KasKeyIdentifier) (*policy.KasKey, error) {
 	req := kasregistry.GetKeyRequest{}
 	switch {
-	case id != "":
+	case id != "" && key == nil:
 		req.Identifier = &kasregistry.GetKeyRequest_Id{
 			Id: id,
 		}
@@ -111,4 +116,38 @@ func (h Handler) ListKasKeys(
 	}
 
 	return resp.GetKasKeys(), resp.GetPagination(), nil
+}
+
+func (h Handler) RotateKasKey(
+	ctx context.Context,
+	oldKeyID string,
+	key *kasregistry.KasKeyIdentifier,
+	newKey *kasregistry.RotateKeyRequest_NewKey,
+) (*RotateKeyResult, error) {
+	req := kasregistry.RotateKeyRequest{
+		NewKey: newKey,
+	}
+
+	switch {
+	case oldKeyID != "" && key == nil:
+		req.ActiveKey = &kasregistry.RotateKeyRequest_Id{
+			Id: oldKeyID,
+		}
+	case key != nil:
+		req.ActiveKey = &kasregistry.RotateKeyRequest_Key{
+			Key: key,
+		}
+	default:
+		return nil, errors.New("old key id or key must be provided")
+	}
+
+	resp, err := h.sdk.KeyAccessServerRegistry.RotateKey(ctx, &req)
+	if err != nil {
+		return nil, err
+	}
+
+	return &RotateKeyResult{
+		KasKey:           resp.GetKasKey(),
+		RotatedResources: resp.GetRotatedResources(),
+	}, nil
 }
