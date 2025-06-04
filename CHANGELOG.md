@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.21.1](https://github.com/opentdf/otdfctl/compare/v0.21.0...v0.21.1) (2025-06-04)
+
+
+### Bug Fixes
+
+* enforce hex encoded wrapping-key [backport to release/v0.21] ([#585](https://github.com/opentdf/otdfctl/issues/585)) ([10631a2](https://github.com/opentdf/otdfctl/commit/10631a2401a51bc1d6d577449a9f3c752e21b8e9))
+
 ## [0.21.0](https://github.com/opentdf/otdfctl/compare/v0.20.0...v0.21.0) (2025-05-29)
 
 
