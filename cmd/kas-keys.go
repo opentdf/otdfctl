@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"encoding/base64"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"strings"
@@ -583,6 +584,9 @@ func prepareKeyContexts(
 	case policy.KeyMode_KEY_MODE_CONFIG_ROOT_KEY:
 		// Local mode: generate keys locally and wrap with provided wrapping key
 		wrappingKey := c.Flags.GetRequiredString("wrapping-key")
+		if _, err := hex.DecodeString(wrappingKey); err != nil {
+			return nil, nil, "", errors.Join(errors.New("wrapping-key must be hex encoded"), err)
+		}
 		privateKeyPem, publicKeyPem, err := generateKeys(alg)
 		if err != nil {
 			return nil, nil, "", errors.Join(errors.New("failed to generate keys"), err)

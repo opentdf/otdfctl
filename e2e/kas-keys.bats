@@ -31,7 +31,7 @@ setup_file() {
   run_otdfctl_provider_create --name "test-provider-config-kas-keys" --config '{}' --json
   assert_success
   export PC_ID=$(echo "$output" | jq -r '.id')
-  export WRAPPING_KEY="gp6TcYb/ZrgkQOYPdiYFRj11jZwbevy+r2KFbAYM0GE="
+  export WRAPPING_KEY="829e937186ff66b82440e60f762605463d758d9c1b7afcbeaf62856c060cd061"
   export PEM_B64=$(echo "pem" | base64)
 }
 
@@ -346,6 +346,14 @@ format_kas_name_as_uri() {
   run_otdfctl_key create --kas "invalid-kas-id" --key-id "${KEY_ID}" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "${PEM_B64}" --json
   assert_failure
   assert_output --partial "Failed to resolve KAS identifier 'invalid-kas-id': not_found: resource not found"
+}
+
+@test "kas-keys: create key (invalid hex encoded wrapping-key)" {
+  KEY_ID=$(generate_key_id)
+  run_otdfctl_key create --kas "${KAS_REGISTRY_ID}" --key-id "${KEY_ID}" --algorithm "ec:secp256r1" --mode "local" --wrapping-key-id "wrapping-key-1" --wrapping-key "not-hex-encoded" --json
+  assert_failure
+
+  assert_output --partial "wrapping-key must be hex encoded "
 }
 
 @test "kas-keys: get key by system ID" {
@@ -740,19 +748,18 @@ format_kas_name_as_uri() {
   assert_output --partial "Invalid algorithm"
 }
 
-
 @test "kas-keys: rotate key" {
   # Create a key first
   OLD_KEY_ID=$(generate_key_id)
   run_otdfctl_key create --kas "${KAS_REGISTRY_ID}" --key-id "${OLD_KEY_ID}" --algorithm "rsa:2048" --mode "local" --wrapping-key-id "wrapping-key-1" --wrapping-key "${WRAPPING_KEY}" --json
   assert_success
   OLD_KEY_SYSTEM_ID=$(echo "$output" | jq -r .key.id)
-  
+
   # Rotate the key
   NEW_KEY_ID=$(generate_key_id)
   run_otdfctl_key rotate --key "${OLD_KEY_SYSTEM_ID}" --key-id "${NEW_KEY_ID}" --algorithm "rsa:2048" --mode "local" --wrapping-key-id "wrapping-key-2" --wrapping-key "${WRAPPING_KEY}" --json
   assert_success
-  
+
   # Verify the new key in kas_key section
   NEW_KEY_SYSTEM_ID=$(echo "$output" | jq -r .kas_key.key.id)
   assert_not_equal "${OLD_KEY_SYSTEM_ID}" "${NEW_KEY_SYSTEM_ID}"
@@ -767,11 +774,11 @@ format_kas_name_as_uri() {
   assert_not_equal "$(echo "$output" | jq -r .kas_key.key.private_key_ctx.wrapped_key)" ""
   assert_not_equal "$(echo "$output" | jq -r .kas_key.key.metadata.created_at)" "null"
   assert_not_equal "$(echo "$output" | jq -r .kas_key.key.metadata.updated_at)" "null"
-  
+
   # Verify the old rotated key in rotated_resources section
   assert_equal "$(echo "$output" | jq -r .rotated_resources.rotated_out_key.key.id)" "${OLD_KEY_SYSTEM_ID}"
   assert_equal "$(echo "$output" | jq -r .rotated_resources.rotated_out_key.key.key_id)" "${OLD_KEY_ID}"
-  assert_equal "$(echo "$output" | jq -r .rotated_resources.rotated_out_key.key.key_status)" "2"    # rotated (old key should be marked as rotated)
+  assert_equal "$(echo "$output" | jq -r .rotated_resources.rotated_out_key.key.key_status)" "2" # rotated (old key should be marked as rotated)
 }
 
 @test "kas-keys: rotate key (missing key)" {
@@ -827,7 +834,7 @@ format_kas_name_as_uri() {
   OLD_KEY_ID=$(generate_key_id)
   run_otdfctl_key create --kas "${KAS_REGISTRY_ID}" --key-id "${OLD_KEY_ID}" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "${PEM_B64}" --json
   assert_success
-  
+
   # Try to rotate with invalid algorithm
   NEW_KEY_ID=$(generate_key_id)
   run_otdfctl_key rotate --key "${OLD_KEY_ID}" --key-id "${NEW_KEY_ID}" --algorithm "invalid-algorithm" --mode "public_key" --public-key-pem "${PEM_B64}"
@@ -840,10 +847,23 @@ format_kas_name_as_uri() {
   OLD_KEY_ID=$(generate_key_id)
   run_otdfctl_key create --kas "${KAS_REGISTRY_ID}" --key-id "${OLD_KEY_ID}" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "${PEM_B64}" --json
   assert_success
-  
+
   # Try to rotate with invalid mode
   NEW_KEY_ID=$(generate_key_id)
   run_otdfctl_key rotate --key "${OLD_KEY_ID}" --key-id "${NEW_KEY_ID}" --algorithm "rsa:2048" --mode "invalid-mode" --public-key-pem "${PEM_B64}"
   assert_failure
   assert_output --partial "invalid mode"
+}
+
+@test "kas-keys: rotate key (invalid hex encoded wrapping-key)" {
+  # Create a key first that we can try to rotate
+  OLD_KEY_ID=$(generate_key_id)
+  run_otdfctl_key create --kas "${KAS_REGISTRY_ID}" --key-id "${OLD_KEY_ID}" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "${PEM_B64}" --json
+  assert_success
+
+  # Try to rotate with invalid mode
+  NEW_KEY_ID=$(generate_key_id)
+  run_otdfctl_key rotate --key "${OLD_KEY_ID}" --key-id "${NEW_KEY_ID}" --algorithm "rsa:2048" --mode "invalid-mode" --public-key-pem "${PEM_B64}" --wrapping-key "not-hex-encoded"
+  assert_failure
+  assert_output --partial "wrapping-key must be hex encoded"
 }
