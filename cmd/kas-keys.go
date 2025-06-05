@@ -149,40 +149,6 @@ func modeToEnum(mode string) (policy.KeyMode, error) {
 	}
 }
 
-func enumToAlg(enum policy.Algorithm) (string, error) {
-	switch enum { //nolint:exhaustive // UNSPECIFIED is not needed here
-	case policy.Algorithm_ALGORITHM_RSA_2048:
-		return "rsa:2048", nil
-	case policy.Algorithm_ALGORITHM_RSA_4096:
-		return "rsa:4096", nil
-	case policy.Algorithm_ALGORITHM_EC_P256:
-		return "ec:secp256r1", nil
-	case policy.Algorithm_ALGORITHM_EC_P384:
-		return "ec:secp384r1", nil
-	case policy.Algorithm_ALGORITHM_EC_P521:
-		return "ec:secp521r1", nil
-	default:
-		return "", errors.New("invalid enum algorithm")
-	}
-}
-
-func algToEnum(alg string) (policy.Algorithm, error) {
-	switch strings.ToLower(alg) {
-	case "rsa:2048":
-		return policy.Algorithm_ALGORITHM_RSA_2048, nil
-	case "rsa:4096":
-		return policy.Algorithm_ALGORITHM_RSA_4096, nil
-	case "ec:secp256r1":
-		return policy.Algorithm_ALGORITHM_EC_P256, nil
-	case "ec:secp384r1":
-		return policy.Algorithm_ALGORITHM_EC_P384, nil
-	case "ec:secp521r1":
-		return policy.Algorithm_ALGORITHM_EC_P521, nil
-	default:
-		return policy.Algorithm_ALGORITHM_UNSPECIFIED, errors.New("invalid algorithm")
-	}
-}
-
 func getTableRows(kasKey *policy.KasKey) [][]string {
 	var providerConfig []byte
 	var err error
@@ -202,7 +168,7 @@ func getTableRows(kasKey *policy.KasKey) [][]string {
 	if err != nil {
 		cli.ExitWithError("Failed to convert mode", err)
 	}
-	algStr, err := enumToAlg(asymkey.GetKeyAlgorithm())
+	algStr, err := cli.KeyEnumToAlg(asymkey.GetKeyAlgorithm())
 	if err != nil {
 		cli.ExitWithError("Failed to convert algorithm", err)
 	}
@@ -365,7 +331,7 @@ func policyListKasKeys(cmd *cobra.Command, args []string) {
 	var alg policy.Algorithm
 	if algArg != "" {
 		var err error
-		alg, err = algToEnum(algArg)
+		alg, err = cli.KeyAlgToEnum(algArg)
 		if err != nil {
 			cli.ExitWithError("Invalid algorithm", err)
 		}
@@ -416,7 +382,7 @@ func policyListKasKeys(cmd *cobra.Command, args []string) {
 		if err != nil {
 			cli.ExitWithError("Failed to convert mode", err)
 		}
-		algStr, err := enumToAlg(key.GetKeyAlgorithm())
+		algStr, err := cli.KeyEnumToAlg(key.GetKeyAlgorithm())
 		if err != nil {
 			cli.ExitWithError("Failed to convert algorithm", err)
 		}
@@ -542,7 +508,7 @@ func resolveKasIdentifier(ident string) (handlers.KasIdentifier, error) {
 // It returns the algorithm, mode, wrapping key ID, and any error that occurred.
 func prepareKeyParams(c *cli.Cli) (policy.Algorithm, policy.KeyMode, string, error) {
 	// Parse algorithm
-	alg, err := algToEnum(c.Flags.GetRequiredString("algorithm"))
+	alg, err := cli.KeyAlgToEnum(c.Flags.GetRequiredString("algorithm"))
 	if err != nil {
 		return alg, 0, "", err
 	}

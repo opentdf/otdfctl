@@ -51,10 +51,11 @@ func getKasKeyIdentifier(c *cli.Cli) (*kasregistry.KasKeyIdentifier, error) {
 }
 
 func getBaseKeyTableRows(simpleKey *policy.SimpleKasKey, additionalInfo map[string]string) table.Row {
+	readableAlg, _ := cli.KeyEnumToAlg(simpleKey.GetPublicKey().GetAlgorithm())
 	rowData := table.RowData{
 		kasKidKey: simpleKey.GetPublicKey().GetKid(),
 		pubPemKey: simpleKey.GetPublicKey().GetPem(),
-		algKey:    simpleKey.GetPublicKey().GetAlgorithm(),
+		algKey:    readableAlg,
 		kasURIKey: simpleKey.GetKasUri(),
 	}
 
