@@ -55,7 +55,7 @@ func getKasKeyIdentifier(c *cli.Cli) (*kasregistry.KasKeyIdentifier, error) {
 }
 
 //
-//func getBaseKeyTableRows(simpleKey *kasregistry.SimpleKasKey, additionalInfo map[string]string) table.Row {
+// func getBaseKeyTableRows(simpleKey *kasregistry.SimpleKasKey, additionalInfo map[string]string) table.Row {
 //	rowData := table.RowData{
 //		kasKidKey: simpleKey.GetPublicKey().GetKid(),
 //		pubPemKey: simpleKey.GetPublicKey().GetPem(),
@@ -70,9 +70,9 @@ func getKasKeyIdentifier(c *cli.Cli) (*kasregistry.KasKeyIdentifier, error) {
 //	}
 //
 //	return table.NewRow(rowData)
-//}
+// }
 //
-//func getBaseKeyTable(additionalColumns []table.Column) table.Model {
+// func getBaseKeyTable(additionalColumns []table.Column) table.Model {
 //	columns := []table.Column{
 //		table.NewFlexColumn(kasURIKey, kasURIColumn, cli.FlexColumnWidthOne),
 //		table.NewFlexColumn(kasKidKey, kasKidColumn, cli.FlexColumnWidthOne),
@@ -84,9 +84,9 @@ func getKasKeyIdentifier(c *cli.Cli) (*kasregistry.KasKeyIdentifier, error) {
 //	return cli.NewTable(
 //		columns...,
 //	)
-//}
+// }
 //
-//func getBaseKey(cmd *cobra.Command, args []string) {
+// func getBaseKey(cmd *cobra.Command, args []string) {
 //	c := cli.New(cmd, args)
 //	h := NewHandler(c)
 //	defer h.Close()
@@ -103,9 +103,9 @@ func getKasKeyIdentifier(c *cli.Cli) (*kasregistry.KasKeyIdentifier, error) {
 //	t := getBaseKeyTable(nil)
 //	t = t.WithRows([]table.Row{getBaseKeyTableRows(baseKey, nil)})
 //	HandleSuccess(cmd, "", t, baseKey)
-//}
+// }
 //
-//func setBaseKey(cmd *cobra.Command, args []string) {
+// func setBaseKey(cmd *cobra.Command, args []string) {
 //	c := cli.New(cmd, args)
 //	h := NewHandler(c)
 //	defer h.Close()
@@ -142,9 +142,9 @@ func getKasKeyIdentifier(c *cli.Cli) (*kasregistry.KasKeyIdentifier, error) {
 //
 //	t = t.WithRows(rows)
 //	HandleSuccess(cmd, "", t, baseKey)
-//}
+// }
 //
-//func init() {
+// func init() {
 //	getDoc := man.Docs.GetCommand("policy/kas-registry/key/base/get",
 //		man.WithRun(getBaseKey),
 //	)
@@ -171,4 +171,4 @@ func getKasKeyIdentifier(c *cli.Cli) (*kasregistry.KasKeyIdentifier, error) {
 //	policyKasRegistryKeysCmd.AddCommand(
 //		policyKasRegistryBaseKeysCmd,
 //	)
-//}
+// }
