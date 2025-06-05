@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"errors"
 	"strconv"
 	"strings"
 	"time"
@@ -18,7 +19,6 @@ type SimpleAttribute struct {
 	Namespace string
 	Active    string
 	Metadata  map[string]string
-	KeyIds    []string
 }
 
 type SimpleAttributeValue struct {
@@ -53,12 +53,6 @@ func GetSimpleAttribute(a *policy.Attribute) SimpleAttribute {
 	for _, v := range a.GetValues() {
 		values = append(values, v.GetValue())
 	}
-	// keyIds := make([]string, len(a.GetKasKeys()))
-	// for i, k := range a.GetKasKeys() {
-	//	if k.GetKey() != nil && k.GetKey().GetId() != "" {
-	//		keyIds[i] = k.GetKey().GetId()
-	//	}
-	// }
 
 	return SimpleAttribute{
 		Id:        a.GetId(),
@@ -68,7 +62,6 @@ func GetSimpleAttribute(a *policy.Attribute) SimpleAttribute {
 		Namespace: a.GetNamespace().GetName(),
 		Active:    strconv.FormatBool(a.GetActive().GetValue()),
 		Metadata:  ConstructMetadata(a.GetMetadata()),
-		//KeyIds:    keyIds,
 	}
 }
 
@@ -106,4 +99,38 @@ func GetSimpleRegisteredResourceActionAttributeValues(v []*policy.RegisteredReso
 	}
 
 	return values
+}
+
+func KeyAlgToEnum(alg string) (policy.Algorithm, error) {
+	switch strings.ToLower(alg) {
+	case "rsa:2048":
+		return policy.Algorithm_ALGORITHM_RSA_2048, nil
+	case "rsa:4096":
+		return policy.Algorithm_ALGORITHM_RSA_4096, nil
+	case "ec:secp256r1":
+		return policy.Algorithm_ALGORITHM_EC_P256, nil
+	case "ec:secp384r1":
+		return policy.Algorithm_ALGORITHM_EC_P384, nil
+	case "ec:secp521r1":
+		return policy.Algorithm_ALGORITHM_EC_P521, nil
+	default:
+		return policy.Algorithm_ALGORITHM_UNSPECIFIED, errors.New("invalid algorithm")
+	}
+}
+
+func KeyEnumToAlg(enum policy.Algorithm) (string, error) {
+	switch enum { //nolint:exhaustive // UNSPECIFIED is not needed here
+	case policy.Algorithm_ALGORITHM_RSA_2048:
+		return "rsa:2048", nil
+	case policy.Algorithm_ALGORITHM_RSA_4096:
+		return "rsa:4096", nil
+	case policy.Algorithm_ALGORITHM_EC_P256:
+		return "ec:secp256r1", nil
+	case policy.Algorithm_ALGORITHM_EC_P384:
+		return "ec:secp384r1", nil
+	case policy.Algorithm_ALGORITHM_EC_P521:
+		return "ec:secp521r1", nil
+	default:
+		return "", errors.New("invalid enum algorithm")
+	}
 }
