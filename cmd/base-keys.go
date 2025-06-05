@@ -7,6 +7,7 @@ import (
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/opentdf/otdfctl/pkg/utils"
+	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/opentdf/platform/protocol/go/policy/kasregistry"
 	"github.com/spf13/cobra"
 )
@@ -49,11 +50,12 @@ func getKasKeyIdentifier(c *cli.Cli) (*kasregistry.KasKeyIdentifier, error) {
 	return identifier, nil
 }
 
-func getBaseKeyTableRows(simpleKey *kasregistry.SimpleKasKey, additionalInfo map[string]string) table.Row {
+func getBaseKeyTableRows(simpleKey *policy.SimpleKasKey, additionalInfo map[string]string) table.Row {
+	readableAlg, _ := cli.KeyEnumToAlg(simpleKey.GetPublicKey().GetAlgorithm())
 	rowData := table.RowData{
 		kasKidKey: simpleKey.GetPublicKey().GetKid(),
 		pubPemKey: simpleKey.GetPublicKey().GetPem(),
-		algKey:    simpleKey.GetPublicKey().GetAlgorithm(),
+		algKey:    readableAlg,
 		kasURIKey: simpleKey.GetKasUri(),
 	}
 

@@ -50,7 +50,7 @@ teardown_file() {
   assert_equal "$(echo "$output" | jq -r .new_base_key.kas_uri)" "${KAS_URI_BASE_KEY_TEST}"
   assert_not_equal "$(echo "$output" | jq -r .new_base_key.public_key.pem)" ""
   assert_not_equal "$(echo "$output" | jq -r .new_base_key.public_key.pem)" "null"
-  assert_equal "$(echo "$output" | jq -r .new_base_key.public_key.algorithm)" "rsa:2048"
+  assert_equal "$(echo "$output" | jq -r .new_base_key.public_key.algorithm)" 1
   # Verify previous base key is null or not present if this is the first set
   assert_equal "$(echo "$output" | jq -r .previous_base_key)" "null"
 }
@@ -63,7 +63,7 @@ teardown_file() {
   assert_equal "$(echo "$output" | jq -r .new_base_key.kas_uri)" "${KAS_URI_BASE_KEY_TEST}"
   assert_not_equal "$(echo "$output" | jq -r .new_base_key.public_key.pem)" ""
   assert_not_equal "$(echo "$output" | jq -r .new_base_key.public_key.pem)" "null"
-  assert_equal "$(echo "$output" | jq -r .new_base_key.public_key.algorithm)" "rsa:2048"
+  assert_equal "$(echo "$output" | jq -r .new_base_key.public_key.algorithm)" 1
 }
 
 @test "base-key: get (after setting a base key)" {
@@ -76,7 +76,7 @@ teardown_file() {
   assert_equal "$(echo "$output" | jq -r .kas_uri)" "${KAS_URI_BASE_KEY_TEST}"
   assert_not_equal "$(echo "$output" | jq -r .public_key.pem)" ""
   assert_not_equal "$(echo "$output" | jq -r .public_key.pem)" "null"
-  assert_equal "$(echo "$output" | jq -r .public_key.algorithm)" "rsa:2048"
+  assert_equal "$(echo "$output" | jq -r .public_key.algorithm)" 1
 }
 
 @test "base-key: set by --key(id) and --kas(name)" {
@@ -86,7 +86,7 @@ teardown_file() {
   assert_equal "$(echo "$output" | jq -r .new_base_key.kas_uri)" "${KAS_URI_BASE_KEY_TEST}" # KAS URI should remain the same for the KAS Name
   assert_not_equal "$(echo "$output" | jq -r .new_base_key.public_key.pem)" ""
   assert_not_equal "$(echo "$output" | jq -r .new_base_key.public_key.pem)" "null"
-  assert_equal "$(echo "$output" | jq -r .new_base_key.public_key.algorithm)" "rsa:2048"
+  assert_equal "$(echo "$output" | jq -r .new_base_key.public_key.algorithm)" 1
 }
 
 @test "base-key: set by --key(id) and --kas(uri)" {
@@ -98,7 +98,7 @@ teardown_file() {
   assert_equal "$(echo "$output" | jq -r .new_base_key.kas_uri)" "${KAS_URI_BASE_KEY_TEST}" # KAS URI should remain the same for the KAS Name
   assert_not_equal "$(echo "$output" | jq -r .new_base_key.public_key.pem)" ""
   assert_not_equal "$(echo "$output" | jq -r .new_base_key.public_key.pem)" "null"
-  assert_equal "$(echo "$output" | jq -r .new_base_key.public_key.algorithm)" "rsa:2048"
+  assert_equal "$(echo "$output" | jq -r .new_base_key.public_key.algorithm)" 1
 }
 
 @test "base-key: set, get, and verify previous base key" {
@@ -108,7 +108,7 @@ teardown_file() {
   assert_equal "$(echo "$output" | jq -r .new_base_key.kas_uri)" "${KAS_URI_BASE_KEY_TEST}"
   assert_not_equal "$(echo "$output" | jq -r .new_base_key.public_key.pem)" ""
   assert_not_equal "$(echo "$output" | jq -r .new_base_key.public_key.pem)" "null"
-  assert_equal "$(echo "$output" | jq -r .new_base_key.public_key.algorithm)" "rsa:2048"
+  assert_equal "$(echo "$output" | jq -r .new_base_key.public_key.algorithm)" 1
 
   run_otdfctl_base_key get --json
   assert_success
@@ -116,7 +116,7 @@ teardown_file() {
   assert_equal "$(echo "$output" | jq -r .kas_uri)" "${KAS_URI_BASE_KEY_TEST}"
   assert_not_equal "$(echo "$output" | jq -r .public_key.pem)" ""
   assert_not_equal "$(echo "$output" | jq -r .public_key.pem)" "null"
-  assert_equal "$(echo "$output" | jq -r .public_key.algorithm)" "rsa:2048"
+  assert_equal "$(echo "$output" | jq -r .public_key.algorithm)" 1
 
   SECOND_KEY_ID_FOR_BASE_TEST="second-key-for-base-$(date +%s)"
   SECOND_KAS_KEY_SYSTEM_ID=$(./otdfctl $HOST $WITH_CREDS policy kas-registry key create --kas "${KAS_REGISTRY_ID_BASE_KEY_TEST}" --key-id "${SECOND_KEY_ID_FOR_BASE_TEST}" --algorithm ec:secp256r1 --mode local --wrapping-key "${WRAPPING_KEY}" --wrapping-key-id "test-key" --json | jq -r '.key.id')
@@ -127,13 +127,13 @@ teardown_file() {
   assert_equal "$(echo "$output" | jq -r .new_base_key.kas_uri)" "${KAS_URI_BASE_KEY_TEST}"
   assert_not_equal "$(echo "$output" | jq -r .new_base_key.public_key.pem)" ""
   assert_not_equal "$(echo "$output" | jq -r .new_base_key.public_key.pem)" "null"
-  assert_equal "$(echo "$output" | jq -r .new_base_key.public_key.algorithm)" "ec:secp256r1"
+  assert_equal "$(echo "$output" | jq -r .new_base_key.public_key.algorithm)" 3
   # Verify previous base key
   assert_equal "$(echo "$output" | jq -r .previous_base_key.public_key.kid)" "${REGULAR_KEY_ID_FOR_BASE_TEST}"
   assert_equal "$(echo "$output" | jq -r .previous_base_key.kas_uri)" "${KAS_URI_BASE_KEY_TEST}"
   assert_not_equal "$(echo "$output" | jq -r .new_base_key.public_key.pem)" ""
   assert_not_equal "$(echo "$output" | jq -r .new_base_key.public_key.pem)" "null"
-  assert_equal "$(echo "$output" | jq -r .previous_base_key.public_key.algorithm)" "rsa:2048"
+  assert_equal "$(echo "$output" | jq -r .previous_base_key.public_key.algorithm)" 1
 }
 
 @test "base-key: set (missing kas identifier)" {

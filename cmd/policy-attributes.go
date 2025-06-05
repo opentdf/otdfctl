@@ -77,7 +77,6 @@ func policy_getAttribute(cmd *cobra.Command, args []string) {
 		{"Rule", a.Rule},
 		{"Values", cli.CommaSeparated(a.Values)},
 		{"Namespace", a.Namespace},
-		{"Associated Keys", cli.CommaSeparated(a.KeyIds)},
 	}
 	if mdRows := getMetadataRows(attr.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
