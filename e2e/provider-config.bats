@@ -20,11 +20,9 @@ setup() {
     }
 }
 
-teardown() {
-    ID=$(echo "$output" | jq -r '.id')
-    if [[ ! -z "$ID" ]]; then
-      run_otdfctl_key_pc delete --id "$ID"
-    fi
+delete_pc_by_id() {
+  run_otdfctl_key_pc delete --id "$1" --force
+  assert_success
 }
 
 #########
@@ -54,6 +52,7 @@ teardown() {
     assert_success
     assert_equal "$(echo "$output" | jq -r .name)" "$CONFIG_NAME"
     assert_equal "$(echo "$output" | jq -r .config_json)" "$BASE64_CONFIG"
+    delete_pc_by_id "$(echo "$output" | jq -r .id)"
 }
 
 @test "get provider configuration by id" {
@@ -65,6 +64,7 @@ teardown() {
     assert_success
     assert_equal "$(echo "$output" | jq -r .name)" "$CONFIG_NAME"
     assert_equal "$(echo "$output" | jq -r .config_json)" "$BASE64_CONFIG"
+    delete_pc_by_id "$(echo "$output" | jq -r .id)"
  }
 
 
@@ -77,6 +77,7 @@ teardown() {
     assert_success
     assert_equal "$(echo "$output" | jq -r .name)" "$CONFIG_NAME"
     assert_equal "$(echo "$output" | jq -r .config_json)" "$BASE64_CONFIG"
+    delete_pc_by_id "$(echo "$output" | jq -r .id)"
 }
 
 @test "fail to get provider configuration - no required flags" {
@@ -90,18 +91,19 @@ teardown() {
     assert_output --partial "Failed to get provider config: not_found"
 }
 @test "list provider configurations" {
-    NAME="tst-config-4"
-    run_otdfctl_key_pc create --name "$NAME" --config '"$VALID_CONFIG"' --json
-    assert_success
-    ID=$(echo "$output" | jq -r '.id')
-    run_otdfctl_key_pc list --json
-    assert_success
-    assert_equal "$(echo "$output" | jq -r '.[0].id')" "$ID"
-    assert_equal "$(echo "$output" | jq -r '.[0].name')" "$NAME"
-    assert_equal "$(echo "$output" | jq -r '.[0].config_json')" "$BASE64_CONFIG"
-   run_otdfctl_key_pc list
-       assert_output --partial "Total"
-       assert_line --regexp "Current Offset.*0"
+  NAME="tst-config-4"
+  run_otdfctl_key_pc create --name "$NAME" --config '"$VALID_CONFIG"' --json
+  assert_success
+  ID=$(echo "$output" | jq -r '.id')
+  run_otdfctl_key_pc list --json
+  assert_success
+  assert_equal "$(echo "$output" | jq -r '.[0].id')" "$ID"
+  assert_equal "$(echo "$output" | jq -r '.[0].name')" "$NAME"
+  assert_equal "$(echo "$output" | jq -r '.[0].config_json')" "$BASE64_CONFIG"
+  run_otdfctl_key_pc list
+      assert_output --partial "Total"
+      assert_line --regexp "Current Offset.*0"
+  delete_pc_by_id "$ID"
 }
  
 @test "update provider configuration - success" {
@@ -117,6 +119,7 @@ teardown() {
     assert_equal "$(echo "$output" | jq -r .id)" "$ID"
     assert_equal "$(echo "$output" | jq -r .name)" "$UPDATED_NAME"
     assert_equal "$(echo "$output" | jq -r .config_json)" "$BASE64_UPDATED_CONFIG"
+    delete_pc_by_id "$ID"
 }
 
 @test "fail to update provider configuration - missing id" {
@@ -132,6 +135,7 @@ teardown() {
     run_otdfctl_key_pc update --id "$ID"
     assert_failure
     assert_output --partial "At least one field (name, config, or metadata labels) must be updated"
+    delete_pc_by_id "$ID"
 }
 
 @test "fail to update provider configuration - invalid config format" {
@@ -142,13 +146,14 @@ teardown() {
     run_otdfctl_key_pc update --id "$ID" --config "{invalid: json}"
     assert_failure
     assert_output --partial "invalid_argument"
+    delete_pc_by_id "$ID"
 }
  
 @test "delete provider configuration -- success" {
   NAME="test-config-8"  
   run_otdfctl_key_pc create --name "$NAME" --config '"$VALID_CONFIG"' --json
   ID=$(echo "$output" | jq -r '.id')
-  run_otdfctl_key_pc delete --id "$ID"
+  run_otdfctl_key_pc delete --id "$ID" --force
   assert_success
 }
 

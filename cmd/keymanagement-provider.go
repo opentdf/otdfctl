@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"fmt"
+
 	"github.com/evertras/bubble-table/table"
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/man"
@@ -159,7 +161,7 @@ func deleteProviderConfig(cmd *cobra.Command, args []string) {
 		cli.ExitWithError("Failed to get provider config", err)
 	}
 
-	cli.ConfirmAction(cli.ActionDeactivate, "attribute", pc.GetName(), force)
+	cli.ConfirmAction(cli.ActionDelete, fmt.Sprintf("key provider config with id: %s", id), fmt.Sprintf("Provider Name: %s", pc.GetName()), force)
 
 	err = h.DeleteProviderConfig(c.Context(), id)
 	if err != nil {
@@ -252,6 +254,12 @@ func init() {
 		deleteDoc.GetDocFlag("id").Shorthand,
 		deleteDoc.GetDocFlag("id").Default,
 		deleteDoc.GetDocFlag("id").Description,
+	)
+	deleteDoc.Flags().BoolP(
+		deleteDoc.GetDocFlag("force").Name,
+		deleteDoc.GetDocFlag("force").Shorthand,
+		false,
+		deleteDoc.GetDocFlag("force").Description,
 	)
 
 	doc := man.Docs.GetCommand("policy/key-management/provider",

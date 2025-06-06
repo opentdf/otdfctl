@@ -6,6 +6,9 @@ command:
     - d
     - remove
   flags:
+    - name: force
+      shorthand: f
+      description: Force the deletion of a provider configuration without confirmation
     - name: id
       shorthand: i
       description: ID of the provider config to delete
