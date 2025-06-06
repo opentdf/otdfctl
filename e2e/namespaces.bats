@@ -16,8 +16,10 @@ setup_file() {
 
   export KAS_URI="https://test-kas-for-namespace.com"
   export KAS_REG_ID=$(./otdfctl $HOST $WITH_CREDS policy kas-registry create --uri "$KAS_URI" --public-key-remote 'https://test-kas-for-namespace.com/pub_key' --json | jq -r '.id')
+  export PEM="pem"
   export PEM_B64=$(echo "pem" | base64)
-  export KAS_KEY_ID=$(./otdfctl $HOST $WITH_CREDS policy kas-registry key create --kas "$KAS_REG_ID" --key-id "test-key-for-namespace" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "${PEM_B64}" --json | jq -r '.key.id')
+  export KAS_KEY_ID="test-key-for-namespace"
+  export KAS_KEY_SYSTEM_ID=$(./otdfctl $HOST $WITH_CREDS policy kas-registry key create --kas "$KAS_REG_ID" --key-id "$KAS_KEY_ID" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "${PEM_B64}" --json | jq -r '.key.id')
 }
 
 setup() {
@@ -36,7 +38,7 @@ teardown_file() {
   #./otdfctl $HOST $WITH_CREDS policy kas-registry delete --id "$KAS_REG_ID" --force
 
   # clear out all test env vars
-  unset HOST WITH_CREDS NS_NAME NS_FQN NS_ID NS_ID_FLAG KAS_REG_ID KAS_KEY_ID KAS_URI PEM_B64
+  unset HOST WITH_CREDS NS_NAME NS_FQN NS_ID NS_ID_FLAG KAS_REG_ID KAS_KEY_ID KAS_URI PEM_B64 PEM KAS_KEY_SYSTEM_ID
 }
 
 @test "Create a namespace - Good" {
@@ -141,20 +143,21 @@ teardown_file() {
 }
 
 @test "Assign/Remove KAS key from namespace - With Namespace ID" {
-  run_otdfctl_ns key assign --namespace "$NS_ID" --key-id "$KAS_KEY_ID" --json
+  run_otdfctl_ns key assign --namespace "$NS_ID" --key-id "$KAS_KEY_SYSTEM_ID" --json
   assert_success
   assert_equal "$(echo "$output" | jq -r '.namespace_id')" "$NS_ID"
-  assert_equal "$(echo "$output" | jq -r '.key_id')" "$KAS_KEY_ID"
+  assert_equal "$(echo "$output" | jq -r '.key_id')" "$KAS_KEY_SYSTEM_ID"
 
   run_otdfctl_ns get --id "$NS_ID" --json
-  echo "$output" >&2
   assert_success
   assert_equal "$(echo "$output" | jq -r '.id')" "$NS_ID"
-  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.id')" "$KAS_KEY_ID"
-  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.private_key_ctx')" "null"
-  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.public_key_ctx.pem')" "${PEM_B64}"
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].kas_uri')" "$KAS_URI"
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].kas_id')" "$KAS_REG_ID"
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].public_key.kid')" "$KAS_KEY_ID"
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].public_key.pem')" "$PEM"
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].public_key.algorithm')" 1
 
-  run_otdfctl_ns key remove --namespace "$NS_ID" --key-id "$KAS_KEY_ID" --json
+  run_otdfctl_ns key remove --namespace "$NS_ID" --key-id "$KAS_KEY_SYSTEM_ID" --json
   assert_success
 
   run_otdfctl_ns get --id "$NS_ID" --json
@@ -170,19 +173,21 @@ teardown_file() {
   assert_equal "$(echo "$output" | jq -r '.kas_keys | length')" 0
   NS_FQN=$(echo "$output" | jq -r '.fqn')
 
-  run_otdfctl_ns key assign --namespace "$NS_FQN" --key-id "$KAS_KEY_ID" --json
+  run_otdfctl_ns key assign --namespace "$NS_FQN" --key-id "$KAS_KEY_SYSTEM_ID" --json
   assert_success
   assert_equal "$(echo "$output" | jq -r '.namespace_id')" "$NS_ID"
-  assert_equal "$(echo "$output" | jq -r '.key_id')" "$KAS_KEY_ID"
+  assert_equal "$(echo "$output" | jq -r '.key_id')" "$KAS_KEY_SYSTEM_ID"
 
   run_otdfctl_ns get --id "$NS_ID" --json
   assert_success
   assert_equal "$(echo "$output" | jq -r '.id')" "$NS_ID"
-  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.id')" "$KAS_KEY_ID"
-  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.private_key_ctx')" "null"
-  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.public_key_ctx.pem')" "${PEM_B64}"
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].kas_uri')" "$KAS_URI"
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].kas_id')" "$KAS_REG_ID"
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].public_key.kid')" "$KAS_KEY_ID"
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].public_key.pem')" "$PEM"
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].public_key.algorithm')" 1
 
-  run_otdfctl_ns key remove --namespace "$NS_ID" --key-id "$KAS_KEY_ID" --json
+  run_otdfctl_ns key remove --namespace "$NS_ID" --key-id "$KAS_KEY_SYSTEM_ID" --json
   assert_success
 
   run_otdfctl_ns get --id "$NS_ID" --json
@@ -193,7 +198,7 @@ teardown_file() {
 
 @test "KAS key assignment error handling - namespace" {
   # Test with non-existent namespace ID
-  run_otdfctl_ns key assign --namespace "00000000-0000-0000-0000-000000000000" --key-id "$KAS_KEY_ID"
+  run_otdfctl_ns key assign --namespace "00000000-0000-0000-0000-000000000000" --key-id "$KAS_KEY_SYSTEM_ID"
   assert_failure
   assert_output --partial "ERROR"
 
@@ -202,7 +207,7 @@ teardown_file() {
   assert_failure
   assert_output --partial "Flag '--key-id' is required"
 
-  run_otdfctl_ns key assign --key-id "$KAS_KEY_ID"
+  run_otdfctl_ns key assign --key-id "$KAS_KEY_SYSTEM_ID"
   assert_failure
   assert_output --partial "Flag '--namespace' is required"
 }

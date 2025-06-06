@@ -14,8 +14,10 @@ setup_file() {
 
   export KAS_URI="https://test-kas-for-attributes.com"
   export KAS_REG_ID=$(./otdfctl $HOST $WITH_CREDS policy kas-registry create --uri "$KAS_URI" --public-key-remote 'https://test-kas-for-attributes.com/pub_key' --json | jq -r '.id')
-  export PEM_B64=$(echo "pem" | base64)
-  export KAS_KEY_ID=$(./otdfctl $HOST $WITH_CREDS policy kas-registry key create --kas "$KAS_REG_ID" --key-id "test-key-for-attr" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "${PEM_B64}" --json | jq -r '.key.id')
+  export PEM="pem"
+  export PEM_B64=$(echo "$PEM" | base64)
+  export KAS_KEY_ID="test-key-for-attr"
+  export KAS_KEY_SYSTEM_ID=$(./otdfctl $HOST $WITH_CREDS policy kas-registry key create --kas "$KAS_REG_ID" --key-id "$KAS_KEY_ID" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "${PEM_B64}" --json | jq -r '.key.id')
 }
 
 # always create a randomly named attribute
@@ -44,7 +46,7 @@ teardown_file() {
   # ./otdfctl $HOST $WITH_CREDS policy kas-registry delete --id "$KAS_REG_ID" --force
 
   # clear out all test env vars
-  unset HOST WITH_CREDS NS_NAME NS_ID ATTR_NAME_RANDOM KAS_REG_ID KAS_KEY_ID KAS_URI
+  unset HOST WITH_CREDS NS_NAME NS_ID ATTR_NAME_RANDOM KAS_REG_ID KAS_KEY_ID KAS_URI KAS_KEY_SYSTEM_ID PEM PEM_B64 ATTR_ID
 }
 
 @test "Create an attribute - With Values" {
@@ -216,20 +218,22 @@ teardown_file() {
 
 @test "Assign/Remove KAS key from attribute definition - With Attribute Id" {
   # Test assigning KAS key to attribute
-  run_otdfctl_attr key assign --attribute "$ATTR_ID" --key-id "$KAS_KEY_ID" --json
+  run_otdfctl_attr key assign --attribute "$ATTR_ID" --key-id "$KAS_KEY_SYSTEM_ID" --json
   assert_success
   assert_equal "$(echo "$output" | jq -r '.attribute_id')" "$ATTR_ID"
-  assert_equal "$(echo "$output" | jq -r '.key_id')" "$KAS_KEY_ID"
+  assert_equal "$(echo "$output" | jq -r '.key_id')" "$KAS_KEY_SYSTEM_ID"
 
   run_otdfctl_attr get --id "$ATTR_ID" --json
   assert_success
   assert_equal "$(echo "$output" | jq -r '.id')" "$ATTR_ID"
-  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.id')" "$KAS_KEY_ID"
-  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.private_key_ctx')" "null"
-  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.public_key_ctx.pem')" "${PEM_B64}"
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].kas_uri')" "$KAS_URI"
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].kas_id')" "$KAS_REG_ID"
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].public_key.pem')" "${PEM}"
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].public_key.algorithm')" 1
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].public_key.kid')" "$KAS_KEY_ID"
 
   # Assign the key to the attribute
-  run_otdfctl_attr key remove --attribute "$ATTR_ID" --key-id "$KAS_KEY_ID"
+  run_otdfctl_attr key remove --attribute "$ATTR_ID" --key-id "$KAS_KEY_SYSTEM_ID"
   assert_success
 
   run_otdfctl_attr get --id "$ATTR_ID" --json
@@ -246,20 +250,22 @@ teardown_file() {
   assert_equal "$(echo "$output" | jq -r '.keys | length')" 0
   ATTR_FQN=$(echo "$output" | jq -r '.fqn')
 
-  run_otdfctl_attr key assign --attribute "$ATTR_FQN" --key-id "$KAS_KEY_ID" --json
+  run_otdfctl_attr key assign --attribute "$ATTR_FQN" --key-id "$KAS_KEY_SYSTEM_ID" --json
   assert_success
   assert_equal "$(echo "$output" | jq -r '.attribute_id')" "$ATTR_ID"
-  assert_equal "$(echo "$output" | jq -r '.key_id')" "$KAS_KEY_ID"
+  assert_equal "$(echo "$output" | jq -r '.key_id')" "$KAS_KEY_SYSTEM_ID"
 
   run_otdfctl_attr get --id "$ATTR_ID" --json
   assert_success
   assert_equal "$(echo "$output" | jq -r '.id')" "$ATTR_ID"
-  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.id')" "$KAS_KEY_ID"
-  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.private_key_ctx')" "null"
-  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.public_key_ctx.pem')" "${PEM_B64}"
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].kas_uri')" "$KAS_URI"
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].kas_id')" "$KAS_REG_ID"
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].public_key.pem')" "$PEM"
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].public_key.algorithm')" 1
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].public_key.kid')" "$KAS_KEY_ID"
 
   # Assign the key to the attribute
-  run_otdfctl_attr key remove --attribute "$ATTR_FQN" --key-id "$KAS_KEY_ID"
+  run_otdfctl_attr key remove --attribute "$ATTR_FQN" --key-id "$KAS_KEY_SYSTEM_ID"
   assert_success
 
   run_otdfctl_attr get --id "$ATTR_ID" --json
@@ -276,20 +282,22 @@ teardown_file() {
   VALUE_ID=$(echo "$output" | jq -r '.values[0].id')
 
   # Test assigning KAS key to attribute value
-  run_otdfctl_attr values key assign --value "$VALUE_ID" --key-id "$KAS_KEY_ID" --json
+  run_otdfctl_attr values key assign --value "$VALUE_ID" --key-id "$KAS_KEY_SYSTEM_ID" --json
   assert_success
   assert_equal "$(echo "$output" | jq -r '.value_id')" "$VALUE_ID"
-  assert_equal "$(echo "$output" | jq -r '.key_id')" "$KAS_KEY_ID"
+  assert_equal "$(echo "$output" | jq -r '.key_id')" "$KAS_KEY_SYSTEM_ID"
 
   run_otdfctl_attr values get --id "$VALUE_ID" --json
   assert_success
   assert_equal "$(echo "$output" | jq -r '.id')" "$VALUE_ID"
-  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.id')" "$KAS_KEY_ID"
-  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.private_key_ctx')" "null"
-  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.public_key_ctx.pem')" "${PEM_B64}"
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].kas_uri')" "$KAS_URI"
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].kas_id')" "$KAS_REG_ID"
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].public_key.pem')" "$PEM"
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].public_key.algorithm')" 1
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].public_key.kid')" "$KAS_KEY_ID"
 
   # Remove key from attribute value
-  run_otdfctl_attr values key remove --value "$VALUE_ID" --key-id "$KAS_KEY_ID"
+  run_otdfctl_attr values key remove --value "$VALUE_ID" --key-id "$KAS_KEY_SYSTEM_ID"
   assert_success
 
   run_otdfctl_attr values get --id "$VALUE_ID" --json
@@ -309,20 +317,22 @@ teardown_file() {
   VALUE_ID=$(echo "$output" | jq -r '.values[0].id')
 
   # Assign with value FQN
-  run_otdfctl_attr values key assign --value "$VALUE_FQN" --key-id "$KAS_KEY_ID" --json
+  run_otdfctl_attr values key assign --value "$VALUE_FQN" --key-id "$KAS_KEY_SYSTEM_ID" --json
   assert_success
   assert_equal "$(echo "$output" | jq -r '.value_id')" "$VALUE_ID"
-  assert_equal "$(echo "$output" | jq -r '.key_id')" "$KAS_KEY_ID"
+  assert_equal "$(echo "$output" | jq -r '.key_id')" "$KAS_KEY_SYSTEM_ID"
 
   run_otdfctl_attr values get --id "$VALUE_ID" --json
   assert_success
   assert_equal "$(echo "$output" | jq -r '.id')" "$VALUE_ID"
-  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.id')" "$KAS_KEY_ID"
-  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.private_key_ctx')" "null"
-  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.public_key_ctx.pem')" "${PEM_B64}"
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].kas_uri')" "$KAS_URI"
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].kas_id')" "$KAS_REG_ID"
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].public_key.pem')" "$PEM"
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].public_key.algorithm')" 1
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].public_key.kid')" "$KAS_KEY_ID"
 
   # Remove key from attribute value by FQN
-  run_otdfctl_attr values key remove --value "$VALUE_FQN" --key-id "$KAS_KEY_ID"
+  run_otdfctl_attr values key remove --value "$VALUE_FQN" --key-id "$KAS_KEY_SYSTEM_ID"
   assert_success
 
   run_otdfctl_attr values get --id "$VALUE_ID" --json
@@ -336,7 +346,7 @@ teardown_file() {
 @test "KAS key assignment error handling - attribute" {
 
   # Test with non-existent attribute ID
-  run_otdfctl_attr key assign --attribute "00000000-0000-0000-0000-000000000000" --key-id "$KAS_KEY_ID"
+  run_otdfctl_attr key assign --attribute "00000000-0000-0000-0000-000000000000" --key-id "$KAS_KEY_SYSTEM_ID"
   assert_failure
   assert_output --partial "ERROR"
 
@@ -345,19 +355,19 @@ teardown_file() {
   assert_failure
   assert_output --partial "Flag '--key-id' is required"
 
-  run_otdfctl_attr key assign --key-id "$KAS_KEY_ID"
+  run_otdfctl_attr key assign --key-id "$KAS_KEY_SYSTEM_ID"
   assert_failure
   assert_output --partial "Flag '--attribute' is required"
 }
 
 @test "KAS key assignment error handling - attribute value" {
   # Test with non-existent value ID
-  run_otdfctl_attr values key assign --value "00000000-0000-0000-0000-000000000000" --key-id "$KAS_KEY_ID"
+  run_otdfctl_attr values key assign --value "00000000-0000-0000-0000-000000000000" --key-id "$KAS_KEY_SYSTEM_ID"
   assert_failure
   assert_output --partial "ERROR"
 
   # Test with missing required flags
-  run_otdfctl_attr values key assign --key-id "$KAS_KEY_ID"
+  run_otdfctl_attr values key assign --key-id "$KAS_KEY_SYSTEM_ID"
   assert_failure
   assert_output --partial "Flag '--value' is required"
 
