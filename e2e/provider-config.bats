@@ -91,18 +91,17 @@ delete_pc_by_id() {
     assert_output --partial "Failed to get provider config: not_found"
 }
 @test "list provider configurations" {
-  NAME="tst-config-4"
-  run_otdfctl_key_pc create --name "$NAME" --config '"$VALID_CONFIG"' --json
-  assert_success
-  ID=$(echo "$output" | jq -r '.id')
-  run_otdfctl_key_pc list --json
-  assert_success
-assert_success
-assert_not_equal "$(echo "$output" | jq -r length)" "0"
-  run_otdfctl_key_pc list
-      assert_output --partial "Total"
-      assert_line --regexp "Current Offset.*0"
-  delete_pc_by_id "$ID"
+    NAME="tst-config-4"
+    run_otdfctl_key_pc create --name "$NAME" --config '"$VALID_CONFIG"' --json
+    assert_success
+    ID=$(echo "$output" | jq -r '.id')
+    run_otdfctl_key_pc list --json
+    assert_success
+    assert_not_equal "$(echo "$output" | jq -r length)" "0"
+    run_otdfctl_key_pc list
+        assert_output --partial "Total"
+        assert_line --regexp "Current Offset.*0"
+    delete_pc_by_id "$ID"
 }
  
 @test "update provider configuration - success" {
