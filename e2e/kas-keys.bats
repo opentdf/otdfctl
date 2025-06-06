@@ -13,7 +13,7 @@ run_otdfctl_kas_registry_create() {
 }
 
 run_otdfctl_provider_create() {
-  run sh -c "./otdfctl keymanagement provider create $HOST $WITH_CREDS $*"
+  run sh -c "./otdfctl policy keymanagement provider create $HOST $WITH_CREDS $*"
 }
 
 setup_file() {
@@ -41,7 +41,7 @@ setup() {
 }
 
 teardown_file() {
-  ./otdfctl keymanagement provider "$HOST" "$WITH_CREDS" delete --id "$PC_ID"
+  ./otdfctl keymanagement provider "$HOST" "$WITH_CREDS" delete --id "$PC_ID" --force
   # Cannot cleanup KAS registry and keys, since keys cannot be deleted currently.
   unset HOST WITH_CREDS KAS_REGISTRY_ID KAS_NAME KAS_URI PEM_B64 WRAPPING_KEY PC_ID
 }

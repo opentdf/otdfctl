@@ -315,7 +315,7 @@ func policyAssignKeyToAttribute(cmd *cobra.Command, args []string) {
 	// Get the attribute to show meaningful information in case of error
 	attrKey, err := h.AssignKeyToAttribute(c.Context(), attribute, keyID)
 	if err != nil {
-		errMsg := fmt.Sprintf("Failed to assign key: (%s) to attribue: (%s)", keyID, attribute)
+		errMsg := fmt.Sprintf("Failed to assign key: (%s) to attribute: (%s)", keyID, attribute)
 		cli.ExitWithError(errMsg, err)
 	}
 
