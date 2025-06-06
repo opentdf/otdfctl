@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.21.2](https://github.com/opentdf/otdfctl/compare/v0.21.1...v0.21.2) (2025-06-06)
+
+
+### Features
+
+* **core:** Uncomment code and pull in new protos. ([#594](https://github.com/opentdf/otdfctl/issues/594)) ([#595](https://github.com/opentdf/otdfctl/issues/595)) ([576971c](https://github.com/opentdf/otdfctl/commit/576971c4ca2134c857eb68653c63c23e5ee38123))
+
 ## [0.21.1](https://github.com/opentdf/otdfctl/compare/v0.21.0...v0.21.1) (2025-06-04)
 
 
