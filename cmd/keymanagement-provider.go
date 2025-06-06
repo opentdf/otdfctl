@@ -1,18 +1,11 @@
 package cmd
 
 import (
-	"encoding/json"
-
 	"github.com/evertras/bubble-table/table"
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/spf13/cobra"
 )
-
-func isJSON(str string) bool {
-	var js json.RawMessage
-	return json.Unmarshal([]byte(str), &js) == nil
-}
 
 func createProviderConfig(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
@@ -22,10 +15,6 @@ func createProviderConfig(cmd *cobra.Command, args []string) {
 	name := c.Flags.GetRequiredString("name")
 	config := c.Flags.GetRequiredString("config")
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
-
-	if !isJSON(config) {
-		cli.ExitWithError("Invalid JSON format for config ", nil)
-	}
 
 	// Do not need to get provider config after, since this endpoint returns the created config.
 	pc, err := h.CreateProviderConfig(c.Context(), name, []byte(config), getMetadataMutable(metadataLabels))
@@ -88,10 +77,6 @@ func updateProviderConfig(cmd *cobra.Command, args []string) {
 
 	if name == "" && config == "" && len(metadataLabels) == 0 {
 		cli.ExitWithError("At least one field (name, config, or metadata labels) must be updated", nil)
-	}
-
-	if config != "" && !isJSON(config) {
-		cli.ExitWithError("Cannot update provider config with invalid json", nil)
 	}
 
 	_, err := h.UpdateProviderConfig(c.Context(), id, name, []byte(config), getMetadataMutable(metadataLabels), getMetadataUpdateBehavior())
@@ -166,8 +151,17 @@ func deleteProviderConfig(cmd *cobra.Command, args []string) {
 	defer h.Close()
 
 	id := c.Flags.GetRequiredID("id")
+	force := c.Flags.GetOptionalBool("force")
 
-	err := h.DeleteProviderConfig(c.Context(), id)
+	// Get provider config.
+	pc, err := h.GetProviderConfig(c.Context(), id, "")
+	if err != nil {
+		cli.ExitWithError("Failed to get provider config", err)
+	}
+
+	cli.ConfirmAction(cli.ActionDeactivate, "attribute", pc.GetName(), force)
+
+	err = h.DeleteProviderConfig(c.Context(), id)
 	if err != nil {
 		cli.ExitWithError("Failed to delete provider config", err)
 	}
@@ -183,7 +177,7 @@ func deleteProviderConfig(cmd *cobra.Command, args []string) {
 
 func init() {
 	// Create Provider Config
-	createDoc := man.Docs.GetCommand("key-management/provider/create",
+	createDoc := man.Docs.GetCommand("policy/key-management/provider/create",
 		man.WithRun(createProviderConfig),
 	)
 	createDoc.Flags().StringP(
@@ -201,7 +195,7 @@ func init() {
 	injectLabelFlags(&createDoc.Command, false)
 
 	// Get Provider Config
-	getDoc := man.Docs.GetCommand("key-management/provider/get",
+	getDoc := man.Docs.GetCommand("policy/key-management/provider/get",
 		man.WithRun(getProviderConfig),
 	)
 	getDoc.Flags().StringP(
@@ -220,7 +214,7 @@ func init() {
 	getDoc.MarkFlagsMutuallyExclusive("id", "name")
 
 	// Update Provider Config
-	updateDoc := man.Docs.GetCommand("key-management/provider/update",
+	updateDoc := man.Docs.GetCommand("policy/key-management/provider/update",
 		man.WithRun(updateProviderConfig),
 	)
 	updateDoc.Flags().StringP(
@@ -244,13 +238,13 @@ func init() {
 	injectLabelFlags(&updateDoc.Command, true)
 
 	// List Provider Configs
-	listDoc := man.Docs.GetCommand("key-management/provider/list",
+	listDoc := man.Docs.GetCommand("policy/key-management/provider/list",
 		man.WithRun(listProviderConfig),
 	)
 	injectListPaginationFlags(listDoc)
 
 	// Add Delete Provider Config
-	deleteDoc := man.Docs.GetCommand("key-management/provider/delete",
+	deleteDoc := man.Docs.GetCommand("policy/key-management/provider/delete",
 		man.WithRun(deleteProviderConfig),
 	)
 	deleteDoc.Flags().StringP(
@@ -260,7 +254,7 @@ func init() {
 		deleteDoc.GetDocFlag("id").Description,
 	)
 
-	doc := man.Docs.GetCommand("key-management/provider",
+	doc := man.Docs.GetCommand("policy/key-management/provider",
 		man.WithSubcommands(createDoc, getDoc, updateDoc, listDoc, deleteDoc))
 
 	keyMngmtCmd.AddCommand(&doc.Command)

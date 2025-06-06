@@ -34,8 +34,6 @@ setup() {
 
 teardown_file() {
   ./otdfctl $HOST $WITH_CREDS policy attributes namespace unsafe delete --id "$NS_ID" --force
-  # Cant delete kas registry with keys attached
-  #./otdfctl $HOST $WITH_CREDS policy kas-registry delete --id "$KAS_REG_ID" --force
 
   # clear out all test env vars
   unset HOST WITH_CREDS NS_NAME NS_FQN NS_ID NS_ID_FLAG KAS_REG_ID KAS_KEY_ID KAS_URI PEM_B64 PEM KAS_KEY_SYSTEM_ID
