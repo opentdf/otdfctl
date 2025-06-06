@@ -81,15 +81,9 @@ func updateProviderConfig(cmd *cobra.Command, args []string) {
 		cli.ExitWithError("At least one field (name, config, or metadata labels) must be updated", nil)
 	}
 
-	_, err := h.UpdateProviderConfig(c.Context(), id, name, []byte(config), getMetadataMutable(metadataLabels), getMetadataUpdateBehavior())
+	pc, err := h.UpdateProviderConfig(c.Context(), id, name, []byte(config), getMetadataMutable(metadataLabels), getMetadataUpdateBehavior())
 	if err != nil {
 		cli.ExitWithError("Failed to update provider config", err)
-	}
-
-	// Get updated provider config.
-	pc, err := h.GetProviderConfig(c.Context(), id, "")
-	if err != nil {
-		cli.ExitWithError("Failed to get provider config", err)
 	}
 
 	rows := [][]string{
