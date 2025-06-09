@@ -6,7 +6,7 @@ command:
     - l
   flags:
     - name: limit
-      shorthand: L
+      shorthand: l
       description: Maximum number of results to return
       required: true
     - name: offset
