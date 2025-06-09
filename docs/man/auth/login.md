@@ -5,7 +5,7 @@ command:
   name: login
   flags:
     - name: client-id
-      description: A clientId for use in auth code flow (default = platform well-known public_client_id)
+      description: A clientId for use in auth code flow (e.g. cli-client)
       shorthand: i
       required: true
 ---
