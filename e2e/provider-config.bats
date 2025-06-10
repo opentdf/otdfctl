@@ -114,7 +114,6 @@ delete_pc_by_id() {
     ID=$(echo "$output" | jq -r '.id')
     run_otdfctl_key_pc update --id "$ID" --name "$UPDATED_NAME" --config "'$UPDATED_CONFIG'" --json
     assert_success
-    echo "Output: $output" >&2
     assert_equal "$(echo "$output" | jq -r .id)" "$ID"
     assert_equal "$(echo "$output" | jq -r .name)" "$UPDATED_NAME"
     assert_equal "$(echo "$output" | jq -r .config_json)" "$BASE64_UPDATED_CONFIG"
