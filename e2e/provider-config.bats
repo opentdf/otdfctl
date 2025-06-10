@@ -107,16 +107,15 @@ delete_pc_by_id() {
 @test "update provider configuration - success" {
     NAME="test-config-5"
     UPDATED_NAME="test-config-5-updated"
-    UPDATED_CONFIG='{"cached":"key-updated"}'
+    UPDATED_CONFIG='{"cached": "key-updated"}'
     BASE64_UPDATED_CONFIG='eyJjYWNoZWQiOiAia2V5LXVwZGF0ZWQifQ=='
     run_otdfctl_key_pc create --name "$NAME" --config '"$VALID_CONFIG"' --json
     assert_success
     ID=$(echo "$output" | jq -r '.id')
-    run_otdfctl_key_pc update --id "$ID" --config "'$UPDATED_CONFIG'" --json
+    run_otdfctl_key_pc update --id "$ID" --name "$UPDATED_NAME" --config "'$UPDATED_CONFIG'" --json
     assert_success
-    echo "Output: $output" >&2
     assert_equal "$(echo "$output" | jq -r .id)" "$ID"
-    # assert_equal "$(echo "$output" | jq -r .name)" "$UPDATED_NAME"
+    assert_equal "$(echo "$output" | jq -r .name)" "$UPDATED_NAME"
     assert_equal "$(echo "$output" | jq -r .config_json)" "$BASE64_UPDATED_CONFIG"
     delete_pc_by_id "$ID"
 }
