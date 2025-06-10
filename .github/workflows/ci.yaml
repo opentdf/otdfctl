@@ -1,4 +1,4 @@
-name: 'CI'
+name: "CI"
 
 on:
   pull_request: {}
@@ -21,7 +21,7 @@ jobs:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
       - uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491
         with:
-          go-version-file: 'go.mod'
+          go-version-file: "go.mod"
           cache: false
       - name: golangci-lint
         uses: golangci/golangci-lint-action@1481404843c368bc19ca9406f87d6e0fc97bdcfd
@@ -37,7 +37,7 @@ jobs:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
       - uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491
         with:
-          go-version-file: 'go.mod'
+          go-version-file: "go.mod"
           cache: false
       - name: Unit Tests with the Go CLI
         run: go test ./... -short -race -cover
@@ -49,7 +49,7 @@ jobs:
       - name: Start up the platform with deps and containers
         uses: opentdf/platform/test/start-up-with-containers@main
         with:
-          platform-ref: 'main'
+          platform-ref: "main"
       - uses: opentdf/otdfctl/e2e@main
         with:
           otdfctl-ref: ${{ github.event.pull_request.head.sha }}
@@ -58,7 +58,7 @@ jobs:
     needs:
       - golangci
       - unit
-    uses: opentdf/tests/.github/workflows/xtest.yml@main
+    uses: opentdf/tests/.github/workflows/xtest.yml@dspx-501/key-management
     with:
       otdfctl-ref: ${{ github.ref }} latest
       platform-ref: main lts
