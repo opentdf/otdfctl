@@ -60,6 +60,6 @@ jobs:
       - unit
     uses: opentdf/tests/.github/workflows/xtest.yml@main
     with:
-      otdfctl-ref: ${{ github.ref }} lts
+      otdfctl-ref: ${{ github.ref }} latest
       platform-ref: main lts
       focus-sdk: go
