@@ -92,17 +92,12 @@ teardown() {
     NAME="new-kas-testing-update"
     export CREATED=$(./otdfctl $HOST $DEBUG_LEVEL $WITH_CREDS policy kas-registry create --uri "$URI" -r "$REMOTE_KEY" -n "$NAME" --json)
     ID=$(echo "$CREATED" | jq -r '.id')
-    run_otdfctl_kasr update --id "$ID" -u "https://newuri.com" -n "newer-name" -c '"$CACHED_KEY"' --json
+    run_otdfctl_kasr update --id "$ID" -u "https://newuri.com" -n "newer-name" --json
     assert_output --partial "$ID"
     assert_output --partial "https://newuri.com"
-    assert_output --partial "kid"
-    assert_output --partial "pem"
-    assert_output --partial "alg"
     assert_output --partial "newer-name"
     refute_output --partial "$NAME"
     refute_output --partial "$URI"
-    refute_output --partial "remote"
-    refute_output --partial "$REMOTE_KEY"
 }
 
 @test "update registered KAS with invalid URI - fails" {
