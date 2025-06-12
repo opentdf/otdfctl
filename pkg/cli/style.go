@@ -90,6 +90,10 @@ var colorYellow = Color{
 	},
 }
 
+func ColorYellow() Color {
+	return colorYellow
+}
+
 var colorGreen = Color{
 	Foreground: lipgloss.CompleteAdaptiveColor{
 		Light: lipgloss.CompleteColor{

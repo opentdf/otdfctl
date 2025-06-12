@@ -24,7 +24,7 @@ setup_file() {
   export KAS_URI="https://test-kas-with-keys.com"
   export KAS_NAME="kas-registry-for-keys-test"
 
-  run_otdfctl_kas_registry_create --name $KAS_NAME --uri "$KAS_URI" --public-key-remote 'https://test-kas-with-keys.com' --json
+  run_otdfctl_kas_registry_create --name $KAS_NAME --uri "$KAS_URI" --json
   assert_success
   export KAS_REGISTRY_ID=$(echo "$output" | jq -r '.id')
 
