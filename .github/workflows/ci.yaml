@@ -58,7 +58,7 @@ jobs:
     needs:
       - golangci
       - unit
-    uses: opentdf/tests/.github/workflows/xtest.yml@dspx-501/key-management
+    uses: opentdf/tests/.github/workflows/xtest.yml@main
     with:
       otdfctl-ref: ${{ github.ref }} latest
       platform-ref: main lts
