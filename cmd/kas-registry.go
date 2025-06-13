@@ -108,7 +108,7 @@ func policy_createKeyAccessRegistry(cmd *cobra.Command, args []string) {
 	if cachedJSON != "" || remote != "" {
 		message := "\nDEPRECATION WARNING: --public-keys and --public-key-remote are deprecated and will be removed in an upcoming release.\n" +
 			"Please use the 'policy kas-registry key' command instead.\n"
-		fmt.Println(cli.WarningMessage(message))
+		cmd.Println(cli.WarningMessage(message))
 	}
 
 	created, err := h.CreateKasRegistryEntry(
@@ -151,7 +151,7 @@ func policy_updateKeyAccessRegistry(cmd *cobra.Command, args []string) {
 	if cachedJSON != "" || remote != "" {
 		message := "\nDEPRECATION WARNING: --public-keys and --public-key-remote are deprecated and will be removed in an upcoming release.\n" +
 			"Please use the 'policy kas-registry key' command instead.\n"
-		fmt.Println(cli.WarningMessage(message))
+		cmd.Println(cli.WarningMessage(message))
 	}
 
 	updated, err := h.UpdateKasRegistryEntry(
