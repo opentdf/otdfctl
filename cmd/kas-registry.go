@@ -8,6 +8,7 @@ import (
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/handlers"
 	"github.com/opentdf/otdfctl/pkg/man"
+	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/spf13/cobra"
 )
 
@@ -36,9 +37,17 @@ func policy_getKeyAccessRegistry(cmd *cobra.Command, args []string) {
 		cli.ExitWithError(errMsg, err)
 	}
 
+	// TODO: Remove in next release
+	key := &policy.PublicKey{}
+	key.PublicKey = &policy.PublicKey_Cached{Cached: kas.GetPublicKey().GetCached()}
+	if kas.GetPublicKey().GetRemote() != "" {
+		key.PublicKey = &policy.PublicKey_Remote{Remote: kas.GetPublicKey().GetRemote()}
+	}
+
 	rows := [][]string{
 		{"Id", kas.GetId()},
 		{"URI", kas.GetUri()},
+		{"PublicKey", kas.GetPublicKey().String()},
 	}
 	name := kas.GetName()
 	if name != "" {
@@ -70,13 +79,21 @@ func policy_listKeyAccessRegistries(cmd *cobra.Command, args []string) {
 		cli.NewUUIDColumn(),
 		table.NewFlexColumn("uri", "URI", cli.FlexColumnWidthFour),
 		table.NewFlexColumn("name", "Name", cli.FlexColumnWidthThree),
+		table.NewFlexColumn("pk", "PublicKey", cli.FlexColumnWidthFour),
 	)
 	rows := []table.Row{}
 	for _, kas := range list {
+		//TODO: Remove in next release
+		key := policy.PublicKey{}
+		key.PublicKey = &policy.PublicKey_Cached{Cached: kas.GetPublicKey().GetCached()}
+		if kas.GetPublicKey().GetRemote() != "" {
+			key.PublicKey = &policy.PublicKey_Remote{Remote: kas.GetPublicKey().GetRemote()}
+		}
 		rows = append(rows, table.NewRow(table.RowData{
 			"id":   kas.GetId(),
 			"uri":  kas.GetUri(),
 			"name": kas.GetName(),
+			"pk":   kas.GetPublicKey().String(),
 		}))
 	}
 	t = t.WithRows(rows)
