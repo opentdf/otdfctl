@@ -3,19 +3,12 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/charmbracelet/lipgloss"
 	"github.com/evertras/bubble-table/table"
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/handlers"
 	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/spf13/cobra"
-)
-
-// ANSI escape codes for colors
-const (
-	ColorYellow = "\033[33m"
-	ColorReset  = "\033[0m"
 )
 
 var (
@@ -113,12 +106,9 @@ func policy_createKeyAccessRegistry(cmd *cobra.Command, args []string) {
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
 	if cachedJSON != "" || remote != "" {
-		warningStyle := lipgloss.NewStyle().Foreground(cli.ColorYellow().Foreground)
 		message := "\nDEPRECATION WARNING: --public-keys and --public-key-remote are deprecated and will be removed in an upcoming release.\n" +
 			"Please use the 'policy kas-registry key' command instead.\n"
-
-		fmt.Fprintln(cmd.OutOrStdout(),
-			warningStyle.Render(message))
+		cli.ExitWithWarning(message)
 	}
 
 	created, err := h.CreateKasRegistryEntry(
@@ -159,12 +149,9 @@ func policy_updateKeyAccessRegistry(cmd *cobra.Command, args []string) {
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
 	if cachedJSON != "" || remote != "" {
-		warningStyle := lipgloss.NewStyle().Foreground(cli.ColorYellow().Foreground)
 		message := "\nDEPRECATION WARNING: --public-keys and --public-key-remote are deprecated and will be removed in an upcoming release.\n" +
 			"Please use the 'policy kas-registry key' command instead.\n"
-
-		fmt.Fprintln(cmd.OutOrStdout(),
-			warningStyle.Render(message))
+		cli.ExitWithWarning(message)
 	}
 
 	updated, err := h.UpdateKasRegistryEntry(
