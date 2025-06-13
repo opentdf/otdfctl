@@ -6,6 +6,7 @@ command:
   hidden: true
   aliases:
     - k
+    - keys
 ---
 
 Provides a set of subcommands for managing cryptographic keys within the Key Access Server (KAS) registry.
