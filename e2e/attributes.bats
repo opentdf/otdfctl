@@ -13,7 +13,7 @@ setup_file() {
   export NS_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes namespaces create -n "$NS_NAME" --json | jq -r '.id')
 
   export KAS_URI="https://test-kas-for-attributes.com"
-  export KAS_REG_ID=$(./otdfctl $HOST $WITH_CREDS policy kas-registry create --uri "$KAS_URI" --public-key-remote 'https://test-kas-for-attributes.com/pub_key' --json | jq -r '.id')
+  export KAS_REG_ID=$(./otdfctl $HOST $WITH_CREDS policy kas-registry create --uri "$KAS_URI" --json | jq -r '.id')
   export PEM="pem"
   export PEM_B64=$(echo "$PEM" | base64)
   export KAS_KEY_ID="test-key-for-attr"

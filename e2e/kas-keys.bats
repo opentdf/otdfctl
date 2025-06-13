@@ -577,7 +577,7 @@ format_kas_name_as_uri() {
 @test "kas-keys: list keys (pagination with limit and offset)" {
   KAS_NAME_LIST=$(generate_kas_name)
   KAS_URI_LIST=$(format_kas_name_as_uri "${KAS_NAME_LIST}")
-  KAS_ID_LIST=$(./otdfctl $HOST $WITH_CREDS policy kas-registry create --name "$KAS_NAME_LIST" --uri "$KAS_URI_LIST" --public-key-remote 'https://test-kas-with-keys.com' --json | jq -r '.id')
+  KAS_ID_LIST=$(./otdfctl $HOST $WITH_CREDS policy kas-registry create --name "$KAS_NAME_LIST" --uri "$KAS_URI_LIST" --json | jq -r '.id')
   assert_not_equal "$KAS_ID_LIST" ""
 
   # Create a known set of keys for pagination testing
@@ -626,7 +626,7 @@ format_kas_name_as_uri() {
 @test "kas-keys: list keys (filter by algorithm rsa:2048)" {
   KAS_NAME_LIST=$(generate_kas_name)
   KAS_URI_LIST=$(format_kas_name_as_uri "${KAS_NAME_LIST}")
-  KAS_ID_LIST=$(./otdfctl $HOST $WITH_CREDS policy kas-registry create --name "$KAS_NAME_LIST" --uri "$KAS_URI_LIST" --public-key-remote 'https://test-kas-with-keys.com' --json | jq -r '.id')
+  KAS_ID_LIST=$(./otdfctl $HOST $WITH_CREDS policy kas-registry create --name "$KAS_NAME_LIST" --uri "$KAS_URI_LIST" --json | jq -r '.id')
   assert_not_equal "$KAS_ID_LIST" ""
 
   # Ensure at least one rsa:2048 key exists for this KAS
@@ -663,7 +663,7 @@ format_kas_name_as_uri() {
 @test "kas-keys: list keys (filter by kas)" {
   KAS_NAME_LIST=$(generate_kas_name)
   KAS_URI_LIST=$(format_kas_name_as_uri "${KAS_NAME_LIST}")
-  KAS_ID_LIST=$(./otdfctl $HOST $WITH_CREDS policy kas-registry create --name "$KAS_NAME_LIST" --uri "$KAS_URI_LIST" --public-key-remote 'https://test-kas-with-keys.com' --json | jq -r '.id')
+  KAS_ID_LIST=$(./otdfctl $HOST $WITH_CREDS policy kas-registry create --name "$KAS_NAME_LIST" --uri "$KAS_URI_LIST" --json | jq -r '.id')
   assert_not_equal "$KAS_ID_LIST" ""
 
   KEY_ID_LIST_KAS_FILTER=$(generate_key_id)
@@ -696,7 +696,7 @@ format_kas_name_as_uri() {
   KAS_NAME_LIST=$(generate_kas_name)
   echo "DEBUG: KAS_NAME_LIST: ${KAS_NAME_LIST}" >&2
   KAS_URI_LIST=$(format_kas_name_as_uri "${KAS_NAME_LIST}")
-  KAS_ID_LIST=$(./otdfctl $HOST $WITH_CREDS policy kas-registry create --name "$KAS_NAME_LIST" --uri "$KAS_URI_LIST" --public-key-remote 'https://test-kas-with-keys.com' --json | jq -r '.id')
+  KAS_ID_LIST=$(./otdfctl $HOST $WITH_CREDS policy kas-registry create --name "$KAS_NAME_LIST" --uri "$KAS_URI_LIST" --json | jq -r '.id')
   assert_not_equal "$KAS_ID_LIST" ""
 
   KEY_ID_LIST_KAS_NAME_FILTER=$(generate_key_id)
@@ -723,7 +723,7 @@ format_kas_name_as_uri() {
   # This command is not a 'kas-registry key' subcommand, so it won't use run_otdfctl_key
   KAS_NAME_LIST=$(generate_kas_name)
   KAS_URI_LIST=$(format_kas_name_as_uri "${KAS_NAME_LIST}")
-  KAS_ID_LIST=$(./otdfctl $HOST $WITH_CREDS policy kas-registry create --name "$KAS_NAME_LIST" --uri "$KAS_URI_LIST" --public-key-remote 'https://test-kas-with-keys.com' --json | jq -r '.id')
+  KAS_ID_LIST=$(./otdfctl $HOST $WITH_CREDS policy kas-registry create --name "$KAS_NAME_LIST" --uri "$KAS_URI_LIST" --json | jq -r '.id')
   assert_not_equal "$KAS_ID_LIST" ""
 
   KEY_ID_LIST_KAS_URI_FILTER=$(generate_key_id)
