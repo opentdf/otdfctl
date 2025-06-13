@@ -19,17 +19,14 @@ func policy_assignKasGrant(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
-	cli.WarningMessage(`
-		Grants are now Key Mappings. To assign a key to attribute definition, value or namespace use the following commands.
+	fmt.Println(cli.WarningMessage(`Grants are now Key Mappings. To assign a key to attribute definition, value or namespace use the following commands.
 
-		policy attributes namespace key assign
+	policy attributes namespace key assign
 
-		policy attributes key assign
-		
-		policy attributes value key assign
-	`)
-
-	HandleSuccess(cmd, "", table.Model{}, nil)
+	policy attributes key assign
+	
+	policy attributes value key assign
+	`))
 }
 
 func policy_unassignKasGrant(cmd *cobra.Command, args []string) {
