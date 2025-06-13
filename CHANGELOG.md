@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.22.0](https://github.com/opentdf/otdfctl/compare/v0.21.0...v0.22.0) (2025-06-13)
+
+
+### Features
+
+* **core:** Uncomment code and pull in new protos. ([#594](https://github.com/opentdf/otdfctl/issues/594)) ([2883e50](https://github.com/opentdf/otdfctl/commit/2883e5060ca1f9d22f9a9500293fc407e7f4bcfd))
+
+
+### Bug Fixes
+
+* **ci:** Trigger for release-please (testing) ([#580](https://github.com/opentdf/otdfctl/issues/580)) ([5cd33f9](https://github.com/opentdf/otdfctl/commit/5cd33f9f9b5fb66b2cc9c0c795bd84cf10630298))
+* **core:** Move key management under policy. ([#597](https://github.com/opentdf/otdfctl/issues/597)) ([d657e96](https://github.com/opentdf/otdfctl/commit/d657e96cab3afc516437ae08321ab45aff376460))
+* disable kas-registry --public-keys and --publickey-remote flags ([#603](https://github.com/opentdf/otdfctl/issues/603)) ([279bbbd](https://github.com/opentdf/otdfctl/commit/279bbbd8ced14765c97ae3928421d38737ac0a8d))
+* enforce hex encoded wrapping-key ([#581](https://github.com/opentdf/otdfctl/issues/581)) ([416e215](https://github.com/opentdf/otdfctl/commit/416e215abf0c910aa4d18dc84729f89ea578fd4d))
+
 ## [0.21.0](https://github.com/opentdf/otdfctl/compare/v0.20.0...v0.21.0) (2025-05-29)
 
 
