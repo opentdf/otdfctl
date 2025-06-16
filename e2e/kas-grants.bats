@@ -59,6 +59,9 @@ teardown_file() {
 
   run_otdfctl_kasg assign "$NS_ID_FLAG" "$KAS_ID_FLAG"
   assert_output --partial "Grants are now Key Mappings."
+
+  run_otdfctl_kasg unassign "$NS_ID_FLAG" "$KAS_ID_FLAG"
+  assert_output --partial "Grants are now Key Mappings."
 }
 
 @test "optional ID flag string error message" {

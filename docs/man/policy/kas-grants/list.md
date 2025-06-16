@@ -1,5 +1,5 @@
 ---
-title: List KAS Grants
+title: (Deprecated) List KAS Grants
 
 command:
   name: list
@@ -17,6 +17,7 @@ command:
       shorthand: o
       description: Offset (page) quantity from start of the list
 ---
+# Deprecated
 
 List the Grants of Registered Key Access Servers (KASes) to attribute namespaces, definitions,
 or values.
