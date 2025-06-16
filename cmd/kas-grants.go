@@ -19,7 +19,7 @@ func policy_assignKasGrant(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
-	fmt.Println(cli.WarningMessage(`Grants are now Key Mappings. To assign a key to attribute definition, value or namespace use the following commands.
+	cmd.Println(cli.WarningMessage(`Grants are now Key Mappings. To assign a key to attribute definition, value or namespace use the following commands.
 
 	policy attributes namespace key assign
 
