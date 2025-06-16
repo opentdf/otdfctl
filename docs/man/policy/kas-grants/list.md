@@ -17,7 +17,7 @@ command:
       shorthand: o
       description: Offset (page) quantity from start of the list
 ---
-# Deprecated
+# Deprecated\n\nThis command is deprecated and will be removed in a future release.
 
 List the Grants of Registered Key Access Servers (KASes) to attribute namespaces, definitions,
 or values.

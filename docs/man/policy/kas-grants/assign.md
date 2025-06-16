@@ -36,7 +36,7 @@ command:
       default: false
 ---
 
-# Deprecated
+# Deprecated\n\nThis command is deprecated. Use `policy attributes namespace key assign`, `policy attributes key assign`, or `policy attributes value key assign` instead.
 
 Assign a registered Key Access Server (KAS) to an attribute namespace, definition, or value.
 
