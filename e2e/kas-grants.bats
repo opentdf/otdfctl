@@ -53,6 +53,14 @@ teardown_file() {
   assert_output --partial "Must specify exactly one Attribute Namespace ID, Definition ID, or Value ID to unassign"
 }
 
+@test "assign grant prints warning" {
+  # assign the namespace a grant
+  export NS_ID_FLAG="--namespace-id $NS_ID"
+
+  run_otdfctl_kasg assign "$NS_ID_FLAG" "$KAS_ID_FLAG"
+  assert_output --partial "Grants are now Key Mappings."
+}
+
 @test "optional ID flag string error message" {
   export NS_ID_FLAG='--namespace-id hello'
   export ATTR_ID_FLAG='--attribute-id world'
