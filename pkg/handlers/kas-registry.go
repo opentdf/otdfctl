@@ -57,12 +57,11 @@ func (h Handler) ListKasRegistryEntries(ctx context.Context, limit, offset int32
 }
 
 // Creates the KAS registry and then returns the KAS
-func (h Handler) CreateKasRegistryEntry(ctx context.Context, uri string, publicKey *policy.PublicKey, name string, metadata *common.MetadataMutable) (*policy.KeyAccessServer, error) {
+func (h Handler) CreateKasRegistryEntry(ctx context.Context, uri string, name string, metadata *common.MetadataMutable) (*policy.KeyAccessServer, error) {
 	req := &kasregistry.CreateKeyAccessServerRequest{
-		Uri:       uri,
-		PublicKey: publicKey,
-		Name:      name,
-		Metadata:  metadata,
+		Uri:      uri,
+		Name:     name,
+		Metadata: metadata,
 	}
 
 	resp, err := h.sdk.KeyAccessServerRegistry.CreateKeyAccessServer(ctx, req)
@@ -76,12 +75,11 @@ func (h Handler) CreateKasRegistryEntry(ctx context.Context, uri string, publicK
 }
 
 // Updates the KAS registry and then returns the KAS
-func (h Handler) UpdateKasRegistryEntry(ctx context.Context, id, uri, name string, pubKey *policy.PublicKey, metadata *common.MetadataMutable, behavior common.MetadataUpdateEnum) (*policy.KeyAccessServer, error) {
+func (h Handler) UpdateKasRegistryEntry(ctx context.Context, id, uri, name string, metadata *common.MetadataMutable, behavior common.MetadataUpdateEnum) (*policy.KeyAccessServer, error) {
 	_, err := h.sdk.KeyAccessServerRegistry.UpdateKeyAccessServer(ctx, &kasregistry.UpdateKeyAccessServerRequest{
 		Id:                     id,
 		Uri:                    uri,
 		Name:                   name,
-		PublicKey:              pubKey,
 		Metadata:               metadata,
 		MetadataUpdateBehavior: behavior,
 	})

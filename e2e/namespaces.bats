@@ -15,7 +15,7 @@ setup_file() {
   export NS_ID_FLAG="--id $NS_ID"
 
   export KAS_URI="https://test-kas-for-namespace.com"
-  export KAS_REG_ID=$(./otdfctl $HOST $WITH_CREDS policy kas-registry create --uri "$KAS_URI" --public-key-remote 'https://test-kas-for-namespace.com/pub_key' --json | jq -r '.id')
+  export KAS_REG_ID=$(./otdfctl $HOST $WITH_CREDS policy kas-registry create --uri "$KAS_URI" --json | jq -r '.id')
   export PEM="pem"
   export PEM_B64=$(echo "pem" | base64)
   export KAS_KEY_ID="test-key-for-namespace"
@@ -34,8 +34,6 @@ setup() {
 
 teardown_file() {
   ./otdfctl $HOST $WITH_CREDS policy attributes namespace unsafe delete --id "$NS_ID" --force
-  # Cant delete kas registry with keys attached
-  #./otdfctl $HOST $WITH_CREDS policy kas-registry delete --id "$KAS_REG_ID" --force
 
   # clear out all test env vars
   unset HOST WITH_CREDS NS_NAME NS_FQN NS_ID NS_ID_FLAG KAS_REG_ID KAS_KEY_ID KAS_URI PEM_B64 PEM KAS_KEY_SYSTEM_ID

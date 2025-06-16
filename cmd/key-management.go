@@ -5,7 +5,7 @@ import (
 )
 
 // KeyCmd is the command for managing keys
-var keyMngmtCmd = man.Docs.GetCommand("key-management")
+var keyMngmtCmd = man.Docs.GetCommand("policy/key-management")
 
 func init() {
 	keyMngmtCmd.PersistentFlags().BoolVar(
@@ -14,5 +14,5 @@ func init() {
 		keyMngmtCmd.GetDocFlag("json").DefaultAsBool(),
 		keyMngmtCmd.GetDocFlag("json").Description,
 	)
-	RootCmd.AddCommand(&keyMngmtCmd.Command)
+	policyCmd.AddCommand(&keyMngmtCmd.Command)
 }
