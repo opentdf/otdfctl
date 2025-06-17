@@ -203,10 +203,10 @@ const (
 	fiveSecDuration = 5 * time.Second
 )
 
-// FindAvailablePort returns an available TCP port on localhost.
+// GetFreePort returns an available TCP port on localhost.
 // The function works by asking the operating system to assign
 // a free port (by using port 0), then returns that assigned port.
-func FindAvailablePort() (int, error) {
+func GetFreePort() (int, error) {
 	// Create a listener on localhost with port 0 (OS will assign a free port)
 	listener, err := net.Listen("tcp", "localhost:0")
 	if err != nil {
@@ -243,8 +243,8 @@ func Login(ctx context.Context, platformEndpoint, tokenURL, authURL, publicClien
 		return nil, err
 	}
 
-	if strings.TrimSpace(authCodeFlowPort) != "" {
-		port, err := FindAvailablePort()
+	if strings.TrimSpace(authCodeFlowPort) == "" {
+		port, err := GetFreePort()
 		if err != nil {
 			return nil, fmt.Errorf("failed to find available port for auth code flow: %w", err)
 		}
