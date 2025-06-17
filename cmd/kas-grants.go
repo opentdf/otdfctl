@@ -34,6 +34,15 @@ func policy_unassignKasGrant(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
+	cmd.Println(cli.WarningMessage(`Grants are now Key Mappings. The unassign grant command will be removed in the next release.
+	
+	policy attributes namespace key remove
+
+	policy attributes key remove
+	
+	policy attributes value key remove
+	`))
+
 	ctx := cmd.Context()
 	nsID := c.Flags.GetOptionalID("namespace-id")
 	attrID := c.Flags.GetOptionalID("attribute-id")
@@ -121,6 +130,9 @@ func policy_listKasGrants(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
 	defer h.Close()
+
+	cmd.Println(cli.WarningMessage(`Grants are now Key Mappings. The ability to list grants will be removed in the next release.`))
+
 	kasF := c.Flags.GetOptionalString("kas")
 	limit := c.Flags.GetRequiredInt32("limit")
 	offset := c.Flags.GetRequiredInt32("offset")
