@@ -6,8 +6,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net"
 	"net/url"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/go-jose/go-jose/v3/jwt"
@@ -22,10 +24,7 @@ import (
 	"golang.org/x/oauth2"
 )
 
-const (
-	authCallbackPath = "/callback"
-	authCodeFlowPort = "9000"
-)
+const authCallbackPath = "/callback"
 
 type ClientCredentials struct {
 	ClientId     string `json:"clientId"`
@@ -203,6 +202,29 @@ const (
 	fiveSecDuration = 5 * time.Second
 )
 
+// FindAvailablePort returns an available TCP port on localhost.
+// The function works by asking the operating system to assign
+// a free port (by using port 0), then returns that assigned port.
+func FindAvailablePort() (int, error) {
+	// Create a listener on localhost with port 0 (OS will assign a free port)
+	listener, err := net.Listen("tcp", "localhost:0")
+	if err != nil {
+		return 0, fmt.Errorf("failed to find available port: %w", err)
+	}
+
+	// Make sure we release the port when done
+	defer listener.Close()
+
+	// Get the address information from the listener
+	addr, ok := listener.Addr().(*net.TCPAddr)
+	if !ok {
+		return 0, fmt.Errorf("failed to get TCP address from listener")
+	}
+
+	// Return the port that was assigned
+	return addr.Port, nil
+}
+
 // Facilitates an auth code PKCE flow to obtain OIDC tokens.
 // Spawns a local server to handle the callback and opens a browser window in each respective OS.
 func Login(ctx context.Context, platformEndpoint, tokenURL, authURL, publicClientID string) (*oauth2.Token, error) {
@@ -218,6 +240,12 @@ func Login(ctx context.Context, platformEndpoint, tokenURL, authURL, publicClien
 	_, err = rand.Read(encryptKey)
 	if err != nil {
 		return nil, err
+	}
+
+	port, err := FindAvailablePort()
+	authCodeFlowPort := strconv.Itoa(port)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find available port for auth code flow: %w", err)
 	}
 
 	conf := &oauth2.Config{
