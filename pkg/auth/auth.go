@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/go-jose/go-jose/v3/jwt"
@@ -227,7 +228,7 @@ func FindAvailablePort() (int, error) {
 
 // Facilitates an auth code PKCE flow to obtain OIDC tokens.
 // Spawns a local server to handle the callback and opens a browser window in each respective OS.
-func Login(ctx context.Context, platformEndpoint, tokenURL, authURL, publicClientID string) (*oauth2.Token, error) {
+func Login(ctx context.Context, platformEndpoint, tokenURL, authURL, publicClientID, authCodeFlowPort string) (*oauth2.Token, error) {
 	// Generate random hash and encryption keys for cookie handling
 	hashKey := make([]byte, keyLength)
 	encryptKey := make([]byte, keyLength)
@@ -242,10 +243,12 @@ func Login(ctx context.Context, platformEndpoint, tokenURL, authURL, publicClien
 		return nil, err
 	}
 
-	port, err := FindAvailablePort()
-	authCodeFlowPort := strconv.Itoa(port)
-	if err != nil {
-		return nil, fmt.Errorf("failed to find available port for auth code flow: %w", err)
+	if strings.TrimSpace(authCodeFlowPort) != "" {
+		port, err := FindAvailablePort()
+		if err != nil {
+			return nil, fmt.Errorf("failed to find available port for auth code flow: %w", err)
+		}
+		authCodeFlowPort = strconv.Itoa(port)
 	}
 
 	conf := &oauth2.Config{
@@ -284,13 +287,13 @@ func Login(ctx context.Context, platformEndpoint, tokenURL, authURL, publicClien
 }
 
 // Logs in using the auth code PKCE flow driven by the platform well-known idP OIDC configuration.
-func LoginWithPKCE(ctx context.Context, host, clientID string, tlsNoVerify bool) (*oauth2.Token, error) {
+func LoginWithPKCE(ctx context.Context, host, clientID string, tlsNoVerify bool, port string) (*oauth2.Token, error) {
 	pc, err := getPlatformConfiguration(host, tlsNoVerify)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get platform configuration: %w", err)
 	}
 
-	tok, err := Login(ctx, host, pc.tokenEndpoint, pc.authzEndpoint, clientID)
+	tok, err := Login(ctx, host, pc.tokenEndpoint, pc.authzEndpoint, clientID, port)
 	if err != nil {
 		return nil, fmt.Errorf("failed to login: %w", err)
 	}
