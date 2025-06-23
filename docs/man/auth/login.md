@@ -8,6 +8,10 @@ command:
       description: A clientId for a public (no-secret) IdP client supporting the auth code flow from any localhost port (e.g. cli-client)
       shorthand: i
       required: true
+    - name: port
+      description: A preferred port number to faciliate the auth flow process.
+      shorthand: p
+      required: false
 ---
 
 > [!NOTE]

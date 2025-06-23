@@ -14,11 +14,13 @@ func auth_codeLogin(cmd *cobra.Command, args []string) {
 
 	c.Print("Initiating login...")
 	clientID := c.FlagHelper.GetRequiredString("client-id")
+	port := c.FlagHelper.GetOptionalString("port")
 	tok, err := auth.LoginWithPKCE(
 		cmd.Context(),
 		cp.GetEndpoint(),
 		clientID,
 		c.FlagHelper.GetOptionalBool("tls-no-verify"),
+		port,
 	)
 	if err != nil {
 		c.Println("failed")

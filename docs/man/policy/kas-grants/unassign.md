@@ -1,5 +1,5 @@
 ---
-title: Unassign a grant
+title: (Deprecated) Unassign a grant
 
 command:
   name: unassign
@@ -26,6 +26,8 @@ command:
     - name: force
       description: Force the unassignment with no confirmation
 ---
+
+# Deprecated\n\nThis command is deprecated and will be removed in a future release. Use `policy attributes namespace key remove`, `policy attributes key remove`, or `policy attributes value key remove` instead.
 
 Unassign a registered Key Access Server (KAS) to an attribute namespace, definition, or value.
 

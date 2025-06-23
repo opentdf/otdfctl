@@ -3,7 +3,6 @@ title: Provider configuration for Key Management
 
 command:
   name: provider
-  hidden: true
   aliases:
     - p
 ---

@@ -1,7 +1,6 @@
 ---
 title: Key Management changes to attribute namespaces
 command:
-  hidden: true
   name: key
 ---
 
