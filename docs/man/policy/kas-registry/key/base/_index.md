@@ -3,7 +3,6 @@ title: Platform Base Key Management
 
 command:
   name: base
-  hidden: true
 ---
 
 Provides subcommands for managing the platform's base cryptographic key.
