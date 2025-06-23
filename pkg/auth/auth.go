@@ -6,8 +6,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net"
 	"net/url"
 	"os"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/go-jose/go-jose/v3/jwt"
@@ -22,10 +25,7 @@ import (
 	"golang.org/x/oauth2"
 )
 
-const (
-	authCallbackPath = "/callback"
-	authCodeFlowPort = "9000"
-)
+const authCallbackPath = "/callback"
 
 type ClientCredentials struct {
 	ClientId     string `json:"clientId"`
@@ -203,9 +203,32 @@ const (
 	fiveSecDuration = 5 * time.Second
 )
 
+// GetFreePort returns an available TCP port on localhost.
+// The function works by asking the operating system to assign
+// a free port (by using port 0), then returns that assigned port.
+func GetFreePort() (int, error) {
+	// Create a listener on localhost with port 0 (OS will assign a free port)
+	listener, err := net.Listen("tcp", "localhost:0")
+	if err != nil {
+		return 0, fmt.Errorf("failed to find available port: %w", err)
+	}
+
+	// Make sure we release the port when done
+	defer listener.Close()
+
+	// Get the address information from the listener
+	addr, ok := listener.Addr().(*net.TCPAddr)
+	if !ok {
+		return 0, fmt.Errorf("failed to get TCP address from listener")
+	}
+
+	// Return the port that was assigned
+	return addr.Port, nil
+}
+
 // Facilitates an auth code PKCE flow to obtain OIDC tokens.
 // Spawns a local server to handle the callback and opens a browser window in each respective OS.
-func Login(ctx context.Context, platformEndpoint, tokenURL, authURL, publicClientID string) (*oauth2.Token, error) {
+func Login(ctx context.Context, platformEndpoint, tokenURL, authURL, publicClientID, authCodeFlowPort string) (*oauth2.Token, error) {
 	// Generate random hash and encryption keys for cookie handling
 	hashKey := make([]byte, keyLength)
 	encryptKey := make([]byte, keyLength)
@@ -218,6 +241,14 @@ func Login(ctx context.Context, platformEndpoint, tokenURL, authURL, publicClien
 	_, err = rand.Read(encryptKey)
 	if err != nil {
 		return nil, err
+	}
+
+	if strings.TrimSpace(authCodeFlowPort) == "" {
+		port, err := GetFreePort()
+		if err != nil {
+			return nil, fmt.Errorf("failed to find available port for auth code flow: %w", err)
+		}
+		authCodeFlowPort = strconv.Itoa(port)
 	}
 
 	conf := &oauth2.Config{
@@ -256,13 +287,13 @@ func Login(ctx context.Context, platformEndpoint, tokenURL, authURL, publicClien
 }
 
 // Logs in using the auth code PKCE flow driven by the platform well-known idP OIDC configuration.
-func LoginWithPKCE(ctx context.Context, host, clientID string, tlsNoVerify bool) (*oauth2.Token, error) {
+func LoginWithPKCE(ctx context.Context, host, clientID string, tlsNoVerify bool, port string) (*oauth2.Token, error) {
 	pc, err := getPlatformConfiguration(host, tlsNoVerify)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get platform configuration: %w", err)
 	}
 
-	tok, err := Login(ctx, host, pc.tokenEndpoint, pc.authzEndpoint, clientID)
+	tok, err := Login(ctx, host, pc.tokenEndpoint, pc.authzEndpoint, clientID, port)
 	if err != nil {
 		return nil, fmt.Errorf("failed to login: %w", err)
 	}

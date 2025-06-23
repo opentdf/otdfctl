@@ -3,7 +3,6 @@ title: Key management for KAS Registry
 
 command:
   name: key
-  hidden: true
   aliases:
     - k
     - keys

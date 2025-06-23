@@ -1,5 +1,5 @@
 ---
-title: Manage Key Access Server grants
+title: (Deprecated) Manage Key Access Server grants
 
 command:
   name: kas-grants
@@ -7,6 +7,7 @@ command:
     - kasg
     - kas-grant
 ---
+# Deprecated
 
 Once Key Access Servers (KASs) have been registered within a platform's policy,
 they can be assigned grants to various attribute objects (namespaces, definitions, values).

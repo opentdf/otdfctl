@@ -3,7 +3,6 @@ title: Key management
 
 command:
   name: keymanagement
-  hidden: true
   aliases:
     - k
   flags:

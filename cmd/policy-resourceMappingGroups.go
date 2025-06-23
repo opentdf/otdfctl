@@ -22,7 +22,7 @@ func policyCreateResourceMappingGroup(cmd *cobra.Command, args []string) {
 	name := c.Flags.GetRequiredString("name")
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
-	resourceMappingGroup, err := h.CreateResourceMappingGroup(nsID, name, getMetadataMutable(metadataLabels))
+	resourceMappingGroup, err := h.CreateResourceMappingGroup(cmd.Context(), nsID, name, getMetadataMutable(metadataLabels))
 	if err != nil {
 		cli.ExitWithError("Failed to create resource mapping group", err)
 	}
@@ -45,7 +45,7 @@ func policyGetResourceMappingGroup(cmd *cobra.Command, args []string) {
 
 	id := c.Flags.GetRequiredID("id")
 
-	resourceMappingGroup, err := h.GetResourceMappingGroup(id)
+	resourceMappingGroup, err := h.GetResourceMappingGroup(cmd.Context(), id)
 	if err != nil {
 		cli.ExitWithError(fmt.Sprintf("Failed to get resource mapping group (%s)", id), err)
 	}
@@ -109,7 +109,7 @@ func policyUpdateResourceMappingGroup(cmd *cobra.Command, args []string) {
 	name := c.Flags.GetOptionalString("name")
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
-	resourceMappingGroup, err := h.UpdateResourceMappingGroup(id, nsID, name, getMetadataMutable(metadataLabels), getMetadataUpdateBehavior())
+	resourceMappingGroup, err := h.UpdateResourceMappingGroup(cmd.Context(), id, nsID, name, getMetadataMutable(metadataLabels), getMetadataUpdateBehavior())
 	if err != nil {
 		cli.ExitWithError(fmt.Sprintf("Failed to update resource mapping group (%s)", id), err)
 	}
@@ -135,12 +135,12 @@ func policyDeleteResourceMappingGroup(cmd *cobra.Command, args []string) {
 
 	cli.ConfirmAction(cli.ActionDelete, "resource-mapping-group", id, force)
 
-	resourceMappingGroup, err := h.GetResourceMappingGroup(id)
+	resourceMappingGroup, err := h.GetResourceMappingGroup(cmd.Context(), id)
 	if err != nil {
 		cli.ExitWithError(fmt.Sprintf("Failed to get resource mapping group for delete (%s)", id), err)
 	}
 
-	_, err = h.DeleteResourceMappingGroup(id)
+	_, err = h.DeleteResourceMappingGroup(cmd.Context(), id)
 	if err != nil {
 		cli.ExitWithError(fmt.Sprintf("Failed to delete resource mapping group (%s)", id), err)
 	}
