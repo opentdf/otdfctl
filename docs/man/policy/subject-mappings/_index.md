@@ -9,12 +9,17 @@ command:
     - subject-mapping
 ---
 
-As data is bound to fully qualified Attribute Values when encrypted within a TDF, Entities are entitled to take actions on
-resources containing Attribute Values through a mechanism called Subject Mappings.
+Subject Mappings are the policy mechanism used to entitle Entities to take Actions on Attribute Values.
 
-A Subject Mapping (SM) is the relation of a Subject Condition Set (SCS, see `subject-condition-sets` command)
-to an Attribute Value to determine a Subject's Entitlement to take various actions on an Attribute Value.
+In a TDF flow, the resource data is associated to Attribute Values within the TDF manifest policy,
+and a Subject Mapping links a given entity (user, principal) to entitled Action(s) on an Attribute Value.
 
-Entities (Subjects, Users, Machines, etc.) are defined by a representation (Entity Representation) of their identity from an identity provider (idP).
-The OpenTDF Platform is not itself an idP, and it utilizes the OpenID Connect (OIDC) protocol as well as idP pluggability to rely upon an Entity store
-of truth outside the platform to represent Entity identities.
+A Subject Mapping (SM) relates:
+    1. one Subject Condition Set (SCS, see `subject-condition-sets` command)
+    2. one or more Actions (see `actions` command)
+    3. one Attribute Value (see `attributes values` command)
+
+Within ABAC entitlement decisioning, the principal/agent/user/subject is known via an Entity Representation
+provided by the Entity Resolution Service and identity provider, and that Entity Representation is logically
+resolved against the Subject Mapping's contained Subject Condition set such that if it is logically true,
+the entity is considered entitled to the contained Actions on the contained Attribute Value.
