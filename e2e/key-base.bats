@@ -1,5 +1,7 @@
 #!/usr/bin/env bats
 
+# NEEDS TO RUN AFTER encrypt-decrypt.bats
+
 setup_file() {
   echo -n '{"clientId":"opentdf","clientSecret":"secret"}' >creds.json
   export WITH_CREDS='--with-client-creds-file ./creds.json'
