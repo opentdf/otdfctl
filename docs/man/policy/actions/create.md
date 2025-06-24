@@ -19,8 +19,8 @@ command:
 
 Add a custom `action` to the platform Policy.
 
-An action `name` is normalized to lower case and may contain hyphens or dashes between other alphanumeric
-characters.
+An Action `name` is normalized to lower case and may contain hyphens or dashes between other alphanumeric
+characters. Each name must be globally unique as actions are not namespaced.
 
 For more information, see the `actions` subcommand.
 
