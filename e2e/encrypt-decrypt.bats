@@ -175,7 +175,7 @@ teardown_file(){
   ./otdfctl encrypt -o $OUTFILE_GO_MOD --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --tdf-type tdf3  $INFILE_GO_MOD
   run sh -c "./otdfctl decrypt --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --tdf-type tdf3 --kas-allowlist '*' $OUTFILE_GO_MOD"
   assert_success
-  assert_output --regexp "(?i)kasallowlist is ignored"
+  assert_output --output "kasAllowlist is ignored"
 }
 
 @test "roundtrip NANO, with allowlist containing platform kas" {
@@ -195,5 +195,5 @@ teardown_file(){
   ./otdfctl encrypt -o $OUTFILE_GO_MOD --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --tdf-type nano  $INFILE_GO_MOD
   run sh -c "./otdfctl decrypt --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --tdf-type nano --kas-allowlist '*' $OUTFILE_GO_MOD"
   assert_success
-  assert_output --regexp "(?i)kasallowlist is ignored"
+  assert_output --output "kasAllowlist is ignored"
 }
