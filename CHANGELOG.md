@@ -1,5 +1,30 @@
 # Changelog
 
+## [0.22.0](https://github.com/opentdf/otdfctl/compare/v0.21.0...v0.22.0) (2025-06-24)
+
+
+### ⚠ BREAKING CHANGES
+
+* remove the ability to assign grants ([#604](https://github.com/opentdf/otdfctl/issues/604))
+
+### Features
+
+* **core:** dynamic port allocation ([#606](https://github.com/opentdf/otdfctl/issues/606)) ([75552e1](https://github.com/opentdf/otdfctl/commit/75552e187eef204b03b1d13d55920fa43ec3cf30))
+* **core:** Uncomment code and pull in new protos. ([#594](https://github.com/opentdf/otdfctl/issues/594)) ([2883e50](https://github.com/opentdf/otdfctl/commit/2883e5060ca1f9d22f9a9500293fc407e7f4bcfd))
+* **core:** Unhide key commands. ([#607](https://github.com/opentdf/otdfctl/issues/607)) ([a3660d9](https://github.com/opentdf/otdfctl/commit/a3660d9e8271e3fd179e6521eab02a2b096a01db))
+* remove the ability to assign grants ([#604](https://github.com/opentdf/otdfctl/issues/604)) ([c9f0d82](https://github.com/opentdf/otdfctl/commit/c9f0d822747a62a6253c441ede144238715da50b))
+
+
+### Bug Fixes
+
+* add more Deprecated text to kas-grants ([#605](https://github.com/opentdf/otdfctl/issues/605)) ([2106d2f](https://github.com/opentdf/otdfctl/commit/2106d2f5189de49fe05b94025228474ffdb026ae))
+* **ci:** Trigger for release-please (testing) ([#580](https://github.com/opentdf/otdfctl/issues/580)) ([5cd33f9](https://github.com/opentdf/otdfctl/commit/5cd33f9f9b5fb66b2cc9c0c795bd84cf10630298))
+* **core:** Change base key name so tests run last. ([#611](https://github.com/opentdf/otdfctl/issues/611)) ([464b179](https://github.com/opentdf/otdfctl/commit/464b179a3134890943d8319bdee41cbad9078d64))
+* **core:** Move key management under policy. ([#597](https://github.com/opentdf/otdfctl/issues/597)) ([d657e96](https://github.com/opentdf/otdfctl/commit/d657e96cab3afc516437ae08321ab45aff376460))
+* disable kas-registry --public-keys and --publickey-remote flags ([#603](https://github.com/opentdf/otdfctl/issues/603)) ([279bbbd](https://github.com/opentdf/otdfctl/commit/279bbbd8ced14765c97ae3928421d38737ac0a8d))
+* enforce hex encoded wrapping-key ([#581](https://github.com/opentdf/otdfctl/issues/581)) ([416e215](https://github.com/opentdf/otdfctl/commit/416e215abf0c910aa4d18dc84729f89ea578fd4d))
+* **main:** Use cmd.Context for resource mapping group commands ([#592](https://github.com/opentdf/otdfctl/issues/592)) ([b5d8b6f](https://github.com/opentdf/otdfctl/commit/b5d8b6f6c335483873cec90363d94e0196d18b14))
+
 ## [0.21.0](https://github.com/opentdf/otdfctl/compare/v0.20.0...v0.21.0) (2025-05-29)
 
 
