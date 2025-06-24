@@ -17,7 +17,7 @@ Standard Actions in Policy are comprised of the below, and only their metadata l
 - delete
 
 Custom Actions known to Policy are admin-defined, globally unique (not namespaced), and will be lower
-cased when stored. They may contain underscores (`_`) or hyphens (`-`) if preceeded or followed
+cased when stored. They may contain underscores (`_`) or hyphens (`-`) if preceded or followed
 by an alphanumeric character. For example:
 - download
 - queue-to-print
