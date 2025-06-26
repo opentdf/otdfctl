@@ -4,6 +4,8 @@ import (
 	"errors"
 	"runtime"
 
+	generated "github.com/opentdf/otdfctl/cmd/generated"
+	profilegen "github.com/opentdf/otdfctl/cmd/generated/profile"
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/config"
 	"github.com/opentdf/otdfctl/pkg/profiles"
@@ -15,173 +17,157 @@ var (
 	runningInTestMode = config.TestMode == "true"
 )
 
-var profileCmd = &cobra.Command{
-	Use:     "profile",
-	Aliases: []string{"profiles", "prof"},
-	Short:   "Manage profiles (experimental)",
-	Hidden:  runningInLinux && !runningInTestMode,
-}
-
-var profileCreateCmd = &cobra.Command{
-	Use:     "create <profile> <endpoint>",
-	Aliases: []string{"add"},
-	Short:   "Create a new profile",
-	//nolint:mnd // two args
-	Args: cobra.ExactArgs(2),
-	Run: func(cmd *cobra.Command, args []string) {
-		c := cli.New(cmd, args)
-		InitProfile(c, true)
-
-		profileName := args[0]
-		endpoint := args[1]
-
-		setDefault := c.FlagHelper.GetOptionalBool("set-default")
-		tlsNoVerify := c.FlagHelper.GetOptionalBool("tls-no-verify")
-
-		c.Printf("Creating profile %s... ", profileName)
-		if err := profile.AddProfile(profileName, endpoint, tlsNoVerify, setDefault); err != nil {
-			c.Println("failed")
-			c.ExitWithError("Failed to create profile", err)
-		}
-		c.Println("ok")
-
-		// suggest the user to set up authentication
-	},
-}
-
-var profileListCmd = &cobra.Command{
-	Use:   "list",
-	Short: "List profiles",
-	Run: func(cmd *cobra.Command, args []string) {
-		c := cli.New(cmd, args)
-		InitProfile(c, false)
-
-		for _, p := range profile.GetGlobalConfig().ListProfiles() {
-			if p == profile.GetGlobalConfig().GetDefaultProfile() {
-				c.Printf("* %s\n", p)
-				continue
-			}
-			c.Printf("  %s\n", p)
-		}
-	},
-}
-
-var profileGetCmd = &cobra.Command{
-	Use:   "get <profile>",
-	Short: "Get a profile value",
-	Args:  cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
-		c := cli.New(cmd, args)
-		InitProfile(c, false)
-
-		profileName := args[0]
-		p, err := profile.GetProfile(profileName)
-		if err != nil {
-			c.ExitWithError("Failed to load profile", err)
-		}
-
-		isDefault := "false"
-		if p.GetProfileName() == profile.GetGlobalConfig().GetDefaultProfile() {
-			isDefault = "true"
-		}
-
-		var auth string
-		ac := p.GetAuthCredentials()
-		if ac.AuthType == profiles.PROFILE_AUTH_TYPE_CLIENT_CREDENTIALS {
-			maskedSecret := "********"
-			auth = "client-credentials (" + ac.ClientId + ", " + maskedSecret + ")"
-		}
-
-		t := cli.NewTabular(
-			[]string{"Profile", p.GetProfileName()},
-			[]string{"Endpoint", p.GetEndpoint()},
-			[]string{"Is default", isDefault},
-			[]string{"Auth type", auth},
-		)
-
-		c.Print(t.View())
-	},
-}
-
-var profileDeleteCmd = &cobra.Command{
-	Use:   "delete <profile>",
-	Short: "Delete a profile",
-	Run: func(cmd *cobra.Command, args []string) {
-		c := cli.New(cmd, args)
-		InitProfile(c, false)
-
-		profileName := args[0]
-
-		// TODO: suggest delete-all command to delete all profiles including default
-
-		c.Printf("Deleting profile %s... ", profileName)
-		if err := profile.DeleteProfile(profileName); err != nil {
-			if errors.Is(err, profiles.ErrDeletingDefaultProfile) {
-				c.ExitWithWarning("Profile is set as default. Please set another profile as default before deleting.")
-			}
-			c.ExitWithError("Failed to delete profile", err)
-		}
-		c.Println("ok")
-	},
-}
-
-// TODO add delete-all command
-
-var profileSetDefaultCmd = &cobra.Command{
-	Use:   "set-default <profile>",
-	Short: "Set a profile as default",
-	Args:  cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
-		c := cli.New(cmd, args)
-		InitProfile(c, false)
-
-		profileName := args[0]
-
-		c.Printf("Setting profile %s as default... ", profileName)
-		if err := profile.SetDefaultProfile(profileName); err != nil {
-			c.ExitWithError("Failed to set default profile", err)
-		}
-		c.Println("ok")
-	},
-}
-
-var profileSetEndpointCmd = &cobra.Command{
-	Use:   "set-endpoint <profile> <endpoint>",
-	Short: "Set a profile value",
-	//nolint:mnd // two args
-	Args: cobra.ExactArgs(2),
-	Run: func(cmd *cobra.Command, args []string) {
-		c := cli.New(cmd, args)
-		InitProfile(c, false)
-
-		profileName := args[0]
-		endpoint := args[1]
-
-		p, err := profile.GetProfile(profileName)
-		if err != nil {
-			cli.ExitWithError("Failed to load profile", err)
-		}
-
-		c.Printf("Setting endpoint for profile %s... ", profileName)
-		if err := p.SetEndpoint(endpoint); err != nil {
-			c.ExitWithError("Failed to set endpoint", err)
-		}
-		c.Println("ok")
-	},
-}
-
 func init() {
-	profileCreateCmd.Flags().Bool("set-default", false, "Set the profile as default")
-	profileCreateCmd.Flags().Bool("tls-no-verify", false, "Disable TLS verification")
+	// Create commands using generated constructors with handler functions
+	profileCmd := generated.NewProfileCommand(handleProfile)
+	createCmd := profilegen.NewCreateCommand(handleProfileCreate)
+	listCmd := profilegen.NewListCommand(handleProfileList)
+	getCmd := profilegen.NewGetCommand(handleProfileGet)
+	deleteCmd := profilegen.NewDeleteCommand(handleProfileDelete)
+	setDefaultCmd := profilegen.NewSetDefaultCommand(handleProfileSetDefault)
+	setEndpointCmd := profilegen.NewSetEndpointCommand(handleProfileSetEndpoint)
 
-	profileSetEndpointCmd.Flags().Bool("tls-no-verify", false, "Disable TLS verification")
+	// Set Linux/test mode visibility
+	profileCmd.Hidden = runningInLinux && !runningInTestMode
 
+	// Add subcommands
+	profileCmd.AddCommand(createCmd)
+	profileCmd.AddCommand(listCmd)
+	profileCmd.AddCommand(getCmd)
+	profileCmd.AddCommand(deleteCmd)
+	profileCmd.AddCommand(setDefaultCmd)
+	profileCmd.AddCommand(setEndpointCmd)
+
+	// Add to root command
 	RootCmd.AddCommand(profileCmd)
+}
 
-	profileCmd.AddCommand(profileCreateCmd)
-	profileCmd.AddCommand(profileListCmd)
-	profileCmd.AddCommand(profileGetCmd)
-	profileCmd.AddCommand(profileDeleteCmd)
-	profileCmd.AddCommand(profileSetDefaultCmd)
-	profileCmd.AddCommand(profileSetEndpointCmd)
+// handleProfile implements the parent profile command (if called without subcommands)
+func handleProfile(cmd *cobra.Command, req *generated.ProfileRequest) error {
+	return cmd.Help()
+}
+
+// handleProfileCreate implements the business logic for the create command
+func handleProfileCreate(cmd *cobra.Command, req *profilegen.CreateRequest) error {
+	c := cli.New(cmd, []string{req.Arguments.Profile, req.Arguments.Endpoint})
+	InitProfile(c, true)
+
+	profileName := req.Arguments.Profile
+	endpoint := req.Arguments.Endpoint
+
+	c.Printf("Creating profile %s... ", profileName)
+	if err := profile.AddProfile(profileName, endpoint, req.Flags.TlsNoVerify, req.Flags.SetDefault); err != nil {
+		c.Println("failed")
+		c.ExitWithError("Failed to create profile", err)
+	}
+	c.Println("ok")
+
+	return nil
+}
+
+// handleProfileList implements the business logic for the list command
+func handleProfileList(cmd *cobra.Command, req *profilegen.ListRequest) error {
+	c := cli.New(cmd, []string{})
+	InitProfile(c, false)
+
+	for _, p := range profile.GetGlobalConfig().ListProfiles() {
+		if p == profile.GetGlobalConfig().GetDefaultProfile() {
+			c.Printf("* %s\n", p)
+			continue
+		}
+		c.Printf("  %s\n", p)
+	}
+
+	return nil
+}
+
+// handleProfileGet implements the business logic for the get command
+func handleProfileGet(cmd *cobra.Command, req *profilegen.GetRequest) error {
+	c := cli.New(cmd, []string{req.Arguments.Profile})
+	InitProfile(c, false)
+
+	profileName := req.Arguments.Profile
+	p, err := profile.GetProfile(profileName)
+	if err != nil {
+		c.ExitWithError("Failed to load profile", err)
+	}
+
+	isDefault := "false"
+	if p.GetProfileName() == profile.GetGlobalConfig().GetDefaultProfile() {
+		isDefault = "true"
+	}
+
+	var auth string
+	ac := p.GetAuthCredentials()
+	if ac.AuthType == profiles.PROFILE_AUTH_TYPE_CLIENT_CREDENTIALS {
+		maskedSecret := "********"
+		auth = "client-credentials (" + ac.ClientId + ", " + maskedSecret + ")"
+	}
+
+	t := cli.NewTabular(
+		[]string{"Profile", p.GetProfileName()},
+		[]string{"Endpoint", p.GetEndpoint()},
+		[]string{"Is default", isDefault},
+		[]string{"Auth type", auth},
+	)
+
+	c.Print(t.View())
+	return nil
+}
+
+// handleProfileDelete implements the business logic for the delete command
+func handleProfileDelete(cmd *cobra.Command, req *profilegen.DeleteRequest) error {
+	c := cli.New(cmd, []string{req.Arguments.Profile})
+	InitProfile(c, false)
+
+	profileName := req.Arguments.Profile
+
+	c.Printf("Deleting profile %s... ", profileName)
+	if err := profile.DeleteProfile(profileName); err != nil {
+		if errors.Is(err, profiles.ErrDeletingDefaultProfile) {
+			c.ExitWithWarning("Profile is set as default. Please set another profile as default before deleting.")
+		}
+		c.ExitWithError("Failed to delete profile", err)
+	}
+	c.Println("ok")
+
+	return nil
+}
+
+// handleProfileSetDefault implements the business logic for the set-default command
+func handleProfileSetDefault(cmd *cobra.Command, req *profilegen.SetDefaultRequest) error {
+	c := cli.New(cmd, []string{req.Arguments.Profile})
+	InitProfile(c, false)
+
+	profileName := req.Arguments.Profile
+
+	c.Printf("Setting profile %s as default... ", profileName)
+	if err := profile.SetDefaultProfile(profileName); err != nil {
+		c.ExitWithError("Failed to set default profile", err)
+	}
+	c.Println("ok")
+
+	return nil
+}
+
+// handleProfileSetEndpoint implements the business logic for the set-endpoint command
+func handleProfileSetEndpoint(cmd *cobra.Command, req *profilegen.SetEndpointRequest) error {
+	c := cli.New(cmd, []string{req.Arguments.Profile, req.Arguments.Endpoint})
+	InitProfile(c, false)
+
+	profileName := req.Arguments.Profile
+	endpoint := req.Arguments.Endpoint
+
+	p, err := profile.GetProfile(profileName)
+	if err != nil {
+		cli.ExitWithError("Failed to load profile", err)
+	}
+
+	c.Printf("Setting endpoint for profile %s... ", profileName)
+	if err := p.SetEndpoint(endpoint); err != nil {
+		c.ExitWithError("Failed to set endpoint", err)
+	}
+	c.Println("ok")
+
+	return nil
 }

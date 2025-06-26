@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"log/slog"
@@ -9,8 +10,8 @@ import (
 	"strings"
 
 	"github.com/gabriel-vasile/mimetype"
+	encryptgenerated "github.com/opentdf/otdfctl/cmd/generated/encrypt"
 	"github.com/opentdf/otdfctl/pkg/cli"
-	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/opentdf/otdfctl/pkg/utils"
 	"github.com/opentdf/platform/lib/ocrypto"
 	"github.com/spf13/cobra"
@@ -28,7 +29,16 @@ var assertions string
 
 const INPUT_MAX_FILE_SIZE = int64(10 * 1024 * 1024 * 1024) // 10 GB
 
-func dev_tdfEncryptCmd(cmd *cobra.Command, args []string) {
+// handleTdfEncrypt implements the business logic for the encrypt command
+func handleTdfEncrypt(cmd *cobra.Command, req *encryptgenerated.EncryptRequest) error {
+	// Handle file arguments - encrypt can take a file argument or read from stdin
+	args := []string{}
+	if cmd.Context() != nil {
+		if ctxArgs := cmd.Context().Value("args"); ctxArgs != nil {
+			args = ctxArgs.([]string)
+		}
+	}
+	
 	c := cli.New(cmd, args, cli.WithPrintJson())
 	h := NewHandler(c)
 	defer h.Close()
@@ -40,13 +50,26 @@ func dev_tdfEncryptCmd(cmd *cobra.Command, args []string) {
 		fileExt = strings.ToLower(strings.TrimPrefix(filepath.Ext(filePath), "."))
 	}
 
-	out := c.Flags.GetOptionalString("out")
-	fileMimeType := c.Flags.GetOptionalString("mime-type")
-	attrValues = c.Flags.GetStringSlice("attr", attrValues, cli.FlagsStringSliceOptions{Min: 0})
-	tdfType := c.Flags.GetOptionalString("tdf-type")
-	kasURLPath := c.Flags.GetOptionalString("kas-url-path")
-	wrappingKeyAlgStr := c.Flags.GetOptionalString("wrapping-key-algorithm")
-	targetMode := c.Flags.GetOptionalString("target-mode")
+	// Extract flags from the generated request structure
+	out := req.Flags.Out
+	fileMimeType := req.Flags.MimeType
+	attrValue := req.Flags.Attr
+	tdfType := req.Flags.TdfType
+	kasURLPath := req.Flags.KasUrlPath
+	wrappingKeyAlgStr := req.Flags.WrappingKeyAlgorithm
+	targetMode := req.Flags.TargetMode
+	ecdsaBinding := req.Flags.EcdsaBinding
+	withAssertions := req.Flags.WithAssertions
+	
+	// Convert single attr string to slice for compatibility with existing logic
+	if attrValue != "" {
+		attrValues = []string{attrValue}
+	} else {
+		attrValues = []string{}
+	}
+	
+	// Set assertions for compatibility
+	assertions = withAssertions
 	var wrappingKeyAlgorithm ocrypto.KeyType
 	switch wrappingKeyAlgStr {
 	case string(ocrypto.RSA2048Key):
@@ -110,14 +133,14 @@ func dev_tdfEncryptCmd(cmd *cobra.Command, args []string) {
 		slog.String("mime-type", fileMimeType),
 	)
 
-	// Do the encryption
+	// Do the encryption  
 	encrypted, err := h.EncryptBytes(
 		tdfType,
 		bytesSlice,
 		attrValues,
 		fileMimeType,
 		kasURLPath,
-		c.Flags.GetOptionalBool("ecdsa-binding"),
+		ecdsaBinding != "", // Convert string to bool (non-empty string means enabled)
 		assertions,
 		wrappingKeyAlgorithm,
 		targetMode,
@@ -147,64 +170,24 @@ func dev_tdfEncryptCmd(cmd *cobra.Command, args []string) {
 	if e != nil {
 		cli.ExitWithError("Failed to write encrypted data to stdout", e)
 	}
+	
+	return nil
 }
 
 func init() {
-	encryptCmd := man.Docs.GetCommand("encrypt",
-		man.WithRun(dev_tdfEncryptCmd),
-	)
-	encryptCmd.Flags().StringP(
-		encryptCmd.GetDocFlag("out").Name,
-		encryptCmd.GetDocFlag("out").Shorthand,
-		encryptCmd.GetDocFlag("out").Default,
-		encryptCmd.GetDocFlag("out").Description,
-	)
-	encryptCmd.Flags().StringSliceVarP(
-		&attrValues,
-		encryptCmd.GetDocFlag("attr").Name,
-		encryptCmd.GetDocFlag("attr").Shorthand,
-		[]string{},
-		encryptCmd.GetDocFlag("attr").Description,
-	)
-	encryptCmd.Flags().StringVarP(
-		&assertions,
-		encryptCmd.GetDocFlag("with-assertions").Name,
-		encryptCmd.GetDocFlag("with-assertions").Shorthand,
-		"",
-		encryptCmd.GetDocFlag("with-assertions").Description,
-	)
-	encryptCmd.Flags().String(
-		encryptCmd.GetDocFlag("mime-type").Name,
-		encryptCmd.GetDocFlag("mime-type").Default,
-		encryptCmd.GetDocFlag("mime-type").Description,
-	)
-	encryptCmd.Flags().String(
-		encryptCmd.GetDocFlag("tdf-type").Name,
-		encryptCmd.GetDocFlag("tdf-type").Default,
-		encryptCmd.GetDocFlag("tdf-type").Description,
-	)
-	encryptCmd.Flags().StringP(
-		encryptCmd.GetDocFlag("wrapping-key-algorithm").Name,
-		encryptCmd.GetDocFlag("wrapping-key-algorithm").Shorthand,
-		encryptCmd.GetDocFlag("wrapping-key-algorithm").Default,
-		encryptCmd.GetDocFlag("wrapping-key-algorithm").Description,
-	)
-	encryptCmd.Flags().Bool(
-		encryptCmd.GetDocFlag("ecdsa-binding").Name,
-		false,
-		encryptCmd.GetDocFlag("ecdsa-binding").Description,
-	)
-	encryptCmd.Flags().String(
-		encryptCmd.GetDocFlag("kas-url-path").Name,
-		encryptCmd.GetDocFlag("kas-url-path").Default,
-		encryptCmd.GetDocFlag("kas-url-path").Description,
-	)
-	encryptCmd.Flags().String(
-		encryptCmd.GetDocFlag("target-mode").Name,
-		encryptCmd.GetDocFlag("target-mode").Default,
-		encryptCmd.GetDocFlag("target-mode").Description,
-	)
-	encryptCmd.Command.GroupID = TDF
+	// Create command using generated constructor with handler function
+	encryptCmd := encryptgenerated.NewEncryptCommand(handleTdfEncrypt)
+	encryptCmd.GroupID = TDF
 
-	RootCmd.AddCommand(&encryptCmd.Command)
+	// Override the RunE to capture args properly for file handling
+	originalRunE := encryptCmd.RunE
+	encryptCmd.RunE = func(cmd *cobra.Command, args []string) error {
+		// Store args in context for the handler to access
+		ctx := context.WithValue(cmd.Context(), "args", args)
+		cmd.SetContext(ctx)
+		return originalRunE(cmd, args)
+	}
+
+	// Add to root command
+	RootCmd.AddCommand(encryptCmd)
 }

@@ -1,12 +1,13 @@
 package cmd
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
 
+	decryptgenerated "github.com/opentdf/otdfctl/cmd/generated/decrypt"
 	"github.com/opentdf/otdfctl/pkg/cli"
-	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/opentdf/otdfctl/pkg/utils"
 	"github.com/opentdf/platform/lib/ocrypto"
 	"github.com/spf13/cobra"
@@ -19,14 +20,32 @@ var kasAllowList []string
 
 const TDF_MAX_FILE_SIZE = int64(10 * 1024 * 1024 * 1024) // 10 GB
 
-func dev_tdfDecryptCmd(cmd *cobra.Command, args []string) {
+// handleTdfDecrypt implements the business logic for the decrypt command
+func handleTdfDecrypt(cmd *cobra.Command, req *decryptgenerated.DecryptRequest) error {
+	// Handle file arguments - decrypt can take a file argument or read from stdin
+	args := []string{}
+	if cmd.Context() != nil {
+		if ctxArgs := cmd.Context().Value("args"); ctxArgs != nil {
+			args = ctxArgs.([]string)
+		}
+	}
+	
 	c := cli.New(cmd, args, cli.WithPrintJson())
 	h := NewHandler(c)
 	defer h.Close()
 
-	output := c.Flags.GetOptionalString("out")
-	disableAssertionVerification := c.Flags.GetOptionalBool("no-verify-assertions")
-	sessionKeyAlgStr := c.Flags.GetOptionalString("session-key-algorithm")
+	// Extract flags from the generated request structure
+	output := req.Flags.Out
+	disableAssertionVerification := req.Flags.NoVerifyAssertions != "" // Convert string to bool
+	sessionKeyAlgStr := req.Flags.SessionKeyAlgorithm
+	withAssertionVerificationKeys := req.Flags.WithAssertionVerificationKeys
+	kasAllowlistStr := req.Flags.KasAllowlist
+	
+	// Set global variables for compatibility with existing logic
+	assertionVerification = withAssertionVerificationKeys
+	if kasAllowlistStr != "" {
+		kasAllowList = []string{kasAllowlistStr} // Convert single string to slice
+	}
 	var sessionKeyAlgorithm ocrypto.KeyType
 	switch sessionKeyAlgStr {
 	case string(ocrypto.RSA2048Key):
@@ -77,7 +96,7 @@ func dev_tdfDecryptCmd(cmd *cobra.Command, args []string) {
 	if output == "" {
 		//nolint:forbidigo // printing decrypted content to stdout
 		fmt.Print(decrypted.String())
-		return
+		return nil
 	}
 	// Here 'output' is the filename given with -o
 	f, err := os.Create(output)
@@ -89,51 +108,24 @@ func dev_tdfDecryptCmd(cmd *cobra.Command, args []string) {
 	if err != nil {
 		cli.ExitWithError("Failed to write decrypted data to file", err)
 	}
+	
+	return nil
 }
 
 func init() {
-	decryptCmd := man.Docs.GetCommand("decrypt",
-		man.WithRun(dev_tdfDecryptCmd),
-	)
-	decryptCmd.Flags().StringP(
-		decryptCmd.GetDocFlag("out").Name,
-		decryptCmd.GetDocFlag("out").Shorthand,
-		decryptCmd.GetDocFlag("out").Default,
-		decryptCmd.GetDocFlag("out").Description,
-	)
-	// deprecated flag
-	decryptCmd.Flags().StringP(
-		decryptCmd.GetDocFlag("tdf-type").Name,
-		decryptCmd.GetDocFlag("tdf-type").Shorthand,
-		decryptCmd.GetDocFlag("tdf-type").Default,
-		decryptCmd.GetDocFlag("tdf-type").Description,
-	)
-	decryptCmd.Flags().StringVarP(
-		&assertionVerification,
-		decryptCmd.GetDocFlag("with-assertion-verification-keys").Name,
-		decryptCmd.GetDocFlag("with-assertion-verification-keys").Shorthand,
-		"",
-		decryptCmd.GetDocFlag("with-assertion-verification-keys").Description,
-	)
-	decryptCmd.Flags().String(
-		decryptCmd.GetDocFlag("session-key-algorithm").Name,
-		decryptCmd.GetDocFlag("session-key-algorithm").Default,
-		decryptCmd.GetDocFlag("session-key-algorithm").Description,
-	)
-	decryptCmd.Flags().Bool(
-		decryptCmd.GetDocFlag("no-verify-assertions").Name,
-		decryptCmd.GetDocFlag("no-verify-assertions").DefaultAsBool(),
-		decryptCmd.GetDocFlag("no-verify-assertions").Description,
-	)
-	decryptCmd.Flags().StringSliceVarP(
-		&kasAllowList,
-		decryptCmd.GetDocFlag("kas-allowlist").Name,
-		decryptCmd.GetDocFlag("kas-allowlist").Shorthand,
-		nil,
-		decryptCmd.GetDocFlag("kas-allowlist").Description,
-	)
+	// Create command using generated constructor with handler function
+	decryptCmd := decryptgenerated.NewDecryptCommand(handleTdfDecrypt)
+	decryptCmd.GroupID = TDF
 
-	decryptCmd.Command.GroupID = TDF
+	// Override the RunE to capture args properly for file handling
+	originalRunE := decryptCmd.RunE
+	decryptCmd.RunE = func(cmd *cobra.Command, args []string) error {
+		// Store args in context for the handler to access
+		ctx := context.WithValue(cmd.Context(), "args", args)
+		cmd.SetContext(ctx)
+		return originalRunE(cmd, args)
+	}
 
-	RootCmd.AddCommand(&decryptCmd.Command)
+	// Add to root command
+	RootCmd.AddCommand(decryptCmd)
 }

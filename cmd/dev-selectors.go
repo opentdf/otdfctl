@@ -2,19 +2,21 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
 
+	selectorsgenerated "github.com/opentdf/otdfctl/cmd/generated/dev/selectors"
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/handlers"
-	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/spf13/cobra"
 )
 
 var selectors []string
 
-func dev_selectorsGen(cmd *cobra.Command, args []string) {
-	c := cli.New(cmd, args)
-	h := NewHandler(c)
-	defer h.Close()
+// handleDevSelectorsGenerate implements the business logic for the generate command
+func handleDevSelectorsGenerate(cmd *cobra.Command, req *selectorsgenerated.GenerateRequest) error {
+	c := cli.New(cmd, []string{})
+	handler := NewHandler(c)
+	defer handler.Close()
 
 	subject := c.Flags.GetRequiredString("subject")
 
@@ -30,15 +32,26 @@ func dev_selectorsGen(cmd *cobra.Command, args []string) {
 
 	t := cli.NewTabular(rows...)
 	cli.PrintSuccessTable(cmd, "", t)
+	return nil
 }
 
-func dev_selectorsTest(cmd *cobra.Command, args []string) {
-	c := cli.New(cmd, args)
-	h := NewHandler(c)
-	defer h.Close()
+// handleDevSelectorsTest implements the business logic for the test command
+func handleDevSelectorsTest(cmd *cobra.Command, req *selectorsgenerated.TestRequest) error {
+	c := cli.New(cmd, []string{})
+	handler := NewHandler(c)
+	defer handler.Close()
 
 	subject := c.Flags.GetRequiredString("subject")
-	selectors = c.Flags.GetStringSlice("selector", selectors, cli.FlagsStringSliceOptions{Min: 1})
+	
+	// Convert single selector string to slice for compatibility with existing logic
+	var selectorsList []string
+	if req.Flags.Selector != "" {
+		selectorsList = strings.Split(req.Flags.Selector, ",")
+	}
+
+	if len(selectorsList) == 0 {
+		cli.ExitWithError("Must provide at least one selector", nil)
+	}
 
 	flattened, err := handlers.FlattenSubjectContext(subject)
 	if err != nil {
@@ -47,7 +60,8 @@ func dev_selectorsTest(cmd *cobra.Command, args []string) {
 
 	rows := [][]string{}
 	for _, item := range flattened {
-		for _, selector := range selectors {
+		for _, selector := range selectorsList {
+			selector = strings.TrimSpace(selector)
 			if selector == item.Key {
 				rows = append(rows, []string{item.Key, fmt.Sprintf("%v", item.Value)})
 			}
@@ -56,40 +70,31 @@ func dev_selectorsTest(cmd *cobra.Command, args []string) {
 
 	t := cli.NewTabular(rows...)
 	cli.PrintSuccessTable(cmd, "", t)
+	return nil
 }
 
 func init() {
-	genCmd := man.Docs.GetCommand("dev/selectors/generate",
-		man.WithRun(dev_selectorsGen),
-	)
-	genCmd.Flags().StringP(
-		genCmd.GetDocFlag("subject").Name,
-		genCmd.GetDocFlag("subject").Shorthand,
-		genCmd.GetDocFlag("subject").Default,
-		genCmd.GetDocFlag("subject").Description,
-	)
+	// Create commands using generated code with handler functions
+	genCmd := selectorsgenerated.NewGenerateCommand(handleDevSelectorsGenerate)
+	testCmd := selectorsgenerated.NewTestCommand(handleDevSelectorsTest)
 
-	testCmd := man.Docs.GetCommand("dev/selectors/test",
-		man.WithRun(dev_selectorsTest),
-	)
-	testCmd.Flags().StringP(
-		testCmd.GetDocFlag("subject").Name,
-		testCmd.GetDocFlag("subject").Shorthand,
-		testCmd.GetDocFlag("subject").Default,
-		testCmd.GetDocFlag("subject").Description,
-	)
-	testCmd.Flags().StringSliceVarP(
-		&selectors,
-		testCmd.GetDocFlag("selector").Name,
-		testCmd.GetDocFlag("selector").Shorthand,
-		[]string{},
-		testCmd.GetDocFlag("selector").Description,
-	)
+	// Create selectors parent command
+	selectorsCmd := &cobra.Command{
+		Use:     "selectors",
+		Aliases: []string{"sel"},
+		Short:   "Selectors",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return cmd.Help()
+		},
+	}
+	
+	// Add subcommands
+	selectorsCmd.AddCommand(genCmd)
+	selectorsCmd.AddCommand(testCmd)
 
-	doc := man.Docs.GetCommand("dev/selectors",
-		man.WithSubcommands(genCmd, testCmd),
-	)
-
-	dev_selectorsCmd := &doc.Command
-	devCmd.AddCommand(dev_selectorsCmd)
+	// Export for use by dev.go
+	DevSelectorsCmd = selectorsCmd
 }
+
+// DevSelectorsCmd exports the selectors command for use by dev.go
+var DevSelectorsCmd *cobra.Command

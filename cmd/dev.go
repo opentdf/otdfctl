@@ -15,8 +15,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// devCmd is the command for playground-style development
-var devCmd = man.Docs.GetCommand("dev")
 
 var (
 	metadataLabels        []string
@@ -153,9 +151,24 @@ func readPipedStdin() []byte {
 }
 
 func init() {
+	// Create dev command
+	devCmd := &cobra.Command{
+		Use:    "dev",
+		Short:  "Development Tools",
+		Hidden: true,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return cmd.Help()
+		},
+	}
+	
+	// Create design-system subcommand using manual approach (complex UI logic)
 	designCmd := man.Docs.GetCommand("dev/design-system",
 		man.WithRun(dev_designSystem),
 	)
 	devCmd.AddCommand(&designCmd.Command)
-	RootCmd.AddCommand(&devCmd.Command)
+	
+	// Add selectors subcommand (from dev-selectors.go)
+	devCmd.AddCommand(DevSelectorsCmd)
+	
+	RootCmd.AddCommand(devCmd)
 }

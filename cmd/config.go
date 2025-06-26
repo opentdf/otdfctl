@@ -3,18 +3,19 @@ package cmd
 import (
 	"fmt"
 
+	configgenerated "github.com/opentdf/otdfctl/cmd/generated/config"
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/config"
-	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/spf13/cobra"
 )
 
-func config_updateOutput(cmd *cobra.Command, args []string) {
-	c := cli.New(cmd, args)
+// handleConfigOutput implements the business logic for the config output command
+func handleConfigOutput(cmd *cobra.Command, req *configgenerated.OutputRequest) error {
+	c := cli.New(cmd, []string{})
 	h := NewHandler(c)
 	defer h.Close()
 
-	format := c.Flags.GetRequiredString("format")
+	format := req.Flags.Format
 
 	err := config.UpdateOutputFormat(cfgKey, format)
 	if err != nil {
@@ -22,20 +23,22 @@ func config_updateOutput(cmd *cobra.Command, args []string) {
 	}
 
 	c.Println(cli.SuccessMessage(fmt.Sprintf("Output format updated to %s", format)))
+	return nil
+}
+
+// handleConfig implements the parent config command (shows help if called without subcommands)
+func handleConfig(cmd *cobra.Command, req *configgenerated.ConfigRequest) error {
+	return cmd.Help()
 }
 
 func init() {
-	outputCmd := man.Docs.GetCommand("config/output",
-		man.WithRun(config_updateOutput),
-	)
-	outputCmd.Flags().String(
-		outputCmd.GetDocFlag("format").Name,
-		outputCmd.GetDocFlag("format").Default,
-		outputCmd.GetDocFlag("format").Description,
-	)
+	// Create commands using generated constructors with handler functions
+	configCmd := configgenerated.NewConfigCommand(handleConfig)
+	outputCmd := configgenerated.NewOutputCommand(handleConfigOutput)
 
-	cmd := man.Docs.GetCommand("config",
-		man.WithSubcommands(outputCmd),
-	)
-	RootCmd.AddCommand(&cmd.Command)
+	// Add subcommand to parent
+	configCmd.AddCommand(outputCmd)
+
+	// Add to root command
+	RootCmd.AddCommand(configCmd)
 }
