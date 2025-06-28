@@ -4,11 +4,11 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/opentdf/otdfctl/cmd/generated"
 	"github.com/opentdf/otdfctl/pkg/auth"
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/config"
 	"github.com/opentdf/otdfctl/pkg/handlers"
-	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/opentdf/otdfctl/pkg/profiles"
 	"github.com/opentdf/platform/sdk"
 	"github.com/spf13/cobra"
@@ -23,7 +23,7 @@ var (
 
 	profile *profiles.Profile
 
-	RootCmd = &man.Docs.GetDoc("<root>").Command
+	RootCmd = generated.NewOtdfctlCommand(rootCmdHandler)
 )
 
 type version struct {
@@ -33,6 +33,31 @@ type version struct {
 	BuildTime     string `json:"build_time"`
 	SDKVersion    string `json:"sdk_version"`
 	SchemaVersion string `json:"schema_version"`
+}
+
+// rootCmdHandler implements the root command handler using the generated structure
+func rootCmdHandler(cmd *cobra.Command, req *generated.OtdfctlRequest) error {
+	// Create CLI wrapper using raw arguments for compatibility
+	c := cli.New(cmd, req.RawArguments)
+
+	// Handle version flag
+	if req.Flags.Version {
+		v := version{
+			AppName:       config.AppName,
+			Version:       config.Version,
+			CommitSha:     config.CommitSha,
+			BuildTime:     config.BuildTime,
+			SDKVersion:    sdk.Version,
+			SchemaVersion: sdk.TDFSpecVersion,
+		}
+
+		c.Println(fmt.Sprintf("%s version %s (%s) %s", config.AppName, config.Version, config.BuildTime, config.CommitSha))
+		c.ExitWithJSON(v)
+		return nil
+	}
+
+	// If no version flag, show help
+	return cmd.Help()
 }
 
 // InitProfile initializes the profile store and loads the profile specified in the flags
@@ -207,85 +232,7 @@ func NewHandler(c *cli.Cli) handlers.Handler {
 }
 
 func init() {
-	rootCmd := man.Docs.GetCommand("<root>", man.WithRun(func(cmd *cobra.Command, args []string) {
-		c := cli.New(cmd, args)
-
-		if c.Flags.GetOptionalBool("version") {
-			v := version{
-				AppName:       config.AppName,
-				Version:       config.Version,
-				CommitSha:     config.CommitSha,
-				BuildTime:     config.BuildTime,
-				SDKVersion:    sdk.Version,
-				SchemaVersion: sdk.TDFSpecVersion,
-			}
-
-			c.Println(fmt.Sprintf("%s version %s (%s) %s", config.AppName, config.Version, config.BuildTime, config.CommitSha))
-			c.ExitWithJSON(v)
-			return
-		}
-
-		//nolint:errcheck // error does not need to be checked
-		cmd.Help()
-	}))
-
-	RootCmd = &rootCmd.Command
-
-	RootCmd.Flags().Bool(
-		rootCmd.GetDocFlag("version").Name,
-		rootCmd.GetDocFlag("version").DefaultAsBool(),
-		rootCmd.GetDocFlag("version").Description,
-	)
-
-	RootCmd.PersistentFlags().Bool(
-		rootCmd.GetDocFlag("debug").Name,
-		rootCmd.GetDocFlag("debug").DefaultAsBool(),
-		rootCmd.GetDocFlag("debug").Description,
-	)
-
-	RootCmd.PersistentFlags().Bool(
-		rootCmd.GetDocFlag("json").Name,
-		rootCmd.GetDocFlag("json").DefaultAsBool(),
-		rootCmd.GetDocFlag("json").Description,
-	)
-
-	RootCmd.PersistentFlags().String(
-		rootCmd.GetDocFlag("profile").Name,
-		rootCmd.GetDocFlag("profile").Default,
-		rootCmd.GetDocFlag("profile").Description,
-	)
-
-	RootCmd.PersistentFlags().String(
-		rootCmd.GetDocFlag("host").Name,
-		rootCmd.GetDocFlag("host").Default,
-		rootCmd.GetDocFlag("host").Description,
-	)
-	RootCmd.PersistentFlags().Bool(
-		rootCmd.GetDocFlag("tls-no-verify").Name,
-		rootCmd.GetDocFlag("tls-no-verify").DefaultAsBool(),
-		rootCmd.GetDocFlag("tls-no-verify").Description,
-	)
-	RootCmd.PersistentFlags().String(
-		rootCmd.GetDocFlag("log-level").Name,
-		rootCmd.GetDocFlag("log-level").Default,
-		rootCmd.GetDocFlag("log-level").Description,
-	)
-	RootCmd.PersistentFlags().StringVar(
-		&clientCredsFile,
-		rootCmd.GetDocFlag("with-client-creds-file").Name,
-		rootCmd.GetDocFlag("with-client-creds-file").Default,
-		rootCmd.GetDocFlag("with-client-creds-file").Description,
-	)
-	RootCmd.PersistentFlags().StringVar(
-		&clientCredsJSON,
-		rootCmd.GetDocFlag("with-client-creds").Name,
-		rootCmd.GetDocFlag("with-client-creds").Default,
-		rootCmd.GetDocFlag("with-client-creds").Description,
-	)
-	RootCmd.PersistentFlags().String(
-		rootCmd.GetDocFlag("with-access-token").Name,
-		rootCmd.GetDocFlag("with-access-token").Default,
-		rootCmd.GetDocFlag("with-access-token").Description,
-	)
+	// All flags are now handled by the generated command
+	// Just add any additional setup that's needed
 	RootCmd.AddGroup(&cobra.Group{ID: TDF})
 }

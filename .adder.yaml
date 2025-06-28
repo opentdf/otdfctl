@@ -1,0 +1,10 @@
+# Adder configuration file
+# See https://github.com/jrschumacher/adder for documentation
+
+binary_name: otdfctl
+input: docs/man
+output: cmd/generated
+package: generated
+generated_file_suffix: _generated.go
+index_format: _index
+package_strategy: directory

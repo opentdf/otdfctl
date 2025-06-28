@@ -93,3 +93,33 @@ test-bats: build-test
 .PHONY: clean
 clean:
 	rm -rf $(TARGET_DIR)
+
+# Target for generating CLI commands from documentation
+# NOTE: Generated files require manual implementation of handler interfaces
+# and should be committed to the repository after implementation
+.PHONY: generate
+generate:
+	go run github.com/jrschumacher/adder/cmd/adder@v0.1.1 generate -o cmd/generated
+
+# Target for cleaning generated files
+.PHONY: clean-generated
+clean-generated:
+	rm -rf cmd/generated/
+
+# Target for regenerating (clean + generate)
+# WARNING: This will remove existing generated files - ensure handlers are implemented elsewhere
+.PHONY: regenerate
+regenerate: clean-generated generate
+
+# Target for checking required tools are available
+.PHONY: toolcheck
+toolcheck:
+	@echo "Checking required tools..."
+	@command -v go >/dev/null 2>&1 || { echo >&2 "go is required but not installed. Visit https://golang.org/dl/"; exit 1; }
+	@echo "✓ go is available"
+	@go version 2>/dev/null | grep -q "go1\." || { echo >&2 "go version check failed"; exit 1; }
+	@echo "✓ go version is compatible"
+	@go run github.com/jrschumacher/adder/cmd/adder@v0.1.1 version >/dev/null 2>&1 || { echo >&2 "adder tool check failed. Run 'go mod download' to ensure dependencies are available."; exit 1; }
+	@echo "✓ adder is available"
+	@command -v bats >/dev/null 2>&1 || echo "⚠ bats is not installed (required for e2e tests). Install with: brew install bats-core"
+	@echo "All required tools are available!"

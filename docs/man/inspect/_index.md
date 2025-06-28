@@ -1,8 +1,12 @@
 ---
 title: Inspect a TDF file
 command:
-  name: inspect [file]
-  flags:
+  name: inspect
+  arguments:
+    - name: file
+      description: Path to the TDF file to inspect
+      required: true
+      type: string
 ---
 
 # Inspect a TDF file

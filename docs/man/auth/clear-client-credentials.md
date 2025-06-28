@@ -7,6 +7,7 @@ command:
     - name: all
       description: Deprecated -- see the `profile` subcommand
       default: false
+      type: bool
 ---
 
 > [!WARNING]

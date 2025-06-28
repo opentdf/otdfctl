@@ -204,12 +204,12 @@ func ProcessDoc(doc string) (*Doc, error) {
 	var matter struct {
 		Title   string `yaml:"title"`
 		Command struct {
-			Name          string    `yaml:"name"`
-			Args          []string  `yaml:"arguments"`
-			ArbitraryArgs []string  `yaml:"arbitraryArgs"`
-			Hidden        bool      `yaml:"hidden"`
-			Aliases       []string  `yaml:"aliases"`
-			Flags         []DocFlag `yaml:"flags"`
+			Name          string       `yaml:"name"`
+			Args          FlexibleArgs `yaml:"arguments"`
+			ArbitraryArgs []string     `yaml:"arbitraryArgs"`
+			Hidden        bool         `yaml:"hidden"`
+			Aliases       []string     `yaml:"aliases"`
+			Flags         []DocFlag    `yaml:"flags"`
 		} `yaml:"command"`
 	}
 	rest, err := frontmatter.Parse(strings.NewReader(doc), &matter)
@@ -226,8 +226,9 @@ func ProcessDoc(doc string) (*Doc, error) {
 	long := "# " + matter.Title + "\n\n" + strings.TrimSpace(string(rest))
 
 	var args cobra.PositionalArgs
-	if len(c.Args) > 0 {
-		args = cobra.ExactArgs(len(c.Args))
+	argSlice := c.Args.ToStringSlice()
+	if len(argSlice) > 0 {
+		args = cobra.ExactArgs(len(argSlice))
 	}
 	if len(c.ArbitraryArgs) > 0 {
 		args = cobra.ArbitraryArgs

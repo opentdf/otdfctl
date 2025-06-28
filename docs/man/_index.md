@@ -7,6 +7,8 @@ command:
     - name: version
       description: show version
       default: false
+      type: bool
+  persistent_flags:
     - name: profile
       description: profile to use for interacting with the platform
       default:
@@ -16,6 +18,7 @@ command:
     - name: tls-no-verify
       description: disable verification of the server's TLS certificate
       default: false
+      type: bool
     - name: log-level
       description: log level
       enum:
@@ -36,9 +39,11 @@ command:
     - name: json
       description: output in JSON format
       default: false
+      type: bool
     - name: debug
       description: enable debug output
       default: false
+      type: bool
 ---
 
 **Note**: Starting with version 1.67 of go-grpc, ALPN (Application-Layer Protocol Negotiation) is now enforced.

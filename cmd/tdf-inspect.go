@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"strings"
 
+	inspectgenerated "github.com/opentdf/otdfctl/cmd/generated/inspect"
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/handlers"
-	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/opentdf/platform/sdk"
 	"github.com/spf13/cobra"
 )
@@ -40,7 +40,12 @@ type tdfInspectResult struct {
 	Attributes []string           `json:"attributes"`
 }
 
-func tdf_InspectCmd(cmd *cobra.Command, args []string) {
+// handleTdfInspect implements the business logic for the inspect command
+func handleTdfInspect(cmd *cobra.Command, req *inspectgenerated.InspectRequest) error {
+	// The file argument is now properly extracted by the generated code
+	filePath := req.Arguments.File
+	args := []string{filePath}
+
 	c := cli.New(cmd, args, cli.WithPrintJson())
 	h := NewHandler(c)
 	defer h.Close()
@@ -109,18 +114,20 @@ func tdf_InspectCmd(cmd *cobra.Command, args []string) {
 	} else {
 		c.ExitWithError("failed to inspect TDF", nil)
 	}
+
+	return nil
 }
 
 func init() {
-	tdf_InspectCmd := man.Docs.GetCommand("inspect",
-		man.WithRun(tdf_InspectCmd),
-	)
-	tdf_InspectCmd.Command.GroupID = TDF
+	// Create command using generated constructor with handler function
+	inspectCmd := inspectgenerated.NewInspectCommand(handleTdfInspect)
+	inspectCmd.GroupID = TDF
 
-	tdf_InspectCmd.Command.PreRun = func(cmd *cobra.Command, args []string) {
-		// Set the json flag to true since we only support json output
+	// Set the json flag to true since we only support json output
+	inspectCmd.PreRun = func(cmd *cobra.Command, args []string) {
 		cmd.SetArgs(append(args, "--json"))
 	}
 
-	RootCmd.AddCommand(&tdf_InspectCmd.Command)
+	// Add to root command
+	RootCmd.AddCommand(inspectCmd)
 }
