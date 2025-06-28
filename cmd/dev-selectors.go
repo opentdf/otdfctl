@@ -42,7 +42,7 @@ func handleDevSelectorsTest(cmd *cobra.Command, req *selectorsgenerated.TestRequ
 	defer handler.Close()
 
 	subject := c.Flags.GetRequiredString("subject")
-	
+
 	// Convert single selector string to slice for compatibility with existing logic
 	var selectorsList []string
 	if req.Flags.Selector != "" {
@@ -87,7 +87,7 @@ func init() {
 			return cmd.Help()
 		},
 	}
-	
+
 	// Add subcommands
 	selectorsCmd.AddCommand(genCmd)
 	selectorsCmd.AddCommand(testCmd)

@@ -50,7 +50,7 @@ func (f *FlexibleArgs) ToStringSlice() []string {
 	if len(f.StringArgs) > 0 {
 		return f.StringArgs
 	}
-	
+
 	result := make([]string, len(f.ObjectArgs))
 	for i, arg := range f.ObjectArgs {
 		result[i] = arg.Name

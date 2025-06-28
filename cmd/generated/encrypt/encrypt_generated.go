@@ -25,6 +25,7 @@ type EncryptRequestFlags struct {
 // EncryptRequest represents the parameters for the encrypt [file] command
 type EncryptRequest struct {
 	Flags EncryptRequestFlags `json:"flags"`
+	RawArguments []string `json:"raw_arguments"`
 }
 
 // EncryptHandler defines the function type for handling encrypt [file] commands
@@ -33,7 +34,7 @@ type EncryptHandler func(cmd *cobra.Command, req *EncryptRequest) error
 // NewEncryptCommand creates a new encrypt [file] command with the provided handler function
 func NewEncryptCommand(handler EncryptHandler) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "encrypt",
+		Use:     "encrypt [file]",
 		Short:   "Encrypt file or stdin as a TDF",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runEncrypt(cmd, args, handler)
@@ -101,6 +102,7 @@ func runEncrypt(cmd *cobra.Command, args []string, handler EncryptHandler) error
 			TargetMode: targetMode,
 			WithAssertions: withAssertions,
 		},
+		RawArguments: args,
 	}
 
 	// Call handler

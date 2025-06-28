@@ -15,7 +15,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-
 var (
 	metadataLabels        []string
 	defaultListFlagLimit  int32 = 300
@@ -160,15 +159,15 @@ func init() {
 			return cmd.Help()
 		},
 	}
-	
+
 	// Create design-system subcommand using manual approach (complex UI logic)
 	designCmd := man.Docs.GetCommand("dev/design-system",
 		man.WithRun(dev_designSystem),
 	)
 	devCmd.AddCommand(&designCmd.Command)
-	
+
 	// Add selectors subcommand (from dev-selectors.go)
 	devCmd.AddCommand(DevSelectorsCmd)
-	
+
 	RootCmd.AddCommand(devCmd)
 }

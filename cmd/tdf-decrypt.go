@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -22,14 +21,9 @@ const TDF_MAX_FILE_SIZE = int64(10 * 1024 * 1024 * 1024) // 10 GB
 
 // handleTdfDecrypt implements the business logic for the decrypt command
 func handleTdfDecrypt(cmd *cobra.Command, req *decryptgenerated.DecryptRequest) error {
-	// Handle file arguments - decrypt can take a file argument or read from stdin
-	args := []string{}
-	if cmd.Context() != nil {
-		if ctxArgs := cmd.Context().Value("args"); ctxArgs != nil {
-			args = ctxArgs.([]string)
-		}
-	}
-	
+	// Get file arguments from request
+	args := req.RawArguments
+
 	c := cli.New(cmd, args, cli.WithPrintJson())
 	h := NewHandler(c)
 	defer h.Close()
@@ -40,7 +34,7 @@ func handleTdfDecrypt(cmd *cobra.Command, req *decryptgenerated.DecryptRequest) 
 	sessionKeyAlgStr := req.Flags.SessionKeyAlgorithm
 	withAssertionVerificationKeys := req.Flags.WithAssertionVerificationKeys
 	kasAllowlistStr := req.Flags.KasAllowlist
-	
+
 	// Set global variables for compatibility with existing logic
 	assertionVerification = withAssertionVerificationKeys
 	if kasAllowlistStr != "" {
@@ -108,7 +102,7 @@ func handleTdfDecrypt(cmd *cobra.Command, req *decryptgenerated.DecryptRequest) 
 	if err != nil {
 		cli.ExitWithError("Failed to write decrypted data to file", err)
 	}
-	
+
 	return nil
 }
 
@@ -116,15 +110,6 @@ func init() {
 	// Create command using generated constructor with handler function
 	decryptCmd := decryptgenerated.NewDecryptCommand(handleTdfDecrypt)
 	decryptCmd.GroupID = TDF
-
-	// Override the RunE to capture args properly for file handling
-	originalRunE := decryptCmd.RunE
-	decryptCmd.RunE = func(cmd *cobra.Command, args []string) error {
-		// Store args in context for the handler to access
-		ctx := context.WithValue(cmd.Context(), "args", args)
-		cmd.SetContext(ctx)
-		return originalRunE(cmd, args)
-	}
 
 	// Add to root command
 	RootCmd.AddCommand(decryptCmd)

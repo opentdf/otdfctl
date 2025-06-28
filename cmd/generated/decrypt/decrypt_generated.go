@@ -23,6 +23,7 @@ type DecryptRequestFlags struct {
 // DecryptRequest represents the parameters for the decrypt [file] command
 type DecryptRequest struct {
 	Flags DecryptRequestFlags `json:"flags"`
+	RawArguments []string `json:"raw_arguments"`
 }
 
 // DecryptHandler defines the function type for handling decrypt [file] commands
@@ -31,7 +32,7 @@ type DecryptHandler func(cmd *cobra.Command, req *DecryptRequest) error
 // NewDecryptCommand creates a new decrypt [file] command with the provided handler function
 func NewDecryptCommand(handler DecryptHandler) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "decrypt",
+		Use:     "decrypt [file]",
 		Short:   "Decrypt a TDF file",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runDecrypt(cmd, args, handler)
@@ -79,6 +80,7 @@ func runDecrypt(cmd *cobra.Command, args []string, handler DecryptHandler) error
 			WithAssertionVerificationKeys: withAssertionVerificationKeys,
 			KasAllowlist: kasAllowlist,
 		},
+		RawArguments: args,
 	}
 
 	// Call handler

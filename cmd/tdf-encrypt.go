@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"log/slog"
@@ -31,14 +30,9 @@ const INPUT_MAX_FILE_SIZE = int64(10 * 1024 * 1024 * 1024) // 10 GB
 
 // handleTdfEncrypt implements the business logic for the encrypt command
 func handleTdfEncrypt(cmd *cobra.Command, req *encryptgenerated.EncryptRequest) error {
-	// Handle file arguments - encrypt can take a file argument or read from stdin
-	args := []string{}
-	if cmd.Context() != nil {
-		if ctxArgs := cmd.Context().Value("args"); ctxArgs != nil {
-			args = ctxArgs.([]string)
-		}
-	}
-	
+	// Get file arguments from request
+	args := req.RawArguments
+
 	c := cli.New(cmd, args, cli.WithPrintJson())
 	h := NewHandler(c)
 	defer h.Close()
@@ -60,14 +54,14 @@ func handleTdfEncrypt(cmd *cobra.Command, req *encryptgenerated.EncryptRequest) 
 	targetMode := req.Flags.TargetMode
 	ecdsaBinding := req.Flags.EcdsaBinding
 	withAssertions := req.Flags.WithAssertions
-	
+
 	// Convert single attr string to slice for compatibility with existing logic
 	if attrValue != "" {
 		attrValues = []string{attrValue}
 	} else {
 		attrValues = []string{}
 	}
-	
+
 	// Set assertions for compatibility
 	assertions = withAssertions
 	var wrappingKeyAlgorithm ocrypto.KeyType
@@ -133,7 +127,7 @@ func handleTdfEncrypt(cmd *cobra.Command, req *encryptgenerated.EncryptRequest) 
 		slog.String("mime-type", fileMimeType),
 	)
 
-	// Do the encryption  
+	// Do the encryption
 	encrypted, err := h.EncryptBytes(
 		tdfType,
 		bytesSlice,
@@ -170,7 +164,7 @@ func handleTdfEncrypt(cmd *cobra.Command, req *encryptgenerated.EncryptRequest) 
 	if e != nil {
 		cli.ExitWithError("Failed to write encrypted data to stdout", e)
 	}
-	
+
 	return nil
 }
 
@@ -178,15 +172,6 @@ func init() {
 	// Create command using generated constructor with handler function
 	encryptCmd := encryptgenerated.NewEncryptCommand(handleTdfEncrypt)
 	encryptCmd.GroupID = TDF
-
-	// Override the RunE to capture args properly for file handling
-	originalRunE := encryptCmd.RunE
-	encryptCmd.RunE = func(cmd *cobra.Command, args []string) error {
-		// Store args in context for the handler to access
-		ctx := context.WithValue(cmd.Context(), "args", args)
-		cmd.SetContext(ctx)
-		return originalRunE(cmd, args)
-	}
 
 	// Add to root command
 	RootCmd.AddCommand(encryptCmd)
