@@ -260,10 +260,6 @@ func policyCreateKasKey(cmd *cobra.Command, args []string) {
 	HandleSuccess(cmd, kasKey.GetKey().GetId(), t, kasKey)
 }
 
-// policyImportKasKey imports a KAS key into the registry.
-// This command requires the public key PEM and optionally the private key PEM for the key.
-// The key parameters such as algorithm, mode, and wrapping key ID must be specified.
-// The KAS identifier and key ID are also required to identify the key being imported.
 func policyImportKasKey(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
