@@ -23,11 +23,11 @@ command:
       description: The symmetric key material (AES cipher, hex encoded) used to wrap the imported private key.
       required: true
     - name: private-key-pem
-      description: The private key PEM to import (encrypted by an AES 32-byte key, then base64 encoded).
+      description: The base64 encoded private key PEM to import
       required: true
     - name: public-key-pem
       shorthand: e
-      description: The base64 encoded public key PEM.
+      description: The base64 encoded public key PEM to import
       required: true
     - name: label
       shorthand: l
@@ -62,12 +62,3 @@ otdfctl policy kas-registry key import --key-id "imported-key" --algorithm "rsa:
     | `ec:secp256r1` |
     | `ec:secp384r1` |
     | `ec:secp521r1` |
-
-2. The `"mode"` specifies where the key that is encrypting TDFs is stored:
-
-    | Mode         | Description                                                                                             |
-    | ------------ | ------------------------------------------------------------------------------------------------------- |
-    | `local`      | Root Key is stored within Virtru's database and the symmetric wrapping key is stored in KAS             |
-    | `provider`   | Root Key is stored within Virtru's database and the symmetric wrapping key is stored externally         |
-    | `remote`     | Root Key and wrapping key are stored remotely                                                           |
-    | `public_key` | Root Key and wrapping key are stored remotely. Use this when importing another org's policy information |
