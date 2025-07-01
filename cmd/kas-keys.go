@@ -260,6 +260,83 @@ func policyCreateKasKey(cmd *cobra.Command, args []string) {
 	HandleSuccess(cmd, kasKey.GetKey().GetId(), t, kasKey)
 }
 
+func policyImportKasKey(cmd *cobra.Command, args []string) {
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
+	defer h.Close()
+
+	privateKeyPem := c.Flags.GetRequiredString("private-key-pem")
+	wrappingKey := c.Flags.GetRequiredString("wrapping-key")
+	wrappingKeyID := c.Flags.GetRequiredString("wrapping-key-id")
+	publicKeyPem := c.Flags.GetRequiredString("public-key-pem")
+	keyIdentifier := c.Flags.GetRequiredString("key-id")
+	algorithm := c.Flags.GetRequiredString("algorithm")
+	kasIdentifier := c.Flags.GetRequiredString("kas")
+	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
+
+	if _, err := base64.StdEncoding.DecodeString(publicKeyPem); err != nil {
+		cli.ExitWithError("public-key-pem must be base64 encoded", err)
+	}
+	nonBase64PrivateKey, err := base64.StdEncoding.DecodeString(privateKeyPem)
+	if err != nil {
+		cli.ExitWithError("private-key-pem must be base64 encoded", err)
+	}
+
+	wrappingKeyBytes, err := hex.DecodeString(wrappingKey)
+	if err != nil {
+		cli.ExitWithError("wrapping-key must be hex encoded", err)
+	}
+	wrappedPrivateKey, err := wrapKey(string(nonBase64PrivateKey), wrappingKeyBytes)
+	if err != nil {
+		cli.ExitWithError("failed to wrap key", err)
+	}
+
+	alg, err := cli.KeyAlgToEnum(algorithm)
+	if err != nil {
+		cli.ExitWithError("Invalid algorithm", err)
+	}
+
+	kasLookup, err := resolveKasIdentifier(kasIdentifier)
+	if err != nil {
+		cli.ExitWithError("Invalid kas identifier", err)
+	}
+	var resolvedKasID string
+	if kasLookup.ID != "" {
+		resolvedKasID = kasLookup.ID
+	} else {
+		// If not a UUID, resolve it to get the UUID
+		kasEntry, err := h.GetKasRegistryEntry(c.Context(), kasLookup)
+		if err != nil {
+			cli.ExitWithError(fmt.Sprintf("Failed to resolve KAS identifier '%s'", kasIdentifier), err)
+		}
+		resolvedKasID = kasEntry.GetId()
+	}
+
+	importedKey, err := h.CreateKasKey(c.Context(),
+		resolvedKasID,
+		keyIdentifier,
+		alg,
+		policy.KeyMode_KEY_MODE_CONFIG_ROOT_KEY,
+		&policy.PublicKeyCtx{Pem: publicKeyPem},
+		&policy.PrivateKeyCtx{
+			KeyId:      wrappingKeyID,
+			WrappedKey: base64.StdEncoding.EncodeToString(wrappedPrivateKey),
+		},
+		"",
+		getMetadataMutable(metadataLabels),
+	)
+	if err != nil {
+		cli.ExitWithError("Failed to import kas key", err)
+	}
+
+	rows := getTableRows(importedKey)
+	if mdRows := getMetadataRows(importedKey.GetKey().GetMetadata()); mdRows != nil {
+		rows = append(rows, mdRows...)
+	}
+	t := cli.NewTabular(rows...)
+	HandleSuccess(cmd, importedKey.GetKey().GetId(), t, importedKey)
+}
+
 func policyGetKasKey(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
@@ -794,6 +871,54 @@ func init() {
 	)
 	injectLabelFlags(&rotateDoc.Command, true)
 
-	policyKasRegistryKeysCmd.AddSubcommands(createDoc, getDoc, updateDoc, listDoc, rotateDoc)
+	// Import Kas Key
+	importDoc := man.Docs.GetCommand("policy/kas-registry/key/import",
+		man.WithRun(policyImportKasKey),
+	)
+	importDoc.Flags().StringP(
+		importDoc.GetDocFlag("key-id").Name,
+		importDoc.GetDocFlag("key-id").Shorthand,
+		importDoc.GetDocFlag("key-id").Default,
+		importDoc.GetDocFlag("key-id").Description,
+	)
+	importDoc.Flags().StringP(
+		importDoc.GetDocFlag("algorithm").Name,
+		importDoc.GetDocFlag("algorithm").Shorthand,
+		importDoc.GetDocFlag("algorithm").Default,
+		importDoc.GetDocFlag("algorithm").Description,
+	)
+	importDoc.Flags().StringP(
+		importDoc.GetDocFlag("kas").Name,
+		importDoc.GetDocFlag("kas").Shorthand,
+		importDoc.GetDocFlag("kas").Default,
+		importDoc.GetDocFlag("kas").Description,
+	)
+	importDoc.Flags().StringP(
+		importDoc.GetDocFlag("wrapping-key-id").Name,
+		importDoc.GetDocFlag("wrapping-key-id").Shorthand,
+		importDoc.GetDocFlag("wrapping-key-id").Default,
+		importDoc.GetDocFlag("wrapping-key-id").Description,
+	)
+	importDoc.Flags().StringP(
+		importDoc.GetDocFlag("wrapping-key").Name,
+		importDoc.GetDocFlag("wrapping-key").Shorthand,
+		importDoc.GetDocFlag("wrapping-key").Default,
+		importDoc.GetDocFlag("wrapping-key").Description,
+	)
+	importDoc.Flags().StringP(
+		importDoc.GetDocFlag("public-key-pem").Name,
+		importDoc.GetDocFlag("public-key-pem").Shorthand,
+		importDoc.GetDocFlag("public-key-pem").Default,
+		importDoc.GetDocFlag("public-key-pem").Description,
+	)
+	importDoc.Flags().StringP(
+		importDoc.GetDocFlag("private-key-pem").Name,
+		importDoc.GetDocFlag("private-key-pem").Shorthand,
+		importDoc.GetDocFlag("private-key-pem").Default,
+		importDoc.GetDocFlag("private-key-pem").Description,
+	)
+	injectLabelFlags(&importDoc.Command, false)
+
+	policyKasRegistryKeysCmd.AddSubcommands(createDoc, getDoc, updateDoc, listDoc, rotateDoc, importDoc)
 	policyKasRegCmd.AddCommand(&policyKasRegistryKeysCmd.Command)
 }

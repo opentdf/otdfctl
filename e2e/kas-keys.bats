@@ -867,3 +867,126 @@ format_kas_name_as_uri() {
   assert_failure
   assert_output --partial "wrapping-key must be hex encoded"
 }
+
+@test "kas-keys: import key sucessful" {
+  KEY_ID="imported-key-$(generate_key_id)"
+  
+  run_otdfctl_key import --key-id "${KEY_ID}" \
+    --algorithm "rsa:2048" \
+    --kas "${KAS_REGISTRY_ID}" \
+    --wrapping-key-id "test-wrapping-key" \
+    --wrapping-key "${WRAPPING_KEY}" \
+    --public-key-pem "${PEM_B64}" \
+    --private-key-pem "${PEM_B64}" \
+    --json
+  assert_success
+  assert_equal "$(echo "$output" | jq -r .key.key_id)" "${KEY_ID}"
+  assert_equal "$(echo "$output" | jq -r .kas_id)" "${KAS_REGISTRY_ID}"
+  assert_equal "$(echo "$output" | jq -r .key.public_key_ctx.pem)" "${PEM_B64}"
+  assert_equal "$(echo "$output" | jq -r .key.private_key_ctx.key_id)" "test-wrapping-key"
+  assert_not_equal "$(echo "$output" | jq -r .key.private_key_ctx.wrapped_key)" "null"
+  assert_equal "$(echo "$output" | jq -r .key.key_algorithm)" "1"
+  assert_equal "$(echo "$output" | jq -r .key.key_mode)" "1"
+}
+
+@test "kas-keys: import key failure - missing required private key" {
+  KEY_ID="import-fail-$(generate_key_id)"
+  
+  run_otdfctl_key import --key-id "${KEY_ID}" \
+    --algorithm "rsa:2048" \
+    --kas "${KAS_REGISTRY_ID}" \
+    --wrapping-key-id "test-wrapping-key" \
+    --wrapping-key "${WRAPPING_KEY}" \
+    --public-key-pem "${PEM_B64}"
+  
+  assert_failure
+  assert_output --partial "'--private-key-pem' is required"
+}
+
+@test "kas-keys: import key failure - invalid wrapping key" {
+  KEY_ID="import-fail-$(generate_key_id)"
+  
+  run_otdfctl_key import --key-id "${KEY_ID}" \
+    --algorithm "rsa:2048" \
+    --kas "${KAS_REGISTRY_ID}" \
+    --wrapping-key-id "test-wrapping-key" \
+    --wrapping-key "not-a-valid-hex-string" \
+    --public-key-pem "${PEM_B64}" \
+    --private-key-pem "${PEM_B64}"
+  
+  assert_failure
+  assert_output --partial "wrapping-key must be hex encoded"
+}
+
+@test "kas-keys: import key failure - invalid public key PEM" {
+  KEY_ID="import-fail-$(generate_key_id)"
+  
+  run_otdfctl_key import --key-id "${KEY_ID}" \
+    --algorithm "rsa:2048" \
+    --kas "${KAS_REGISTRY_ID}" \
+    --wrapping-key-id "test-wrapping-key" \
+    --wrapping-key "${WRAPPING_KEY}" \
+    --public-key-pem "not-base64-encoded" \
+    --private-key-pem "${PEM_B64}"
+  
+  assert_failure
+  assert_output --partial "public-key-pem must be base64 encoded"
+}
+
+@test "kas-keys: import key failure - invalid private key PEM" {
+  KEY_ID="import-fail-$(generate_key_id)"
+  
+  run_otdfctl_key import --key-id "${KEY_ID}" \
+    --algorithm "rsa:2048" \
+    --kas "${KAS_REGISTRY_ID}" \
+    --wrapping-key-id "test-wrapping-key" \
+    --wrapping-key "${WRAPPING_KEY}" \
+    --public-key-pem "${PEM_B64}" \
+    --private-key-pem "not-base64-encoded"
+  
+  assert_failure
+  assert_output --partial "private-key-pem must be base64 encoded"
+}
+
+@test "kas-keys: import key failure - invalid algorithm" {
+  KEY_ID="import-fail-$(generate_key_id)"
+  
+  run_otdfctl_key import --key-id "${KEY_ID}" \
+    --algorithm "invalid-algorithm" \
+    --kas "${KAS_REGISTRY_ID}" \
+    --wrapping-key-id "test-wrapping-key" \
+    --wrapping-key "${WRAPPING_KEY}" \
+    --public-key-pem "${PEM_B64}" \
+    --private-key-pem "${PEM_B64}"
+  
+  assert_failure
+  assert_output --partial "Invalid algorithm"
+}
+
+@test "kas-keys: import key failure - missing wrapping key ID" {
+  KEY_ID="import-fail-$(generate_key_id)"
+  
+  run_otdfctl_key import --key-id "${KEY_ID}" \
+    --algorithm "rsa:2048" \
+    --kas "${KAS_REGISTRY_ID}" \
+    --wrapping-key "${WRAPPING_KEY}" \
+    --public-key-pem "${PEM_B64}" \
+    --private-key-pem "${PEM_B64}"
+  
+  assert_failure
+  assert_output --partial "'--wrapping-key-id' is required"
+}
+
+@test "kas-keys: import key failure - missing wrapping key" {
+  KEY_ID="import-fail-$(generate_key_id)"
+  
+  run_otdfctl_key import --key-id "${KEY_ID}" \
+    --algorithm "rsa:2048" \
+    --kas "${KAS_REGISTRY_ID}" \
+    --wrapping-key-id "test-wrapping-key" \
+    --public-key-pem "${PEM_B64}" \
+    --private-key-pem "${PEM_B64}"
+  
+  assert_failure
+  assert_output --partial "'--wrapping-key' is required"
+}
