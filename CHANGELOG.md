@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.23.0](https://github.com/opentdf/otdfctl/compare/v0.22.0...v0.23.0) (2025-07-01)
+
+
+### Features
+
+* **core:** Import keys. ([#617](https://github.com/opentdf/otdfctl/issues/617)) ([4dc69e6](https://github.com/opentdf/otdfctl/commit/4dc69e6eaf2cdb23116b97ca2448bbbd57346f49))
+
 ## [0.22.0](https://github.com/opentdf/otdfctl/compare/v0.21.0...v0.22.0) (2025-06-24)
 
 
