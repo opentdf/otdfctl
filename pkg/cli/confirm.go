@@ -27,8 +27,14 @@ func ConfirmActionSubtext(action, resource, id, subtext string, force bool) {
 		return
 	}
 	var confirm bool
+	title := fmt.Sprintf("Are you sure you want to %s %s:\n\n\t%s", action, resource, id)
+	if subtext != "" {
+		// since we don't return an error to stay consistent with the original function,
+		// only append the subtext if populated
+		title += fmt.Sprintf("\n\n%s", subtext)
+	}
 	err := huh.NewConfirm().
-		Title(fmt.Sprintf("Are you sure you want to %s %s:\n\n\t%s\n\n%s", action, resource, id, subtext)).
+		Title(title).
 		Affirmative("yes").
 		Negative("no").
 		Value(&confirm).
