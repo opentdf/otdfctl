@@ -370,7 +370,7 @@ teardown_file() {
   created_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
 
   # force replace labels
-  run_otdfctl_reg_res_values update --id "$created_id" -l key=other --force-replace-labels --force
+  run_otdfctl_reg_res_values update --id "$created_id" -l key=other --force-replace-labels
     assert_success
     assert_line --regexp "Id.*$created_id"
     assert_line --regexp "Value.*test_update_rr_val"
@@ -380,7 +380,7 @@ teardown_file() {
     refute_output --regexp "Labels.*test: true"
 
   # renamed
-  run_otdfctl_reg_res_values update --id "$created_id" --value test_renamed_rr_val --force
+  run_otdfctl_reg_res_values update --id "$created_id" --value test_renamed_rr_val
     assert_success
     assert_line --regexp "Id.*$created_id"
     assert_line --regexp "Value.*test_renamed_rr_val"
