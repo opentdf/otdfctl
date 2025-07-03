@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.24.0](https://github.com/opentdf/otdfctl/compare/v0.23.0...v0.24.0) (2025-07-03)
+
+
+### Features
+
+* **core:** Registered Resources - action attribute values update confirmation ([#620](https://github.com/opentdf/otdfctl/issues/620)) ([2ad0b9e](https://github.com/opentdf/otdfctl/commit/2ad0b9e9260785ac5bd7603b0d7f95b8957cba11))
+
 ## [0.23.0](https://github.com/opentdf/otdfctl/compare/v0.22.0...v0.23.0) (2025-07-01)
 
 
