@@ -370,7 +370,7 @@ teardown_file() {
   created_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
 
   # force replace labels
-  run_otdfctl_reg_res_values update --id "$created_id" -l key=other --force-replace-labels
+  run_otdfctl_reg_res_values update --id "$created_id" -l key=other --force-replace-labels --force
     assert_success
     assert_line --regexp "Id.*$created_id"
     assert_line --regexp "Value.*test_update_rr_val"
@@ -380,7 +380,7 @@ teardown_file() {
     refute_output --regexp "Labels.*test: true"
 
   # renamed
-  run_otdfctl_reg_res_values update --id "$created_id" --value test_renamed_rr_val
+  run_otdfctl_reg_res_values update --id "$created_id" --value test_renamed_rr_val --force
     assert_success
     assert_line --regexp "Id.*$created_id"
     assert_line --regexp "Value.*test_renamed_rr_val"
@@ -391,7 +391,7 @@ teardown_file() {
     [ "$(echo "$output" | jq -r 'any(.action_attribute_values[]; .action.id == "'"$READ_ACTION_ID"'" and .action.name == "'"$READ_ACTION_NAME"'" and .attribute_value.id == "'"$ATTR_VAL_1_ID"'" and .attribute_value.fqn == "'"$ATTR_VAL_1_FQN"'")')" = "true" ]
 
   # update action attribute values
-  run_otdfctl_reg_res_values update --id "$created_id" --action-attribute-value "\"$READ_ACTION_NAME;$ATTR_VAL_1_FQN\"" --action-attribute-value "\"$CUSTOM_ACTION_ID;$ATTR_VAL_2_ID\"" --json
+  run_otdfctl_reg_res_values update --id "$created_id" --action-attribute-value "\"$READ_ACTION_NAME;$ATTR_VAL_1_FQN\"" --action-attribute-value "\"$CUSTOM_ACTION_ID;$ATTR_VAL_2_ID\"" --force --json
     assert_success
     [ "$(echo "$output" | jq -r '.id')" = "$created_id" ]
     [ "$(echo "$output" | jq -r 'any(.action_attribute_values[]; .action.id == "'"$READ_ACTION_ID"'" and .action.name == "'"$READ_ACTION_NAME"'" and .attribute_value.id == "'"$ATTR_VAL_1_ID"'" and .attribute_value.fqn == "'"$ATTR_VAL_1_FQN"'")')" = "true" ]
