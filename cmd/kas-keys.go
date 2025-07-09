@@ -505,7 +505,7 @@ func policyListKeyMappings(cmd *cobra.Command, args []string) {
 
 	var keyIdentifier *kasregistry.KasKeyIdentifier
 	// Since keyID and kasIdentifier are required together, if one is provided, the other must be provided as well.
-	if id == "" && (keyID != "" || kasIdentifier != "") {
+	if id == "" && keyID != "" {
 		kasLookup, err := resolveKasIdentifier(kasIdentifier)
 		if err != nil {
 			cli.ExitWithError("Could not resolve KAS identifier", err)
