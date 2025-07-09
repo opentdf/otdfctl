@@ -124,7 +124,6 @@ func (h Handler) ListKeyMappings(
 	keySystemID string,
 	keyUserIdentifier *kasregistry.KasKeyIdentifier,
 ) (*kasregistry.ListKeyMappingsResponse, error) {
-
 	req := kasregistry.ListKeyMappingsRequest{
 		Pagination: &policy.PageRequest{
 			Limit:  limit,
