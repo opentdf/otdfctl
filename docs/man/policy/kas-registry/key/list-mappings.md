@@ -11,7 +11,7 @@ command:
       required: true
     - name: offset
       shorthand: o
-      description: Number of key mappings to skip before starting to return results
+      description: Offset (page) quantity from start of the list
       required: true
     - name: id
       shorthand: i
