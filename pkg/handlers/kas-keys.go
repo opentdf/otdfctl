@@ -118,6 +118,38 @@ func (h Handler) ListKasKeys(
 	return resp.GetKasKeys(), resp.GetPagination(), nil
 }
 
+func (h Handler) ListKeyMappings(
+	ctx context.Context,
+	limit, offset int32,
+	keySystemID string,
+	keyUserIdentifier *kasregistry.KasKeyIdentifier,
+) (*kasregistry.ListKeyMappingsResponse, error) {
+	req := kasregistry.ListKeyMappingsRequest{
+		Pagination: &policy.PageRequest{
+			Limit:  limit,
+			Offset: offset,
+		},
+	}
+
+	switch {
+	case keySystemID != "":
+		req.Identifier = &kasregistry.ListKeyMappingsRequest_Id{
+			Id: keySystemID,
+		}
+	case keyUserIdentifier != nil:
+		req.Identifier = &kasregistry.ListKeyMappingsRequest_Key{
+			Key: keyUserIdentifier,
+		}
+	}
+
+	resp, err := h.sdk.KeyAccessServerRegistry.ListKeyMappings(ctx, &req)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
 func (h Handler) RotateKasKey(
 	ctx context.Context,
 	oldKeyID string,

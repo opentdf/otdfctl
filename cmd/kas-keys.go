@@ -492,6 +492,87 @@ func policyListKasKeys(cmd *cobra.Command, args []string) {
 	HandleSuccess(cmd, "", t, keys)
 }
 
+func policyListKeyMappings(cmd *cobra.Command, args []string) {
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
+	defer h.Close()
+
+	limit := c.Flags.GetRequiredInt32("limit")
+	offset := c.Flags.GetRequiredInt32("offset")
+	id := c.Flags.GetOptionalID("id")
+	keyID := c.Flags.GetOptionalString("key-id")
+	kasIdentifier := c.Flags.GetOptionalString("kas")
+
+	var keyIdentifier *kasregistry.KasKeyIdentifier
+	// Since keyID and kasIdentifier are required together, if one is provided, the other must be provided as well.
+	if id == "" && keyID != "" {
+		kasLookup, err := resolveKasIdentifier(kasIdentifier)
+		if err != nil {
+			cli.ExitWithError("Could not resolve KAS identifier", err)
+		}
+		keyIdentifier = &kasregistry.KasKeyIdentifier{
+			Kid: keyID,
+		}
+		switch {
+		case kasLookup.ID != "":
+			keyIdentifier.Identifier = &kasregistry.KasKeyIdentifier_KasId{
+				KasId: kasLookup.ID,
+			}
+		case kasLookup.URI != "":
+			keyIdentifier.Identifier = &kasregistry.KasKeyIdentifier_Uri{
+				Uri: kasLookup.URI,
+			}
+		case kasLookup.Name != "":
+			keyIdentifier.Identifier = &kasregistry.KasKeyIdentifier_Name{
+				Name: kasLookup.Name,
+			}
+		}
+	}
+
+	resp, err := h.ListKeyMappings(c.Context(), limit, offset, id, keyIdentifier)
+	if err != nil {
+		cli.ExitWithError("Could not list key mappings", err)
+	}
+
+	rows := getKeyMappingsTableRows(resp.GetKeyMappings())
+	t := cli.NewTable(
+		table.NewFlexColumn("kas_uri", "KAS URI", cli.FlexColumnWidthOne),
+		table.NewFlexColumn("key_id", "Key ID", cli.FlexColumnWidthOne),
+		table.NewFlexColumn("namespace_mappings", "Namespaces", cli.FlexColumnWidthThree),
+		table.NewFlexColumn("attribute_mappings", "Attributes", cli.FlexColumnWidthThree),
+		table.NewFlexColumn("value_mappings", "Values", cli.FlexColumnWidthThree),
+	)
+	t.WithRows(rows)
+	t = cli.WithListPaginationFooter(t, resp.GetPagination())
+
+	HandleSuccess(cmd, "", t, resp)
+}
+
+func getKeyMappingsTableRows(mappings []*kasregistry.KeyMapping) []table.Row {
+	rows := make([]table.Row, len(mappings))
+	for i, m := range mappings {
+		rows[i] = table.NewRow(table.RowData{
+			"kas_uri":            m.GetKasUri(),
+			"key_id":             m.GetKid(),
+			"namespace_mappings": formatMappedPolicyObject(m.GetNamespaceMappings()),
+			"attribute_mappings": formatMappedPolicyObject(m.GetAttributeMappings()),
+			"value_mappings":     formatMappedPolicyObject(m.GetValueMappings()),
+		})
+	}
+	return rows
+}
+
+func formatMappedPolicyObject(m []*kasregistry.MappedPolicyObject) string {
+	if len(m) == 0 {
+		return "No mappings found"
+	}
+	fqns := make([]string, len(m))
+	for i, obj := range m {
+		fqns[i] = obj.GetFqn()
+	}
+	return strings.Join(fqns, ", ")
+}
+
 func policyRotateKasKey(cmd *cobra.Command, args []string) {
 	var wrappingKeyID string
 
@@ -919,6 +1000,32 @@ func init() {
 	)
 	injectLabelFlags(&importDoc.Command, false)
 
-	policyKasRegistryKeysCmd.AddSubcommands(createDoc, getDoc, updateDoc, listDoc, rotateDoc, importDoc)
+	mappingsDoc := man.Docs.GetCommand("policy/kas-registry/key/list-mappings",
+		man.WithRun(policyListKeyMappings),
+	)
+	mappingsDoc.Flags().StringP(
+		mappingsDoc.GetDocFlag("id").Name,
+		mappingsDoc.GetDocFlag("id").Shorthand,
+		mappingsDoc.GetDocFlag("id").Default,
+		mappingsDoc.GetDocFlag("id").Description,
+	)
+	mappingsDoc.Flags().StringP(
+		mappingsDoc.GetDocFlag("key-id").Name,
+		mappingsDoc.GetDocFlag("key-id").Shorthand,
+		mappingsDoc.GetDocFlag("key-id").Default,
+		mappingsDoc.GetDocFlag("key-id").Description,
+	)
+	mappingsDoc.Flags().StringP(
+		mappingsDoc.GetDocFlag("kas").Name,
+		mappingsDoc.GetDocFlag("kas").Shorthand,
+		mappingsDoc.GetDocFlag("kas").Default,
+		mappingsDoc.GetDocFlag("kas").Description,
+	)
+	mappingsDoc.MarkFlagsMutuallyExclusive("key-id", "id")
+	mappingsDoc.MarkFlagsMutuallyExclusive("kas", "id")
+	mappingsDoc.MarkFlagsRequiredTogether("key-id", "kas")
+	injectListPaginationFlags(mappingsDoc)
+
+	policyKasRegistryKeysCmd.AddSubcommands(createDoc, getDoc, updateDoc, listDoc, rotateDoc, importDoc, mappingsDoc)
 	policyKasRegCmd.AddCommand(&policyKasRegistryKeysCmd.Command)
 }
