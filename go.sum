@@ -320,10 +320,14 @@ github.com/opentdf/platform/protocol/go v0.5.0 h1:C/jUpg+DfG5gdznT909UXzKktQPLCe
 github.com/opentdf/platform/protocol/go v0.5.0/go.mod h1:FwoNd0HJaxGCZf74de/yFpVP4HEjkUMoF6Br79W0TBk=
 github.com/opentdf/platform/protocol/go v0.5.1-0.20250709123815-fbc2724a066b h1:Dc8s5BI6sVtzDOH3MYF5MKbhZrbEWiaBlpyT9wTLSEI=
 github.com/opentdf/platform/protocol/go v0.5.1-0.20250709123815-fbc2724a066b/go.mod h1:FwoNd0HJaxGCZf74de/yFpVP4HEjkUMoF6Br79W0TBk=
+github.com/opentdf/platform/protocol/go v0.6.0 h1:vmROxt82/v38Hx42SfMYYPgf96Zwv85uiwmUkLdh1A0=
+github.com/opentdf/platform/protocol/go v0.6.0/go.mod h1:FwoNd0HJaxGCZf74de/yFpVP4HEjkUMoF6Br79W0TBk=
 github.com/opentdf/platform/sdk v0.5.0 h1:K4a8kWUtt5EJktFC55egicsp9537SI1+bmJPMIsYrKg=
 github.com/opentdf/platform/sdk v0.5.0/go.mod h1:Qxwq9zjUVkBZs3xZUOPls5gdX4d0y2nsoZvJ93hyWAU=
 github.com/opentdf/platform/sdk v0.5.1-0.20250709133145-56e7e3a6910c h1:wslBnUWDOoiH4krOv/htLTEXJOYGgCZV5kTS12L5UyQ=
 github.com/opentdf/platform/sdk v0.5.1-0.20250709133145-56e7e3a6910c/go.mod h1:tdt1QvB5wTjftaoJ2kONiXJZPFkNyRdoARgU8CJNbpo=
+github.com/opentdf/platform/sdk v0.6.0 h1:rQf+0h3eSkzVaE3jNr+a0zyef2RPGS+JkKlGfnoEP/g=
+github.com/opentdf/platform/sdk v0.6.0/go.mod h1:1SaKjrsbkOH+qdFQ/CExjQe1J05FvPuq8LbzwB7BSJM=
 github.com/opentdf/platform/service v0.7.1-0.20250709123815-fbc2724a066b h1:ymQbHbHp+8odkOe/Q7Ts7H+7FnjzDlq21lY4NILFwgw=
 github.com/opentdf/platform/service v0.7.1-0.20250709123815-fbc2724a066b/go.mod h1:84OHKXeVCJtU4xedIcJEmNWCXIFJSKu13G/TdZfncUE=
 github.com/opentracing/opentracing-go v1.2.0 h1:uEJPy/1a5RIPAJ0Ov+OIO8OxWu77jEv+1B0VhjKrZUs=
