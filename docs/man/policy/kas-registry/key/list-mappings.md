@@ -39,7 +39,7 @@ otdfctl policy kas-registry key list-mappings --limit 10 --offset 0
 List key mappings for a key with a specific system ID:
 
 ```bash
-otdfctl policy kas-registry key list-mappings --id "key-id-12345" --limit 10 --offset 0
+otdfctl policy kas-registry key list-mappings --id "cc8bf36a-8c76-4c8c-9723-3c0d1ce897b8" --limit 10 --offset 0
 ```
 
 List key mappings for a key with a user-defined ID within a KAS specified by its URI:
