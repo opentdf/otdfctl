@@ -4,6 +4,7 @@
 
 load "${BATS_LIB_PATH}/bats-support/load.bash"
 load "${BATS_LIB_PATH}/bats-assert/load.bash"
+load "otdfctl-utils.sh"
 
 # Helper functions for otdfctl commands
 run_otdfctl_key() {
@@ -151,7 +152,9 @@ teardown_file() {
   run_otdfctl_attribute_delete --id "${ATTRIBUTE_ID}"
   run_otdfctl_namespace_delete --id "${NAMESPACE_ID}"
 
-  # Cannot cleanup KAS registry and keys, since keys cannot be deleted currently.
+  delete_all_keys_in_kas "$KAS_REGISTRY_ID"
+  delete_kas_registry "$KAS_REGISTRY_ID"
+
   unset HOST WITH_CREDS KAS_REGISTRY_ID KAS_NAME KAS_URI PEM_B64 KEY_ID_1 SYSTEM_KEY_ID_1 KEY_ID_2 SYSTEM_KEY_ID_2 KEY_ID_3 SYSTEM_KEY_ID_3 NAMESPACE_ID NAMESPACE_NAME ATTRIBUTE_ID ATTRIBUTE_NAME VALUE_ID VALUE_NAME
 }
 

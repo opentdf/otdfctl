@@ -7,6 +7,7 @@ import (
 	"github.com/opentdf/platform/protocol/go/common"
 	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/opentdf/platform/protocol/go/policy/kasregistry"
+	"github.com/opentdf/platform/protocol/go/policy/unsafe"
 )
 
 type RotateKeyResult struct {
@@ -182,4 +183,13 @@ func (h Handler) RotateKasKey(
 		KasKey:           resp.GetKasKey(),
 		RotatedResources: resp.GetRotatedResources(),
 	}, nil
+}
+
+func (h Handler) UnsafeDeleteKasKey(ctx context.Context, id, kid, kasURI string) (*policy.KasKey, error) {
+	resp, err := h.sdk.Unsafe.UnsafeDeleteKasKey(ctx, &unsafe.UnsafeDeleteKasKeyRequest{
+		Id:     id,
+		Kid:    kid,
+		KasUri: kasURI,
+	})
+	return resp.GetKey(), err
 }

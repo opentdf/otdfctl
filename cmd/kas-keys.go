@@ -779,6 +779,34 @@ func prepareKeyContexts(
 	return publicKeyCtx, privateKeyCtx, providerConfigID, nil
 }
 
+func policy_unsafeDeleteKasKey(cmd *cobra.Command, args []string) {
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
+	defer h.Close()
+
+	ctx := cmd.Context()
+	id := c.Flags.GetRequiredID("id")
+	kid := c.Flags.GetRequiredString("key-id")
+	kasURI := c.Flags.GetRequiredString("kas-uri")
+	force := c.Flags.GetOptionalBool("force")
+
+	cli.ConfirmAction(cli.ActionDelete, fmt.Sprintf("key with kas uri: %s, and key identifier: %s", kasURI, kid), fmt.Sprintf("Id: %s", id), force)
+
+	key, err := h.UnsafeDeleteKasKey(ctx, id, kid, kasURI)
+	if err != nil {
+		cli.ExitWithError(fmt.Sprintf("Failed to delete key (%s)", id), err)
+	}
+
+	rows := [][]string{
+		{"Deleted", "true"},
+		{"Id", key.GetKey().GetId()},
+		{"KasURI", key.GetKasUri()},
+		{"Key Identifier", key.GetKey().GetKeyId()},
+	}
+	t := cli.NewTabular(rows...)
+	HandleSuccess(cmd, id, t, key)
+}
+
 func init() {
 	// Create Kas Key
 	createDoc := man.Docs.GetCommand("policy/kas-registry/key/create",
@@ -1026,6 +1054,38 @@ func init() {
 	mappingsDoc.MarkFlagsRequiredTogether("key-id", "kas")
 	injectListPaginationFlags(mappingsDoc)
 
-	policyKasRegistryKeysCmd.AddSubcommands(createDoc, getDoc, updateDoc, listDoc, rotateDoc, importDoc, mappingsDoc)
+	// Unsafe Delete Kas Key
+	unsafeCmd := man.Docs.GetCommand("policy/kas-registry/key/unsafe")
+	unsafeCmd.PersistentFlags().BoolVar(
+		&forceUnsafe,
+		unsafeCmd.GetDocFlag("force").Name,
+		false,
+		unsafeCmd.GetDocFlag("force").Description,
+	)
+
+	unsafeDeleteDoc := man.Docs.GetCommand("policy/kas-registry/key/unsafe/delete",
+		man.WithRun(policy_unsafeDeleteKasKey),
+	)
+	unsafeDeleteDoc.Flags().StringP(
+		unsafeDeleteDoc.GetDocFlag("id").Name,
+		unsafeDeleteDoc.GetDocFlag("id").Shorthand,
+		unsafeDeleteDoc.GetDocFlag("id").Default,
+		unsafeDeleteDoc.GetDocFlag("id").Description,
+	)
+	unsafeDeleteDoc.Flags().StringP(
+		unsafeDeleteDoc.GetDocFlag("key-id").Name,
+		unsafeDeleteDoc.GetDocFlag("key-id").Shorthand,
+		unsafeDeleteDoc.GetDocFlag("key-id").Default,
+		unsafeDeleteDoc.GetDocFlag("key-id").Description,
+	)
+	unsafeDeleteDoc.Flags().StringP(
+		unsafeDeleteDoc.GetDocFlag("kas-uri").Name,
+		unsafeDeleteDoc.GetDocFlag("kas-uri").Shorthand,
+		unsafeDeleteDoc.GetDocFlag("kas-uri").Default,
+		unsafeDeleteDoc.GetDocFlag("kas-uri").Description,
+	)
+
+	unsafeCmd.AddSubcommands(unsafeDeleteDoc)
+	policyKasRegistryKeysCmd.AddSubcommands(createDoc, getDoc, updateDoc, listDoc, rotateDoc, importDoc, mappingsDoc, unsafeCmd)
 	policyKasRegCmd.AddCommand(&policyKasRegistryKeysCmd.Command)
 }
