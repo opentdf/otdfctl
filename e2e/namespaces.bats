@@ -25,6 +25,7 @@ setup_file() {
 setup() {
   load "${BATS_LIB_PATH}/bats-support/load.bash"
   load "${BATS_LIB_PATH}/bats-assert/load.bash"
+  load "otdfctl-utils.sh"
 
   # invoke binary with credentials
   run_otdfctl_ns() {
@@ -35,6 +36,9 @@ setup() {
 teardown_file() {
   ./otdfctl $HOST $WITH_CREDS policy attributes namespace unsafe delete --id "$NS_ID" --force
 
+  delete_all_keys_in_kas "$KAS_REGISTRY_ID"
+  delete_kas_registry "$KAS_REGISTRY_ID"
+  
   # clear out all test env vars
   unset HOST WITH_CREDS NS_NAME NS_FQN NS_ID NS_ID_FLAG KAS_REG_ID KAS_KEY_ID KAS_URI PEM_B64 PEM KAS_KEY_SYSTEM_ID
 }

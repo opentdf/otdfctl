@@ -24,6 +24,7 @@ setup_file() {
 setup() {
   load "${BATS_LIB_PATH}/bats-support/load.bash"
   load "${BATS_LIB_PATH}/bats-assert/load.bash"
+  load "otdfctl-utils.sh"
 
   # invoke binary with credentials
   run_otdfctl_attr() {
@@ -37,6 +38,8 @@ setup() {
 # always unsafely delete the created attribute
 teardown() {
   ./otdfctl $HOST $WITH_CREDS policy attributes unsafe delete --force --id "$ATTR_ID"
+  delete_all_keys_in_kas "$KAS_REGISTRY_ID"
+  delete_kas_registry "$KAS_REGISTRY_ID"
 }
 
 teardown_file() {
