@@ -2,11 +2,7 @@
 
 load "${BATS_LIB_PATH}/bats-support/load.bash"
 load "${BATS_LIB_PATH}/bats-assert/load.bash"
-
-# Helper functions for otdfctl commands
-run_otdfctl_key() {
-  run sh -c "./otdfctl policy kas-registry key $HOST $WITH_CREDS $*"
-}
+load "otdfctl-utils.sh"
 
 run_otdfctl_kas_registry_create() {
   run sh -c "./otdfctl policy kas-registry create $HOST $WITH_CREDS $*"
@@ -40,9 +36,12 @@ setup() {
   : # No-op
 }
 
+
 teardown_file() {
-  ./otdfctl keymanagement provider "$HOST" "$WITH_CREDS" delete --id "$PC_ID" --force
-  # Cannot cleanup KAS registry and keys, since keys cannot be deleted currently.
+  delete_all_keys_in_kas "$KAS_REGISTRY_ID"
+  delete_kas_registry "$KAS_REGISTRY_ID"
+  delete_provider_config "$PC_ID"
+
   unset HOST WITH_CREDS KAS_REGISTRY_ID KAS_NAME KAS_URI PEM_B64 WRAPPING_KEY PC_ID
 }
 
@@ -621,6 +620,9 @@ format_kas_name_as_uri() {
   run_otdfctl_key list --kas "${KAS_ID_LIST}" --limit 1 --offset 100 --json
   assert_success
   assert_equal "$(echo "$output" | jq '. | length')" "0"
+
+  delete_all_keys_in_kas "$KAS_ID_LIST"
+  delete_kas_registry "$KAS_ID_LIST"
 }
 
 @test "kas-keys: list keys (filter by algorithm rsa:2048)" {
@@ -658,6 +660,9 @@ format_kas_name_as_uri() {
   # Check that all listed keys have key_algorithm 1 (algorithmORITHM_RSA_2048)
   local count_non_rsa=$(echo "$output" | jq '[.[] | select(.key.key_algorithm != 1)] | length')
   assert_equal "$count_non_rsa" "0"
+
+  delete_all_keys_in_kas "$KAS_ID_LIST"
+  delete_kas_registry "$KAS_ID_LIST"
 }
 
 @test "kas-keys: list keys (filter by kas)" {
@@ -690,6 +695,9 @@ format_kas_name_as_uri() {
   run_otdfctl_key list --kas "${KAS_REGISTRY_ID}" --json
   assert_success
   assert_equal "$(echo "$output" | jq -r --arg id "${kas_filter_key_sys_id}" '[.[] | select(.key.id == $id)] | length')" "0"
+
+  delete_all_keys_in_kas "$KAS_ID_LIST"
+  delete_kas_registry "$KAS_ID_LIST"
 }
 
 @test "kas-keys: list keys (filter by kasName)" {
@@ -717,6 +725,9 @@ format_kas_name_as_uri() {
   assert_equal "$(echo "$output" | jq -r '.[0].key.private_key_ctx')" "null"
   assert_not_equal "$(echo "$output" | jq -r '.[0].key.metadata.created_at')" "null"
   assert_not_equal "$(echo "$output" | jq -r '.[0].key.metadata.updated_at')" "null"
+
+  delete_all_keys_in_kas "$KAS_ID_LIST"
+  delete_kas_registry "$KAS_ID_LIST"
 }
 
 @test "kas-keys: list keys (filter by kasUri)" {
@@ -740,6 +751,9 @@ format_kas_name_as_uri() {
   assert_equal "$(echo "$output" | jq -r '.[0].key.key_mode')" "4"
   assert_equal "$(echo "$output" | jq -r '.[0].key.key_status')" "1"
   assert_equal "$(echo "$output" | jq -r '.[0].key.public_key_ctx.pem')" "${PEM_B64}"
+
+  delete_all_keys_in_kas "$KAS_ID_LIST"
+  delete_kas_registry "$KAS_ID_LIST"
 }
 
 @test "kas-keys: list keys (invalid algorithm)" {
@@ -989,4 +1003,37 @@ format_kas_name_as_uri() {
   
   assert_failure
   assert_output --partial "'--wrapping-key' is required"
+}
+
+@test "kas-keys: delete key" {
+  KID=$(generate_key_id)
+  run_otdfctl_key create --kas "${KAS_REGISTRY_ID}" --key-id "${KID}" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "${PEM_B64}" --json
+  assert_success
+  CREATED_KEY_SYSTEM_ID=$(echo "$output" | jq -r .key.id)
+
+
+  run_otdfctl_key unsafe delete --id "${CREATED_KEY_SYSTEM_ID}" --key-id "${KID}" --kas-uri ${KAS_URI} --json --force
+  assert_success
+
+  run_otdfctl_key get --key "${CREATED_KEY_SYSTEM_ID}" --json
+  assert_failure
+  assert_output --partial "Failed to get kas key"
+}
+
+@test "kas-keys: delete key failure - (missing id)" {
+  run_otdfctl_key unsafe delete --kas-uri "a-uri" --key-id "key" --force
+  assert_failure
+  assert_output --partial "Flag '--id' is required"
+}
+
+@test "kas-keys: delete key failure - (missing key-id)" {
+  run_otdfctl_key unsafe delete --id "ded32e6d-9fec-4a4c-a391-13158c52e5f2" --kas-uri "a-uri" --force
+  assert_failure
+  assert_output --partial "Flag '--key-id' is required"
+}
+
+@test "kas-keys: delete key failure - (missing kas-uri)" {
+  run_otdfctl_key unsafe delete --id "ded32e6d-9fec-4a4c-a391-13158c52e5f2" --key-id "kid" --force
+  assert_failure
+  assert_output --partial "Flag '--kas-uri' is required"
 }
