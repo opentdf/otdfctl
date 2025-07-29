@@ -21,8 +21,6 @@ Deleting a key is a destructive operation. Any existing TDFs encrypted with this
 
 Make sure you know what you are doing.
 
-For more general information about keys, see the `kas-keys` subcommand.
-
 ## Example
 
 ```shell

@@ -779,7 +779,7 @@ func prepareKeyContexts(
 	return publicKeyCtx, privateKeyCtx, providerConfigID, nil
 }
 
-func policy_unsafeDeleteKasKey(cmd *cobra.Command, args []string) {
+func policyUnsafeDeleteKasKey(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
 	defer h.Close()
@@ -1064,7 +1064,7 @@ func init() {
 	)
 
 	unsafeDeleteDoc := man.Docs.GetCommand("policy/kas-registry/key/unsafe/delete",
-		man.WithRun(policy_unsafeDeleteKasKey),
+		man.WithRun(policyUnsafeDeleteKasKey),
 	)
 	unsafeDeleteDoc.Flags().StringP(
 		unsafeDeleteDoc.GetDocFlag("id").Name,
