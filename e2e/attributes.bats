@@ -38,15 +38,13 @@ setup() {
 # always unsafely delete the created attribute
 teardown() {
   ./otdfctl $HOST $WITH_CREDS policy attributes unsafe delete --force --id "$ATTR_ID"
-  delete_all_keys_in_kas "$KAS_REGISTRY_ID"
-  delete_kas_registry "$KAS_REGISTRY_ID"
 }
 
 teardown_file() {
   # remove the namespace
   ./otdfctl $HOST $WITH_CREDS policy attributes namespaces unsafe delete --id "$NS_ID" --force
-  # Cannot delete kas registry with keys attached
-  # ./otdfctl $HOST $WITH_CREDS policy kas-registry delete --id "$KAS_REG_ID" --force
+  delete_all_keys_in_kas "$KAS_REG_ID"
+  delete_kas_registry "$KAS_REG_ID"
 
   # clear out all test env vars
   unset HOST WITH_CREDS NS_NAME NS_ID ATTR_NAME_RANDOM KAS_REG_ID KAS_KEY_ID KAS_URI KAS_KEY_SYSTEM_ID PEM PEM_B64 ATTR_ID
