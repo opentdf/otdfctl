@@ -1056,8 +1056,7 @@ func init() {
 
 	// Unsafe Delete Kas Key
 	unsafeCmd := man.Docs.GetCommand("policy/kas-registry/key/unsafe")
-	unsafeCmd.PersistentFlags().BoolVar(
-		&forceUnsafe,
+	unsafeCmd.PersistentFlags().Bool(
 		unsafeCmd.GetDocFlag("force").Name,
 		false,
 		unsafeCmd.GetDocFlag("force").Description,
