@@ -4,11 +4,6 @@ load "${BATS_LIB_PATH}/bats-support/load.bash"
 load "${BATS_LIB_PATH}/bats-assert/load.bash"
 load "otdfctl-utils.sh"
 
-# Helper functions for otdfctl commands
-run_otdfctl_key() {
-  run sh -c "./otdfctl policy kas-registry key $HOST $WITH_CREDS $*"
-}
-
 run_otdfctl_kas_registry_create() {
   run sh -c "./otdfctl policy kas-registry create $HOST $WITH_CREDS $*"
 }

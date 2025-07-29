@@ -1,6 +1,9 @@
 #!/usr/bin/env bats
 
 # Tests for namespaces
+load "${BATS_LIB_PATH}/bats-support/load.bash"
+load "${BATS_LIB_PATH}/bats-assert/load.bash"
+load "otdfctl-utils.sh"
 
 setup_file() {
   echo -n '{"clientId":"opentdf","clientSecret":"secret"}' >creds.json
@@ -23,10 +26,6 @@ setup_file() {
 }
 
 setup() {
-  load "${BATS_LIB_PATH}/bats-support/load.bash"
-  load "${BATS_LIB_PATH}/bats-assert/load.bash"
-  load "otdfctl-utils.sh"
-
   # invoke binary with credentials
   run_otdfctl_ns() {
     run sh -c "./otdfctl $HOST $WITH_CREDS policy attributes namespaces $*"

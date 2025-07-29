@@ -1,5 +1,9 @@
 #!/usr/bin/env bats
 
+load "${BATS_LIB_PATH}/bats-support/load.bash"
+load "${BATS_LIB_PATH}/bats-assert/load.bash"
+load "otdfctl-utils.sh"
+
 # Tests for attributes
 
 setup_file() {
@@ -22,10 +26,6 @@ setup_file() {
 
 # always create a randomly named attribute
 setup() {
-  load "${BATS_LIB_PATH}/bats-support/load.bash"
-  load "${BATS_LIB_PATH}/bats-assert/load.bash"
-  load "otdfctl-utils.sh"
-
   # invoke binary with credentials
   run_otdfctl_attr() {
     run sh -c "./otdfctl $HOST $WITH_CREDS policy attributes $*"

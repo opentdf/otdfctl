@@ -1,6 +1,9 @@
 #!/usr/bin/env bats
 
 # NEEDS TO RUN AFTER encrypt-decrypt.bats
+load "${BATS_LIB_PATH}/bats-support/load.bash"
+load "${BATS_LIB_PATH}/bats-assert/load.bash"
+load "otdfctl-utils.sh"
 
 setup_file() {
   echo -n '{"clientId":"opentdf","clientSecret":"secret"}' >creds.json
@@ -20,10 +23,6 @@ setup_file() {
 }
 
 setup() {
-  load "${BATS_LIB_PATH}/bats-support/load.bash"
-  load "${BATS_LIB_PATH}/bats-assert/load.bash"
-  load "otdfctl-utils.sh"
-
   # invoke binary with credentials for base key commands
   run_otdfctl_base_key() {
     run sh -c "./otdfctl policy kas-registry key base $HOST $WITH_CREDS $*"

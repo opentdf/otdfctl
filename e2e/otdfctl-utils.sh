@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+
+run_otdfctl_key() {
+  run sh -c "./otdfctl policy kas-registry key $HOST $WITH_CREDS $*"
+}
+
 delete_all_keys_in_kas() {
   local kas_id="$1"
   echo "Attempting to delete all keys in KAS registry: $kas_id"
@@ -24,6 +29,7 @@ delete_all_keys_in_kas() {
 
     echo "Deleting key: $key_user_id (system ID: $key_system_id) from KAS URI: $key_kas_uri"
     run_otdfctl_key unsafe delete --id "$key_system_id" --kas-uri "$key_kas_uri" --key-id "$kid" --force
+    assert_success
     if [ "$status" -ne 0 ]; then
       echo "Warning: Failed to delete key $key_system_id. Error: $output" >&2
     else
