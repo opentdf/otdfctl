@@ -34,6 +34,9 @@ command:
     - name: kas-url-path
       description: URL path to the KAS service at the platform endpoint domain. Leading slash is required if needed.
       default: /kas
+    - name: policy-mode
+      description: How the policy is stored within the object (currently nanoTDF only) [plaintext|encrypted]
+      default: ""
     - name: target-mode
       description: The target TDF spec version (e.g., "4.3.0"); intended for legacy compatibility and subject to removal.
       default: ""

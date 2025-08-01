@@ -46,6 +46,7 @@ func dev_tdfEncryptCmd(cmd *cobra.Command, args []string) {
 	tdfType := c.Flags.GetOptionalString("tdf-type")
 	kasURLPath := c.Flags.GetOptionalString("kas-url-path")
 	wrappingKeyAlgStr := c.Flags.GetOptionalString("wrapping-key-algorithm")
+	policyMode := c.Flags.GetOptionalString("policy-mode")
 	targetMode := c.Flags.GetOptionalString("target-mode")
 	var wrappingKeyAlgorithm ocrypto.KeyType
 	switch wrappingKeyAlgStr {
@@ -120,6 +121,7 @@ func dev_tdfEncryptCmd(cmd *cobra.Command, args []string) {
 		c.Flags.GetOptionalBool("ecdsa-binding"),
 		assertions,
 		wrappingKeyAlgorithm,
+		policyMode,
 		targetMode,
 	)
 	if err != nil {
@@ -198,6 +200,11 @@ func init() {
 		encryptCmd.GetDocFlag("kas-url-path").Name,
 		encryptCmd.GetDocFlag("kas-url-path").Default,
 		encryptCmd.GetDocFlag("kas-url-path").Description,
+	)
+	encryptCmd.Flags().String(
+		encryptCmd.GetDocFlag("policy-mode").Name,
+		encryptCmd.GetDocFlag("policy-mode").Default,
+		encryptCmd.GetDocFlag("policy-mode").Description,
 	)
 	encryptCmd.Flags().String(
 		encryptCmd.GetDocFlag("target-mode").Name,
