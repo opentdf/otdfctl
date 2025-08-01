@@ -133,6 +133,9 @@ func (h Handler) EncryptBytes(
 		default:
 			return nil, fmt.Errorf("policy mode unrecognized: [%s]", policyMode)
 		}
+		if err != nil {
+			return nil, fmt.Errorf("failed to set policy mode: [%w]", err)
+		}
 		// create the nano TDF
 		if _, err = h.sdk.CreateNanoTDF(enc, bytes.NewReader(unencrypted), *nanoTDFConfig); err != nil {
 			return nil, err
