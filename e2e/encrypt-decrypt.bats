@@ -138,7 +138,7 @@ teardown_file(){
 @test "roundtrip NANO, one attribute, stdin, plaintext policy mode" {
   echo $SECRET_TEXT | ./otdfctl encrypt --tdf-type nano -o $OUT_TXT --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS -a $MIXED_CASE_FQN --policy-mode plaintext
   ./otdfctl decrypt --tdf-type nano --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS $OUTFILE_TXT | grep "$SECRET_TEXT"
-  grep -a "$MIXED_CASE_FQN" "$OUT_TXT"
+  grep -a "$MIXED_CASE_FQN" "$OUTFILE_TXT"
 }
 
 @test "roundtrip NANO, one attribute, mixed case FQN, stdin" {
