@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.25.0](https://github.com/opentdf/otdfctl/compare/v0.24.0...v0.25.0) (2025-08-08)
+
+
+### Features
+
+* **core:** Adds policy-mode encrypt param ([#633](https://github.com/opentdf/otdfctl/issues/633)) ([9e83016](https://github.com/opentdf/otdfctl/commit/9e830168a38c0803396fd5c4c188fa62c0ccf5a0))
+
 ## [0.24.0](https://github.com/opentdf/otdfctl/compare/v0.23.0...v0.24.0) (2025-07-29)
 
 
