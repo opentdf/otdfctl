@@ -48,6 +48,7 @@ func (h Handler) EncryptBytes(
 	ecdsaBinding bool,
 	assertions string,
 	wrappingKeyAlgorithm ocrypto.KeyType,
+	policyMode string,
 	targetMode string,
 ) (*bytes.Buffer, error) {
 	var encrypted []byte
@@ -58,6 +59,9 @@ func (h Handler) EncryptBytes(
 	case "", TDF_TYPE_TDF3, TDF_TYPE_ZTDF:
 		if ecdsaBinding {
 			return nil, errors.New("ECDSA policy binding is not supported for ZTDF")
+		}
+		if policyMode != "" {
+			return nil, errors.New("policy mode is not supported for ZTDF")
 		}
 
 		opts := []sdk.TDFOption{
@@ -120,6 +124,17 @@ func (h Handler) EncryptBytes(
 		// enable ECDSA policy binding
 		if ecdsaBinding {
 			nanoTDFConfig.EnableECDSAPolicyBinding()
+		}
+		switch policyMode {
+		case "", "encrypted":
+			err = nanoTDFConfig.SetPolicyMode(sdk.NanoTDFPolicyModeEncrypted)
+		case "plaintext":
+			err = nanoTDFConfig.SetPolicyMode(sdk.NanoTDFPolicyModePlainText)
+		default:
+			return nil, fmt.Errorf("policy mode unrecognized: [%s]", policyMode)
+		}
+		if err != nil {
+			return nil, fmt.Errorf("failed to set policy mode: [%w]", err)
 		}
 		// create the nano TDF
 		if _, err = h.sdk.CreateNanoTDF(enc, bytes.NewReader(unencrypted), *nanoTDFConfig); err != nil {
