@@ -3,6 +3,8 @@ bin/.DS_Store
 target/
 .vscode/launch.json
 otdfctl.yaml
+pkg/chat/log/*
+pkg/chat/log/temp/*
 
 # Ignore the binaries
 otdfctl
