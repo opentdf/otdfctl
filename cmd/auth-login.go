@@ -61,5 +61,11 @@ func init() {
 		codeLoginCmd.GetDocFlag("client-id").Default,
 		codeLoginCmd.GetDocFlag("client-id").Description,
 	)
+	codeLoginCmd.Flags().StringP(
+		codeLoginCmd.GetDocFlag("port").Name,
+		codeLoginCmd.GetDocFlag("port").Shorthand,
+		codeLoginCmd.GetDocFlag("port").Default,
+		codeLoginCmd.GetDocFlag("port").Description,
+	)
 	authCmd.AddCommand(&codeLoginCmd.Command)
 }
