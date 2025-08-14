@@ -61,6 +61,8 @@ func init() {
 		codeLoginCmd.GetDocFlag("client-id").Default,
 		codeLoginCmd.GetDocFlag("client-id").Description,
 	)
+
+	// intentionally a string flag to support an empty port which represents a dynamic port
 	codeLoginCmd.Flags().StringP(
 		codeLoginCmd.GetDocFlag("port").Name,
 		codeLoginCmd.GetDocFlag("port").Shorthand,
