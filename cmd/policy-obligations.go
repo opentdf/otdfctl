@@ -9,6 +9,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var (
+	obligationValues []string
+)
+
 //
 // Obligations
 //
@@ -19,28 +23,28 @@ func policyCreateObligation(cmd *cobra.Command, args []string) {
 	defer h.Close()
 
 	name := c.Flags.GetRequiredString("name")
-	registeredResourceValues = c.Flags.GetStringSlice("value", registeredResourceValues, cli.FlagsStringSliceOptions{})
+	obligationValues = c.Flags.GetStringSlice("value", obligationValues, cli.FlagsStringSliceOptions{})
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
-	resource, err := h.CreateRegisteredResource(cmd.Context(), name, registeredResourceValues, getMetadataMutable(metadataLabels))
+	obl, err := h.CreateObligation(cmd.Context(), name, obligationValues, getMetadataMutable(metadataLabels))
 	if err != nil {
-		cli.ExitWithError("Failed to create registered resource", err)
+		cli.ExitWithError("Failed to create obligation", err)
 	}
 
-	simpleRegResValues := cli.GetSimpleRegisteredResourceValues(resource.GetValues())
+	simpleObligationValues := cli.GetSimpleRegisteredResourceValues(obl.GetValues())
 
 	rows := [][]string{
-		{"Id", resource.GetId()},
-		{"Name", resource.GetName()},
-		{"Values", cli.CommaSeparated(simpleRegResValues)},
+		{"Id", obl.GetId()},
+		{"Name", obl.GetName()},
+		{"Values", cli.CommaSeparated(simpleObligationValues)},
 	}
 
-	if mdRows := getMetadataRows(resource.GetMetadata()); mdRows != nil {
+	if mdRows := getMetadataRows(obl.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
 	}
 
 	t := cli.NewTabular(rows...)
-	HandleSuccess(cmd, resource.GetId(), t, resource)
+	HandleSuccess(cmd, obl.GetId(), t, obl)
 }
 
 func policyGetObligation(cmd *cobra.Command, args []string) {
