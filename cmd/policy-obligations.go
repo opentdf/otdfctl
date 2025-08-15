@@ -53,35 +53,35 @@ func policyGetObligation(cmd *cobra.Command, args []string) {
 	defer h.Close()
 
 	id := c.Flags.GetOptionalID("id")
-	name := c.Flags.GetOptionalString("name")
+	fqn := c.Flags.GetOptionalString("fqn")
 
-	if id == "" && name == "" {
-		cli.ExitWithError("Either 'id' or 'name' must be provided", nil)
+	if id == "" && fqn == "" {
+		cli.ExitWithError("Either 'id' or 'fqn' must be provided", nil)
 	}
 
-	resource, err := h.GetRegisteredResource(cmd.Context(), id, name)
+	obl, err := h.GetObligation(cmd.Context(), id, fqn)
 	if err != nil {
 		identifier := fmt.Sprintf("id: %s", id)
 		if id == "" {
-			identifier = fmt.Sprintf("name: %s", name)
+			identifier = fmt.Sprintf("fqn: %s", fqn)
 		}
-		errMsg := fmt.Sprintf("Failed to find registered resource (%s)", identifier)
+		errMsg := fmt.Sprintf("Failed to find obligation (%s)", identifier)
 		cli.ExitWithError(errMsg, err)
 	}
 
-	simpleRegResValues := cli.GetSimpleRegisteredResourceValues(resource.GetValues())
+	simpleObligationValues := cli.GetSimpleObligationValues(obl.GetValues())
 
 	rows := [][]string{
-		{"Id", resource.GetId()},
-		{"Name", resource.GetName()},
-		{"Values", cli.CommaSeparated(simpleRegResValues)},
+		{"Id", obl.GetId()},
+		{"Name", obl.GetName()},
+		{"Values", cli.CommaSeparated(simpleObligationValues)},
 	}
-	if mdRows := getMetadataRows(resource.GetMetadata()); mdRows != nil {
+	if mdRows := getMetadataRows(obl.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
 	}
 
 	t := cli.NewTabular(rows...)
-	HandleSuccess(cmd, resource.GetId(), t, resource)
+	HandleSuccess(cmd, obl.GetId(), t, obl)
 }
 
 func policyListObligations(cmd *cobra.Command, args []string) {
