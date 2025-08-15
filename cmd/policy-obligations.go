@@ -31,7 +31,7 @@ func policyCreateObligation(cmd *cobra.Command, args []string) {
 		cli.ExitWithError("Failed to create obligation", err)
 	}
 
-	simpleObligationValues := cli.GetSimpleRegisteredResourceValues(obl.GetValues())
+	simpleObligationValues := cli.GetSimpleObligationValues(obl.GetValues())
 
 	rows := [][]string{
 		{"Id", obl.GetId()},
