@@ -7,7 +7,6 @@ import (
 	"github.com/opentdf/platform/protocol/go/common"
 	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/opentdf/platform/protocol/go/policy/obligations"
-	"github.com/opentdf/platform/protocol/go/policy/registeredresources"
 )
 
 //
@@ -75,7 +74,7 @@ func (h Handler) ListObligations(ctx context.Context, limit, offset int32, names
 }
 
 func (h Handler) UpdateObligation(ctx context.Context, id, name string, metadata *common.MetadataMutable, behavior common.MetadataUpdateEnum) (*policy.Obligation, error) {
-	_, err := h.sdk.Obligations.UpdateObligation(ctx, &registeredresources.UpdateObligationRequest{
+	res, err := h.sdk.Obligations.UpdateObligation(ctx, &obligations.UpdateObligationRequest{
 		Id:                     id,
 		Name:                   name,
 		Metadata:               metadata,
@@ -85,11 +84,11 @@ func (h Handler) UpdateObligation(ctx context.Context, id, name string, metadata
 		return nil, err
 	}
 
-	return h.GetRegisteredResource(ctx, id, "")
+	return res.Obligation, nil
 }
 
 func (h Handler) DeleteObligation(ctx context.Context, id string) error {
-	_, err := h.sdk.Obligations.DeleteObligation(ctx, &registeredresources.DeleteObligationRequest{
+	_, err := h.sdk.Obligations.DeleteObligation(ctx, &obligations.DeleteObligationRequest{
 		Id: id,
 	})
 
