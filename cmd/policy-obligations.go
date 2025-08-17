@@ -126,7 +126,7 @@ func policyUpdateObligation(cmd *cobra.Command, args []string) {
 	name := c.Flags.GetOptionalString("name")
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
-	updated, err := h.UpdateRegisteredResource(
+	updated, err := h.UpdateObligation(
 		cmd.Context(),
 		id,
 		name,
@@ -134,7 +134,7 @@ func policyUpdateObligation(cmd *cobra.Command, args []string) {
 		getMetadataUpdateBehavior(),
 	)
 	if err != nil {
-		cli.ExitWithError("Failed to update registered resource", err)
+		cli.ExitWithError("Failed to update obligation", err)
 	}
 
 	rows := [][]string{
