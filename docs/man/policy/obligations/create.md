@@ -26,7 +26,7 @@ For more information, see the `obligations` subcommand.
 
 ## Examples
 
-Create an obligation definition named 'my_resource' with value 'my_value':
+Create an obligation definition named 'my_obligation' with value 'my_value':
 
 ```shell
 otdfctl policy obligations create --name my_obligation --value my_value
