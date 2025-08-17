@@ -87,10 +87,21 @@ func (h Handler) UpdateObligation(ctx context.Context, id, name string, metadata
 	return res.Obligation, nil
 }
 
-func (h Handler) DeleteObligation(ctx context.Context, id string) error {
-	_, err := h.sdk.Obligations.DeleteObligation(ctx, &obligations.DeleteObligationRequest{
-		Id: id,
-	})
+func (h Handler) DeleteObligation(ctx context.Context, id, fqn string) error {
+	req := &obligations.DeleteObligationRequest{}
+	if id != "" {
+		req.Identifier = &obligations.DeleteObligationRequest_Id{
+			Id: id,
+		}
+	} else {
+		req.Identifier = &obligations.DeleteObligationRequest_Fqn{
+			Fqn: fqn,
+		}
+	}
+	_, err := h.sdk.Obligations.DeleteObligation(ctx, req)
+	if err != nil {
+		return err
+	}
 
-	return err
+	return nil
 }
