@@ -203,14 +203,20 @@ func init() {
 		getDoc.GetDocFlag("id").Description,
 	)
 	getDoc.Flags().StringP(
-		getDoc.GetDocFlag("name").Name,
-		getDoc.GetDocFlag("name").Shorthand,
-		getDoc.GetDocFlag("name").Default,
-		getDoc.GetDocFlag("name").Description,
+		getDoc.GetDocFlag("fqn").Name,
+		getDoc.GetDocFlag("fqn").Shorthand,
+		getDoc.GetDocFlag("fqn").Default,
+		getDoc.GetDocFlag("fqn").Description,
 	)
 
 	listDoc := man.Docs.GetCommand("policy/obligations/list",
 		man.WithRun(policyListObligations),
+	)
+	listDoc.Flags().StringP(
+		listDoc.GetDocFlag("namespace").Name,
+		listDoc.GetDocFlag("namespace").Shorthand,
+		listDoc.GetDocFlag("namespace").Default,
+		listDoc.GetDocFlag("namespace").Description,
 	)
 	injectListPaginationFlags(listDoc)
 
@@ -257,6 +263,12 @@ func init() {
 		deleteDoc.GetDocFlag("id").Shorthand,
 		deleteDoc.GetDocFlag("id").Default,
 		deleteDoc.GetDocFlag("id").Description,
+	)
+	deleteDoc.Flags().StringP(
+		deleteDoc.GetDocFlag("fqn").Name,
+		deleteDoc.GetDocFlag("fqn").Shorthand,
+		deleteDoc.GetDocFlag("fqn").Default,
+		deleteDoc.GetDocFlag("fqn").Description,
 	)
 	deleteDoc.Flags().Bool(
 		deleteDoc.GetDocFlag("force").Name,
