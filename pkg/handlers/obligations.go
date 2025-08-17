@@ -47,7 +47,7 @@ func (h Handler) GetObligation(ctx context.Context, id, fqn string) (*policy.Obl
 }
 
 func (h Handler) ListObligations(ctx context.Context, limit, offset int32) ([]*policy.Obligation, *policy.PageResponse, error) {
-	resp, err := h.sdk.Obligations.ListObligations(ctx, &registeredresources.ListObligationsRequest{
+	resp, err := h.sdk.Obligations.ListObligations(ctx, &obligations.ListObligationsRequest{
 		Pagination: &policy.PageRequest{
 			Limit:  limit,
 			Offset: offset,
@@ -57,7 +57,7 @@ func (h Handler) ListObligations(ctx context.Context, limit, offset int32) ([]*p
 		return nil, nil, err
 	}
 
-	return resp.GetResources(), resp.GetPagination(), nil
+	return resp.GetObligations(), resp.GetPagination(), nil
 }
 
 func (h Handler) UpdateObligation(ctx context.Context, id, name string, metadata *common.MetadataMutable, behavior common.MetadataUpdateEnum) (*policy.Obligation, error) {

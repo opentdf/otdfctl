@@ -92,9 +92,9 @@ func policyListObligations(cmd *cobra.Command, args []string) {
 	limit := c.Flags.GetRequiredInt32("limit")
 	offset := c.Flags.GetRequiredInt32("offset")
 
-	resources, page, err := h.ListRegisteredResources(cmd.Context(), limit, offset)
+	resources, page, err := h.ListObligations(cmd.Context(), limit, offset)
 	if err != nil {
-		cli.ExitWithError("Failed to list registered resources", err)
+		cli.ExitWithError("Failed to list obligations", err)
 	}
 
 	t := cli.NewTable(
