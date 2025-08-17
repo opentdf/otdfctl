@@ -9,27 +9,25 @@ command:
   flags:
     - name: name
       shorthand: n
-      description: Name of the registered resource (must be unique within Policy)
+      description: Name of the obligation (must be unique within a Namespace)
       required: true
     - name: value
       shorthand: v
-      description: Value of the registered resource (i.e. 'value1', must be unique within the Registered Resource)
+      description: Value of the obligation (i.e. 'value1', must be unique within the Obligation)
     - name: label
       description: "Optional metadata 'labels' in the format: key=value"
       shorthand: l
       default: ''
 ---
 
-Add a registered resource to the platform Policy.
+Add an obligation definition to the platform Policy.
 
-A registered resource `name` is normalized to lower case and may contain hyphens or dashes between other alphanumeric characters.
-
-For more information, see the `registered-resources` subcommand.
+For more information, see the `obligations` subcommand.
 
 ## Examples
 
-Create a registered resource named 'my_resource' with value 'my_value':
+Create an obligation definition named 'my_resource' with value 'my_value':
 
 ```shell
-otdfctl policy registered-resources create --name my_resource --value my_value
+otdfctl policy obligations create --name my_obligation --value my_value
 ```
