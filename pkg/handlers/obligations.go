@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/opentdf/platform/protocol/go/common"
 	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/opentdf/platform/protocol/go/policy/obligations"
@@ -46,13 +47,26 @@ func (h Handler) GetObligation(ctx context.Context, id, fqn string) (*policy.Obl
 	return resp.GetObligation(), nil
 }
 
-func (h Handler) ListObligations(ctx context.Context, limit, offset int32) ([]*policy.Obligation, *policy.PageResponse, error) {
-	resp, err := h.sdk.Obligations.ListObligations(ctx, &obligations.ListObligationsRequest{
+func (h Handler) ListObligations(ctx context.Context, limit, offset int32, namespace string) ([]*policy.Obligation, *policy.PageResponse, error) {
+	req := &obligations.ListObligationsRequest{
 		Pagination: &policy.PageRequest{
 			Limit:  limit,
 			Offset: offset,
 		},
-	})
+	}
+	if namespace != "" {
+		_, err := uuid.Parse(namespace)
+		if err != nil {
+			req.NamespaceIdentifier = &obligations.ListObligationsRequest_Fqn{
+				Fqn: namespace,
+			}
+		} else {
+			req.NamespaceIdentifier = &obligations.ListObligationsRequest_Id{
+				Id: namespace,
+			}
+		}
+	}
+	resp, err := h.sdk.Obligations.ListObligations(ctx, req)
 	if err != nil {
 		return nil, nil, err
 	}

@@ -89,10 +89,11 @@ func policyListObligations(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
+	namespace := c.Flags.GetOptionalString("namespace")
 	limit := c.Flags.GetRequiredInt32("limit")
 	offset := c.Flags.GetRequiredInt32("offset")
 
-	resources, page, err := h.ListObligations(cmd.Context(), limit, offset)
+	obls, page, err := h.ListObligations(cmd.Context(), limit, offset, namespace)
 	if err != nil {
 		cli.ExitWithError("Failed to list obligations", err)
 	}
@@ -101,21 +102,19 @@ func policyListObligations(cmd *cobra.Command, args []string) {
 		cli.NewUUIDColumn(),
 		table.NewFlexColumn("name", "Name", cli.FlexColumnWidthFour),
 		table.NewFlexColumn("values", "Values", cli.FlexColumnWidthTwo),
-		// todo: do we need to show metadata labels and created/updated at?
 	)
 	rows := []table.Row{}
-	for _, r := range resources {
-		simpleRegResValues := cli.GetSimpleRegisteredResourceValues(r.GetValues())
+	for _, r := range obls {
+		simpleObligationValues := cli.GetSimpleObligationValues(r.GetValues())
 		rows = append(rows, table.NewRow(table.RowData{
 			"id":     r.GetId(),
 			"name":   r.GetName(),
-			"values": cli.CommaSeparated(simpleRegResValues),
-			// todo: do we need to show metadata labels and created/updated at?
+			"values": cli.CommaSeparated(simpleObligationValues),
 		}))
 	}
 	t = t.WithRows(rows)
 	t = cli.WithListPaginationFooter(t, page)
-	HandleSuccess(cmd, "", t, resources)
+	HandleSuccess(cmd, "", t, obls)
 }
 
 func policyUpdateObligation(cmd *cobra.Command, args []string) {
