@@ -230,7 +230,7 @@ func init() {
 		createDoc.GetDocFlag("name").Description,
 	)
 	createDoc.Flags().StringSliceVarP(
-		&registeredResourceValues,
+		&obligationValues,
 		createDoc.GetDocFlag("value").Name,
 		createDoc.GetDocFlag("value").Shorthand,
 		[]string{},
@@ -278,7 +278,7 @@ func init() {
 
 	// Add commands to the policy command
 
-	policyRegisteredResourcesDoc := man.Docs.GetCommand("policy/registered-resources",
+	policyObligationsDoc := man.Docs.GetCommand("policy/obligations",
 		man.WithSubcommands(
 			getDoc,
 			listDoc,
@@ -288,5 +288,5 @@ func init() {
 		),
 	)
 
-	policyCmd.AddCommand(&policyRegisteredResourcesDoc.Command)
+	policyCmd.AddCommand(&policyObligationsDoc.Command)
 }
