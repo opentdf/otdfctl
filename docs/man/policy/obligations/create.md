@@ -11,6 +11,10 @@ command:
       shorthand: n
       description: Name of the obligation (must be unique within a Namespace)
       required: true
+    - name: namespace
+      shorthand: s
+      description: Namespace ID or FQN
+      required: true
     - name: value
       shorthand: v
       description: Value of the obligation (i.e. 'value1', must be unique within the Obligation)

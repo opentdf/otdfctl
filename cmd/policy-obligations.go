@@ -9,10 +9,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	obligationValues []string
-)
-
 //
 // Obligations
 //
@@ -21,12 +17,12 @@ func policyCreateObligation(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
 	defer h.Close()
-
+	var obligationValues []string
 	name := c.Flags.GetRequiredString("name")
 	obligationValues = c.Flags.GetStringSlice("value", obligationValues, cli.FlagsStringSliceOptions{})
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
-
-	obl, err := h.CreateObligation(cmd.Context(), name, obligationValues, getMetadataMutable(metadataLabels))
+	namespace := c.Flags.GetRequiredString("namespace")
+	obl, err := h.CreateObligation(cmd.Context(), namespace, name, obligationValues, getMetadataMutable(metadataLabels))
 	if err != nil {
 		cli.ExitWithError("Failed to create obligation", err)
 	}
@@ -192,6 +188,7 @@ func policyDeleteObligation(cmd *cobra.Command, args []string) {
 
 func init() {
 	// Obligations commands
+	var obligationValues []string
 
 	getDoc := man.Docs.GetCommand("policy/obligations/get",
 		man.WithRun(policyGetObligation),
@@ -228,6 +225,12 @@ func init() {
 		createDoc.GetDocFlag("name").Shorthand,
 		createDoc.GetDocFlag("name").Default,
 		createDoc.GetDocFlag("name").Description,
+	)
+	createDoc.Flags().StringP(
+		createDoc.GetDocFlag("namespace").Name,
+		createDoc.GetDocFlag("namespace").Shorthand,
+		createDoc.GetDocFlag("namespace").Default,
+		createDoc.GetDocFlag("namespace").Description,
 	)
 	createDoc.Flags().StringSliceVarP(
 		&obligationValues,

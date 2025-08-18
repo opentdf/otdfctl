@@ -13,12 +13,25 @@ import (
 // Obligations
 //
 
-func (h Handler) CreateObligation(ctx context.Context, name string, values []string, metadata *common.MetadataMutable) (*policy.Obligation, error) {
-	resp, err := h.sdk.Obligations.CreateObligation(ctx, &obligations.CreateObligationRequest{
+func (h Handler) CreateObligation(ctx context.Context, namespace, name string, values []string, metadata *common.MetadataMutable) (*policy.Obligation, error) {
+	req := &obligations.CreateObligationRequest{
 		Name:     name,
 		Values:   values,
 		Metadata: metadata,
-	})
+	}
+
+	_, err := uuid.Parse(namespace)
+	if err != nil {
+		req.NamespaceIdentifier = &obligations.CreateObligationRequest_Fqn{
+			Fqn: namespace,
+		}
+	} else {
+		req.NamespaceIdentifier = &obligations.CreateObligationRequest_Id{
+			Id: namespace,
+		}
+	}
+
+	resp, err := h.sdk.Obligations.CreateObligation(ctx, req)
 	if err != nil {
 		return nil, err
 	}
