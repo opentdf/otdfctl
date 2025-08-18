@@ -7,11 +7,11 @@ command:
   flags:
     - name: id
       shorthand: i
-      description: ID of the registered resource to update
+      description: ID of the obligation to update
       required: true
     - name: name
       shorthand: n
-      description: Optional updated name of the registered resource (must be unique within Policy)
+      description: Optional updated name of the obligation (must be unique within the Namespace)
     - name: label
       description: "Optional metadata 'labels' in the format: key=value"
       shorthand: l
@@ -21,16 +21,16 @@ command:
       default: false
 ---
 
-Update the `name` and/or metadata labels for a Registered Resource.
+Update the `name` and/or metadata labels for an Obligation.
 
-If PEPs rely on this registered resource name, a name update could break access.
+If PEPs rely on this obligation name, a name update could break access.
 
 Make sure you know what you are doing.
 
-For more information about Registered Resources, see the `registered-resources` subcommand.
+For more information about Obligations, see the `obligations` subcommand.
 
 ## Example
 
 ```shell
-otdfctl policy registered-resources update --id 34c62145-5d99-45cb-a732-13cb16270e63 --name new_resource_name
+otdfctl policy obligations update --id 34c62145-5d99-45cb-a732-13cb16270e63 --name new_obligation_name
 ```

@@ -7,28 +7,28 @@ command:
   flags:
     - name: id
       shorthand: i
-      description: ID of the registered resource
-    - name: name
-      shorthand: n
-      description: Name of the registered resource
+      description: ID of the obligation
+    - name: fqn
+      shorthand: f
+      description: FQN of the obligation
 ---
 
-Retrieve a registered resource along with its metadata and values.
+Retrieve an obligation along with its metadata and values.
 
 If both `id` and `name` flag values are provided, `id` is preferred.
 
-For more information about Registered Resources, see the manual for the `registered-resources` subcommand.
+For more information about Obligations, see the manual for the `obligations` subcommand.
 
 ## Example
 
 Get by ID:
 
 ```shell
-otdfctl policy registered-resources get --id=3c51a593-cbf8-419d-b7dc-b656d0bedfbb
+otdfctl policy obligations get --id=3c51a593-cbf8-419d-b7dc-b656d0bedfbb
 ```
 
-Get by Name:
+Get by FQN:
 
 ```shell
-otdfctl policy registered-resources get --name=my_resource
+otdfctl policy obligations get --fqn=https://namespace.com/obl/my_obligation
 ```

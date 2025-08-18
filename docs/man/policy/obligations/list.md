@@ -11,12 +11,15 @@ command:
     - name: offset
       shorthand: o
       description: Offset (page) quantity from start of the list
+    - name: namespace
+      shorthand: n
+      description: Namespace ID or FQN by which to filter results
 ---
 
-For more information about Registered Resources, see the `registered-resources` subcommand.
+For more information about Obligations, see the `obligations` subcommand.
 
 ## Example
 
 ```shell
-otdfctl policy registered-resources list
+otdfctl policy obligations list
 ```
