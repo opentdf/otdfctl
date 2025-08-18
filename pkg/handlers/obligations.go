@@ -84,7 +84,7 @@ func (h Handler) UpdateObligation(ctx context.Context, id, name string, metadata
 		return nil, err
 	}
 
-	return res.Obligation, nil
+	return res.GetObligation(), nil
 }
 
 func (h Handler) DeleteObligation(ctx context.Context, id, fqn string) error {
