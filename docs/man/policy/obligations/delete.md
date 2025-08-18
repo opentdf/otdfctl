@@ -24,5 +24,5 @@ For more information about Obligations, see the manual for the `obligations` sub
 ## Example 
 
 ```shell
-otdfctl policy obligation delete --id 217b300a-47f9-4bee-be8c-d38c880053f7
+otdfctl policy obligations delete --id 217b300a-47f9-4bee-be8c-d38c880053f7
 ```
