@@ -160,14 +160,17 @@ func policyDeleteObligation(cmd *cobra.Command, args []string) {
 
 	force := c.Flags.GetRequiredBool("force")
 	ctx := cmd.Context()
-
 	obl, err := h.GetObligation(ctx, id, fqn)
+	identifier := id
+	if id == "" {
+		identifier = fqn
+	}
 	if err != nil {
-		errMsg := fmt.Sprintf("Failed to find obligation (%s)", id)
+		errMsg := fmt.Sprintf("Failed to find obligation (%s)", identifier)
 		cli.ExitWithError(errMsg, err)
 	}
-
-	cli.ConfirmAction(cli.ActionDelete, "obligation", id, force)
+	id = obl.GetId()
+	cli.ConfirmAction(cli.ActionDelete, "obligation", identifier, force)
 
 	err = h.DeleteObligation(ctx, id, fqn)
 	if err != nil {
