@@ -74,6 +74,14 @@ func GetSimpleAttributeValue(v *policy.Value) SimpleAttributeValue {
 	}
 }
 
+func GetSimpleObligationValues(v []*policy.ObligationValue) []string {
+	values := make([]string, len(v))
+	for i, val := range v {
+		values[i] = val.GetValue()
+	}
+	return values
+}
+
 func GetSimpleRegisteredResourceValues(v []*policy.RegisteredResourceValue) []string {
 	values := make([]string, len(v))
 	for i, val := range v {
