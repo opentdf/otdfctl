@@ -13,11 +13,12 @@ import (
 // Obligations
 //
 
+var obligationValues []string
+
 func policyCreateObligation(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
 	defer h.Close()
-	var obligationValues []string
 	name := c.Flags.GetRequiredString("name")
 	obligationValues = c.Flags.GetStringSlice("value", obligationValues, cli.FlagsStringSliceOptions{})
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
@@ -188,8 +189,6 @@ func policyDeleteObligation(cmd *cobra.Command, args []string) {
 
 func init() {
 	// Obligations commands
-	var obligationValues []string
-
 	getDoc := man.Docs.GetCommand("policy/obligations/get",
 		man.WithRun(policyGetObligation),
 	)
