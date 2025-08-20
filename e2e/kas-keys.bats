@@ -82,7 +82,6 @@ format_kas_name_as_uri() {
   # Thus, we assert its presence and that it\'s a non-empty base64 encoded string. This is the intended assertion.
   run_otdfctl_key create --kas "${KAS_REGISTRY_ID}" --key-id "${KEY_ID}" --algorithm rsa:2048 --mode local --wrapping-key-id wrapping-key-1 --wrapping-key "${WRAPPING_KEY}" --json
   assert_success
-  echo "$output" >&2
   assert_equal "$(echo "$output" | jq -r .kas_id)" "${KAS_REGISTRY_ID}"
   assert_equal "$(echo "$output" | jq -r .key.key_id)" "${KEY_ID}"
   assert_equal "$(echo "$output" | jq -r .key.key_algorithm)" "1" # rsa:2048
