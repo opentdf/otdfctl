@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/evertras/bubble-table/table"
@@ -192,6 +193,7 @@ func getTableRows(kasKey *policy.KasKey) [][]string {
 		{"PubKeyCtx", string(pubCtxBytes)},
 		{"PrivateKeyCtx", string(privateKeyBytes)},
 		{"ProviderConfig", string(providerConfig)},
+		{"Legacy", strconv.FormatBool(asymkey.GetLegacy())},
 	}
 	return rows
 }
@@ -247,6 +249,7 @@ func policyCreateKasKey(cmd *cobra.Command, args []string) {
 		privateKeyCtx,
 		providerConfigID,
 		getMetadataMutable(metadataLabels),
+		false,
 	)
 	if err != nil {
 		cli.ExitWithError("Failed to create kas key", err)
@@ -273,6 +276,15 @@ func policyImportKasKey(cmd *cobra.Command, args []string) {
 	algorithm := c.Flags.GetRequiredString("algorithm")
 	kasIdentifier := c.Flags.GetRequiredString("kas")
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
+
+	legacy, err := getLegacyFlag(c)
+	if err != nil {
+		cli.ExitWithError("Invalid legacy flag", err)
+	}
+	if legacy == nil {
+		legacy = new(bool)
+		*legacy = false
+	}
 
 	if _, err := base64.StdEncoding.DecodeString(publicKeyPem); err != nil {
 		cli.ExitWithError("public-key-pem must be base64 encoded", err)
@@ -324,6 +336,7 @@ func policyImportKasKey(cmd *cobra.Command, args []string) {
 		},
 		"",
 		getMetadataMutable(metadataLabels),
+		*legacy,
 	)
 	if err != nil {
 		cli.ExitWithError("Failed to import kas key", err)
@@ -414,6 +427,10 @@ func policyListKasKeys(cmd *cobra.Command, args []string) {
 		}
 	}
 	kasIdentifier := c.Flags.GetOptionalString("kas")
+	legacy, err := getLegacyFlag(c)
+	if err != nil {
+		cli.ExitWithError("Invalid legacy flag", err)
+	}
 
 	kasLookup, err := resolveKasIdentifier(kasIdentifier)
 	if err != nil {
@@ -421,7 +438,7 @@ func policyListKasKeys(cmd *cobra.Command, args []string) {
 	}
 
 	// Get the list of keys.
-	keys, page, err := h.ListKasKeys(c.Context(), limit, offset, alg, kasLookup)
+	keys, page, err := h.ListKasKeys(c.Context(), limit, offset, alg, kasLookup, legacy)
 	if err != nil {
 		cli.ExitWithError("Failed to list kas keys", err)
 	}
@@ -439,6 +456,7 @@ func policyListKasKeys(cmd *cobra.Command, args []string) {
 		table.NewFlexColumn("labels", "Labels", cli.FlexColumnWidthOne),
 		table.NewFlexColumn("created_at", "Created At", cli.FlexColumnWidthOne),
 		table.NewFlexColumn("updated_at", "Updated At", cli.FlexColumnWidthOne),
+		table.NewFlexColumn("legacy", "Legacy", cli.FlexColumnWidthOne),
 	)
 	rows := []table.Row{}
 	for _, kasKey := range keys {
@@ -485,6 +503,7 @@ func policyListKasKeys(cmd *cobra.Command, args []string) {
 			"labels":         metadata["Labels"],
 			"created_at":     metadata["Created At"],
 			"updated_at":     metadata["Updated At"],
+			"legacy":         strconv.FormatBool(key.GetLegacy()),
 		}))
 	}
 	t = t.WithRows(rows)
@@ -807,6 +826,25 @@ func policyUnsafeDeleteKasKey(cmd *cobra.Command, args []string) {
 	HandleSuccess(cmd, id, t, key)
 }
 
+func getLegacyFlag(c *cli.Cli) (*bool, error) {
+	var (
+		legacy *bool
+		err    error
+	)
+
+	legacyStr := c.Flags.GetOptionalString("legacy")
+	if legacyStr == "" {
+		return legacy, nil
+	}
+
+	legacy = new(bool)
+	*legacy, err = strconv.ParseBool(legacyStr)
+	if err != nil {
+		return nil, errors.New("invalid value for legacy flag. Must be true or false")
+	}
+	return legacy, nil
+}
+
 func init() {
 	// Create Kas Key
 	createDoc := man.Docs.GetCommand("policy/kas-registry/key/create",
@@ -911,6 +949,12 @@ func init() {
 		listDoc.GetDocFlag("kas").Shorthand,
 		listDoc.GetDocFlag("kas").Default,
 		listDoc.GetDocFlag("kas").Description,
+	)
+	listDoc.Flags().StringP(
+		listDoc.GetDocFlag("legacy").Name,
+		listDoc.GetDocFlag("legacy").Shorthand,
+		listDoc.GetDocFlag("legacy").Default,
+		listDoc.GetDocFlag("legacy").Description,
 	)
 	injectListPaginationFlags(listDoc)
 
@@ -1025,6 +1069,12 @@ func init() {
 		importDoc.GetDocFlag("private-key-pem").Shorthand,
 		importDoc.GetDocFlag("private-key-pem").Default,
 		importDoc.GetDocFlag("private-key-pem").Description,
+	)
+	importDoc.Flags().StringP(
+		importDoc.GetDocFlag("legacy").Name,
+		importDoc.GetDocFlag("legacy").Shorthand,
+		importDoc.GetDocFlag("legacy").Default,
+		importDoc.GetDocFlag("legacy").Description,
 	)
 	injectLabelFlags(&importDoc.Command, false)
 
