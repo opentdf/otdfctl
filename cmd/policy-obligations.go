@@ -4,8 +4,10 @@ import (
 	"fmt"
 
 	"github.com/evertras/bubble-table/table"
+	"github.com/google/uuid"
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/man"
+	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/spf13/cobra"
 )
 
@@ -188,6 +190,221 @@ func policyDeleteObligation(cmd *cobra.Command, args []string) {
 
 	t := cli.NewTabular(rows...)
 	HandleSuccess(cmd, id, t, obl)
+}
+
+//
+// Obligation Values
+//
+
+func policyCreateObligationValue(cmd *cobra.Command, args []string) {
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
+	defer h.Close()
+
+	ctx := cmd.Context()
+	resource := c.Flags.GetRequiredString("resource")
+	value := c.Flags.GetRequiredString("value")
+	actionAttributeValues = c.Flags.GetStringSlice("action-attribute-value", actionAttributeValues, cli.FlagsStringSliceOptions{Min: 0})
+	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
+
+	var resourceID string
+	if uuid.Validate(resource) == nil {
+		resourceID = resource
+	} else {
+		resourceByName, err := h.GetRegisteredResource(ctx, "", resource)
+		if err != nil {
+			cli.ExitWithError(fmt.Sprintf("Failed to find registered resource (name: %s)", resource), err)
+		}
+		resourceID = resourceByName.GetId()
+	}
+
+	parsedActionAttributeValues := parseActionAttributeValueArgs(actionAttributeValues)
+
+	resourceValue, err := h.CreateRegisteredResourceValue(ctx, resourceID, value, parsedActionAttributeValues, getMetadataMutable(metadataLabels))
+	if err != nil {
+		cli.ExitWithError("Failed to create registered resource value", err)
+	}
+
+	simpleActionAttributeValues := cli.GetSimpleRegisteredResourceActionAttributeValues(resourceValue.GetActionAttributeValues())
+
+	rows := [][]string{
+		{"Id", resourceValue.GetId()},
+		{"Value", resourceValue.GetValue()},
+		{"Action Attribute Values", cli.CommaSeparated(simpleActionAttributeValues)},
+	}
+	if mdRows := getMetadataRows(resourceValue.GetMetadata()); mdRows != nil {
+		rows = append(rows, mdRows...)
+	}
+
+	t := cli.NewTabular(rows...)
+	HandleSuccess(cmd, resourceValue.GetId(), t, resourceValue)
+}
+
+func policyGetObligationValue(cmd *cobra.Command, args []string) {
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
+	defer h.Close()
+
+	id := c.Flags.GetOptionalID("id")
+	fqn := c.Flags.GetOptionalString("fqn")
+
+	if id == "" && fqn == "" {
+		cli.ExitWithError("Either 'id' or 'fqn' must be provided", nil)
+	}
+
+	value, err := h.GetRegisteredResourceValue(cmd.Context(), id, fqn)
+	if err != nil {
+		identifier := fmt.Sprintf("id: %s", id)
+		if id == "" {
+			identifier = fmt.Sprintf("fqn: %s", fqn)
+		}
+		errMsg := fmt.Sprintf("Failed to find registered resource value (%s)", identifier)
+		cli.ExitWithError(errMsg, err)
+	}
+
+	simpleActionAttributeValues := cli.GetSimpleRegisteredResourceActionAttributeValues(value.GetActionAttributeValues())
+
+	rows := [][]string{
+		{"Id", value.GetId()},
+		{"Value", value.GetValue()},
+		{"Action Attribute Values", cli.CommaSeparated(simpleActionAttributeValues)},
+	}
+	if mdRows := getMetadataRows(value.GetMetadata()); mdRows != nil {
+		rows = append(rows, mdRows...)
+	}
+
+	t := cli.NewTabular(rows...)
+	HandleSuccess(cmd, value.GetId(), t, value)
+}
+
+func policyListObligationValues(cmd *cobra.Command, args []string) {
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
+	defer h.Close()
+
+	ctx := cmd.Context()
+	resource := c.Flags.GetRequiredString("resource")
+	limit := c.Flags.GetRequiredInt32("limit")
+	offset := c.Flags.GetRequiredInt32("offset")
+
+	var resourceID string
+	if uuid.Validate(resource) == nil {
+		resourceID = resource
+	} else {
+		resourceByName, err := h.GetRegisteredResource(ctx, "", resource)
+		if err != nil {
+			cli.ExitWithError(fmt.Sprintf("Failed to find registered resource (name: %s)", resource), err)
+		}
+		resourceID = resourceByName.GetId()
+	}
+
+	values, page, err := h.ListRegisteredResourceValues(ctx, resourceID, limit, offset)
+	if err != nil {
+		cli.ExitWithError("Failed to list registered resource values", err)
+	}
+
+	t := cli.NewTable(
+		cli.NewUUIDColumn(),
+		table.NewFlexColumn("value", "Value", cli.FlexColumnWidthFour),
+		table.NewFlexColumn("action-attribute-values", "Action Attribute Values", cli.FlexColumnWidthFour),
+	)
+	rows := []table.Row{}
+	for _, v := range values {
+		simpleActionAttributeValues := cli.GetSimpleRegisteredResourceActionAttributeValues(v.GetActionAttributeValues())
+
+		rows = append(rows, table.NewRow(table.RowData{
+			"id":                      v.GetId(),
+			"value":                   v.GetValue(),
+			"action-attribute-values": cli.CommaSeparated(simpleActionAttributeValues),
+		}))
+	}
+	list := append([]*policy.RegisteredResourceValue{}, values...)
+
+	t = t.WithRows(rows)
+	t = cli.WithListPaginationFooter(t, page)
+	HandleSuccess(cmd, "", t, list)
+}
+
+func policyUpdateObligationValue(cmd *cobra.Command, args []string) {
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
+	defer h.Close()
+
+	id := c.Flags.GetRequiredID("id")
+	value := c.Flags.GetOptionalString("value")
+	actionAttributeValues = c.Flags.GetStringSlice("action-attribute-value", actionAttributeValues, cli.FlagsStringSliceOptions{Min: 0})
+	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
+	force := c.Flags.GetOptionalBool("force")
+
+	parsedActionAttributeValues := parseActionAttributeValueArgs(actionAttributeValues)
+
+	// only confirm if new action attribute values provided
+	if len(parsedActionAttributeValues) > 0 {
+		cli.ConfirmActionSubtext(cli.ActionUpdate, "registered resource value", id,
+			"All existing action attribute values will be replaced with the new ones provided.",
+			force)
+	}
+
+	updated, err := h.UpdateRegisteredResourceValue(
+		cmd.Context(),
+		id,
+		value,
+		parsedActionAttributeValues,
+		getMetadataMutable(metadataLabels),
+		getMetadataUpdateBehavior(),
+	)
+	if err != nil {
+		cli.ExitWithError("Failed to update registered resource value", err)
+	}
+
+	simpleActionAttributeValues := cli.GetSimpleRegisteredResourceActionAttributeValues(updated.GetActionAttributeValues())
+
+	rows := [][]string{
+		{"Id", id},
+		{"Value", updated.GetValue()},
+		{"Action Attribute Values", cli.CommaSeparated(simpleActionAttributeValues)},
+	}
+	if mdRows := getMetadataRows(updated.GetMetadata()); mdRows != nil {
+		rows = append(rows, mdRows...)
+	}
+
+	t := cli.NewTabular(rows...)
+	HandleSuccess(cmd, id, t, updated)
+}
+
+func policyDeleteObligationValue(cmd *cobra.Command, args []string) {
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
+	defer h.Close()
+
+	id := c.Flags.GetRequiredID("id")
+	force := c.Flags.GetOptionalBool("force")
+	ctx := cmd.Context()
+
+	resource, err := h.GetRegisteredResourceValue(ctx, id, "")
+	if err != nil {
+		errMsg := fmt.Sprintf("Failed to find registered resource value (%s)", id)
+		cli.ExitWithError(errMsg, err)
+	}
+
+	cli.ConfirmAction(cli.ActionDelete, "registered resource value", id, force)
+
+	err = h.DeleteRegisteredResourceValue(ctx, id)
+	if err != nil {
+		errMsg := fmt.Sprintf("Failed to delete registered resource value (%s)", id)
+		cli.ExitWithError(errMsg, err)
+	}
+
+	rows := [][]string{
+		{"Id", id},
+		{"Value", resource.GetValue()},
+	}
+	if mdRows := getMetadataRows(resource.GetMetadata()); mdRows != nil {
+		rows = append(rows, mdRows...)
+	}
+
+	t := cli.NewTabular(rows...)
+	HandleSuccess(cmd, id, t, resource)
 }
 
 func init() {
