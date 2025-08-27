@@ -29,24 +29,36 @@ delete_pc_by_id() {
 # Create Provider Configuration
 #########
 @test "fail to create provider configuration without config" {
+    if [ "$RUN_EXPERIMENTAL_TESTS" != "true" ]; then
+        skip "Skipping experimental test"
+    fi
     run_otdfctl_key_pc create --name test-value
     assert_failure
     assert_output --partial "Flag '--config' is required"
 }
 
 @test "fail to create provider configuration without name" {
+    if [ "$RUN_EXPERIMENTAL_TESTS" != "true" ]; then
+        skip "Skipping experimental test"
+    fi
     run_otdfctl_key_pc create --config '{}'
     assert_failure
     assert_output --partial "Flag '--name' is required"
 }
 
 @test "fail to create provider configuration with invalid config" {
+    if [ "$RUN_EXPERIMENTAL_TESTS" != "true" ]; then
+        skip "Skipping experimental test"
+    fi
     run_otdfctl_key_pc create --name test-config --config test-value
     assert_failure
     assert_output --partial "invalid_argument"
 }
 
 @test "create provider configuration" {
+    if [ "$RUN_EXPERIMENTAL_TESTS" != "true" ]; then
+        skip "Skipping experimental test"
+    fi
     CONFIG_NAME="test-config"
     run_otdfctl_key_pc create --name "$CONFIG_NAME" --config '"$VALID_CONFIG"' --json
     assert_success
@@ -56,6 +68,9 @@ delete_pc_by_id() {
 }
 
 @test "get provider configuration by id" {
+    if [ "$RUN_EXPERIMENTAL_TESTS" != "true" ]; then
+        skip "Skipping experimental test"
+    fi
     CONFIG_NAME="test-config-2"
     run_otdfctl_key_pc create --name "$CONFIG_NAME" --config '"$VALID_CONFIG"' --json
     assert_success
@@ -69,6 +84,9 @@ delete_pc_by_id() {
 
 
 @test "get provider configuration by name" {
+    if [ "$RUN_EXPERIMENTAL_TESTS" != "true" ]; then
+        skip "Skipping experimental test"
+    fi
     CONFIG_NAME="test-config-3"
     run_otdfctl_key_pc create --name "$CONFIG_NAME" --config '"$VALID_CONFIG"' --json
     assert_success
@@ -81,16 +99,25 @@ delete_pc_by_id() {
 }
 
 @test "fail to get provider configuration - no required flags" {
+    if [ "$RUN_EXPERIMENTAL_TESTS" != "true" ]; then
+        skip "Skipping experimental test"
+    fi
      run_otdfctl_key_pc get
      assert_failure
 }
 
 @test "fail to get provider configuration with non-existent name" {
+    if [ "$RUN_EXPERIMENTAL_TESTS" != "true" ]; then
+        skip "Skipping experimental test"
+    fi
     run_otdfctl_key_pc get --name non-existent-config
     assert_failure
     assert_output --partial "Failed to get provider config: not_found"
 }
 @test "list provider configurations" {
+    if [ "$RUN_EXPERIMENTAL_TESTS" != "true" ]; then
+        skip "Skipping experimental test"
+    fi
     NAME="tst-config-4"
     run_otdfctl_key_pc create --name "$NAME" --config '"$VALID_CONFIG"' --json
     assert_success
@@ -105,6 +132,9 @@ delete_pc_by_id() {
 }
  
 @test "update provider configuration - success" {
+    if [ "$RUN_EXPERIMENTAL_TESTS" != "true" ]; then
+        skip "Skipping experimental test"
+    fi
     NAME="test-config-5"
     UPDATED_NAME="test-config-5-updated"
     UPDATED_CONFIG='{"cached": "key-updated"}'
@@ -121,12 +151,18 @@ delete_pc_by_id() {
 }
 
 @test "fail to update provider configuration - missing id" {
+    if [ "$RUN_EXPERIMENTAL_TESTS" != "true" ]; then
+        skip "Skipping experimental test"
+    fi
     run_otdfctl_key_pc update --name test-config
     assert_failure
     assert_output --partial "Flag '--id' is required"
 }
 
 @test "fail to update provider configuration - no optional flags" {
+    if [ "$RUN_EXPERIMENTAL_TESTS" != "true" ]; then
+        skip "Skipping experimental test"
+    fi
     NAME="test-config-6"
     run_otdfctl_key_pc create --name "$NAME" --config '"$VALID_CONFIG"' --json
     ID=$(echo "$output" | jq -r '.id')
@@ -137,6 +173,9 @@ delete_pc_by_id() {
 }
 
 @test "fail to update provider configuration - invalid config format" {
+    if [ "$RUN_EXPERIMENTAL_TESTS" != "true" ]; then
+        skip "Skipping experimental test"
+    fi
     NAME="test-config-7"
     run_otdfctl_key_pc create --name "$NAME" --config '"$VALID_CONFIG"' --json
     assert_success
@@ -148,6 +187,9 @@ delete_pc_by_id() {
 }
  
 @test "delete provider configuration -- success" {
+    if [ "$RUN_EXPERIMENTAL_TESTS" != "true" ]; then
+        skip "Skipping experimental test"
+    fi
   NAME="test-config-8"  
   run_otdfctl_key_pc create --name "$NAME" --config '"$VALID_CONFIG"' --json
   ID=$(echo "$output" | jq -r '.id')
@@ -156,7 +198,29 @@ delete_pc_by_id() {
 }
 
 @test "delete provider configuration fail -- no id" {
+    if [ "$RUN_EXPERIMENTAL_TESTS" != "true" ]; then
+        skip "Skipping experimental test"
+    fi
   run_otdfctl_key_pc delete
   assert_failure
   assert_output --partial "Flag '--id' is required"
+}
+
+@test "delete provider configuration fail -- no force" {
+  if [ "$RUN_EXPERIMENTAL_TESTS" != "true" ]; then
+        skip "Skipping experimental test"
+    fi
+  NAME="test-config-9"
+  run_otdfctl_key_pc create --name "$NAME" --config '"$VALID_CONFIG"' --json
+  ID=$(echo "$output" | jq -r '.id')
+  run_otdfctl_key_pc delete --id "$ID"
+  assert_failure
+  assert_output --partial "The '--force' flag is required for this operation"
+  delete_pc_by_id "$ID"
+}
+
+teardown_file() {
+  # clear out all test env vars
+  unset HOST WITH_CREDS DEBUG_LEVEL VALID_CONFIG BASE64_CONFIG
+  rm $CREDSFILE
 }
