@@ -118,3 +118,32 @@ func (h Handler) DeleteObligation(ctx context.Context, id, fqn string) error {
 
 	return nil
 }
+
+//
+// Obligation Values
+//
+
+func (h Handler) CreateObligationValue(ctx context.Context, obligation, value string, metadata *common.MetadataMutable) (*policy.ObligationValue, error) {
+	req := &obligations.CreateObligationValueRequest{
+		Value:    value,
+		Metadata: metadata,
+	}
+
+	_, err := uuid.Parse(obligation)
+	if err != nil {
+		req.ObligationIdentifier = &obligations.CreateObligationValueRequest_Fqn{
+			Fqn: obligation,
+		}
+	} else {
+		req.ObligationIdentifier = &obligations.CreateObligationValueRequest_Id{
+			Id: obligation,
+		}
+	}
+
+	resp, err := h.sdk.Obligations.CreateObligationValue(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.GetValue(), nil
+}

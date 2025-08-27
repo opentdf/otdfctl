@@ -202,42 +202,26 @@ func policyCreateObligationValue(cmd *cobra.Command, args []string) {
 	defer h.Close()
 
 	ctx := cmd.Context()
-	resource := c.Flags.GetRequiredString("resource")
+	obligation := c.Flags.GetRequiredString("obligation")
 	value := c.Flags.GetRequiredString("value")
-	actionAttributeValues = c.Flags.GetStringSlice("action-attribute-value", actionAttributeValues, cli.FlagsStringSliceOptions{Min: 0})
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
-	var resourceID string
-	if uuid.Validate(resource) == nil {
-		resourceID = resource
-	} else {
-		resourceByName, err := h.GetRegisteredResource(ctx, "", resource)
-		if err != nil {
-			cli.ExitWithError(fmt.Sprintf("Failed to find registered resource (name: %s)", resource), err)
-		}
-		resourceID = resourceByName.GetId()
-	}
-
-	parsedActionAttributeValues := parseActionAttributeValueArgs(actionAttributeValues)
-
-	resourceValue, err := h.CreateRegisteredResourceValue(ctx, resourceID, value, parsedActionAttributeValues, getMetadataMutable(metadataLabels))
+	oblVal, err := h.CreateObligationValue(ctx, obligation, value, getMetadataMutable(metadataLabels))
 	if err != nil {
-		cli.ExitWithError("Failed to create registered resource value", err)
+		cli.ExitWithError("Failed to create obligation value", err)
 	}
-
-	simpleActionAttributeValues := cli.GetSimpleRegisteredResourceActionAttributeValues(resourceValue.GetActionAttributeValues())
 
 	rows := [][]string{
-		{"Id", resourceValue.GetId()},
-		{"Value", resourceValue.GetValue()},
-		{"Action Attribute Values", cli.CommaSeparated(simpleActionAttributeValues)},
+		{"Id", oblVal.GetId()},
+		{"Name", oblVal.GetObligation().GetName()},
+		{"Value", oblVal.GetValue()},
 	}
-	if mdRows := getMetadataRows(resourceValue.GetMetadata()); mdRows != nil {
+	if mdRows := getMetadataRows(oblVal.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
 	}
 
 	t := cli.NewTabular(rows...)
-	HandleSuccess(cmd, resourceValue.GetId(), t, resourceValue)
+	HandleSuccess(cmd, oblVal.GetId(), t, oblVal)
 }
 
 func policyGetObligationValue(cmd *cobra.Command, args []string) {
