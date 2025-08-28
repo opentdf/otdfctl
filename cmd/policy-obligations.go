@@ -427,6 +427,85 @@ func init() {
 		deleteDoc.GetDocFlag("force").Description,
 	)
 
+	// Obligation Values commands
+
+	getValueDoc := man.Docs.GetCommand("policy/obligations/values/get",
+		man.WithRun(policyGetObligationValue),
+	)
+	getValueDoc.Flags().StringP(
+		getValueDoc.GetDocFlag("id").Name,
+		getValueDoc.GetDocFlag("id").Shorthand,
+		getValueDoc.GetDocFlag("id").Default,
+		getValueDoc.GetDocFlag("id").Description,
+	)
+	getValueDoc.Flags().StringP(
+		getValueDoc.GetDocFlag("fqn").Name,
+		getValueDoc.GetDocFlag("fqn").Shorthand,
+		getValueDoc.GetDocFlag("fqn").Default,
+		getValueDoc.GetDocFlag("fqn").Description,
+	)
+
+	createValueDoc := man.Docs.GetCommand("policy/obligations/values/create",
+		man.WithRun(policyCreateObligationValue),
+	)
+	createValueDoc.Flags().StringP(
+		createValueDoc.GetDocFlag("obligation").Name,
+		createValueDoc.GetDocFlag("obligation").Shorthand,
+		createValueDoc.GetDocFlag("obligation").Default,
+		createValueDoc.GetDocFlag("obligation").Description,
+	)
+	createValueDoc.Flags().StringP(
+		createValueDoc.GetDocFlag("value").Name,
+		createValueDoc.GetDocFlag("value").Shorthand,
+		createValueDoc.GetDocFlag("value").Default,
+		createValueDoc.GetDocFlag("value").Description,
+	)
+	injectLabelFlags(&createValueDoc.Command, false)
+
+	updateValueDoc := man.Docs.GetCommand("policy/obligations/values/update",
+		man.WithRun(policyUpdateObligationValue),
+	)
+	updateValueDoc.Flags().StringP(
+		updateDoc.GetDocFlag("id").Name,
+		updateDoc.GetDocFlag("id").Shorthand,
+		updateDoc.GetDocFlag("id").Default,
+		updateDoc.GetDocFlag("id").Description,
+	)
+	updateValueDoc.Flags().StringP(
+		updateValueDoc.GetDocFlag("value").Name,
+		updateValueDoc.GetDocFlag("value").Shorthand,
+		updateValueDoc.GetDocFlag("value").Default,
+		updateValueDoc.GetDocFlag("value").Description,
+	)
+	updateValueDoc.Flags().StringSliceVarP(
+		&actionAttributeValues,
+		updateValueDoc.GetDocFlag("action-attribute-value").Name,
+		updateValueDoc.GetDocFlag("action-attribute-value").Shorthand,
+		[]string{},
+		updateValueDoc.GetDocFlag("action-attribute-value").Description,
+	)
+	injectLabelFlags(&updateValueDoc.Command, true)
+	updateValueDoc.Flags().Bool(
+		updateValueDoc.GetDocFlag("force").Name,
+		false,
+		updateValueDoc.GetDocFlag("force").Description,
+	)
+
+	deleteValueDoc := man.Docs.GetCommand("policy/registered-resources/values/delete",
+		man.WithRun(policyDeleteRegisteredResourceValue),
+	)
+	deleteValueDoc.Flags().StringP(
+		deleteValueDoc.GetDocFlag("id").Name,
+		deleteValueDoc.GetDocFlag("id").Shorthand,
+		deleteValueDoc.GetDocFlag("id").Default,
+		deleteValueDoc.GetDocFlag("id").Description,
+	)
+	deleteValueDoc.Flags().Bool(
+		deleteValueDoc.GetDocFlag("force").Name,
+		false,
+		deleteValueDoc.GetDocFlag("force").Description,
+	)
+
 	// Add commands to the policy command
 
 	policyObligationsDoc := man.Docs.GetCommand("policy/obligations",
