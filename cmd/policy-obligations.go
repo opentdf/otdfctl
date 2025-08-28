@@ -511,5 +511,15 @@ func init() {
 		),
 	)
 
+	policyObligationValuesDoc := man.Docs.GetCommand("policy/obligations/values",
+		man.WithSubcommands(
+			getValueDoc,
+			createValueDoc,
+			updateValueDoc,
+			deleteValueDoc,
+		),
+	)
+
+	policyObligationsDoc.AddCommand(&policyObligationValuesDoc.Command)
 	policyCmd.AddCommand(&policyObligationsDoc.Command)
 }
