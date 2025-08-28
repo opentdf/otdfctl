@@ -477,28 +477,21 @@ func init() {
 		updateValueDoc.GetDocFlag("value").Default,
 		updateValueDoc.GetDocFlag("value").Description,
 	)
-	updateValueDoc.Flags().StringSliceVarP(
-		&actionAttributeValues,
-		updateValueDoc.GetDocFlag("action-attribute-value").Name,
-		updateValueDoc.GetDocFlag("action-attribute-value").Shorthand,
-		[]string{},
-		updateValueDoc.GetDocFlag("action-attribute-value").Description,
-	)
 	injectLabelFlags(&updateValueDoc.Command, true)
-	updateValueDoc.Flags().Bool(
-		updateValueDoc.GetDocFlag("force").Name,
-		false,
-		updateValueDoc.GetDocFlag("force").Description,
-	)
-
-	deleteValueDoc := man.Docs.GetCommand("policy/registered-resources/values/delete",
-		man.WithRun(policyDeleteRegisteredResourceValue),
+	deleteValueDoc := man.Docs.GetCommand("policy/obligations/values/delete",
+		man.WithRun(policyDeleteObligationValue),
 	)
 	deleteValueDoc.Flags().StringP(
 		deleteValueDoc.GetDocFlag("id").Name,
 		deleteValueDoc.GetDocFlag("id").Shorthand,
 		deleteValueDoc.GetDocFlag("id").Default,
 		deleteValueDoc.GetDocFlag("id").Description,
+	)
+	deleteValueDoc.Flags().StringP(
+		deleteValueDoc.GetDocFlag("fqn").Name,
+		deleteValueDoc.GetDocFlag("fqn").Shorthand,
+		deleteValueDoc.GetDocFlag("fqn").Default,
+		deleteValueDoc.GetDocFlag("fqn").Description,
 	)
 	deleteValueDoc.Flags().Bool(
 		deleteValueDoc.GetDocFlag("force").Name,
