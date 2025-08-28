@@ -167,3 +167,17 @@ func (h Handler) GetObligationValue(ctx context.Context, id, fqn string) (*polic
 
 	return resp.GetValue(), nil
 }
+
+func (h Handler) UpdateObligationValue(ctx context.Context, id, value string, metadata *common.MetadataMutable, behavior common.MetadataUpdateEnum) (*policy.ObligationValue, error) {
+	res, err := h.sdk.Obligations.UpdateObligationValue(ctx, &obligations.UpdateObligationValueRequest{
+		Id:                     id,
+		Value:                  value,
+		Metadata:               metadata,
+		MetadataUpdateBehavior: behavior,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return res.GetValue(), nil
+}
