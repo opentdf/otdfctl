@@ -23,7 +23,7 @@ command:
 
 Add a value to an obligation in the platform Policy.
 
-For more information, see the `obligations` subcommand.
+For more information about obligation values, see the `obligations` subcommand.
 
 ## Examples
 
