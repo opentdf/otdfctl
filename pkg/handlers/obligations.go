@@ -147,3 +147,23 @@ func (h Handler) CreateObligationValue(ctx context.Context, obligation, value st
 
 	return resp.GetValue(), nil
 }
+
+func (h Handler) GetObligationValue(ctx context.Context, id, fqn string) (*policy.ObligationValue, error) {
+	req := &obligations.GetObligationValueRequest{}
+	if id != "" {
+		req.Identifier = &obligations.GetObligationValueRequest_Id{
+			Id: id,
+		}
+	} else {
+		req.Identifier = &obligations.GetObligationValueRequest_Fqn{
+			Fqn: fqn,
+		}
+	}
+
+	resp, err := h.sdk.Obligations.GetObligationValue(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.GetValue(), nil
+}

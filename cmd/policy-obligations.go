@@ -236,22 +236,20 @@ func policyGetObligationValue(cmd *cobra.Command, args []string) {
 		cli.ExitWithError("Either 'id' or 'fqn' must be provided", nil)
 	}
 
-	value, err := h.GetRegisteredResourceValue(cmd.Context(), id, fqn)
+	value, err := h.GetObligationValue(cmd.Context(), id, fqn)
 	if err != nil {
 		identifier := fmt.Sprintf("id: %s", id)
 		if id == "" {
 			identifier = fmt.Sprintf("fqn: %s", fqn)
 		}
-		errMsg := fmt.Sprintf("Failed to find registered resource value (%s)", identifier)
+		errMsg := fmt.Sprintf("Failed to find obligation value (%s)", identifier)
 		cli.ExitWithError(errMsg, err)
 	}
 
-	simpleActionAttributeValues := cli.GetSimpleRegisteredResourceActionAttributeValues(value.GetActionAttributeValues())
-
 	rows := [][]string{
 		{"Id", value.GetId()},
+		{"Name", value.GetObligation().GetName()},
 		{"Value", value.GetValue()},
-		{"Action Attribute Values", cli.CommaSeparated(simpleActionAttributeValues)},
 	}
 	if mdRows := getMetadataRows(value.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
