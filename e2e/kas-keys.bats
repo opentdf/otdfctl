@@ -24,9 +24,11 @@ setup_file() {
   assert_success
   export KAS_REGISTRY_ID=$(echo "$output" | jq -r '.id')
 
-  run_otdfctl_provider_create --name "test-provider-config-kas-keys" --config '{}' --json
-  assert_success
-  export PC_ID=$(echo "$output" | jq -r '.id')
+  if [ "$RUN_EXPERIMENTAL_TESTS" == "true" ]; then
+    run_otdfctl_provider_create --name "test-provider-config-kas-keys" --config '{}' --json
+    assert_success
+    export PC_ID=$(echo "$output" | jq -r '.id')
+  fi
   export WRAPPING_KEY="9453b4d7cc55cf27926ae8f98a9d5aa159d51b7a4d478e440271ab261792a2bd"
   export PEM_B64=$(echo "pem" | base64)
 }
