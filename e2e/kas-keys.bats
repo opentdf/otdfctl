@@ -42,7 +42,9 @@ setup() {
 teardown_file() {
   delete_all_keys_in_kas "$KAS_REGISTRY_ID"
   delete_kas_registry "$KAS_REGISTRY_ID"
-  delete_provider_config "$PC_ID"
+  if [ -n "$PC_ID" ]; then
+    delete_provider_config "$PC_ID"
+  fi
 
   unset HOST WITH_CREDS KAS_REGISTRY_ID KAS_NAME KAS_URI PEM_B64 WRAPPING_KEY PC_ID
 }
