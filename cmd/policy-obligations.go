@@ -160,6 +160,7 @@ func policyDeleteObligation(cmd *cobra.Command, args []string) {
 
 	force := c.Flags.GetRequiredBool("force")
 	ctx := cmd.Context()
+
 	obl, err := h.GetObligation(ctx, id, fqn)
 	identifier := id
 	if id == "" {
@@ -295,34 +296,44 @@ func policyDeleteObligationValue(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
-	id := c.Flags.GetRequiredID("id")
+	id := c.Flags.GetOptionalID("id")
+	fqn := c.Flags.GetOptionalString("fqn")
+
+	if id == "" && fqn == "" {
+		cli.ExitWithError("Either 'id' or 'fqn' must be provided", nil)
+	}
+
 	force := c.Flags.GetOptionalBool("force")
 	ctx := cmd.Context()
 
-	resource, err := h.GetRegisteredResourceValue(ctx, id, "")
+	val, err := h.GetObligationValue(ctx, id, fqn)
+	identifier := id
+	if id == "" {
+		identifier = fqn
+	}
 	if err != nil {
-		errMsg := fmt.Sprintf("Failed to find registered resource value (%s)", id)
+		errMsg := fmt.Sprintf("Failed to find obligation value (%s)", identifier)
 		cli.ExitWithError(errMsg, err)
 	}
+	id = val.GetId()
+	cli.ConfirmAction(cli.ActionDelete, "obligation value", identifier, force)
 
-	cli.ConfirmAction(cli.ActionDelete, "registered resource value", id, force)
-
-	err = h.DeleteRegisteredResourceValue(ctx, id)
+	err = h.DeleteObligationValue(ctx, id, fqn)
 	if err != nil {
-		errMsg := fmt.Sprintf("Failed to delete registered resource value (%s)", id)
+		errMsg := fmt.Sprintf("Failed to delete obligation value (%s)", id)
 		cli.ExitWithError(errMsg, err)
 	}
 
 	rows := [][]string{
 		{"Id", id},
-		{"Value", resource.GetValue()},
+		{"Value", val.GetValue()},
 	}
-	if mdRows := getMetadataRows(resource.GetMetadata()); mdRows != nil {
+	if mdRows := getMetadataRows(val.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
 	}
 
 	t := cli.NewTabular(rows...)
-	HandleSuccess(cmd, id, t, resource)
+	HandleSuccess(cmd, id, t, val)
 }
 
 func init() {

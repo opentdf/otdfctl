@@ -181,3 +181,22 @@ func (h Handler) UpdateObligationValue(ctx context.Context, id, value string, me
 
 	return res.GetValue(), nil
 }
+
+func (h Handler) DeleteObligationValue(ctx context.Context, id, fqn string) error {
+	req := &obligations.DeleteObligationValueRequest{}
+	if id != "" {
+		req.Identifier = &obligations.DeleteObligationValueRequest_Id{
+			Id: id,
+		}
+	} else {
+		req.Identifier = &obligations.DeleteObligationValueRequest_Fqn{
+			Fqn: fqn,
+		}
+	}
+	_, err := h.sdk.Obligations.DeleteObligationValue(ctx, req)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
