@@ -13,11 +13,11 @@ command:
       description: FQN of the obligation
 ---
 
-Retrieve an obligation along with its metadata and values.
+Retrieve an obligation definition along with its metadata and values.
 
 If both `id` and `name` flag values are provided, `id` is preferred.
 
-For more information about Obligations, see the manual for the `obligations` subcommand.
+For more information about obligations, see the manual for the `obligations` subcommand.
 
 ## Example
 
@@ -30,5 +30,5 @@ otdfctl policy obligations get --id=3c51a593-cbf8-419d-b7dc-b656d0bedfbb
 Get by FQN:
 
 ```shell
-otdfctl policy obligations get --fqn=https://namespace.com/obl/my_obligation
+otdfctl policy obligations get --fqn=https://namespace.com/obl/drm
 ```

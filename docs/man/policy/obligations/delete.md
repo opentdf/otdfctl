@@ -17,9 +17,9 @@ command:
 
 Removes an obligation definition from platform Policy.
 
-Obligation deletion cascades to the associated Obligation Values and Action Attribute Values.
+Obligation deletion cascades to the associated obligation values.
 
-For more information about Obligations, see the manual for the `obligations` subcommand.
+For more information about obligations, see the manual for the `obligations` subcommand.
 
 ## Example 
 

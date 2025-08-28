@@ -21,13 +21,13 @@ command:
       default: false
 ---
 
-Update the `name` and/or metadata labels for an Obligation.
+Update the `name` and/or metadata labels for an obligation definition.
 
 If PEPs rely on this obligation name, a name update could break access.
 
 Make sure you know what you are doing.
 
-For more information about Obligations, see the `obligations` subcommand.
+For more information about obligations, see the `obligations` subcommand.
 
 ## Example
 

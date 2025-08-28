@@ -8,9 +8,11 @@ command:
     - name: id
       shorthand: i
       description: ID of the obligation value
+      required: false
     - name: fqn
       shorthand: f
       description: FQN of the obligation value
+      required: false
 ---
 
 Retrieve an obligation value along with its metadata.
@@ -30,5 +32,5 @@ otdfctl policy obligations values get --id=3c51a593-cbf8-419d-b7dc-b656d0bedfbb
 Get by FQN:
 
 ```shell
-otdfctl policy obligations values get --fqn=https://example.com/drm/value/watermark
+otdfctl policy obligations values get --fqn=https://namespace.com/drm/value/watermark
 ```

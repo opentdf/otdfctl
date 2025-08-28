@@ -1,5 +1,5 @@
 ---
-title: List an obligation definition
+title: List obligation definitions
 command:
   name: list
   aliases:
@@ -14,9 +14,12 @@ command:
     - name: namespace
       shorthand: n
       description: Namespace ID or FQN by which to filter results
+      required: false
 ---
 
-For more information about Obligations, see the `obligations` subcommand.
+List obligations definitions (optionally by namespace).
+
+For more information about obligations, see the `obligations` subcommand.
 
 ## Example
 
