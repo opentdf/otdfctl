@@ -24,7 +24,7 @@ jobs:
     needs: release-please
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         if: ${{ needs.release-please.outputs.release_created }}
       - uses: actions/setup-go@v5
         if: ${{ needs.release-please.outputs.release_created }}
