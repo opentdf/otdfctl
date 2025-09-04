@@ -91,6 +91,7 @@ format_kas_name_as_uri() {
   assert_equal "$(echo "$output" | jq -r .key.key_algorithm)" "1" # rsa:2048
   assert_equal "$(echo "$output" | jq -r .key.key_mode)" "1"      # local
   assert_equal "$(echo "$output" | jq -r .key.key_status)" "1"    # active (assuming default)
+  assert_equal "$(echo "$output" | jq -r .key.legacy)" "null" # False should be null
   # Assert public_key_ctx.pem is present and not empty
   assert_not_equal "$(echo "$output" | jq -r .key.public_key_ctx.pem)" "null"
   assert_not_equal "$(echo "$output" | jq -r .key.public_key_ctx.pem)" ""
@@ -114,6 +115,7 @@ format_kas_name_as_uri() {
   assert_equal "$(echo "$output" | jq -r .key.key_algorithm)" "3" # ec:secp256r1
   assert_equal "$(echo "$output" | jq -r .key.key_mode)" "1"      # local
   assert_equal "$(echo "$output" | jq -r .key.key_status)" "1"    # active
+  assert_equal "$(echo "$output" | jq -r .key.legacy)" "null"
   assert_not_equal "$(echo "$output" | jq -r .key.public_key_ctx.pem)" "null"
   assert_not_equal "$(echo "$output" | jq -r .key.public_key_ctx.pem)" ""
   assert_equal "$(echo "$output" | jq -r .key.private_key_ctx.key_id)" "wrapping-key-1"
@@ -133,6 +135,7 @@ format_kas_name_as_uri() {
   assert_equal "$(echo "$output" | jq -r .key.key_mode)" "4"      # public_key
   assert_equal "$(echo "$output" | jq -r .key.key_status)" "1"    # active
   assert_equal "$(echo "$output" | jq -r .key.public_key_ctx.pem)" "${PEM_B64}"
+  assert_equal "$(echo "$output" | jq -r .key.legacy)" "null"
   # Assert private_key_ctx is null or not present for public_key mode
   assert_equal "$(echo "$output" | jq -r .key.private_key_ctx)" "null"
   assert_not_equal "$(echo "$output" | jq -r .key.metadata.created_at)" "null"
@@ -152,6 +155,7 @@ format_kas_name_as_uri() {
   assert_equal "$(echo "$output" | jq -r .key.key_mode)" "3"      # remote
   assert_equal "$(echo "$output" | jq -r .key.key_status)" "1"    # active
   assert_equal "$(echo "$output" | jq -r .key.public_key_ctx.pem)" "${PEM_B64}"
+  assert_equal "$(echo "$output" | jq -r .key.legacy)" "null"
   # Assert private_key_ctx is not what it is for local mode, but check its key_id as per previous logic
   # Based on kas-keys.go, remote mode sets privateKeyCtx.key-id = wrapping-key-id
   assert_equal "$(echo "$output" | jq -r .key.private_key_ctx.key_id)" "wrapping-key-remote"
@@ -176,6 +180,7 @@ format_kas_name_as_uri() {
   assert_equal "$(echo "$output" | jq -r .key.public_key_ctx.pem)" "${PEM_B64}"
   assert_equal "$(echo "$output" | jq -r .key.private_key_ctx.wrapped_key)" "${PEM_B64}"
   assert_equal "$(echo "$output" | jq -r .key.private_key_ctx.key_id)" "${WRAPPING_KEY_ID}"
+  assert_equal "$(echo "$output" | jq -r .key.legacy)" "null"
   assert_not_equal "$(echo "$output" | jq -r .key.metadata.created_at)" "null"
   assert_not_equal "$(echo "$output" | jq -r .key.metadata.updated_at)" "null"
 }
@@ -191,6 +196,7 @@ format_kas_name_as_uri() {
   assert_equal "$(echo "$output" | jq -r .key.key_status)" "1"    # active
   assert_equal "$(echo "$output" | jq -r .key.public_key_ctx.pem)" "${PEM_B64}"
   assert_equal "$(echo "$output" | jq -r .key.private_key_ctx)" "null"
+  assert_equal "$(echo "$output" | jq -r .key.legacy)" "null"
   assert_equal "$(echo "$output" | jq -r '.key.metadata.labels."env"')" "dev"
   assert_equal "$(echo "$output" | jq -r '.key.metadata.labels."owner"')" "test"
   assert_not_equal "$(echo "$output" | jq -r .key.metadata.created_at)" "null"
@@ -307,6 +313,7 @@ format_kas_name_as_uri() {
   assert_equal "$(echo "$output" | jq -r .key.key_status)" "1"    # active
   assert_equal "$(echo "$output" | jq -r .key.public_key_ctx.pem)" "${PEM_B64}"
   assert_equal "$(echo "$output" | jq -r .key.private_key_ctx)" "null"
+  assert_equal "$(echo "$output" | jq -r .key.legacy)" "null"
   assert_not_equal "$(echo "$output" | jq -r .key.metadata.created_at)" "null"
   assert_not_equal "$(echo "$output" | jq -r .key.metadata.updated_at)" "null"
 }
@@ -322,6 +329,7 @@ format_kas_name_as_uri() {
   assert_equal "$(echo "$output" | jq -r .key.key_status)" "1"    # active
   assert_equal "$(echo "$output" | jq -r .key.public_key_ctx.pem)" "${PEM_B64}"
   assert_equal "$(echo "$output" | jq -r .key.private_key_ctx)" "null"
+  assert_equal "$(echo "$output" | jq -r .key.legacy)" "null"
   assert_not_equal "$(echo "$output" | jq -r .key.metadata.created_at)" "null"
   assert_not_equal "$(echo "$output" | jq -r .key.metadata.updated_at)" "null"
 }
@@ -381,6 +389,7 @@ format_kas_name_as_uri() {
   assert_equal "$(echo "$output" | jq -r .key.key_status)" "1"    # active
   assert_equal "$(echo "$output" | jq -r .key.public_key_ctx.pem)" "${PEM_B64}"
   assert_equal "$(echo "$output" | jq -r .key.private_key_ctx)" "null"
+  assert_equal "$(echo "$output" | jq -r .key.legacy)" "null"
   assert_not_equal "$(echo "$output" | jq -r .key.metadata.created_at)" "null"
   assert_not_equal "$(echo "$output" | jq -r .key.metadata.updated_at)" "null"
 }
@@ -402,6 +411,7 @@ format_kas_name_as_uri() {
   assert_equal "$(echo "$output" | jq -r .key.key_status)" "1"    # active
   assert_equal "$(echo "$output" | jq -r .key.public_key_ctx.pem)" "${PEM_B64}"
   assert_equal "$(echo "$output" | jq -r .key.private_key_ctx)" "null"
+  assert_equal "$(echo "$output" | jq -r .key.legacy)" "null"
   assert_not_equal "$(echo "$output" | jq -r .key.metadata.created_at)" "null"
   assert_not_equal "$(echo "$output" | jq -r .key.metadata.updated_at)" "null"
 }
@@ -422,6 +432,7 @@ format_kas_name_as_uri() {
   assert_equal "$(echo "$output" | jq -r .key.key_status)" "1"    # active
   assert_equal "$(echo "$output" | jq -r .key.public_key_ctx.pem)" "${PEM_B64}"
   assert_equal "$(echo "$output" | jq -r .key.private_key_ctx)" "null"
+  assert_equal "$(echo "$output" | jq -r .key.legacy)" "null"
   assert_not_equal "$(echo "$output" | jq -r .key.metadata.created_at)" "null"
   assert_not_equal "$(echo "$output" | jq -r .key.metadata.updated_at)" "null"
 }
@@ -442,6 +453,7 @@ format_kas_name_as_uri() {
   assert_equal "$(echo "$output" | jq -r .key.key_status)" "1"    # active
   assert_equal "$(echo "$output" | jq -r .key.public_key_ctx.pem)" "${PEM_B64}"
   assert_equal "$(echo "$output" | jq -r .key.private_key_ctx)" "null"
+  assert_equal "$(echo "$output" | jq -r .key.legacy)" "null"
   assert_not_equal "$(echo "$output" | jq -r .key.metadata.created_at)" "null"
   assert_not_equal "$(echo "$output" | jq -r .key.metadata.updated_at)" "null"
 }
@@ -494,6 +506,7 @@ format_kas_name_as_uri() {
   assert_equal "$(echo "$output" | jq -r .key.key_status)" "1"    # active (should not change)
   assert_equal "$(echo "$output" | jq -r .key.public_key_ctx.pem)" "${PEM_B64}"
   assert_equal "$(echo "$output" | jq -r .key.private_key_ctx)" "null"
+  assert_equal "$(echo "$output" | jq -r .key.legacy)" "null"
   assert_equal "$(echo "$output" | jq -r '.key.metadata.labels."initial"')" "true"
   assert_equal "$(echo "$output" | jq -r '.key.metadata.labels."added"')" "true"
   assert_equal "$(echo "$output" | jq -r .key.metadata.created_at.seconds)" "${initial_created_at_seconds}" # created_at should not change
@@ -545,7 +558,7 @@ format_kas_name_as_uri() {
 
 # LIST Tests
 @test "kas-keys: list keys (default limit and offset)" {
-  # Create a few keys to ensure there\\'s something to list and to check structure
+  # Create a few keys to ensure there\'s something to list and to check structure
   KEY_ID_LIST_1=$(generate_key_id)
 
   run_otdfctl_key create --kas "${KAS_REGISTRY_ID}" --key-id "${KEY_ID_LIST_1}" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "${PEM_B64}" --json
@@ -566,6 +579,7 @@ format_kas_name_as_uri() {
   assert_equal "$(echo "$output" | jq -r --arg id "${key1_system_id}" '.[] | select(.key.id == $id) | .key.key_algorithm')" "1"
   assert_equal "$(echo "$output" | jq -r --arg id "${key1_system_id}" '.[] | select(.key.id == $id) | .key.key_mode')" "4"
   assert_equal "$(echo "$output" | jq -r --arg id "${key1_system_id}" '.[] | select(.key.id == $id) | .key.key_status')" "1"
+  assert_equal "$(echo "$output" | jq -r --arg id "${key1_system_id}" '.[] | select(.key.id == $id) | .key.legacy')" "null"
   assert_equal "$(echo "$output" | jq -r --arg id "${key1_system_id}" '.[] | select(.key.id == $id) | .key.public_key_ctx.pem')" "${PEM_B64}"
   assert_equal "$(echo "$output" | jq -r --arg id "${key1_system_id}" '.[] | select(.key.id == $id) | .key.private_key_ctx')" "null"
   assert_not_equal "$(echo "$output" | jq -r --arg id "${key1_system_id}" '.[] | select(.key.id == $id) | .key.metadata.created_at')" "null"
@@ -576,6 +590,7 @@ format_kas_name_as_uri() {
   assert_equal "$(echo "$output" | jq -r --arg id "${key2_system_id}" '.[] | select(.key.id == $id) | .key.key_id')" "${KEY_ID_LIST_2}"
   assert_equal "$(echo "$output" | jq -r --arg id "${key2_system_id}" '.[] | select(.key.id == $id) | .key.key_algorithm')" "3"
   assert_equal "$(echo "$output" | jq -r --arg id "${key2_system_id}" '.[] | select(.key.id == $id) | .key.key_mode')" "4"
+  assert_equal "$(echo "$output" | jq -r --arg id "${key2_system_id}" '.[] | select(.key.id == $id) | .key.legacy')" "null"
   assert_equal "$(echo "$output" | jq -r --arg id "${key2_system_id}" '.[] | select(.key.id == $id) | .key.key_status')" "1"
   assert_equal "$(echo "$output" | jq -r --arg id "${key2_system_id}" '.[] | select(.key.id == $id) | .key.public_key_ctx.pem')" "${PEM_B64}"
   assert_equal "$(echo "$output" | jq -r --arg id "${key2_system_id}" '.[] | select(.key.id == $id) | .key.private_key_ctx')" "null"
@@ -629,7 +644,7 @@ format_kas_name_as_uri() {
   # Test: limit 1, offset (large number, e.g., 100) - should get 0 keys
   run_otdfctl_key list --kas "${KAS_ID_LIST}" --limit 1 --offset 100 --json
   assert_success
-  assert_equal "$(echo "$output" | jq '. | length')" "0"
+  assert_equal "$(echo $output | jq '. | length')" "0"
 
   delete_all_keys_in_kas "$KAS_ID_LIST"
   delete_kas_registry "$KAS_ID_LIST"
@@ -695,6 +710,7 @@ format_kas_name_as_uri() {
   assert_equal "$(echo "$output" | jq -r '.[0].key.key_algorithm')" "1"
   assert_equal "$(echo "$output" | jq -r '.[0].key.key_mode')" "4"
   assert_equal "$(echo "$output" | jq -r '.[0].key.key_status')" "1"
+  assert_equal "$(echo "$output" | jq -r '.[0].key.legacy')" "null"
   assert_equal "$(echo "$output" | jq -r '.[0].key.public_key_ctx.pem')" "${PEM_B64}"
   assert_equal "$(echo "$output" | jq -r '.[0].key.private_key_ctx')" "null"
   assert_not_equal "$(echo "$output" | jq -r '.[0].key.metadata.created_at')" "null"
@@ -733,6 +749,7 @@ format_kas_name_as_uri() {
   assert_equal "$(echo "$output" | jq -r '.[0].key.key_status')" "1"
   assert_equal "$(echo "$output" | jq -r '.[0].key.public_key_ctx.pem')" "${PEM_B64}"
   assert_equal "$(echo "$output" | jq -r '.[0].key.private_key_ctx')" "null"
+  assert_equal "$(echo "$output" | jq -r '.[0].key.legacy')" "null"
   assert_not_equal "$(echo "$output" | jq -r '.[0].key.metadata.created_at')" "null"
   assert_not_equal "$(echo "$output" | jq -r '.[0].key.metadata.updated_at')" "null"
 
@@ -760,7 +777,62 @@ format_kas_name_as_uri() {
   assert_equal "$(echo "$output" | jq -r '.[0].key.key_algorithm')" "1"
   assert_equal "$(echo "$output" | jq -r '.[0].key.key_mode')" "4"
   assert_equal "$(echo "$output" | jq -r '.[0].key.key_status')" "1"
+  assert_equal "$(echo "$output" | jq -r '.[0].key.legacy')" "null"
   assert_equal "$(echo "$output" | jq -r '.[0].key.public_key_ctx.pem')" "${PEM_B64}"
+
+  delete_all_keys_in_kas "$KAS_ID_LIST"
+  delete_kas_registry "$KAS_ID_LIST"
+}
+
+
+@test "kas-keys: list legacy keys" {
+  KAS_NAME_LIST=$(generate_kas_name)
+  KAS_URI_LIST=$(format_kas_name_as_uri "${KAS_NAME_LIST}")
+  KAS_ID_LIST=$(./otdfctl $HOST $WITH_CREDS policy kas-registry create --name "$KAS_NAME_LIST" --uri "$KAS_URI_LIST" --json | jq -r '.id')
+  assert_not_equal "$KAS_ID_LIST" ""
+
+  NON_LEGACY_KEY_ID="imported-key-$(generate_key_id)"
+  run_otdfctl_key import --key-id "${NON_LEGACY_KEY_ID}" \
+    --algorithm "rsa:2048" \
+    --kas "${KAS_ID_LIST}" \
+    --wrapping-key-id "test-wrapping-key" \
+    --wrapping-key "${WRAPPING_KEY}" \
+    --public-key-pem "${PEM_B64}" \
+    --private-key-pem "${PEM_B64}" \
+    --legacy false \
+    --json
+
+  # Create a key that should be returned when legacy=true
+  KEY_ID_LEGACY=$(generate_key_id)
+  run_otdfctl_key import --key-id "${KEY_ID_LEGACY}" \
+    --algorithm "rsa:2048" \
+    --kas "${KAS_ID_LIST}" \
+    --wrapping-key-id "test-wrapping-key-legacy" \
+    --wrapping-key "${WRAPPING_KEY}" \
+    --public-key-pem "${PEM_B64}" \
+    --private-key-pem "${PEM_B64}" \
+    --legacy true \
+    --json
+  assert_success
+
+  # List keys with legacy=true
+  run_otdfctl_key list --legacy true --kas "${KAS_ID_LIST}" --json
+  assert_success
+  assert_equal "$(echo "$output" | jq '. | length')" "1"
+  assert_equal "$(echo "$output" | jq -r '.[0].key.key_id')" "${KEY_ID_LEGACY}"
+  assert_equal "$(echo "$output" | jq -r '.[0].key.legacy')" "true"
+
+  run_otdfctl_key list --legacy false --kas "${KAS_ID_LIST}" --json
+  assert_success
+  assert_equal "$(echo "$output" | jq '. | length')" "1"
+  assert_equal "$(echo "$output" | jq -r '.[0].key.key_id')" "${NON_LEGACY_KEY_ID}"
+  assert_equal "$(echo "$output" | jq -r '.[0].key.legacy')" "null"
+
+  run_otdfctl_key list --kas "${KAS_ID_LIST}" --json
+  assert_success
+  assert_equal "$(echo "$output" | jq '. | length')" "2"
+  assert_equal "$(echo "$output" | jq -r --arg id "${NON_LEGACY_KEY_ID}" '.[] | select(.key.key_id == $id) | .key.key_id')" "${NON_LEGACY_KEY_ID}"
+  assert_equal "$(echo "$output" | jq -r --arg id "${KEY_ID_LEGACY}" '.[] | select(.key.key_id == $id) | .key.key_id')" "${KEY_ID_LEGACY}"
 
   delete_all_keys_in_kas "$KAS_ID_LIST"
   delete_kas_registry "$KAS_ID_LIST"
@@ -770,6 +842,12 @@ format_kas_name_as_uri() {
   run_otdfctl_key list --algorithm "invalid-algorithm" --json
   assert_failure
   assert_output --partial "Invalid algorithm"
+}
+
+@test "kas-keys: list keys (legacy=invalid)" {
+  run_otdfctl_key list --legacy invalid --json
+  assert_failure
+  assert_output --partial "Invalid legacy flag"
 }
 
 @test "kas-keys: rotate key" {
@@ -911,6 +989,71 @@ format_kas_name_as_uri() {
   assert_not_equal "$(echo "$output" | jq -r .key.private_key_ctx.wrapped_key)" "null"
   assert_equal "$(echo "$output" | jq -r .key.key_algorithm)" "1"
   assert_equal "$(echo "$output" | jq -r .key.key_mode)" "1"
+  assert_equal "$(echo "$output" | jq -r .key.legacy)" "null"
+}
+
+
+@test "kas-keys: import key successful (legacy=true)" {
+  KEY_ID="imported-key-$(generate_key_id)"
+  
+  run_otdfctl_key import --key-id "${KEY_ID}" \
+    --algorithm "rsa:2048" \
+    --kas "${KAS_REGISTRY_ID}" \
+    --wrapping-key-id "test-wrapping-key" \
+    --wrapping-key "${WRAPPING_KEY}" \
+    --public-key-pem "${PEM_B64}" \
+    --private-key-pem "${PEM_B64}" \
+    --legacy true \
+    --json
+  assert_success
+  assert_equal "$(echo "$output" | jq -r .key.key_id)" "${KEY_ID}"
+  assert_equal "$(echo "$output" | jq -r .kas_id)" "${KAS_REGISTRY_ID}"
+  assert_equal "$(echo "$output" | jq -r .key.public_key_ctx.pem)" "${PEM_B64}"
+  assert_equal "$(echo "$output" | jq -r .key.private_key_ctx.key_id)" "test-wrapping-key"
+  assert_not_equal "$(echo "$output" | jq -r .key.private_key_ctx.wrapped_key)" "null"
+  assert_equal "$(echo "$output" | jq -r .key.key_algorithm)" "1"
+  assert_equal "$(echo "$output" | jq -r .key.key_mode)" "1"
+  assert_equal "$(echo "$output" | jq -r .key.legacy)" "true"
+}
+
+@test "kas-keys: import key succesful (legacy=false)" {
+  KEY_ID="imported-key-$(generate_key_id)"
+  
+  run_otdfctl_key import --key-id "${KEY_ID}" \
+    --algorithm "rsa:2048" \
+    --kas "${KAS_REGISTRY_ID}" \
+    --wrapping-key-id "test-wrapping-key" \
+    --wrapping-key "${WRAPPING_KEY}" \
+    --public-key-pem "${PEM_B64}" \
+    --private-key-pem "${PEM_B64}" \
+    --legacy false \
+    --json
+  assert_success
+
+  assert_equal "$(echo "$output" | jq -r .key.key_id)" "${KEY_ID}"
+  assert_equal "$(echo "$output" | jq -r .kas_id)" "${KAS_REGISTRY_ID}"
+  assert_equal "$(echo "$output" | jq -r .key.public_key_ctx.pem)" "${PEM_B64}"
+  assert_equal "$(echo "$output" | jq -r .key.private_key_ctx.key_id)" "test-wrapping-key"
+  assert_not_equal "$(echo "$output" | jq -r .key.private_key_ctx.wrapped_key)" "null"
+  assert_equal "$(echo "$output" | jq -r .key.key_algorithm)" "1"
+  assert_equal "$(echo "$output" | jq -r .key.key_mode)" "1"
+  assert_equal "$(echo "$output" | jq -r .key.legacy)" "null"
+}
+
+@test "kas-keys: import key failure (legacy=invalid)" {
+  KEY_ID="imported-key-$(generate_key_id)"
+  
+  run_otdfctl_key import --key-id "${KEY_ID}" \
+    --algorithm "rsa:2048" \
+    --kas "${KAS_REGISTRY_ID}" \
+    --wrapping-key-id "test-wrapping-key" \
+    --wrapping-key "${WRAPPING_KEY}" \
+    --public-key-pem "${PEM_B64}" \
+    --private-key-pem "${PEM_B64}" \
+    --legacy invalid \
+    --json
+  assert_failure
+  assert_output --partial "Invalid legacy flag"
 }
 
 @test "kas-keys: import key failure - missing required private key" {
