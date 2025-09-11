@@ -47,7 +47,7 @@ func (h Handler) GetAttribute(ctx context.Context, identifier string) (*policy.A
 
 	resp, err := h.sdk.Attributes.GetAttribute(ctx, req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get attribute value [%s]: %w", identifier, err)
 	}
 
 	return resp.GetAttribute(), nil
