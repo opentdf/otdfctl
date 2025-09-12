@@ -139,7 +139,7 @@ Or nested for better organization:
 
 ##### 3. Run Tests and Upload Results
 
-1. Run BATS with TAP report output (e2e folder): `bats --tap bats-tests/ > bats-results.tap`
+1. Run BATS with TAP report output (e2e folder): `bats --tap bats-tests/ > e2e/bats-results.tap`
 Alternatively, get the TAP test report from the CI pipeline artifacts.
 2. Upload results to TestRail:
 `TESTRAIL_CLI_RUN_NAME=*optional-testrail-run-name* ./testrail-integration/upload-bats-test-results-to-testrail.sh`
