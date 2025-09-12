@@ -39,7 +39,14 @@ runs:
     - name: Run Bats tests
       shell: bash
       working-directory: otdfctl
-      run: bats e2e
+      run: |
+        if command -v parallel >/dev/null 2>&1; then
+          echo "GNU parallel found, running tests in parallel"
+          bats e2e --jobs 4
+        else
+          echo "GNU parallel not found, running tests sequentially"
+          bats e2e
+        fi
       env:
         # Define 'bats' install location in ubuntu
         BATS_LIB_PATH: /usr/lib
