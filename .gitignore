@@ -13,7 +13,7 @@ otdfctl_testbuild.*
 # Test artifacts
 creds.json
 
-# TestRail files
+# TestRail-related files
 testrail.config.json
 testname-to-testrail-id.json
 mapping-report.txt
