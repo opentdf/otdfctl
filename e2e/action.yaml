@@ -5,6 +5,10 @@ inputs:
     required: false
     description: 'The ref to check out for the otdfctl CLI'
     default: 'main'
+  testrail-run-name-for-cli-test:
+    required: false
+    description: 'The name to use for the TestRail test run created for the CLI tests'
+    default: ''
 
 runs:
   using: 'composite'
@@ -39,7 +43,7 @@ runs:
     - name: Run Bats tests
       shell: bash
       working-directory: otdfctl
-      run: bats --tap e2e | tee bats-results.tap
+      run: bats --tap e2e | tee e2e/bats-results.tap
       env:
         # Define 'bats' install location in ubuntu
         BATS_LIB_PATH: /usr/lib
@@ -51,6 +55,8 @@ runs:
       with:
         name: bats-test-results
         path: otdfctl/bats-results.tap
+# Creation of a necessary opentdf-limited TestRail account for API key generation is in progress in scope of https://virtru.atlassian.net/browse/IT-6104 ticket
+# Will be uncommented after creation of correspondent secrets in scope of the https://virtru.atlassian.net/browse/CAB-3476
 #    - name: Integrate Bats test results into TestRail
 #      shell: bash
 #      working-directory: otdfctl
@@ -63,3 +69,4 @@ runs:
 #      env:
 #        TESTRAIL_USER: ${{ steps.gcp-secrets-team.outputs.TESTRAIL_USER }}
 #        TESTRAIL_PASS: ${{ secrets.TESTRAIL_PASS }}
+#        TESTRAIL_CLI_RUN_NAME: ${{ inputs.testrail-run-name-for-cli-test }}

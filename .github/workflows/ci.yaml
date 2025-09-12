@@ -2,9 +2,6 @@ name: "CI"
 
 on:
   pull_request: {}
-  push:
-    branches:
-      - AB-2044-otdfctl-testrail-integration
 
 jobs:
   govulncheck:
@@ -53,7 +50,7 @@ jobs:
         uses: opentdf/platform/test/start-up-with-containers@main
         with:
           platform-ref: "main"
-      - uses: opentdf/otdfctl/e2e@AB-2044-otdfctl-testrail-integration
+      - uses: opentdf/otdfctl/e2e@main
         with:
           otdfctl-ref: ${{ github.event.pull_request.head.sha }}
 
