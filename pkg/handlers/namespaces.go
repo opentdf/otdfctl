@@ -25,7 +25,7 @@ func (h Handler) GetNamespace(ctx context.Context, identifier string) (*policy.N
 
 	resp, err := h.sdk.Namespaces.GetNamespace(ctx, req)
 	if err != nil {
-return nil, fmt.Errorf("failed to get namespace [%s]: %w", identifier, err)
+		return nil, fmt.Errorf("failed to get namespace [%s]: %w", identifier, err)
 	}
 
 	return resp.GetNamespace(), nil
