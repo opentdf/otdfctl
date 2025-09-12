@@ -5,10 +5,10 @@ inputs:
     required: false
     description: 'The ref to check out for the otdfctl CLI'
     default: 'main'
-  testrail-run-name-for-cli-test:
-    required: false
-    description: 'The name to use for the TestRail test run created for the CLI tests'
-    default: ''
+#  testrail-run-name-for-cli-test:
+#    required: false
+#    description: 'The name to use for the TestRail test run created for the CLI tests'
+#    default: ''
 
 runs:
   using: 'composite'
