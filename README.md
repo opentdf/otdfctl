@@ -87,3 +87,63 @@ Terminal size when testing:
 2. can be set manually by mouse in terminal where tests are triggered
 3. can be set by argument `./e2e/resize_terminal.sh < rows height > < columns width >`
 4. can be set by environment variable, i.e. `export TEST_TERMINAL_WIDTH="200"` (200 is columns width)
+
+#### TestRail Integration (Optional)
+
+This project supports optional integration with TestRail for uploading BATS test results.
+
+##### 1. Prerequisites
+
+- TestRail account with API access enabled
+- `jq`, `curl` installed
+
+##### 2. Setup
+
+1. Copy and configure TestRail connection: 
+`cp testrail.config.example.json testrail.config.json`
+
+  Edit `testrail.config.json` with:
+  - `url`: Your TestRail instance URL
+  - `projectId`: Your TestRail project ID 
+  - `tapFile`: Path to BATS TAP results file 
+
+2. Copy and configure test mapping:
+  `cp testname-to-testrail-id.example.json testname-to-testrail-id.json`
+
+Fill in the mapping between test names (exactly as they appear in TAP output) and your TestRail case IDs.
+Can be flat JSON:
+```json
+{
+  "test_name_1": "C12345",
+  "test_name_2": "C67890"
+}
+```
+Or nested for better organization:
+```json
+{
+  "group_1": {
+    "test_name_1": "C12345",
+    "test_name_2": "C67890"
+  },
+  "group_2": {
+    "test_name_3": "C54321"
+  }
+}
+```
+
+3. Set TestRail credentials via environment variables
+```bash
+   export TESTRAIL_USER=you@example.com
+   export TESTRAIL_PASS=your_api_key
+```
+
+##### 3. Run Tests and Upload Results
+
+1. Run BATS with TAP report output (e2e folder): `bats --tap bats-tests/ > bats-results.tap`
+Alternatively, get the TAP test report from the CI pipeline artifacts.
+2. Upload results to TestRail:
+`TESTRAIL_CLI_RUN_NAME=*optional-testrail-run-name* ./testrail-integration/upload-bats-test-results-to-testrail.sh`
+
+
+
+

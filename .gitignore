@@ -13,6 +13,16 @@ otdfctl_testbuild.*
 # Test artifacts
 creds.json
 
+# TestRail files
+e2e/testrail.config.json
+e2e/testrail-integration/testrail.config.json
+e2e/testname-to-testrail-id.json
+e2e/testrail-integration/testname-to-testrail-id.json
+e2e/mapping-report.txt
+e2e/testrail-integration/mapping-report.txt
+e2e/bats-results.tap
+e2e/testrail-integration/bats-results.tap
+
 # Hugo
 public/
 .hugo_build.lock
