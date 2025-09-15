@@ -311,7 +311,7 @@ teardown_file() {
 
 @test "Assign/Remove KAS key from attribute value - With Value FQN" {
   # Create attribute with a value
-  run_otdfctl_attr create --name attr-with-value-2 --namespace "$NS_ID" --rule HIERARCHY -v test-value --json
+  run_otdfctl_attr create --name attr-with-value-2 --namespace "$NS_ID" --rule HIERARCHY -v test-value-2 --json
   assert_success
   ATTR_WITH_VALUE_ID=$(echo "$output" | jq -r '.id')
   VALUE_FQN=$(echo "$output" | jq -r '.values[0].fqn')
