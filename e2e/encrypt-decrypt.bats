@@ -16,6 +16,7 @@ setup_file() {
   export WRAPPING_KEY_ALGORITHM=ec:secp256r1
 
   export SECRET_TEXT="my special secret"
+  export OUT_TXT=secret.txt
   export OUTFILE_TXT=secret.txt.tdf
 
   NS_ID=$(./otdfctl --host $HOST $WITH_CREDS $DEBUG_LEVEL policy attributes namespaces create -n "testing-enc-dec.io" --json | jq -r '.id')
@@ -79,20 +80,20 @@ teardown_file(){
 }
 
 @test "roundtrip TDF3, one attribute, stdin" {
-  echo $SECRET_TEXT | ./otdfctl encrypt -o roundtrip_tdf3_one_attr.txt --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS -a $FQN
-  ./otdfctl decrypt --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS roundtrip_tdf3_one_attr.txt.tdf | grep "$SECRET_TEXT"
+  echo $SECRET_TEXT | ./otdfctl encrypt -o $OUT_TXT --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS -a $FQN
+  ./otdfctl decrypt --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS $OUTFILE_TXT | grep "$SECRET_TEXT"
 }
 
 @test "roundtrip TDF3, one attribute, mixed case FQN, stdin" {
-  echo $SECRET_TEXT | ./otdfctl encrypt -o roundtrip_tdf3_one_attr_mixed_case.txt --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS -a $MIXED_CASE_FQN
-  ./otdfctl decrypt --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS roundtrip_tdf3_one_attr_mixed_case.txt.tdf | grep "$SECRET_TEXT"
+  echo $SECRET_TEXT | ./otdfctl encrypt -o $OUT_TXT --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS -a $MIXED_CASE_FQN
+  ./otdfctl decrypt --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS $OUTFILE_TXT | grep "$SECRET_TEXT"
 }
 
 @test "roundtrip TDF3, assertions, stdin" {
-  echo $SECRET_TEXT | ./otdfctl encrypt -o roundtrip_tdf3_assertions.txt --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS -a $FQN --with-assertions "$ASSERTIONS"
-  ./otdfctl decrypt --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS roundtrip_tdf3_assertions.txt.tdf | grep "$SECRET_TEXT"
-  ./otdfctl --host $HOST --tls-no-verify $WITH_CREDS inspect roundtrip_tdf3_assertions.txt.tdf
-  assertions_present=$(./otdfctl --host $HOST --tls-no-verify $WITH_CREDS inspect roundtrip_tdf3_assertions.txt.tdf | jq '.manifest.assertions[0].id')
+  echo $SECRET_TEXT | ./otdfctl encrypt -o $OUT_TXT --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS -a $FQN --with-assertions "$ASSERTIONS"
+  ./otdfctl decrypt --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS $OUTFILE_TXT | grep "$SECRET_TEXT"
+  ./otdfctl --host $HOST --tls-no-verify $WITH_CREDS inspect $OUTFILE_TXT
+  assertions_present=$(./otdfctl --host $HOST --tls-no-verify $WITH_CREDS inspect $OUTFILE_TXT | jq '.manifest.assertions[0].id')
   [[ $assertions_present == "\"assertion1\"" ]]
 }
 
@@ -130,19 +131,19 @@ teardown_file(){
 }
 
 @test "roundtrip NANO, one attribute, stdin" {
-  echo $SECRET_TEXT | ./otdfctl encrypt --tdf-type nano -o roundtrip_nano_one_attr.txt --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS -a $FQN
-  ./otdfctl decrypt --tdf-type nano --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS roundtrip_nano_one_attr.txt.tdf | grep "$SECRET_TEXT"
+  echo $SECRET_TEXT | ./otdfctl encrypt --tdf-type nano -o $OUT_TXT --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS -a $FQN
+  ./otdfctl decrypt --tdf-type nano --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS $OUTFILE_TXT | grep "$SECRET_TEXT"
 }
 
 @test "roundtrip NANO, one attribute, stdin, plaintext policy mode" {
-  echo $SECRET_TEXT | ./otdfctl encrypt --tdf-type nano -o roundtrip_nano_one_attr_plaintext_policy_mode.txt --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS -a $MIXED_CASE_FQN --policy-mode plaintext
-  ./otdfctl decrypt --tdf-type nano --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS roundtrip_nano_one_attr_plaintext_policy_mode.txt.tdf | grep "$SECRET_TEXT"
+  echo $SECRET_TEXT | ./otdfctl encrypt --tdf-type nano -o $OUT_TXT --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS -a $MIXED_CASE_FQN --policy-mode plaintext
+  ./otdfctl decrypt --tdf-type nano --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS $OUTFILE_TXT | grep "$SECRET_TEXT"
   grep -a "$MIXED_CASE_FQN" "$OUTFILE_TXT"
 }
 
 @test "roundtrip NANO, one attribute, mixed case FQN, stdin" {
-  echo $SECRET_TEXT | ./otdfctl encrypt --tdf-type nano -o roundtrip_nano_one_attr_mixed_case.txt --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS -a $MIXED_CASE_FQN
-  ./otdfctl decrypt --tdf-type nano --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS roundtrip_nano_one_attr_mixed_case.txt.tdf | grep "$SECRET_TEXT"
+  echo $SECRET_TEXT | ./otdfctl encrypt --tdf-type nano -o $OUT_TXT --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS -a $MIXED_CASE_FQN
+  ./otdfctl decrypt --tdf-type nano --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS $OUTFILE_TXT | grep "$SECRET_TEXT"
 }
 
 @test "roundtrip TDF3, with target version < 4.3.0" {
