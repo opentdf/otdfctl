@@ -7,7 +7,6 @@ load "otdfctl-utils.sh"
 # Tests for attributes
 
 setup_file() {
-   
   export WITH_CREDS='--with-client-creds-file ./creds.json'
   export HOST='--host http://localhost:8080'
 
