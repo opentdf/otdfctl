@@ -3,8 +3,8 @@
 # Tests for actions
 
 setup_file() {
-    echo -n '{"clientId":"opentdf","clientSecret":"secret"}' > bats_creds.json
-    export WITH_CREDS='--with-client-creds-file ./bats_creds.json'
+    echo -n '{"clientId":"opentdf","clientSecret":"secret"}' > creds.json
+    export WITH_CREDS='--with-client-creds-file ./creds.json'
     export HOST='--host http://localhost:8080'
 }
 

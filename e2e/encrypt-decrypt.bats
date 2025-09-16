@@ -3,7 +3,7 @@
 # Tests for encrypt decrypt
 
 setup_file() {
-  export CREDSFILE=bats_creds.json
+  export CREDSFILE=creds.json
   echo -n '{"clientId":"opentdf","clientSecret":"secret"}' > $CREDSFILE
   export WITH_CREDS="--with-client-creds-file $CREDSFILE"
   export DEBUG_LEVEL="--log-level debug"

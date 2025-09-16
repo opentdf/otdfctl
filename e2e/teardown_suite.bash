@@ -5,5 +5,5 @@
 ####
 
 setup_suite(){
-    rm -f ./bats_creds.json
+    rm -f ./creds.json
 }
