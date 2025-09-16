@@ -12,6 +12,7 @@ otdfctl_testbuild.*
 
 # Test artifacts
 creds.json
+bats_creds.json
 
 # Hugo
 public/

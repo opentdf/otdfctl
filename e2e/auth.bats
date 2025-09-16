@@ -3,8 +3,8 @@
 # General miscellaneous tests
 
 setup_file() {
-    echo -n '{"clientId":"opentdf","clientSecret":"secret"}' > creds.json
-    export WITH_CREDS='--with-client-creds-file ./creds.json'
+    echo -n '{"clientId":"opentdf","clientSecret":"secret"}' > bats_creds.json
+    export WITH_CREDS='--with-client-creds-file ./bats_creds.json'
     export HOST='--host http://localhost:8080'
 }
 
@@ -21,7 +21,7 @@ setup() {
 teardown_file() {
   # clear out all test env vars
   unset HOST WITH_CREDS
-  rm -rf bad_creds.json
+  rm -rf bad_bats_creds.json
 }
 
 @test "helpful error if wrong platform endpoint host" {
@@ -33,8 +33,8 @@ teardown_file() {
 
 @test "helpful error if bad credentials" {
     # nonexistent client creds
-    echo -n '{"clientId":"badClient","clientSecret":"badSecret"}' > bad_creds.json
-    BAD_CREDS="--with-client-creds-file ./bad_creds.json"
+    echo -n '{"clientId":"badClient","clientSecret":"badSecret"}' > bad_bats_creds.json
+    BAD_CREDS="--with-client-creds-file ./bad_bats_creds.json"
     run_otdfctl $HOST $BAD_CREDS policy attributes list
     assert_failure
     assert_output --partial "Failed to authenticate with flag-provided client credentials"

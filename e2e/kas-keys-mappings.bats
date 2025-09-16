@@ -64,8 +64,8 @@ run_otdfctl_namespace_delete() {
 }
 
 setup_file() {
-  echo -n '{"clientId":"opentdf","clientSecret":"secret"}' >creds.json
-  export WITH_CREDS='--with-client-creds-file ./creds.json'
+  echo -n '{"clientId":"opentdf","clientSecret":"secret"}' > bats_creds.json
+  export WITH_CREDS='--with-client-creds-file ./bats_creds.json'
   export HOST='--host http://localhost:8080'
   export KAS_URI="https://test-kas-for-mappings.com"
   export KAS_NAME="kas-registry-for-mappings-test"

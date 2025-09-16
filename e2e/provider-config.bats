@@ -1,7 +1,7 @@
 #!/usr/bin/env bats
 
 setup_file() {
-  export CREDSFILE=creds.json
+  export CREDSFILE=bats_creds.json
   echo -n '{"clientId":"opentdf","clientSecret":"secret"}' > $CREDSFILE
   export WITH_CREDS="--with-client-creds-file $CREDSFILE"
   export HOST='--host http://localhost:8080'
@@ -177,5 +177,4 @@ delete_pc_by_id() {
 teardown_file() {
   # clear out all test env vars
   unset HOST WITH_CREDS DEBUG_LEVEL VALID_CONFIG BASE64_CONFIG
-  rm -f $CREDSFILE
 }
