@@ -76,3 +76,4 @@ runs:
 #      env:
 #        TESTRAIL_USER: ${{ secrets.TESTRAIL_USER }}
 #        TESTRAIL_PASS: ${{ secrets.TESTRAIL_PASS }}
+#        TESTRAIL_CLI_RUN_NAME: ${{ inputs.testrail-run-name-for-cli-test }}
