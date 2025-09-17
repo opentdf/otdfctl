@@ -6,7 +6,6 @@ load "${BATS_LIB_PATH}/bats-assert/load.bash"
 load "otdfctl-utils.sh"
 
 setup_file() {
-  echo -n '{"clientId":"opentdf","clientSecret":"secret"}' >creds.json
   export WITH_CREDS='--with-client-creds-file ./creds.json'
   export HOST='--host http://localhost:8080'
 
@@ -35,7 +34,6 @@ teardown_file() {
   delete_all_keys_in_kas "$KAS_REGISTRY_ID_BASE_KEY_TEST"
 
   unset HOST WITH_CREDS KAS_REGISTRY_ID_BASE_KEY_TEST KAS_NAME_BASE_KEY_TEST KAS_URI_BASE_KEY_TEST REGULAR_KEY_ID_FOR_BASE_TEST WRAPPING_KEY KAS_KEY_SYSTEM_ID
-  rm -f creds.json
 }
 
 # --- get base key tests ---
