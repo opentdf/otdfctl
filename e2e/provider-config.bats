@@ -177,5 +177,4 @@ delete_pc_by_id() {
 teardown_file() {
   # clear out all test env vars
   unset HOST WITH_CREDS DEBUG_LEVEL VALID_CONFIG BASE64_CONFIG
-  rm -f $CREDSFILE
 }
