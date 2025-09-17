@@ -25,6 +25,7 @@ func (h Handler) CreateKasKey(
 	privKeyCtx *policy.PrivateKeyCtx,
 	providerConfigID string,
 	metadata *common.MetadataMutable,
+	legacy bool,
 ) (*policy.KasKey, error) {
 	req := kasregistry.CreateKeyRequest{
 		KasId:            kasID,
@@ -35,6 +36,7 @@ func (h Handler) CreateKasKey(
 		PrivateKeyCtx:    privKeyCtx,
 		ProviderConfigId: providerConfigID,
 		Metadata:         metadata,
+		Legacy:           legacy,
 	}
 
 	resp, err := h.sdk.KeyAccessServerRegistry.CreateKey(ctx, &req)
@@ -87,7 +89,8 @@ func (h Handler) ListKasKeys(
 	ctx context.Context,
 	limit, offset int32,
 	algorithm policy.Algorithm,
-	identifier KasIdentifier) ([]*policy.KasKey, *policy.PageResponse, error) {
+	identifier KasIdentifier,
+	legacy *bool) ([]*policy.KasKey, *policy.PageResponse, error) {
 	req := kasregistry.ListKeysRequest{
 		Pagination: &policy.PageRequest{
 			Limit:  limit,
@@ -110,6 +113,7 @@ func (h Handler) ListKasKeys(
 			KasUri: identifier.URI,
 		}
 	}
+	req.Legacy = legacy
 
 	resp, err := h.sdk.KeyAccessServerRegistry.ListKeys(ctx, &req)
 	if err != nil {

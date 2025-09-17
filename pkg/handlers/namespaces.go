@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/opentdf/platform/protocol/go/common"
@@ -24,7 +25,7 @@ func (h Handler) GetNamespace(ctx context.Context, identifier string) (*policy.N
 
 	resp, err := h.sdk.Namespaces.GetNamespace(ctx, req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get namespace [%s]: %w", identifier, err)
 	}
 
 	return resp.GetNamespace(), nil
