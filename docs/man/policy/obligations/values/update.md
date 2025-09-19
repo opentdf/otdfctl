@@ -12,7 +12,6 @@ command:
     - name: value
       shorthand: v
       description: Optional updated value of the obligation value (must be unique within the definition)
-      required: false
     - name: label
       description: "Optional metadata 'labels' in the format: key=value"
       shorthand: l

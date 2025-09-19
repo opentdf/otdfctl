@@ -8,11 +8,9 @@ command:
     - name: id
       shorthand: i
       description: ID of the obligation value
-      required: false
     - name: fqn
       shorthand: f
       description: FQN of the obligation value
-      required: false
 ---
 
 Retrieve an obligation value along with its metadata.

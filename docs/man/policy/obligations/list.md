@@ -14,7 +14,6 @@ command:
     - name: namespace
       shorthand: n
       description: Namespace ID or FQN by which to filter results
-      required: false
 ---
 
 List obligations definitions (optionally by namespace).

@@ -6,11 +6,9 @@ command:
     - name: id
       shorthand: i
       description: ID of the obligation value
-      required: false
     - name: fqn
       shorthand: f
       description: FQN of the obligation value
-      required: false
     - name: force
       description: Force deletion without interactive confirmation
 ---
