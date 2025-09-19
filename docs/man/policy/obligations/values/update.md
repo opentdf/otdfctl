@@ -29,5 +29,5 @@ For more information about obligation values, see the manual for the `values` su
 ## Example
 
 ```shell
-otdfctl policy obligations values update --id 3c51a593-cbf8-419d-b7dc-b656d0bedfbb --value new_value
+otdfctl policy obligations values update --id 3c51a593-cbf8-419d-b7dc-b656d0bedfbb --value new_value --label "hello=world"
 ```
