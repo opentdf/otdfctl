@@ -1,0 +1,8 @@
+{
+  "url": "https://virtru.testrail.net",
+  "projectId": 63,
+  "tapFile": "./bats-results.tap",
+  "runNamePrefix": "Otdfctl CLI auto tests",
+  "suiteId": 1,
+  "milestoneId": 1
+}
