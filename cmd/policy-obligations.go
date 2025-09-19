@@ -52,9 +52,8 @@ func policyGetObligation(cmd *cobra.Command, args []string) {
 	id := c.Flags.GetOptionalID("id")
 	fqn := c.Flags.GetOptionalString("fqn")
 
-	if id == "" && fqn == "" {
-		cli.ExitWithError("Either 'id' or 'fqn' must be provided", nil)
-	}
+	cmd.MarkFlagsOneRequired("id", "fqn")
+	cmd.MarkFlagsMutuallyExclusive("id", "fqn")
 
 	obl, err := h.GetObligation(cmd.Context(), id, fqn)
 	if err != nil {
@@ -154,9 +153,8 @@ func policyDeleteObligation(cmd *cobra.Command, args []string) {
 	id := c.Flags.GetOptionalID("id")
 	fqn := c.Flags.GetOptionalString("fqn")
 
-	if id == "" && fqn == "" {
-		cli.ExitWithError("Either 'id' or 'fqn' must be provided", nil)
-	}
+	cmd.MarkFlagsOneRequired("id", "fqn")
+	cmd.MarkFlagsMutuallyExclusive("id", "fqn")
 
 	force := c.Flags.GetRequiredBool("force")
 	ctx := cmd.Context()
@@ -231,9 +229,8 @@ func policyGetObligationValue(cmd *cobra.Command, args []string) {
 	id := c.Flags.GetOptionalID("id")
 	fqn := c.Flags.GetOptionalString("fqn")
 
-	if id == "" && fqn == "" {
-		cli.ExitWithError("Either 'id' or 'fqn' must be provided", nil)
-	}
+	cmd.MarkFlagsOneRequired("id", "fqn")
+	cmd.MarkFlagsMutuallyExclusive("id", "fqn")
 
 	value, err := h.GetObligationValue(cmd.Context(), id, fqn)
 	if err != nil {
@@ -299,9 +296,8 @@ func policyDeleteObligationValue(cmd *cobra.Command, args []string) {
 	id := c.Flags.GetOptionalID("id")
 	fqn := c.Flags.GetOptionalString("fqn")
 
-	if id == "" && fqn == "" {
-		cli.ExitWithError("Either 'id' or 'fqn' must be provided", nil)
-	}
+	cmd.MarkFlagsOneRequired("id", "fqn")
+	cmd.MarkFlagsMutuallyExclusive("id", "fqn")
 
 	force := c.Flags.GetOptionalBool("force")
 	ctx := cmd.Context()
