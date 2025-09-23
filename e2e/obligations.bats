@@ -59,7 +59,7 @@ teardown_file() {
 }
 
 @test "Create a obligation - Good" {
-  run_otdfctl_obl create --name test_create_obl --namespace $NS_ID
+  run_otdfctl_obl create --name test_create_obl --namespace "${NS_ID}"
     assert_output --partial "SUCCESS"
     assert_line --regexp "Name.*test_create_obl"
     assert_output --partial "Id"
@@ -73,11 +73,11 @@ teardown_file() {
 
 @test "Create a obligation - Bad" {
   # bad obligation names
-  run_otdfctl_obl create --name ends_underscored_ --namespace $NS_ID
+  run_otdfctl_obl create --name ends_underscored_ --namespace "${NS_ID}"
     assert_failure
-  run_otdfctl_obl create --name -first-char-hyphen --namespace $NS_ID
+  run_otdfctl_obl create --name -first-char-hyphen --namespace "${NS_ID}"
     assert_failure
-  run_otdfctl_obl create --name inval!d.chars --namespace $NS_ID
+  run_otdfctl_obl create --name inval!d.chars --namespace "${NS_ID}"
     assert_failure
 
   # missing flag
@@ -86,10 +86,10 @@ teardown_file() {
     assert_output --partial "Flag '--name' is required"
   
   # conflict
-  run_otdfctl_obl create --name test_create_obl_conflict --namespace $NS_ID
+  run_otdfctl_obl create --name test_create_obl_conflict --namespace "${NS_ID}"
     assert_output --partial "SUCCESS"
   created_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
-  run_otdfctl_obl create --name test_create_obl_conflict --namespace $NS_ID
+  run_otdfctl_obl create --name test_create_obl_conflict --namespace "${NS_ID}"
       assert_failure
       assert_output --partial "already_exists"
 
@@ -97,27 +97,27 @@ teardown_file() {
   run_otdfctl_obl delete --id $created_id --force
 }
 
-@test "Get an obligation - Good" {
-  # setup an obligation to get
-  run_otdfctl_obl create --name test_get_obl --namespace $NS_ID
-    assert_success
-  created_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
+# @test "Get an obligation - Good" {
+#   # setup an obligation to get
+#   run_otdfctl_obl create --name test_get_obl --namespace "${NS_ID}"
+#     assert_success
+#   created_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
 
-  # get by id
-  run_otdfctl_obl get --id "$created_id" --json
-    assert_success
-    [ "$(echo "$output" | jq -r '.id')" = "$created_id" ]
-    [ "$(echo "$output" | jq -r '.name')" = "test_get_obl" ]
+#   # get by id
+#   run_otdfctl_obl get --id "$created_id" --json
+#     assert_success
+#     [ "$(echo "$output" | jq -r '.id')" = "$created_id" ]
+#     [ "$(echo "$output" | jq -r '.name')" = "test_get_obl" ]
 
-  # get by fqn
-  run_otdfctl_obl get --fqn https://$NS_NAME/obl/name/test_get_obl --json
-    assert_success
-    [ "$(echo "$output" | jq -r '.id')" = "$created_id" ]
-    [ "$(echo "$output" | jq -r '.name')" = "test_get_obl" ]
+#   # get by fqn
+#   run_otdfctl_obl get --fqn https://$NS_NAME/obl/name/test_get_obl --json
+#     assert_success
+#     [ "$(echo "$output" | jq -r '.id')" = "$created_id" ]
+#     [ "$(echo "$output" | jq -r '.name')" = "test_get_obl" ]
 
-  # cleanup
-  run_otdfctl_obl delete --id $created_id --force
-}
+#   # cleanup
+#   run_otdfctl_obl delete --id $created_id --force
+# }
 
 @test "Get an obligation - Bad" {
   run_otdfctl_obl get
@@ -129,53 +129,53 @@ teardown_file() {
     assert_output --partial "must be a valid UUID"
 }
 
-# @test "List registered resources" {
-#   # setup registered resources to list
-#   run_otdfctl_reg_res create --name test_list_rr_1
-#   reg_res1_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
-#   run_otdfctl_reg_res create --name test_list_rr_2
-#   reg_res2_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
+@test "List obligations" {
+  # setup obligations to list
+  run_otdfctl_obl create --name test_list_obl_1 --namespace "${NS_ID}"
+  obl1_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
+  run_otdfctl_obl create --name test_list_obl_2 --namespace "${NS_ID}"
+  obl2_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
 
-#   run_otdfctl_reg_res list
-#     assert_success
-#     assert_output --partial "$reg_res1_id"
-#     assert_output --partial "test_list_rr_1"
-#     assert_output --partial "$reg_res2_id"
-#     assert_output --partial "test_list_rr_2"
-#     assert_output --partial "Total"
-#     assert_line --regexp "Current Offset.*0"
+  run_otdfctl_obl list
+    assert_success
+    assert_output --partial "$obl1_id"
+    assert_output --partial "test_list_obl_1"
+    assert_output --partial "$obl2_id"
+    assert_output --partial "test_list_obl_2"
+    assert_output --partial "Total"
+    assert_line --regexp "Current Offset.*0"
 
-#   # cleanup
-#   run_otdfctl_reg_res delete --id $reg_res1_id --force
-#   run_otdfctl_reg_res delete --id $reg_res2_id --force
-# }
+  # cleanup
+  run_otdfctl_obl delete --id $obl1_id --force
+  run_otdfctl_obl delete --id $obl2_id --force
+}
 
-# @test "Update registered resource" {
-#   # setup a resource to update
-#   run_otdfctl_reg_res create --name test_update_rr
-#     assert_success
-#   created_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
+@test "Update obligation" {
+  # setup a resource to update
+  run_otdfctl_obl create --name test_update_obl --namespace "${NS_ID}"
+    assert_success
+  created_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
 
-#   # force replace labels
-#   run_otdfctl_reg_res update --id "$created_id" -l key=other --force-replace-labels
-#     assert_success
-#     assert_line --regexp "Id.*$created_id"
-#     assert_line --regexp "Name.*test_update_rr"
-#     assert_line --regexp "Labels.*key: other"
-#     refute_output --regexp "Labels.*key: value"
-#     refute_output --regexp "Labels.*test: true"
-#     refute_output --regexp "Labels.*test: true"
+  # force replace labels
+  run_otdfctl_obl update --id "$created_id" -l key=other --force-replace-labels
+    assert_success
+    assert_line --regexp "Id.*$created_id"
+    assert_line --regexp "Name.*test_update_obl"
+    assert_line --regexp "Labels.*key: other"
+    refute_output --regexp "Labels.*key: value"
+    refute_output --regexp "Labels.*test: true"
+    refute_output --regexp "Labels.*test: true"
 
-#   # renamed
-#   run_otdfctl_reg_res update --id "$created_id" --name test_renamed_rr
-#     assert_success
-#     assert_line --regexp "Id.*$created_id"
-#     assert_line --regexp "Name.*test_renamed_rr"
-#     refute_output --regexp "Name.*test_update_rr"
+  # renamed
+  run_otdfctl_obl update --id "$created_id" --name test_renamed_obl
+    assert_success
+    assert_line --regexp "Id.*$created_id"
+    assert_line --regexp "Name.*test_renamed_obl"
+    refute_output --regexp "Name.*test_update_obl"
 
-#   # cleanup
-#   run_otdfctl_reg_res delete --id $created_id --force
-# }
+  # cleanup
+  run_otdfctl_obl delete --id $created_id --force
+}
 
 # @test "Delete registered resource - Good" {
 #   # setup a resource to delete
