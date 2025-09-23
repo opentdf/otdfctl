@@ -97,27 +97,27 @@ teardown_file() {
   run_otdfctl_obl delete --id $created_id --force
 }
 
-# @test "Get an obligation - Good" {
-#   # setup an obligation to get
-#   run_otdfctl_obl create --name test_get_obl --namespace "${NS_ID}"
-#     assert_success
-#   created_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
+@test "Get an obligation - Good" {
+  # setup an obligation to get
+  run_otdfctl_obl create --name test_get_obl --namespace "${NS_ID}"
+    assert_success
+  created_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
 
-#   # get by id
-#   run_otdfctl_obl get --id "$created_id" --json
-#     assert_success
-#     [ "$(echo "$output" | jq -r '.id')" = "$created_id" ]
-#     [ "$(echo "$output" | jq -r '.name')" = "test_get_obl" ]
+  # get by id
+  run_otdfctl_obl get --id "$created_id" --json
+    assert_success
+    [ "$(echo "$output" | jq -r '.id')" = "$created_id" ]
+    [ "$(echo "$output" | jq -r '.name')" = "test_get_obl" ]
 
-#   # get by fqn
-#   run_otdfctl_obl get --fqn https://$NS_NAME/obl/name/test_get_obl --json
-#     assert_success
-#     [ "$(echo "$output" | jq -r '.id')" = "$created_id" ]
-#     [ "$(echo "$output" | jq -r '.name')" = "test_get_obl" ]
+  # get by fqn
+  run_otdfctl_obl get --fqn "https://${NS_NAME}/obl/test_get_obl" --json
+    assert_success
+    [ "$(echo "$output" | jq -r '.id')" = "$created_id" ]
+    [ "$(echo "$output" | jq -r '.name')" = "test_get_obl" ]
 
-#   # cleanup
-#   run_otdfctl_obl delete --id $created_id --force
-# }
+  # cleanup
+  run_otdfctl_obl delete --id $created_id --force
+}
 
 @test "Get an obligation - Bad" {
   run_otdfctl_obl get
@@ -151,7 +151,7 @@ teardown_file() {
 }
 
 @test "Update obligation" {
-  # setup a resource to update
+  # setup an obligation to update
   run_otdfctl_obl create --name test_update_obl --namespace "${NS_ID}"
     assert_success
   created_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
@@ -177,26 +177,26 @@ teardown_file() {
   run_otdfctl_obl delete --id $created_id --force
 }
 
-# @test "Delete registered resource - Good" {
-#   # setup a resource to delete
-#   run_otdfctl_reg_res create --name test_delete_rr
-#   created_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
+@test "Delete obligation - Good" {
+  # setup an obligation to delete
+  run_otdfctl_obl create --name test_delete_obl --namespace "${NS_ID}"
+  created_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
 
-#   run_otdfctl_reg_res delete --id "$created_id" --force
-#     assert_success
-# }
+  run_otdfctl_obl delete --id "$created_id" --force
+    assert_success
+}
 
-# @test "Delete registered resource - Bad" {
-#   # no id
-#   run_otdfctl_reg_res delete
-#     assert_failure
-#     assert_output --partial "Flag '--id' is required"
+@test "Delete obligation - Bad" {
+  # no id
+  run_otdfctl_obl delete
+    assert_failure
+    assert_output --partial "one of id, fqn must be set [message.oneof]"
 
-#   # invalid id
-#   run_otdfctl_reg_res delete --id 'not_a_uuid'
-#     assert_failure
-#     assert_output --partial "must be a valid UUID"
-# }
+  # invalid id
+  run_otdfctl_obl delete --id 'not_a_uuid'
+    assert_failure
+    assert_output --partial "must be a valid UUID"
+}
 
 # # Tests for registered resource values
 
