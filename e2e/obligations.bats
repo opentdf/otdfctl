@@ -253,26 +253,18 @@ teardown_file() {
     assert_success
     [ "$(echo "$output" | jq -r '.id')" = "$created_id" ]
     [ "$(echo "$output" | jq -r '.value')" = "test_get_obl_val" ]
-    # [ "$(echo "$output" | jq -r '.action_attribute_values[0].action.id')" = "$READ_ACTION_ID" ]
-    # [ "$(echo "$output" | jq -r '.action_attribute_values[0].action.name')" = "$READ_ACTION_NAME" ]
-    # [ "$(echo "$output" | jq -r '.action_attribute_values[0].attribute_value.id')" = "$ATTR_VAL_1_ID" ]
-    # [ "$(echo "$output" | jq -r '.action_attribute_values[0].attribute_value.fqn')" = "$ATTR_VAL_1_FQN" ]
 
   # get by fqn
   run_otdfctl_obl_values get --fqn "https://$NS_NAME/obl/$OBL_NAME/value/test_get_obl_val" --json
     assert_success
     [ "$(echo "$output" | jq -r '.id')" = "$created_id" ]
     [ "$(echo "$output" | jq -r '.value')" = "test_get_obl_val" ]
-    # [ "$(echo "$output" | jq -r '.action_attribute_values[0].action.id')" = "$READ_ACTION_ID" ]
-    # [ "$(echo "$output" | jq -r '.action_attribute_values[0].action.name')" = "$READ_ACTION_NAME" ]
-    # [ "$(echo "$output" | jq -r '.action_attribute_values[0].attribute_value.id')" = "$ATTR_VAL_1_ID" ]
-    # [ "$(echo "$output" | jq -r '.action_attribute_values[0].attribute_value.fqn')" = "$ATTR_VAL_1_FQN" ]
 
   # cleanup
   run_otdfctl_obl_values delete --id $created_id --force
 }
 
-@test "Get a registered resource value - Bad" {
+@test "Get an obligation value - Bad" {
   run_otdfctl_obl_values get
     assert_failure
     assert_output --partial "one of id, fqn must be set [message.oneof]"
@@ -288,43 +280,32 @@ teardown_file() {
     assert_output --partial "must be a valid URI"
 }
 
-# @test "Update obligation values" {
-#   # setup a resource value to update
-#   run_otdfctl_reg_res_values create --resource "$RR_ID" --value test_update_rr_val --action-attribute-value "\"$READ_ACTION_ID;$ATTR_VAL_1_ID\""
-#     assert_success
-#   created_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
+@test "Update obligation values" {
+  # setup an obligation value to update
+  run_otdfctl_obl_values create --obligation "$OBL_ID" --value test_update_obl_val
+    assert_success
+  created_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
 
-#   # force replace labels
-#   run_otdfctl_reg_res_values update --id "$created_id" -l key=other --force-replace-labels
-#     assert_success
-#     assert_line --regexp "Id.*$created_id"
-#     assert_line --regexp "Value.*test_update_rr_val"
-#     assert_line --regexp "Labels.*key: other"
-#     refute_output --regexp "Labels.*key: value"
-#     refute_output --regexp "Labels.*test: true"
-#     refute_output --regexp "Labels.*test: true"
+  # force replace labels
+  run_otdfctl_obl_values update --id "$created_id" -l key=other --force-replace-labels
+    assert_success
+    assert_line --regexp "Id.*$created_id"
+    assert_line --regexp "Value.*test_update_obl_val"
+    assert_line --regexp "Labels.*key: other"
+    refute_output --regexp "Labels.*key: value"
+    refute_output --regexp "Labels.*test: true"
+    refute_output --regexp "Labels.*test: true"
 
-#   # renamed
-#   run_otdfctl_reg_res_values update --id "$created_id" --value test_renamed_rr_val
-#     assert_success
-#     assert_line --regexp "Id.*$created_id"
-#     assert_line --regexp "Value.*test_renamed_rr_val"
-#     refute_output --regexp "Value.*test_update_rr_val"
+  # renamed
+  run_otdfctl_obl_values update --id "$created_id" --value test_renamed_obl_val
+    assert_success
+    assert_line --regexp "Id.*$created_id"
+    assert_line --regexp "Value.*test_renamed_obl_val"
+    refute_output --regexp "Value.*test_update_obl_val"
 
-#   # ensure previous updates without action attribute value args did not clear action attribute values
-#   run_otdfctl_reg_res_values get --id "$created_id" --json
-#     [ "$(echo "$output" | jq -r 'any(.action_attribute_values[]; .action.id == "'"$READ_ACTION_ID"'" and .action.name == "'"$READ_ACTION_NAME"'" and .attribute_value.id == "'"$ATTR_VAL_1_ID"'" and .attribute_value.fqn == "'"$ATTR_VAL_1_FQN"'")')" = "true" ]
-
-#   # update action attribute values
-#   run_otdfctl_reg_res_values update --id "$created_id" --action-attribute-value "\"$READ_ACTION_NAME;$ATTR_VAL_1_FQN\"" --action-attribute-value "\"$CUSTOM_ACTION_ID;$ATTR_VAL_2_ID\"" --force --json
-#     assert_success
-#     [ "$(echo "$output" | jq -r '.id')" = "$created_id" ]
-#     [ "$(echo "$output" | jq -r 'any(.action_attribute_values[]; .action.id == "'"$READ_ACTION_ID"'" and .action.name == "'"$READ_ACTION_NAME"'" and .attribute_value.id == "'"$ATTR_VAL_1_ID"'" and .attribute_value.fqn == "'"$ATTR_VAL_1_FQN"'")')" = "true" ]
-#     [ "$(echo "$output" | jq -r 'any(.action_attribute_values[]; .action.id == "'"$CUSTOM_ACTION_ID"'" and .action.name == "'"$CUSTOM_ACTION_NAME"'" and .attribute_value.id == "'"$ATTR_VAL_2_ID"'" and .attribute_value.fqn == "'"$ATTR_VAL_2_FQN"'")')" = "true" ]
-
-#   # cleanup
-#   run_otdfctl_reg_res_values delete --id $created_id --force
-# }
+  # cleanup
+  run_otdfctl_obl_values delete --id $created_id --force
+}
 
 @test "Delete obligation value - Good" {
   # setup a value to delete
