@@ -6,29 +6,13 @@ setup_file() {
     export WITH_CREDS='--with-client-creds-file ./creds.json'
     export HOST='--host http://localhost:8080'
 
-    # create obligation used in obligation values tests
-    export OBL_NAME="test_obl_for_values"
-    export OBL_ID=$(./otdfctl $HOST $WITH_CREDS policy obligations create --name "$OBL_NAME" --json | jq -r '.id')
-
-    # # create custom action to be used in obligation values tests
-    # export CUSTOM_ACTION_NAME="test_action_for_values"
-    # export CUSTOM_ACTION_ID=$(./otdfctl $HOST $WITH_CREDS policy actions create --name "$CUSTOM_ACTION_NAME" --json | jq -r '.id')
-
-    # get standard read action id to use in obligation values tests
-    # export READ_ACTION_NAME="read"
-    # export READ_ACTION_ID=$(./otdfctl $HOST $WITH_CREDS policy actions get --name "$READ_ACTION_NAME" --json | jq -r '.id')
-
     # create attribute value to be used in obligation values tests
     export NS_NAME="test-obl.org"
     export NS_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes namespaces create --name "$NS_NAME" --json | jq -r '.id')
-    # export ATTR_NAME=test_rr_attr
-    # attr_id=$(./otdfctl $HOST $WITH_CREDS policy attributes create --namespace "$NS_ID" --name "$ATTR_NAME" --rule ANY_OF -l key=value --json | jq -r '.id')
-    # export ATTR_VAL_1_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes values create --attribute-id "$attr_id" --value test_reg_res_attr__val_1 --json | jq -r '.id')
-    # export ATTR_VAL_1_FQN=$(./otdfctl $HOST $WITH_CREDS policy attributes values get --id "$ATTR_VAL_1_ID" --json | jq -r '.fqn')
-    # export ATTR_VAL_2_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes values create --attribute-id "$attr_id" --value test_reg_res_attr__val_2 --json | jq -r '.id')
-    # export ATTR_VAL_2_FQN=$(./otdfctl $HOST $WITH_CREDS policy attributes values get --id "$ATTR_VAL_2_ID" --json | jq -r '.fqn')
-
-    # echo "FQN: $ATTR_VAL_1_FQN"
+   
+    # create obligation used in obligation values tests
+    export OBL_NAME="test_obl_for_values"
+    export OBL_ID=$(./otdfctl $HOST $WITH_CREDS policy obligations create --name "$OBL_NAME" --namespace "$NS_ID" --json | jq -r '.id')
 }
 
 setup() {
@@ -59,7 +43,7 @@ teardown_file() {
 }
 
 @test "Create a obligation - Good" {
-  run_otdfctl_obl create --name test_create_obl --namespace "${NS_ID}"
+  run_otdfctl_obl create --name test_create_obl --namespace "$NS_ID"
     assert_output --partial "SUCCESS"
     assert_line --regexp "Name.*test_create_obl"
     assert_output --partial "Id"
@@ -73,11 +57,11 @@ teardown_file() {
 
 @test "Create a obligation - Bad" {
   # bad obligation names
-  run_otdfctl_obl create --name ends_underscored_ --namespace "${NS_ID}"
+  run_otdfctl_obl create --name ends_underscored_ --namespace "$NS_ID"
     assert_failure
-  run_otdfctl_obl create --name -first-char-hyphen --namespace "${NS_ID}"
+  run_otdfctl_obl create --name -first-char-hyphen --namespace "$NS_ID"
     assert_failure
-  run_otdfctl_obl create --name inval!d.chars --namespace "${NS_ID}"
+  run_otdfctl_obl create --name inval!d.chars --namespace "$NS_ID"
     assert_failure
 
   # missing flag
@@ -86,10 +70,10 @@ teardown_file() {
     assert_output --partial "Flag '--name' is required"
   
   # conflict
-  run_otdfctl_obl create --name test_create_obl_conflict --namespace "${NS_ID}"
+  run_otdfctl_obl create --name test_create_obl_conflict --namespace "$NS_ID"
     assert_output --partial "SUCCESS"
   created_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
-  run_otdfctl_obl create --name test_create_obl_conflict --namespace "${NS_ID}"
+  run_otdfctl_obl create --name test_create_obl_conflict --namespace "$NS_ID"
       assert_failure
       assert_output --partial "already_exists"
 
@@ -99,7 +83,7 @@ teardown_file() {
 
 @test "Get an obligation - Good" {
   # setup an obligation to get
-  run_otdfctl_obl create --name test_get_obl --namespace "${NS_ID}"
+  run_otdfctl_obl create --name test_get_obl --namespace "$NS_ID"
     assert_success
   created_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
 
@@ -131,9 +115,9 @@ teardown_file() {
 
 @test "List obligations" {
   # setup obligations to list
-  run_otdfctl_obl create --name test_list_obl_1 --namespace "${NS_ID}"
+  run_otdfctl_obl create --name test_list_obl_1 --namespace "$NS_ID"
   obl1_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
-  run_otdfctl_obl create --name test_list_obl_2 --namespace "${NS_ID}"
+  run_otdfctl_obl create --name test_list_obl_2 --namespace "$NS_ID"
   obl2_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
 
   run_otdfctl_obl list
@@ -152,7 +136,7 @@ teardown_file() {
 
 @test "Update obligation" {
   # setup an obligation to update
-  run_otdfctl_obl create --name test_update_obl --namespace "${NS_ID}"
+  run_otdfctl_obl create --name test_update_obl --namespace "$NS_ID"
     assert_success
   created_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
 
@@ -179,7 +163,7 @@ teardown_file() {
 
 @test "Delete obligation - Good" {
   # setup an obligation to delete
-  run_otdfctl_obl create --name test_delete_obl --namespace "${NS_ID}"
+  run_otdfctl_obl create --name test_delete_obl --namespace "$NS_ID"
   created_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
 
   run_otdfctl_obl delete --id "$created_id" --force
@@ -198,41 +182,31 @@ teardown_file() {
     assert_output --partial "must be a valid UUID"
 }
 
-# # Tests for registered resource values
+# Tests for obligation values
 
-# @test "Create a registered resource value - Good" {
-#   # simple by resource ID
-#   run_otdfctl_reg_res_values create --resource "$RR_ID" --value test_create_rr_val
-#     assert_output --partial "SUCCESS"
-#     assert_line --regexp "Value.*test_create_rr_val"
-#     assert_output --partial "Id"
-#     assert_output --partial "Created At"
-#     assert_line --partial "Updated At"
-#   created_id_simple=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
+@test "Create an obligation value - Good" {
+  # simple by obligation ID
+  run_otdfctl_obl_values create --obligation "$OBL_ID" --value test_create_obl_val
+    assert_output --partial "SUCCESS"
+    assert_line --regexp "Value.*test_create_obl_val"
+    assert_output --partial "Id"
+    assert_output --partial "Created At"
+    assert_line --partial "Updated At"
+  created_id_simple=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
 
-#   # simple by resource name
-#   run_otdfctl_reg_res_values create --resource "$RR_NAME" --value test_create_rr_val_by_res_name
-#     assert_output --partial "SUCCESS"
-#     assert_line --regexp "Value.*test_create_rr_val"
-#     assert_output --partial "Id"
-#     assert_output --partial "Created At"
-#     assert_line --partial "Updated At"
-#   created_id_simple_by_res_name=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
+  # simple by obligation FQN
+  run_otdfctl_obl_values create --obligation "https://$NS_NAME/obl/$OBL_NAME" --value test_create_obl_val_by_obl_fqn
+    assert_output --partial "SUCCESS"
+    assert_line --regexp "Value.*test_create_obl_val"
+    assert_output --partial "Id"
+    assert_output --partial "Created At"
+    assert_line --partial "Updated At"
+  created_id_simple_by_fqn=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
 
-#   # with action attribute values
-#   run_otdfctl_reg_res_values create --resource "$RR_ID" --value test_create_rr_val_with_action_attr_vals --action-attribute-value "\"$READ_ACTION_ID;$ATTR_VAL_1_FQN\"" --action-attribute-value "\"$CUSTOM_ACTION_NAME;$ATTR_VAL_2_ID\"" --json
-#     assert_success
-#     [ "$(echo "$output" | jq -r '.id')" != "" ]
-#     [ "$(echo "$output" | jq -r '.value')" = "test_create_rr_val_with_action_attr_vals" ]
-#     [ "$(echo "$output" | jq -r 'any(.action_attribute_values[]; .action.id == "'"$READ_ACTION_ID"'" and .action.name == "'"$READ_ACTION_NAME"'" and .attribute_value.id == "'"$ATTR_VAL_1_ID"'" and .attribute_value.fqn == "'"$ATTR_VAL_1_FQN"'")')" = "true" ]
-#     [ "$(echo "$output" | jq -r 'any(.action_attribute_values[]; .action.id == "'"$CUSTOM_ACTION_ID"'" and .action.name == "'"$CUSTOM_ACTION_NAME"'" and .attribute_value.id == "'"$ATTR_VAL_2_ID"'" and .attribute_value.fqn == "'"$ATTR_VAL_2_FQN"'")')" = "true" ]
-#   created_id_with_action_attr_vals=$(echo "$output" | jq -r '.id')
-
-#   # cleanup
-#   run_otdfctl_reg_res_values delete --id $created_id_simple --force
-#   run_otdfctl_reg_res_values delete --id $created_id_simple_by_res_name --force
-#   run_otdfctl_reg_res_values delete --id $created_id_with_action_attr_vals --force
-# }
+  # cleanup
+  run_otdfctl_obl_values delete --id $created_id_simple --force
+  run_otdfctl_obl_values delete --id $created_id_simple_by_fqn --force
+}
 
 # @test "Create a registered resource value - Bad" {
 #   # bad resource value names
@@ -400,23 +374,23 @@ teardown_file() {
 #   run_otdfctl_reg_res_values delete --id $created_id --force
 # }
 
-# @test "Delete registered resource value - Good" {
-#   # setup a value to delete
-#   run_otdfctl_reg_res_values create --resource "$RR_ID" --value test_delete_rr_val
-#   created_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
+@test "Delete obligation value - Good" {
+  # setup a value to delete
+  run_otdfctl_obl_values create --obligation "$OBL_ID" --value test_delete_obl_val
+  created_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
 
-#   run_otdfctl_reg_res_values delete --id "$created_id" --force
-#     assert_success
-# }
+  run_otdfctl_obl_values delete --id "$created_id" --force
+    assert_success
+}
 
-# @test "Delete registered resource value - Bad" {
-#   # no id
-#   run_otdfctl_reg_res_values delete
-#     assert_failure
-#     assert_output --partial "Flag '--id' is required"
+@test "Delete obligation value - Bad" {
+  # no id
+  run_otdfctl_obl_values delete
+    assert_failure
+    assert_output --partial "one of id, fqn must be set [message.oneof]"
 
-#   # invalid id
-#   run_otdfctl_reg_res_values delete --id 'not_a_uuid'
-#     assert_failure
-#     assert_output --partial "must be a valid UUID"
-# }
+  # invalid id
+  run_otdfctl_obl_values delete --id 'not_a_uuid'
+    assert_failure
+    assert_output --partial "must be a valid UUID"
+}
