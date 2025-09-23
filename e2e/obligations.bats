@@ -242,51 +242,51 @@ teardown_file() {
   run_otdfctl_obl_values delete --id $created_id --force
 }
 
-# @test "Get a registered resource value - Good" {
-#   # setup a resource value to get
-#   run_otdfctl_reg_res_values create --resource "$RR_ID" --value test_get_rr_val --action-attribute-value "\"$READ_ACTION_ID;$ATTR_VAL_1_ID\""
-#     assert_success
-#   created_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
+@test "Get an obligation value - Good" {
+  # setup an obligation value to get
+  run_otdfctl_obl_values create --obligation "$OBL_ID" --value test_get_obl_val
+    assert_success
+  created_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
 
-#   # get by id
-#   run_otdfctl_reg_res_values get --id "$created_id" --json
-#     assert_success
-#     [ "$(echo "$output" | jq -r '.id')" = "$created_id" ]
-#     [ "$(echo "$output" | jq -r '.value')" = "test_get_rr_val" ]
-#     [ "$(echo "$output" | jq -r '.action_attribute_values[0].action.id')" = "$READ_ACTION_ID" ]
-#     [ "$(echo "$output" | jq -r '.action_attribute_values[0].action.name')" = "$READ_ACTION_NAME" ]
-#     [ "$(echo "$output" | jq -r '.action_attribute_values[0].attribute_value.id')" = "$ATTR_VAL_1_ID" ]
-#     [ "$(echo "$output" | jq -r '.action_attribute_values[0].attribute_value.fqn')" = "$ATTR_VAL_1_FQN" ]
+  # get by id
+  run_otdfctl_obl_values get --id "$created_id" --json
+    assert_success
+    [ "$(echo "$output" | jq -r '.id')" = "$created_id" ]
+    [ "$(echo "$output" | jq -r '.value')" = "test_get_obl_val" ]
+    # [ "$(echo "$output" | jq -r '.action_attribute_values[0].action.id')" = "$READ_ACTION_ID" ]
+    # [ "$(echo "$output" | jq -r '.action_attribute_values[0].action.name')" = "$READ_ACTION_NAME" ]
+    # [ "$(echo "$output" | jq -r '.action_attribute_values[0].attribute_value.id')" = "$ATTR_VAL_1_ID" ]
+    # [ "$(echo "$output" | jq -r '.action_attribute_values[0].attribute_value.fqn')" = "$ATTR_VAL_1_FQN" ]
 
-#   # get by fqn
-#   run_otdfctl_reg_res_values get --fqn "https://reg_res/$RR_NAME/value/test_get_rr_val" --json
-#     assert_success
-#     [ "$(echo "$output" | jq -r '.id')" = "$created_id" ]
-#     [ "$(echo "$output" | jq -r '.value')" = "test_get_rr_val" ]
-#     [ "$(echo "$output" | jq -r '.action_attribute_values[0].action.id')" = "$READ_ACTION_ID" ]
-#     [ "$(echo "$output" | jq -r '.action_attribute_values[0].action.name')" = "$READ_ACTION_NAME" ]
-#     [ "$(echo "$output" | jq -r '.action_attribute_values[0].attribute_value.id')" = "$ATTR_VAL_1_ID" ]
-#     [ "$(echo "$output" | jq -r '.action_attribute_values[0].attribute_value.fqn')" = "$ATTR_VAL_1_FQN" ]
+  # get by fqn
+  run_otdfctl_obl_values get --fqn "https://$NS_NAME/obl/$OBL_NAME/value/test_get_obl_val" --json
+    assert_success
+    [ "$(echo "$output" | jq -r '.id')" = "$created_id" ]
+    [ "$(echo "$output" | jq -r '.value')" = "test_get_obl_val" ]
+    # [ "$(echo "$output" | jq -r '.action_attribute_values[0].action.id')" = "$READ_ACTION_ID" ]
+    # [ "$(echo "$output" | jq -r '.action_attribute_values[0].action.name')" = "$READ_ACTION_NAME" ]
+    # [ "$(echo "$output" | jq -r '.action_attribute_values[0].attribute_value.id')" = "$ATTR_VAL_1_ID" ]
+    # [ "$(echo "$output" | jq -r '.action_attribute_values[0].attribute_value.fqn')" = "$ATTR_VAL_1_FQN" ]
 
-#   # cleanup
-#   run_otdfctl_reg_res_values delete --id $created_id --force
-# }
+  # cleanup
+  run_otdfctl_obl_values delete --id $created_id --force
+}
 
-# @test "Get a registered resource value - Bad" {
-#   run_otdfctl_reg_res_values get
-#     assert_failure
-#     assert_output --partial "Either 'id' or 'fqn' must be provided"
+@test "Get a registered resource value - Bad" {
+  run_otdfctl_obl_values get
+    assert_failure
+    assert_output --partial "one of id, fqn must be set [message.oneof]"
 
-#   # invalud id
-#   run_otdfctl_reg_res_values get --id 'not_a_uuid'
-#     assert_failure
-#     assert_output --partial "must be a valid UUID"
+  # invalid id
+  run_otdfctl_obl_values get --id 'not_a_uuid'
+    assert_failure
+    assert_output --partial "must be a valid UUID"
 
-#   # invalid fqn
-#   run_otdfctl_reg_res_values get --fqn 'not_a_fqn'
-#     assert_failure
-#     assert_output --partial "must be a valid URI"
-# }
+  # invalid fqn
+  run_otdfctl_obl_values get --fqn 'not_a_fqn'
+    assert_failure
+    assert_output --partial "must be a valid URI"
+}
 
 # @test "Update obligation values" {
 #   # setup a resource value to update
