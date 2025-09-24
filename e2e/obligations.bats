@@ -297,11 +297,11 @@ teardown_file() {
     refute_output --regexp "Labels.*test: true"
 
   # renamed
-  run_otdfctl_obl_values update --id "$created_id" --value test_renamed_obl_val
+  run_otdfctl_obl_values update --id "$created_id" --value test_renamed_obl_val --json
     assert_success
-    assert_line --regexp "Id.*$created_id"
-    assert_line --regexp "Value.*test_renamed_obl_val"
-    refute_output --regexp "Value.*test_update_obl_val"
+      [ "$(echo "$output" | jq -r '.id')" = "$created_id" ]
+      [ "$(echo "$output" | jq -r '.value')" = "test_renamed_obl_val" ]
+      [ "$(echo "$output" | jq -r '.value')" != "test_update_obl_val" ]
 
   # cleanup
   run_otdfctl_obl_values delete --id $created_id --force
