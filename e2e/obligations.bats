@@ -43,16 +43,16 @@ teardown_file() {
 }
 
 @test "Create a obligation - Good" {
-  run_otdfctl_obl create --name test_create_obl --namespace "$NS_ID"
-    assert_output --partial "SUCCESS"
-    assert_line --regexp "Name.*test_create_obl"
-    assert_output --partial "Id"
-    assert_output --partial "Created At"
-    assert_line --partial "Updated At"
+  run_otdfctl_obl create --name test_create_obl --namespace "$NS_ID" --json
+    assert_success
+    [ "$(echo "$output" | jq -r '.name')" = "test_create_obl" ]
+    [ -n "$(echo "$output" | jq -r '.id')" ]
+    [ -n "$(echo "$output" | jq -r '.created_at')" ]
+    [ -n "$(echo "$output" | jq -r '.updated_at')" ]
 
   # cleanup
-  created_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
-  run_otdfctl_obl delete --id $created_id --force
+  created_id="$(echo "$output" | jq -r '.id')"
+  run_otdfctl_obl delete --id "$created_id" --force
 }
 
 @test "Create a obligation - Bad" {
@@ -70,9 +70,9 @@ teardown_file() {
     assert_output --partial "Flag '--name' is required"
   
   # conflict
-  run_otdfctl_obl create --name test_create_obl_conflict --namespace "$NS_ID"
-    assert_output --partial "SUCCESS"
-  created_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
+  run_otdfctl_obl create --name test_create_obl_conflict --namespace "$NS_ID" --json
+    assert_success
+  created_id="$(echo "$output" | jq -r '.id')"
   run_otdfctl_obl create --name test_create_obl_conflict --namespace "$NS_ID"
       assert_failure
       assert_output --partial "already_exists"
@@ -83,9 +83,9 @@ teardown_file() {
 
 @test "Get an obligation - Good" {
   # setup an obligation to get
-  run_otdfctl_obl create --name test_get_obl --namespace "$NS_ID"
+  run_otdfctl_obl create --name test_get_obl --namespace "$NS_ID" --json
     assert_success
-  created_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
+  created_id="$(echo "$output" | jq -r '.id')"
 
   # get by id
   run_otdfctl_obl get --id "$created_id" --json
@@ -115,10 +115,10 @@ teardown_file() {
 
 @test "List obligations" {
   # setup obligations to list
-  run_otdfctl_obl create --name test_list_obl_1 --namespace "$NS_ID"
-  obl1_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
-  run_otdfctl_obl create --name test_list_obl_2 --namespace "$NS_ID"
-  obl2_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
+  run_otdfctl_obl create --name test_list_obl_1 --namespace "$NS_ID" --json
+  obl1_id="$(echo "$output" | jq -r '.id')"
+  run_otdfctl_obl create --name test_list_obl_2 --namespace "$NS_ID" --json
+  obl2_id="$(echo "$output" | jq -r '.id')"
 
   run_otdfctl_obl list
     assert_success
@@ -136,26 +136,24 @@ teardown_file() {
 
 @test "Update obligation" {
   # setup an obligation to update
-  run_otdfctl_obl create --name test_update_obl --namespace "$NS_ID"
+  run_otdfctl_obl create --name test_update_obl --namespace "$NS_ID" --json
     assert_success
-  created_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
+  created_id="$(echo "$output" | jq -r '.id')"
 
   # force replace labels
-  run_otdfctl_obl update --id "$created_id" -l key=other --force-replace-labels
+  run_otdfctl_obl update --id "$created_id" -l key=other --force-replace-labels --json
     assert_success
-    assert_line --regexp "Id.*$created_id"
-    assert_line --regexp "Name.*test_update_obl"
-    assert_line --regexp "Labels.*key: other"
-    refute_output --regexp "Labels.*key: value"
-    refute_output --regexp "Labels.*test: true"
-    refute_output --regexp "Labels.*test: true"
+    [ "$(echo "$output" | jq -r '.id')" = "$created_id" ]
+    [ "$(echo "$output" | jq -r '.name')" = "test_update_obl" ]
+    [ "$(echo "$output" | jq -r '.metadata.labels | keys | length')" = "1" ]
+    [ "$(echo "$output" | jq -r '.metadata.labels.key')" = "other" ]
 
   # renamed
-  run_otdfctl_obl update --id "$created_id" --name test_renamed_obl
+  run_otdfctl_obl update --id "$created_id" --name test_renamed_obl --json
     assert_success
-    assert_line --regexp "Id.*$created_id"
-    assert_line --regexp "Name.*test_renamed_obl"
-    refute_output --regexp "Name.*test_update_obl"
+    [ "$(echo "$output" | jq -r '.id')" = "$created_id" ]
+    [ "$(echo "$output" | jq -r '.name')" = "test_renamed_obl" ]
+    [ "$(echo "$output" | jq -r '.name')" != "test_update_obl" ]
 
   # cleanup
   run_otdfctl_obl delete --id $created_id --force
@@ -186,23 +184,22 @@ teardown_file() {
 
 @test "Create an obligation value - Good" {
   # simple by obligation ID
-  run_otdfctl_obl_values create --obligation "$OBL_ID" --value test_create_obl_val
-    assert_output --partial "SUCCESS"
-    assert_line --regexp "Value.*test_create_obl_val"
-    assert_output --partial "Id"
-    assert_output --partial "Created At"
-    assert_line --partial "Updated At"
-  created_id_simple=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
+  run_otdfctl_obl_values create --obligation "$OBL_ID" --value test_create_obl_val --json
+    assert_success
+    [ "$(echo "$output" | jq -r '.value')" = "test_create_obl_val" ]
+    [ -n "$(echo "$output" | jq -r '.id')" ]
+    [ -n "$(echo "$output" | jq -r '.created_at')" ]
+    [ -n "$(echo "$output" | jq -r '.updated_at')" ]
+  created_id_simple="$(echo "$output" | jq -r '.id')"
 
   # simple by obligation FQN
-  run_otdfctl_obl_values create --obligation "https://$NS_NAME/obl/$OBL_NAME" --value test_create_obl_val_by_obl_fqn
-    assert_output --partial "SUCCESS"
-    assert_line --regexp "Value.*test_create_obl_val"
-    assert_output --partial "Id"
-    assert_output --partial "Created At"
-    assert_line --partial "Updated At"
-  created_id_simple_by_fqn=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
-
+  run_otdfctl_obl_values create --obligation "https://$NS_NAME/obl/$OBL_NAME" --value test_create_obl_val_by_obl_fqn --json
+    assert_success
+    [ "$(echo "$output" | jq -r '.value')" = "test_create_obl_val_by_obl_fqn" ]
+    [ -n "$(echo "$output" | jq -r '.id')" ]
+    [ -n "$(echo "$output" | jq -r '.created_at')" ]
+    [ -n "$(echo "$output" | jq -r '.updated_at')" ]
+  created_id_simple_by_fqn=$(echo "$output" | jq -r '.id')
   # cleanup
   run_otdfctl_obl_values delete --id $created_id_simple --force
   run_otdfctl_obl_values delete --id $created_id_simple_by_fqn --force
