@@ -163,8 +163,8 @@ teardown_file() {
 
 @test "Delete obligation - Good" {
   # setup an obligation to delete
-  run_otdfctl_obl create --name test_delete_obl --namespace "$NS_ID"
-  created_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
+  run_otdfctl_obl create --name test_delete_obl --namespace "$NS_ID" --json
+  created_id="$(echo "$output" | jq -r '.id')"
 
   run_otdfctl_obl delete --id "$created_id" --force
     assert_success
@@ -244,9 +244,9 @@ teardown_file() {
 
 @test "Get an obligation value - Good" {
   # setup an obligation value to get
-  run_otdfctl_obl_values create --obligation "$OBL_ID" --value test_get_obl_val
+  run_otdfctl_obl_values create --obligation "$OBL_ID" --value test_get_obl_val --json
     assert_success
-  created_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
+  created_id=$(echo "$output" | jq -r '.id')
 
   # get by id
   run_otdfctl_obl_values get --id "$created_id" --json
