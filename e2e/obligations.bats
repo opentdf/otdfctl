@@ -228,9 +228,9 @@ teardown_file() {
     assert_output --partial "obligation_fqn: value must be a valid URI [string.uri]"
   
   # conflict
-  run_otdfctl_obl_values create --obligation "$OBL_ID" --value test_create_obl_val_conflict
-    assert_output --partial "SUCCESS"
-  created_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
+  run_otdfctl_obl_values create --obligation "$OBL_ID" --value test_create_obl_val_conflict --json
+    assert_success
+  created_id="$(echo "$output" | jq -r '.id')"
   run_otdfctl_obl_values create --obligation "$OBL_ID" --value test_create_obl_val_conflict
       assert_failure
       assert_output --partial "already_exists"
