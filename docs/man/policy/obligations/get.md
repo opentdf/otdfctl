@@ -15,7 +15,7 @@ command:
 
 Retrieve an obligation definition along with its metadata and values.
 
-If both `id` and `name` flag values are provided, `id` is preferred.
+If both `id` and `fqn` flag values are provided, `id` is preferred.
 
 For more information about obligations, see the manual for the `obligations` subcommand.
 

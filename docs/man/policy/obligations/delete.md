@@ -6,11 +6,9 @@ command:
     - name: id
       shorthand: i
       description: ID of the obligation
-      required: false
     - name: fqn
       shorthand: f
       description: FQN of the obligation
-      required: false
     - name: force
       description: Force deletion without interactive confirmation
 ---
@@ -23,6 +21,14 @@ For more information about obligations, see the manual for the `obligations` sub
 
 ## Example 
 
+Delete by ID:
+
 ```shell
 otdfctl policy obligations delete --id 217b300a-47f9-4bee-be8c-d38c880053f7
+```
+
+Delete by FQN:
+
+```shell
+otdfctl policy obligations delete --fqn "https://namespace.com/obl/name/drm"
 ```

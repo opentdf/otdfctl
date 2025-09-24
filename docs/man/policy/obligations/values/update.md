@@ -12,7 +12,6 @@ command:
     - name: value
       shorthand: v
       description: Optional updated value of the obligation value (must be unique within the definition)
-      required: false
     - name: label
       description: "Optional metadata 'labels' in the format: key=value"
       shorthand: l
@@ -30,5 +29,5 @@ For more information about obligation values, see the manual for the `values` su
 ## Example
 
 ```shell
-otdfctl policy obligations values update --id 3c51a593-cbf8-419d-b7dc-b656d0bedfbb --value new_value
+otdfctl policy obligations values update --id 3c51a593-cbf8-419d-b7dc-b656d0bedfbb --value new_value --label "hello=world"
 ```

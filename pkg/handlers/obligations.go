@@ -22,13 +22,9 @@ func (h Handler) CreateObligation(ctx context.Context, namespace, name string, v
 
 	_, err := uuid.Parse(namespace)
 	if err != nil {
-		req.NamespaceIdentifier = &obligations.CreateObligationRequest_Fqn{
-			Fqn: namespace,
-		}
+		req.NamespaceFqn = namespace
 	} else {
-		req.NamespaceIdentifier = &obligations.CreateObligationRequest_Id{
-			Id: namespace,
-		}
+		req.NamespaceId = namespace
 	}
 
 	resp, err := h.sdk.Obligations.CreateObligation(ctx, req)
@@ -42,13 +38,9 @@ func (h Handler) CreateObligation(ctx context.Context, namespace, name string, v
 func (h Handler) GetObligation(ctx context.Context, id, fqn string) (*policy.Obligation, error) {
 	req := &obligations.GetObligationRequest{}
 	if id != "" {
-		req.Identifier = &obligations.GetObligationRequest_Id{
-			Id: id,
-		}
+		req.Id = id
 	} else {
-		req.Identifier = &obligations.GetObligationRequest_Fqn{
-			Fqn: fqn,
-		}
+		req.Fqn = fqn
 	}
 
 	resp, err := h.sdk.Obligations.GetObligation(ctx, req)
@@ -69,13 +61,9 @@ func (h Handler) ListObligations(ctx context.Context, limit, offset int32, names
 	if namespace != "" {
 		_, err := uuid.Parse(namespace)
 		if err != nil {
-			req.NamespaceIdentifier = &obligations.ListObligationsRequest_Fqn{
-				Fqn: namespace,
-			}
+			req.NamespaceFqn = namespace
 		} else {
-			req.NamespaceIdentifier = &obligations.ListObligationsRequest_Id{
-				Id: namespace,
-			}
+			req.NamespaceId = namespace
 		}
 	}
 	resp, err := h.sdk.Obligations.ListObligations(ctx, req)
@@ -103,13 +91,9 @@ func (h Handler) UpdateObligation(ctx context.Context, id, name string, metadata
 func (h Handler) DeleteObligation(ctx context.Context, id, fqn string) error {
 	req := &obligations.DeleteObligationRequest{}
 	if id != "" {
-		req.Identifier = &obligations.DeleteObligationRequest_Id{
-			Id: id,
-		}
+		req.Id = id
 	} else {
-		req.Identifier = &obligations.DeleteObligationRequest_Fqn{
-			Fqn: fqn,
-		}
+		req.Fqn = fqn
 	}
 	_, err := h.sdk.Obligations.DeleteObligation(ctx, req)
 	if err != nil {
@@ -131,13 +115,9 @@ func (h Handler) CreateObligationValue(ctx context.Context, obligation, value st
 
 	_, err := uuid.Parse(obligation)
 	if err != nil {
-		req.ObligationIdentifier = &obligations.CreateObligationValueRequest_Fqn{
-			Fqn: obligation,
-		}
+		req.ObligationFqn = obligation
 	} else {
-		req.ObligationIdentifier = &obligations.CreateObligationValueRequest_Id{
-			Id: obligation,
-		}
+		req.ObligationId = obligation
 	}
 
 	resp, err := h.sdk.Obligations.CreateObligationValue(ctx, req)
@@ -151,13 +131,9 @@ func (h Handler) CreateObligationValue(ctx context.Context, obligation, value st
 func (h Handler) GetObligationValue(ctx context.Context, id, fqn string) (*policy.ObligationValue, error) {
 	req := &obligations.GetObligationValueRequest{}
 	if id != "" {
-		req.Identifier = &obligations.GetObligationValueRequest_Id{
-			Id: id,
-		}
+		req.Id = id
 	} else {
-		req.Identifier = &obligations.GetObligationValueRequest_Fqn{
-			Fqn: fqn,
-		}
+		req.Fqn = fqn
 	}
 
 	resp, err := h.sdk.Obligations.GetObligationValue(ctx, req)
@@ -185,13 +161,9 @@ func (h Handler) UpdateObligationValue(ctx context.Context, id, value string, me
 func (h Handler) DeleteObligationValue(ctx context.Context, id, fqn string) error {
 	req := &obligations.DeleteObligationValueRequest{}
 	if id != "" {
-		req.Identifier = &obligations.DeleteObligationValueRequest_Id{
-			Id: id,
-		}
+		req.Id = id
 	} else {
-		req.Identifier = &obligations.DeleteObligationValueRequest_Fqn{
-			Fqn: fqn,
-		}
+		req.Fqn = fqn
 	}
 	_, err := h.sdk.Obligations.DeleteObligationValue(ctx, req)
 	if err != nil {
