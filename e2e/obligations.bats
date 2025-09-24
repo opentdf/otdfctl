@@ -39,7 +39,7 @@ teardown_file() {
   ./otdfctl $HOST $WITH_CREDS policy attributes namespaces unsafe delete --id "$NS_ID" --force
 
   # clear out all test env vars
-  unset HOST WITH_CREDS OBL_NAME OBL_ID
+  unset HOST WITH_CREDS OBL_NAME OBL_ID NS_NAME NS_ID
 }
 
 @test "Create a obligation - Good" {
