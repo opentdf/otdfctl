@@ -309,8 +309,8 @@ teardown_file() {
 
 @test "Delete obligation value - Good" {
   # setup a value to delete
-  run_otdfctl_obl_values create --obligation "$OBL_ID" --value test_delete_obl_val
-  created_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
+  run_otdfctl_obl_values create --obligation "$OBL_ID" --value test_delete_obl_val --json
+  created_id="$(echo "$output" | jq -r '.id')"
 
   run_otdfctl_obl_values delete --id "$created_id" --force
     assert_success
