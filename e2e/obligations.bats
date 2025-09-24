@@ -282,26 +282,24 @@ teardown_file() {
 
 @test "Update obligation values" {
   # setup an obligation value to update
-  run_otdfctl_obl_values create --obligation "$OBL_ID" --value test_update_obl_val
+  run_otdfctl_obl_values create --obligation "$OBL_ID" --value test_update_obl_val --json
     assert_success
-  created_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
+    created_id="$(echo "$output" | jq -r '.id')"
 
   # force replace labels
-  run_otdfctl_obl_values update --id "$created_id" -l key=other --force-replace-labels
+  run_otdfctl_obl_values update --id "$created_id" -l key=other --force-replace-labels --json
     assert_success
-    assert_line --regexp "Id.*$created_id"
-    assert_line --regexp "Value.*test_update_obl_val"
-    assert_line --regexp "Labels.*key: other"
-    refute_output --regexp "Labels.*key: value"
-    refute_output --regexp "Labels.*test: true"
-    refute_output --regexp "Labels.*test: true"
+    # Check that metadata.labels has exactly one key
+    [ "$(echo "$output" | jq -r '.metadata.labels | keys | length')" = "1" ]
+    # Check that the key "key" exists and has value "other"
+    [ "$(echo "$output" | jq -r '.metadata.labels.key')" = "other" ]
 
   # renamed
   run_otdfctl_obl_values update --id "$created_id" --value test_renamed_obl_val --json
     assert_success
-      [ "$(echo "$output" | jq -r '.id')" = "$created_id" ]
-      [ "$(echo "$output" | jq -r '.value')" = "test_renamed_obl_val" ]
-      [ "$(echo "$output" | jq -r '.value')" != "test_update_obl_val" ]
+    [ "$(echo "$output" | jq -r '.id')" = "$created_id" ]
+    [ "$(echo "$output" | jq -r '.value')" = "test_renamed_obl_val" ]
+    [ "$(echo "$output" | jq -r '.value')" != "test_update_obl_val" ]
 
   # cleanup
   run_otdfctl_obl_values delete --id $created_id --force
