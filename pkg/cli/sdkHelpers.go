@@ -148,7 +148,7 @@ func AggregateClientIDs(reqCtx []*policy.RequestContext) []string {
 	seen := map[string]bool{}
 	for _, r := range reqCtx {
 		id := r.GetPep().GetClientId()
-		if !seen[id] {
+		if id != "" && !seen[id] {
 			ids = append(ids, id)
 			seen[id] = true
 		}
