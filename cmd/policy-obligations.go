@@ -390,7 +390,7 @@ func getObligationTriggerRows(trigger *policy.ObligationTrigger) [][]string {
 	rows := [][]string{
 		{"Id", trigger.GetId()},
 		{"Attribute Value FQN", trigger.GetAttributeValue().GetFqn()},
-		{"Action FQN", trigger.GetAction().GetName()},
+		{"Action", trigger.GetAction().GetName()},
 		{"Obligation Value FQN", buildObligationValueFQN(trigger.GetObligationValue().GetObligation().GetNamespace().GetFqn(), trigger.GetObligationValue().GetObligation().GetName(), trigger.GetObligationValue().GetValue())},
 		{"Client IDs", cli.CommaSeparated(cli.AggregateClientIDs(trigger.GetContext()))},
 	}
