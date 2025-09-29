@@ -142,3 +142,16 @@ func KeyEnumToAlg(enum policy.Algorithm) (string, error) {
 		return "", errors.New("invalid enum algorithm")
 	}
 }
+
+func AggregateClientIDs(reqCtx []*policy.RequestContext) []string {
+	ids := []string{}
+	seen := map[string]bool{}
+	for _, r := range reqCtx {
+		id := r.GetPep().GetClientId()
+		if id != "" && !seen[id] {
+			ids = append(ids, id)
+			seen[id] = true
+		}
+	}
+	return ids
+}

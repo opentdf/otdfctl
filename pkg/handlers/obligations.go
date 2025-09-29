@@ -172,3 +172,60 @@ func (h Handler) DeleteObligationValue(ctx context.Context, id, fqn string) erro
 
 	return nil
 }
+
+// ******
+// Obligation Triggers
+// ******
+func (h Handler) CreateObligationTrigger(ctx context.Context, attributeValue, action, obligationValue, clientID string, metadata *common.MetadataMutable) (*policy.ObligationTrigger, error) {
+	req := &obligations.AddObligationTriggerRequest{
+		Metadata: metadata,
+	}
+
+	_, err := uuid.Parse(attributeValue)
+	if err != nil {
+		req.AttributeValue = &common.IdFqnIdentifier{Fqn: attributeValue}
+	} else {
+		req.AttributeValue = &common.IdFqnIdentifier{Id: attributeValue}
+	}
+
+	_, err = uuid.Parse(action)
+	if err != nil {
+		req.Action = &common.IdNameIdentifier{Name: action}
+	} else {
+		req.Action = &common.IdNameIdentifier{Id: action}
+	}
+
+	_, err = uuid.Parse(obligationValue)
+	if err != nil {
+		req.ObligationValue = &common.IdFqnIdentifier{Fqn: obligationValue}
+	} else {
+		req.ObligationValue = &common.IdFqnIdentifier{Id: obligationValue}
+	}
+
+	if clientID != "" {
+		req.Context = &policy.RequestContext{
+			Pep: &policy.PolicyEnforcementPoint{
+				ClientId: clientID,
+			},
+		}
+	}
+
+	resp, err := h.sdk.Obligations.AddObligationTrigger(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.GetTrigger(), nil
+}
+
+func (h Handler) DeleteObligationTrigger(ctx context.Context, id string) (*policy.ObligationTrigger, error) {
+	req := &obligations.RemoveObligationTriggerRequest{
+		Id: id,
+	}
+	resp, err := h.sdk.Obligations.RemoveObligationTrigger(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.GetTrigger(), nil
+}
