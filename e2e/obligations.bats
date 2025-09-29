@@ -26,7 +26,6 @@ setup() {
     run_otdfctl_obl_values () {
       run sh -c "./otdfctl $HOST $WITH_CREDS policy obligations values $*"
     }
-<<<<<<< HEAD
     run_otdfctl_obl_triggers () {
       run sh -c "./otdfctl $HOST $WITH_CREDS policy obligations triggers $*"
     }
@@ -38,8 +37,6 @@ setup() {
     run_otdfctl_attr() {
       run sh -c "./otdfctl $HOST $WITH_CREDS policy attributes $*"
     }
-=======
->>>>>>> main
 }
 
 teardown_file() {
@@ -53,22 +50,6 @@ teardown_file() {
   ./otdfctl $HOST $WITH_CREDS policy attributes namespaces unsafe delete --id "$NS_ID" --force
 
   # clear out all test env vars
-<<<<<<< HEAD
-  unset HOST WITH_CREDS OBL_NAME OBL_ID
-}
-
-@test "Create a obligation - Good" {
-  run_otdfctl_obl create --name test_create_obl --namespace "$NS_ID"
-    assert_output --partial "SUCCESS"
-    assert_line --regexp "Name.*test_create_obl"
-    assert_output --partial "Id"
-    assert_output --partial "Created At"
-    assert_line --partial "Updated At"
-
-  # cleanup
-  created_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
-  run_otdfctl_obl delete --id $created_id --force
-=======
   unset HOST WITH_CREDS OBL_NAME OBL_ID NS_NAME NS_ID
 }
 
@@ -83,7 +64,6 @@ teardown_file() {
   # cleanup
   created_id="$(echo "$output" | jq -r '.id')"
   run_otdfctl_obl delete --id "$created_id" --force
->>>>>>> main
 }
 
 @test "Create a obligation - Bad" {
@@ -101,15 +81,9 @@ teardown_file() {
     assert_output --partial "Flag '--name' is required"
   
   # conflict
-<<<<<<< HEAD
-  run_otdfctl_obl create --name test_create_obl_conflict --namespace "$NS_ID"
-    assert_output --partial "SUCCESS"
-  created_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
-=======
   run_otdfctl_obl create --name test_create_obl_conflict --namespace "$NS_ID" --json
     assert_success
   created_id="$(echo "$output" | jq -r '.id')"
->>>>>>> main
   run_otdfctl_obl create --name test_create_obl_conflict --namespace "$NS_ID"
       assert_failure
       assert_output --partial "already_exists"
@@ -120,15 +94,9 @@ teardown_file() {
 
 @test "Get an obligation - Good" {
   # setup an obligation to get
-<<<<<<< HEAD
-  run_otdfctl_obl create --name test_get_obl --namespace "$NS_ID"
-    assert_success
-  created_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
-=======
   run_otdfctl_obl create --name test_get_obl --namespace "$NS_ID" --json
     assert_success
   created_id="$(echo "$output" | jq -r '.id')"
->>>>>>> main
 
   # get by id
   run_otdfctl_obl get --id "$created_id" --json
@@ -158,17 +126,10 @@ teardown_file() {
 
 @test "List obligations" {
   # setup obligations to list
-<<<<<<< HEAD
-  run_otdfctl_obl create --name test_list_obl_1 --namespace "$NS_ID"
-  obl1_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
-  run_otdfctl_obl create --name test_list_obl_2 --namespace "$NS_ID"
-  obl2_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
-=======
   run_otdfctl_obl create --name test_list_obl_1 --namespace "$NS_ID" --json
   obl1_id="$(echo "$output" | jq -r '.id')"
   run_otdfctl_obl create --name test_list_obl_2 --namespace "$NS_ID" --json
   obl2_id="$(echo "$output" | jq -r '.id')"
->>>>>>> main
 
   run_otdfctl_obl list
     assert_success
@@ -186,28 +147,6 @@ teardown_file() {
 
 @test "Update obligation" {
   # setup an obligation to update
-<<<<<<< HEAD
-  run_otdfctl_obl create --name test_update_obl --namespace "$NS_ID"
-    assert_success
-  created_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
-
-  # force replace labels
-  run_otdfctl_obl update --id "$created_id" -l key=other --force-replace-labels
-    assert_success
-    assert_line --regexp "Id.*$created_id"
-    assert_line --regexp "Name.*test_update_obl"
-    assert_line --regexp "Labels.*key: other"
-    refute_output --regexp "Labels.*key: value"
-    refute_output --regexp "Labels.*test: true"
-    refute_output --regexp "Labels.*test: true"
-
-  # renamed
-  run_otdfctl_obl update --id "$created_id" --name test_renamed_obl
-    assert_success
-    assert_line --regexp "Id.*$created_id"
-    assert_line --regexp "Name.*test_renamed_obl"
-    refute_output --regexp "Name.*test_update_obl"
-=======
   run_otdfctl_obl create --name test_update_obl --namespace "$NS_ID" --json
     assert_success
   created_id="$(echo "$output" | jq -r '.id')"
@@ -226,7 +165,6 @@ teardown_file() {
     [ "$(echo "$output" | jq -r '.id')" = "$created_id" ]
     [ "$(echo "$output" | jq -r '.name')" = "test_renamed_obl" ]
     [ "$(echo "$output" | jq -r '.name')" != "test_update_obl" ]
->>>>>>> main
 
   # cleanup
   run_otdfctl_obl delete --id $created_id --force
@@ -234,13 +172,8 @@ teardown_file() {
 
 @test "Delete obligation - Good" {
   # setup an obligation to delete
-<<<<<<< HEAD
-  run_otdfctl_obl create --name test_delete_obl --namespace "$NS_ID"
-  created_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
-=======
   run_otdfctl_obl create --name test_delete_obl --namespace "$NS_ID" --json
   created_id="$(echo "$output" | jq -r '.id')"
->>>>>>> main
 
   run_otdfctl_obl delete --id "$created_id" --force
     assert_success
@@ -262,25 +195,6 @@ teardown_file() {
 
 @test "Create an obligation value - Good" {
   # simple by obligation ID
-<<<<<<< HEAD
-  run_otdfctl_obl_values create --obligation "$OBL_ID" --value test_create_obl_val
-    assert_output --partial "SUCCESS"
-    assert_line --regexp "Value.*test_create_obl_val"
-    assert_output --partial "Id"
-    assert_output --partial "Created At"
-    assert_line --partial "Updated At"
-  created_id_simple=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
-
-  # simple by obligation FQN
-  run_otdfctl_obl_values create --obligation "https://$NS_NAME/obl/$OBL_NAME" --value test_create_obl_val_by_obl_fqn
-    assert_output --partial "SUCCESS"
-    assert_line --regexp "Value.*test_create_obl_val"
-    assert_output --partial "Id"
-    assert_output --partial "Created At"
-    assert_line --partial "Updated At"
-  created_id_simple_by_fqn=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
-
-=======
   run_otdfctl_obl_values create --obligation "$OBL_ID" --value test_create_obl_val --json
     assert_success
     [ "$(echo "$output" | jq -r '.value')" = "test_create_obl_val" ]
@@ -297,7 +211,6 @@ teardown_file() {
     [ -n "$(echo "$output" | jq -r '.created_at')" ]
     [ -n "$(echo "$output" | jq -r '.updated_at')" ]
   created_id_simple_by_fqn=$(echo "$output" | jq -r '.id')
->>>>>>> main
   # cleanup
   run_otdfctl_obl_values delete --id $created_id_simple --force
   run_otdfctl_obl_values delete --id $created_id_simple_by_fqn --force
@@ -326,15 +239,9 @@ teardown_file() {
     assert_output --partial "obligation_fqn: value must be a valid URI [string.uri]"
   
   # conflict
-<<<<<<< HEAD
-  run_otdfctl_obl_values create --obligation "$OBL_ID" --value test_create_obl_val_conflict
-    assert_output --partial "SUCCESS"
-  created_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
-=======
   run_otdfctl_obl_values create --obligation "$OBL_ID" --value test_create_obl_val_conflict --json
     assert_success
   created_id="$(echo "$output" | jq -r '.id')"
->>>>>>> main
   run_otdfctl_obl_values create --obligation "$OBL_ID" --value test_create_obl_val_conflict
       assert_failure
       assert_output --partial "already_exists"
@@ -345,15 +252,9 @@ teardown_file() {
 
 @test "Get an obligation value - Good" {
   # setup an obligation value to get
-<<<<<<< HEAD
-  run_otdfctl_obl_values create --obligation "$OBL_ID" --value test_get_obl_val
-    assert_success
-  created_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
-=======
   run_otdfctl_obl_values create --obligation "$OBL_ID" --value test_get_obl_val --json
     assert_success
   created_id=$(echo "$output" | jq -r '.id')
->>>>>>> main
 
   # get by id
   run_otdfctl_obl_values get --id "$created_id" --json
@@ -389,28 +290,6 @@ teardown_file() {
 
 @test "Update obligation values" {
   # setup an obligation value to update
-<<<<<<< HEAD
-  run_otdfctl_obl_values create --obligation "$OBL_ID" --value test_update_obl_val
-    assert_success
-  created_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
-
-  # force replace labels
-  run_otdfctl_obl_values update --id "$created_id" -l key=other --force-replace-labels
-    assert_success
-    assert_line --regexp "Id.*$created_id"
-    assert_line --regexp "Value.*test_update_obl_val"
-    assert_line --regexp "Labels.*key: other"
-    refute_output --regexp "Labels.*key: value"
-    refute_output --regexp "Labels.*test: true"
-    refute_output --regexp "Labels.*test: true"
-
-  # renamed
-  run_otdfctl_obl_values update --id "$created_id" --value test_renamed_obl_val
-    assert_success
-    assert_line --regexp "Id.*$created_id"
-    assert_line --regexp "Value.*test_renamed_obl_val"
-    refute_output --regexp "Value.*test_update_obl_val"
-=======
   run_otdfctl_obl_values create --obligation "$OBL_ID" --value test_update_obl_val --json
     assert_success
     created_id="$(echo "$output" | jq -r '.id')"
@@ -429,7 +308,6 @@ teardown_file() {
     [ "$(echo "$output" | jq -r '.id')" = "$created_id" ]
     [ "$(echo "$output" | jq -r '.value')" = "test_renamed_obl_val" ]
     [ "$(echo "$output" | jq -r '.value')" != "test_update_obl_val" ]
->>>>>>> main
 
   # cleanup
   run_otdfctl_obl_values delete --id $created_id --force
@@ -437,13 +315,8 @@ teardown_file() {
 
 @test "Delete obligation value - Good" {
   # setup a value to delete
-<<<<<<< HEAD
-  run_otdfctl_obl_values create --obligation "$OBL_ID" --value test_delete_obl_val
-  created_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
-=======
   run_otdfctl_obl_values create --obligation "$OBL_ID" --value test_delete_obl_val --json
   created_id="$(echo "$output" | jq -r '.id')"
->>>>>>> main
 
   run_otdfctl_obl_values delete --id "$created_id" --force
     assert_success
@@ -459,7 +332,6 @@ teardown_file() {
   run_otdfctl_obl_values delete --id 'not_a_uuid'
     assert_failure
     assert_output --partial "must be a valid UUID"
-<<<<<<< HEAD
 }
 
 # Tests for obligation triggers
@@ -639,6 +511,4 @@ teardown_file() {
   run_otdfctl_action delete --id "$action_id" --force
   assert_success
   run_otdfctl_attr unsafe delete --id "$attr_id" --force
-=======
->>>>>>> main
 }
