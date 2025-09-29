@@ -1,0 +1,324 @@
+#!/usr/bin/env bats
+
+# Tests for obligations
+
+setup_file() {
+    export WITH_CREDS='--with-client-creds-file ./creds.json'
+    export HOST='--host http://localhost:8080'
+
+    # create attribute value to be used in obligation values tests
+    export NS_NAME="test-obl.org"
+    export NS_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes namespaces create --name "$NS_NAME" --json | jq -r '.id')
+   
+    # create obligation used in obligation values tests
+    export OBL_NAME="test_obl_for_values"
+    export OBL_ID=$(./otdfctl $HOST $WITH_CREDS policy obligations create --name "$OBL_NAME" --namespace "$NS_ID" --json | jq -r '.id')
+}
+
+setup() {
+    load "${BATS_LIB_PATH}/bats-support/load.bash"
+    load "${BATS_LIB_PATH}/bats-assert/load.bash"
+
+    # invoke binary with credentials
+    run_otdfctl_obl () {
+      run sh -c "./otdfctl $HOST $WITH_CREDS policy obligations $*"
+    }
+    run_otdfctl_obl_values () {
+      run sh -c "./otdfctl $HOST $WITH_CREDS policy obligations values $*"
+    }
+}
+
+teardown_file() {
+  # remove the obligation used in obligation values tests
+  ./otdfctl $HOST $WITH_CREDS policy obligations delete --id "$OBL_ID" --force
+
+  # # remove the custom action used in obligation values tests
+  # ./otdfctl $HOST $WITH_CREDS policy actions delete --id "$CUSTOM_ACTION_ID" --force
+
+  # remove the namespace used in obligation values tests
+  ./otdfctl $HOST $WITH_CREDS policy attributes namespaces unsafe delete --id "$NS_ID" --force
+
+  # clear out all test env vars
+  unset HOST WITH_CREDS OBL_NAME OBL_ID NS_NAME NS_ID
+}
+
+@test "Create a obligation - Good" {
+  run_otdfctl_obl create --name test_create_obl --namespace "$NS_ID" --json
+    assert_success
+    [ "$(echo "$output" | jq -r '.name')" = "test_create_obl" ]
+    [ -n "$(echo "$output" | jq -r '.id')" ]
+    [ -n "$(echo "$output" | jq -r '.created_at')" ]
+    [ -n "$(echo "$output" | jq -r '.updated_at')" ]
+
+  # cleanup
+  created_id="$(echo "$output" | jq -r '.id')"
+  run_otdfctl_obl delete --id "$created_id" --force
+}
+
+@test "Create a obligation - Bad" {
+  # bad obligation names
+  run_otdfctl_obl create --name ends_underscored_ --namespace "$NS_ID"
+    assert_failure
+  run_otdfctl_obl create --name -first-char-hyphen --namespace "$NS_ID"
+    assert_failure
+  run_otdfctl_obl create --name inval!d.chars --namespace "$NS_ID"
+    assert_failure
+
+  # missing flag
+  run_otdfctl_obl create
+    assert_failure
+    assert_output --partial "Flag '--name' is required"
+  
+  # conflict
+  run_otdfctl_obl create --name test_create_obl_conflict --namespace "$NS_ID" --json
+    assert_success
+  created_id="$(echo "$output" | jq -r '.id')"
+  run_otdfctl_obl create --name test_create_obl_conflict --namespace "$NS_ID"
+      assert_failure
+      assert_output --partial "already_exists"
+
+  # cleanup
+  run_otdfctl_obl delete --id $created_id --force
+}
+
+@test "Get an obligation - Good" {
+  # setup an obligation to get
+  run_otdfctl_obl create --name test_get_obl --namespace "$NS_ID" --json
+    assert_success
+  created_id="$(echo "$output" | jq -r '.id')"
+
+  # get by id
+  run_otdfctl_obl get --id "$created_id" --json
+    assert_success
+    [ "$(echo "$output" | jq -r '.id')" = "$created_id" ]
+    [ "$(echo "$output" | jq -r '.name')" = "test_get_obl" ]
+
+  # get by fqn
+  run_otdfctl_obl get --fqn "https://${NS_NAME}/obl/test_get_obl" --json
+    assert_success
+    [ "$(echo "$output" | jq -r '.id')" = "$created_id" ]
+    [ "$(echo "$output" | jq -r '.name')" = "test_get_obl" ]
+
+  # cleanup
+  run_otdfctl_obl delete --id $created_id --force
+}
+
+@test "Get an obligation - Bad" {
+  run_otdfctl_obl get
+    assert_failure
+    assert_output --partial "one of id, fqn must be set [message.oneof]"
+
+  run_otdfctl_obl get --id 'not_a_uuid'
+    assert_failure
+    assert_output --partial "must be a valid UUID"
+}
+
+@test "List obligations" {
+  # setup obligations to list
+  run_otdfctl_obl create --name test_list_obl_1 --namespace "$NS_ID" --json
+  obl1_id="$(echo "$output" | jq -r '.id')"
+  run_otdfctl_obl create --name test_list_obl_2 --namespace "$NS_ID" --json
+  obl2_id="$(echo "$output" | jq -r '.id')"
+
+  run_otdfctl_obl list
+    assert_success
+    assert_output --partial "$obl1_id"
+    assert_output --partial "test_list_obl_1"
+    assert_output --partial "$obl2_id"
+    assert_output --partial "test_list_obl_2"
+    assert_output --partial "Total"
+    assert_line --regexp "Current Offset.*0"
+
+  # cleanup
+  run_otdfctl_obl delete --id $obl1_id --force
+  run_otdfctl_obl delete --id $obl2_id --force
+}
+
+@test "Update obligation" {
+  # setup an obligation to update
+  run_otdfctl_obl create --name test_update_obl --namespace "$NS_ID" --json
+    assert_success
+  created_id="$(echo "$output" | jq -r '.id')"
+
+  # force replace labels
+  run_otdfctl_obl update --id "$created_id" -l key=other --force-replace-labels --json
+    assert_success
+    [ "$(echo "$output" | jq -r '.id')" = "$created_id" ]
+    [ "$(echo "$output" | jq -r '.name')" = "test_update_obl" ]
+    [ "$(echo "$output" | jq -r '.metadata.labels | keys | length')" = "1" ]
+    [ "$(echo "$output" | jq -r '.metadata.labels.key')" = "other" ]
+
+  # renamed
+  run_otdfctl_obl update --id "$created_id" --name test_renamed_obl --json
+    assert_success
+    [ "$(echo "$output" | jq -r '.id')" = "$created_id" ]
+    [ "$(echo "$output" | jq -r '.name')" = "test_renamed_obl" ]
+    [ "$(echo "$output" | jq -r '.name')" != "test_update_obl" ]
+
+  # cleanup
+  run_otdfctl_obl delete --id $created_id --force
+}
+
+@test "Delete obligation - Good" {
+  # setup an obligation to delete
+  run_otdfctl_obl create --name test_delete_obl --namespace "$NS_ID" --json
+  created_id="$(echo "$output" | jq -r '.id')"
+
+  run_otdfctl_obl delete --id "$created_id" --force
+    assert_success
+}
+
+@test "Delete obligation - Bad" {
+  # no id
+  run_otdfctl_obl delete
+    assert_failure
+    assert_output --partial "one of id, fqn must be set [message.oneof]"
+
+  # invalid id
+  run_otdfctl_obl delete --id 'not_a_uuid'
+    assert_failure
+    assert_output --partial "must be a valid UUID"
+}
+
+# Tests for obligation values
+
+@test "Create an obligation value - Good" {
+  # simple by obligation ID
+  run_otdfctl_obl_values create --obligation "$OBL_ID" --value test_create_obl_val --json
+    assert_success
+    [ "$(echo "$output" | jq -r '.value')" = "test_create_obl_val" ]
+    [ -n "$(echo "$output" | jq -r '.id')" ]
+    [ -n "$(echo "$output" | jq -r '.created_at')" ]
+    [ -n "$(echo "$output" | jq -r '.updated_at')" ]
+  created_id_simple="$(echo "$output" | jq -r '.id')"
+
+  # simple by obligation FQN
+  run_otdfctl_obl_values create --obligation "https://$NS_NAME/obl/$OBL_NAME" --value test_create_obl_val_by_obl_fqn --json
+    assert_success
+    [ "$(echo "$output" | jq -r '.value')" = "test_create_obl_val_by_obl_fqn" ]
+    [ -n "$(echo "$output" | jq -r '.id')" ]
+    [ -n "$(echo "$output" | jq -r '.created_at')" ]
+    [ -n "$(echo "$output" | jq -r '.updated_at')" ]
+  created_id_simple_by_fqn=$(echo "$output" | jq -r '.id')
+  # cleanup
+  run_otdfctl_obl_values delete --id $created_id_simple --force
+  run_otdfctl_obl_values delete --id $created_id_simple_by_fqn --force
+}
+
+@test "Create an obligation value - Bad" {
+  # bad obligation value names
+  run_otdfctl_obl_values create --obligation "$OBL_ID" --value ends_underscored_
+    assert_failure
+  run_otdfctl_obl_values create --obligation "$OBL_ID" --value -first-char-hyphen
+    assert_failure
+  run_otdfctl_obl_values create --obligation "$OBL_ID" --value inval!d.chars
+    assert_failure
+
+  # missing flag
+  run_otdfctl_obl_values create
+    assert_failure
+    assert_output --partial "Flag '--obligation' is required"
+  run_otdfctl_obl_values create --obligation "$OBL_ID"
+    assert_failure
+    assert_output --partial "Flag '--value' is required"
+
+  # non-existent obligation fqn
+  run_otdfctl_obl_values create --obligation invalid_fqn --value test_create_obl_val
+    assert_failure
+    assert_output --partial "obligation_fqn: value must be a valid URI [string.uri]"
+  
+  # conflict
+  run_otdfctl_obl_values create --obligation "$OBL_ID" --value test_create_obl_val_conflict --json
+    assert_success
+  created_id="$(echo "$output" | jq -r '.id')"
+  run_otdfctl_obl_values create --obligation "$OBL_ID" --value test_create_obl_val_conflict
+      assert_failure
+      assert_output --partial "already_exists"
+
+  # cleanup
+  run_otdfctl_obl_values delete --id $created_id --force
+}
+
+@test "Get an obligation value - Good" {
+  # setup an obligation value to get
+  run_otdfctl_obl_values create --obligation "$OBL_ID" --value test_get_obl_val --json
+    assert_success
+  created_id=$(echo "$output" | jq -r '.id')
+
+  # get by id
+  run_otdfctl_obl_values get --id "$created_id" --json
+    assert_success
+    [ "$(echo "$output" | jq -r '.id')" = "$created_id" ]
+    [ "$(echo "$output" | jq -r '.value')" = "test_get_obl_val" ]
+
+  # get by fqn
+  run_otdfctl_obl_values get --fqn "https://$NS_NAME/obl/$OBL_NAME/value/test_get_obl_val" --json
+    assert_success
+    [ "$(echo "$output" | jq -r '.id')" = "$created_id" ]
+    [ "$(echo "$output" | jq -r '.value')" = "test_get_obl_val" ]
+
+  # cleanup
+  run_otdfctl_obl_values delete --id $created_id --force
+}
+
+@test "Get an obligation value - Bad" {
+  run_otdfctl_obl_values get
+    assert_failure
+    assert_output --partial "one of id, fqn must be set [message.oneof]"
+
+  # invalid id
+  run_otdfctl_obl_values get --id 'not_a_uuid'
+    assert_failure
+    assert_output --partial "must be a valid UUID"
+
+  # invalid fqn
+  run_otdfctl_obl_values get --fqn 'not_a_fqn'
+    assert_failure
+    assert_output --partial "must be a valid URI"
+}
+
+@test "Update obligation values" {
+  # setup an obligation value to update
+  run_otdfctl_obl_values create --obligation "$OBL_ID" --value test_update_obl_val --json
+    assert_success
+    created_id="$(echo "$output" | jq -r '.id')"
+
+  # force replace labels
+  run_otdfctl_obl_values update --id "$created_id" -l key=other --force-replace-labels --json
+    assert_success
+    # Check that metadata.labels has exactly one key
+    [ "$(echo "$output" | jq -r '.metadata.labels | keys | length')" = "1" ]
+    # Check that the key "key" exists and has value "other"
+    [ "$(echo "$output" | jq -r '.metadata.labels.key')" = "other" ]
+
+  # renamed
+  run_otdfctl_obl_values update --id "$created_id" --value test_renamed_obl_val --json
+    assert_success
+    [ "$(echo "$output" | jq -r '.id')" = "$created_id" ]
+    [ "$(echo "$output" | jq -r '.value')" = "test_renamed_obl_val" ]
+    [ "$(echo "$output" | jq -r '.value')" != "test_update_obl_val" ]
+
+  # cleanup
+  run_otdfctl_obl_values delete --id $created_id --force
+}
+
+@test "Delete obligation value - Good" {
+  # setup a value to delete
+  run_otdfctl_obl_values create --obligation "$OBL_ID" --value test_delete_obl_val --json
+  created_id="$(echo "$output" | jq -r '.id')"
+
+  run_otdfctl_obl_values delete --id "$created_id" --force
+    assert_success
+}
+
+@test "Delete obligation value - Bad" {
+  # no id
+  run_otdfctl_obl_values delete
+    assert_failure
+    assert_output --partial "one of id, fqn must be set [message.oneof]"
+
+  # invalid id
+  run_otdfctl_obl_values delete --id 'not_a_uuid'
+    assert_failure
+    assert_output --partial "must be a valid UUID"
+}
