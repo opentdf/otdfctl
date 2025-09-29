@@ -26,6 +26,17 @@ setup() {
     run_otdfctl_obl_values () {
       run sh -c "./otdfctl $HOST $WITH_CREDS policy obligations values $*"
     }
+    run_otdfctl_obl_triggers () {
+      run sh -c "./otdfctl $HOST $WITH_CREDS policy obligations triggers $*"
+    }
+
+    run_otdfctl_action () {
+      run sh -c "./otdfctl $HOST $WITH_CREDS policy actions $*"
+    }
+
+    run_otdfctl_attr() {
+      run sh -c "./otdfctl $HOST $WITH_CREDS policy attributes $*"
+    }
 }
 
 teardown_file() {
@@ -326,4 +337,140 @@ teardown_file() {
   run_otdfctl_obl_values delete --id 'not_a_uuid'
     assert_failure
     assert_output --partial "must be a valid UUID"
+}
+
+# Tests for obligation triggers
+
+@test "Create an obligation trigger - Required Only - Success" {
+  # setup an attribute value to use
+  run_otdfctl_attr create --name "test_attr_for_trigger" --namespace "$NS_ID" --rule "HIERARCHY" -v "test_val_for_trigger" --json
+  attr_val_id=$(echo "$output" | jq -r '.values[0].id')
+  attr_id=$(echo "$output" | jq -r '.id')
+
+  # setup an action to use
+  run_otdfctl_action create --name "test_action_for_trigger" --json
+  action_id=$(echo "$output" | jq -r '.id')
+
+  # setup an obligation value to use
+  run_otdfctl_obl_values create --obligation "$OBL_ID" --value "test_obl_val_for_trigger" --json
+  obl_val_id=$(echo "$output" | jq -r '.id')
+
+  # create trigger
+  run_otdfctl_obl_triggers create --attribute-value "$attr_val_id" --action "$action_id" --obligation-value "$obl_val_id" --json
+  assert_success
+  [ "$(echo "$output" | jq -r '.id')" != "null" ]
+  trigger_id=$(echo "$output" | jq -r '.id')
+  assert_equal "$(echo "$output" | jq -r '.attribute_value.id')" "$attr_val_id"
+  assert_equal "$(echo "$output" | jq -r '.attribute_value.fqn')" "https://$NS_NAME/attr/test_attr_for_trigger/value/test_val_for_trigger"
+  assert_equal "$(echo "$output" | jq -r '.action.id')" "$action_id"
+  assert_equal "$(echo "$output" | jq -r '.action.name')" "test_action_for_trigger"
+  assert_equal "$(echo "$output" | jq -r '.obligation_value.id')" "$obl_val_id"
+  assert_equal "$(echo "$output" | jq -r '.obligation_value.value')" "test_obl_val_for_trigger"
+  assert_equal "$(echo "$output" | jq -r '.obligation_value.obligation.id')" "$OBL_ID"
+  assert_equal "$(echo "$output" | jq -r '.obligation_value.obligation.namespace.fqn')" "https://$NS_NAME"
+
+
+  # cleanup
+  run_otdfctl_obl_triggers delete --id "$trigger_id" --force
+  assert_success
+  run_otdfctl_obl_values delete --id "$obl_val_id" --force
+  assert_success
+  run_otdfctl_action delete --id "$action_id" --force
+  assert_success
+  run_otdfctl_attr unsafe delete --id "$attr_id" --force
+  assert_success
+}
+
+@test "Create an obligation trigger - Optional Fields - Success" {
+  # setup an attribute value to use
+  run_otdfctl_attr create --name "test_attr_for_trigger" --namespace "$NS_ID" --rule "HIERARCHY" -v "test_val_for_trigger" --json
+  attr_val_id=$(echo "$output" | jq -r '.values[0].id')
+  attr_id=$(echo "$output" | jq -r '.id')
+
+  # setup an action to use
+  run_otdfctl_action create --name "test_action_for_trigger" --json
+  action_id=$(echo "$output" | jq -r '.id')
+
+  # setup an obligation value to use
+  run_otdfctl_obl_values create --obligation "$OBL_ID" --value "test_obl_val_for_trigger" --json
+  obl_val_id=$(echo "$output" | jq -r '.id')
+
+  # create trigger
+  client_id="a-pep"
+  run_otdfctl_obl_triggers create --attribute-value "$attr_val_id" --action "$action_id" --obligation-value "$obl_val_id" --client-id "$client_id" --label "my=label" --json
+  assert_success
+  assert_not_equal "$(echo "$output" | jq -r '.id')" "null"
+  trigger_id=$(echo "$output" | jq -r '.id')
+  assert_equal "$(echo "$output" | jq -r '.attribute_value.id')" "$attr_val_id"
+  assert_equal "$(echo "$output" | jq -r '.attribute_value.fqn')" "https://$NS_NAME/attr/test_attr_for_trigger/value/test_val_for_trigger"
+  assert_equal "$(echo "$output" | jq -r '.action.id')" "$action_id"
+  assert_equal "$(echo "$output" | jq -r '.action.name')" "test_action_for_trigger"
+  assert_equal "$(echo "$output" | jq -r '.obligation_value.id')" "$obl_val_id"
+  assert_equal "$(echo "$output" | jq -r '.obligation_value.value')" "test_obl_val_for_trigger"
+  assert_equal "$(echo "$output" | jq -r '.obligation_value.obligation.id')" "$OBL_ID"
+  assert_equal "$(echo "$output" | jq -r '.obligation_value.obligation.namespace.fqn')" "https://$NS_NAME"
+  assert_equal "$(echo "$output" | jq -r '.metadata.labels.my')" "label"
+
+
+
+  # cleanup
+  run_otdfctl_obl_triggers delete --id "$trigger_id" --force
+  assert_success
+  run_otdfctl_obl_values delete --id "$obl_val_id" --force
+  assert_success
+  run_otdfctl_action delete --id "$action_id" --force
+  assert_success
+  run_otdfctl_attr unsafe delete --id "$attr_id" --force
+  assert_success
+}
+
+@test "Create an obligation trigger - Bad" {
+  # missing flags
+  run_otdfctl_obl_triggers create --attribute-value "http://example.com/attr/attr_name/value/attr_value" --action "read" 
+  assert_failure 
+  assert_output --partial "Flag '--obligation-value' is required"
+  
+  run_otdfctl_obl_triggers create --obligation-value "http://example.com/attr/attr_name/value/attr_value" --action "read"
+  assert_failure
+  assert_output --partial "Flag '--attribute-value' is required"
+
+  run_otdfctl_obl_triggers create --obligation-value "http://example.com/attr/attr_name/value/attr_value" --attribute-value "http://example.com/attr/attr_name/value/attr_value"
+  assert_failure
+  assert_output --partial "Flag '--action' is required"
+}
+
+@test "Delete an obligation trigger - Good" {
+  # setup an attribute value to use
+  run_otdfctl_attr create --name "test_attr_for_del_trigger" --namespace "$NS_ID" --rule "HIERARCHY" -v "test_val_for_del_trigger" --json
+  assert_success
+  attr_val_id=$(echo "$output" | jq -r '.values[0].id')
+  attr_id=$(echo "$output" | jq -r '.id')
+
+  # setup an action to use
+  run_otdfctl_action create --name "test_action_for_del_trigger" --json
+  assert_success
+  action_id=$(echo "$output" | jq -r '.id')
+
+  # setup an obligation value to use
+  run_otdfctl_obl_values create --obligation "$OBL_ID" --value "test_obl_val_for_del_trigger" --json
+  assert_success
+  obl_val_id=$(echo "$output" | jq -r '.id')
+
+  # create trigger
+  run_otdfctl_obl_triggers create --attribute-value "$attr_val_id" --action "$action_id" --obligation-value "$obl_val_id" --json
+  assert_success
+  assert_not_equal "$(echo "$output" | jq -r '.id')" "null"
+  trigger_id=$(echo "$output" | jq -r '.id')
+
+  # delete trigger
+  run_otdfctl_obl_triggers delete --id "$trigger_id" --force --json
+  assert_success
+  assert_equal "$(echo "$output" | jq -r '.id')" "$trigger_id"
+
+  # cleanup
+  run_otdfctl_obl_values delete --id "$obl_val_id" --force
+  assert_success
+  run_otdfctl_action delete --id "$action_id" --force
+  assert_success
+  run_otdfctl_attr unsafe delete --id "$attr_id" --force
 }

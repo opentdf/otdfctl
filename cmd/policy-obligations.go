@@ -6,6 +6,7 @@ import (
 	"github.com/evertras/bubble-table/table"
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/man"
+	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/spf13/cobra"
 )
 
@@ -332,6 +333,69 @@ func policyDeleteObligationValue(cmd *cobra.Command, args []string) {
 	HandleSuccess(cmd, id, t, val)
 }
 
+// ****
+// Obligation Triggers
+// ****
+func policyCreateObligationTrigger(cmd *cobra.Command, args []string) {
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
+	defer h.Close()
+
+	ctx := cmd.Context()
+	attributeValue := c.Flags.GetRequiredString("attribute-value")
+	action := c.Flags.GetRequiredString("action")
+	obligationValue := c.Flags.GetRequiredString("obligation-value")
+	clientID := c.Flags.GetOptionalString("client-id")
+	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
+
+	trigger, err := h.CreateObligationTrigger(ctx, attributeValue, action, obligationValue, clientID, getMetadataMutable(metadataLabels))
+	if err != nil {
+		cli.ExitWithError("Failed to create obligation trigger", err)
+	}
+
+	rows := getObligationTriggerRows(trigger)
+	t := cli.NewTabular(rows...)
+	HandleSuccess(cmd, trigger.GetId(), t, trigger)
+}
+
+func policyDeleteObligationTrigger(cmd *cobra.Command, args []string) {
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
+	defer h.Close()
+
+	id := c.Flags.GetRequiredString("id")
+	force := c.Flags.GetOptionalBool("force")
+	ctx := cmd.Context()
+
+	cli.ConfirmAction(cli.ActionDelete, "obligation trigger", id, force)
+
+	resp, err := h.DeleteObligationTrigger(ctx, id)
+	if err != nil {
+		errMsg := fmt.Sprintf("Failed to delete obligation trigger (%s)", id)
+		cli.ExitWithError(errMsg, err)
+	}
+
+	rows := [][]string{
+		{"Id", id},
+	}
+	t := cli.NewTabular(rows...)
+	HandleSuccess(cmd, id, t, resp)
+}
+
+func getObligationTriggerRows(trigger *policy.ObligationTrigger) [][]string {
+	rows := [][]string{
+		{"Id", trigger.GetId()},
+		{"Attribute Value FQN", trigger.GetAttributeValue().GetFqn()},
+		{"Action FQN", trigger.GetAction().GetName()},
+		{"Obligation Value FQN", trigger.GetObligationValue().GetFqn()},
+		{"Client IDs", cli.CommaSeparated(cli.AggregateClientIDs(trigger.GetContext()))},
+	}
+	if mdRows := getMetadataRows(trigger.GetMetadata()); mdRows != nil {
+		rows = append(rows, mdRows...)
+	}
+	return rows
+}
+
 func init() {
 	// Obligations commands
 	getDoc := man.Docs.GetCommand("policy/obligations/get",
@@ -495,6 +559,51 @@ func init() {
 		deleteValueDoc.GetDocFlag("force").Description,
 	)
 
+	// Obligation Triggers commands
+	createTriggerDoc := man.Docs.GetCommand("policy/obligations/triggers/create",
+		man.WithRun(policyCreateObligationTrigger),
+	)
+	createTriggerDoc.Flags().StringP(
+		createTriggerDoc.GetDocFlag("attribute-value").Name,
+		createTriggerDoc.GetDocFlag("attribute-value").Shorthand,
+		createTriggerDoc.GetDocFlag("attribute-value").Default,
+		createTriggerDoc.GetDocFlag("attribute-value").Description,
+	)
+	createTriggerDoc.Flags().StringP(
+		createTriggerDoc.GetDocFlag("action").Name,
+		createTriggerDoc.GetDocFlag("action").Shorthand,
+		createTriggerDoc.GetDocFlag("action").Default,
+		createTriggerDoc.GetDocFlag("action").Description,
+	)
+	createTriggerDoc.Flags().StringP(
+		createTriggerDoc.GetDocFlag("obligation-value").Name,
+		createTriggerDoc.GetDocFlag("obligation-value").Shorthand,
+		createTriggerDoc.GetDocFlag("obligation-value").Default,
+		createTriggerDoc.GetDocFlag("obligation-value").Description,
+	)
+	createTriggerDoc.Flags().StringP(
+		createTriggerDoc.GetDocFlag("client-id").Name,
+		createTriggerDoc.GetDocFlag("client-id").Shorthand,
+		createTriggerDoc.GetDocFlag("client-id").Default,
+		createTriggerDoc.GetDocFlag("client-id").Description,
+	)
+	injectLabelFlags(&createTriggerDoc.Command, false)
+
+	deleteTriggerDoc := man.Docs.GetCommand("policy/obligations/triggers/delete",
+		man.WithRun(policyDeleteObligationTrigger),
+	)
+	deleteTriggerDoc.Flags().StringP(
+		deleteTriggerDoc.GetDocFlag("id").Name,
+		deleteTriggerDoc.GetDocFlag("id").Shorthand,
+		deleteTriggerDoc.GetDocFlag("id").Default,
+		deleteTriggerDoc.GetDocFlag("id").Description,
+	)
+	deleteTriggerDoc.Flags().Bool(
+		deleteTriggerDoc.GetDocFlag("force").Name,
+		false,
+		deleteTriggerDoc.GetDocFlag("force").Description,
+	)
+
 	// Add commands to the policy command
 
 	policyObligationsDoc := man.Docs.GetCommand("policy/obligations",
@@ -516,6 +625,14 @@ func init() {
 		),
 	)
 
+	policyObligationTriggersDoc := man.Docs.GetCommand("policy/obligations/triggers",
+		man.WithSubcommands(
+			createTriggerDoc,
+			deleteTriggerDoc,
+		),
+	)
+
 	policyObligationsDoc.AddCommand(&policyObligationValuesDoc.Command)
+	policyObligationsDoc.AddCommand(&policyObligationTriggersDoc.Command)
 	policyCmd.AddCommand(&policyObligationsDoc.Command)
 }
