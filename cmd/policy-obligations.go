@@ -382,12 +382,16 @@ func policyDeleteObligationTrigger(cmd *cobra.Command, args []string) {
 	HandleSuccess(cmd, id, t, resp)
 }
 
+func buildObligationValueFQN(namespaceFQN, obligationName, value string) string {
+	return fmt.Sprintf("%s/obl/%s/value/%s", namespaceFQN, obligationName, value)
+}
+
 func getObligationTriggerRows(trigger *policy.ObligationTrigger) [][]string {
 	rows := [][]string{
 		{"Id", trigger.GetId()},
 		{"Attribute Value FQN", trigger.GetAttributeValue().GetFqn()},
 		{"Action FQN", trigger.GetAction().GetName()},
-		{"Obligation Value FQN", trigger.GetObligationValue().GetFqn()},
+		{"Obligation Value FQN", buildObligationValueFQN(trigger.GetObligationValue().GetObligation().GetNamespace().GetFqn(), trigger.GetObligationValue().GetObligation().GetName(), trigger.GetObligationValue().GetValue())},
 		{"Client IDs", cli.CommaSeparated(cli.AggregateClientIDs(trigger.GetContext()))},
 	}
 	if mdRows := getMetadataRows(trigger.GetMetadata()); mdRows != nil {
