@@ -9,6 +9,24 @@ import (
 	"github.com/opentdf/platform/protocol/go/policy/obligations"
 )
 
+// ParseToIdFqnIdentifier creates an IdFqnIdentifier based on whether the input is a UUID or FQN
+func ParseToIdFqnIdentifier(value string) *common.IdFqnIdentifier {
+	_, err := uuid.Parse(value)
+	if err != nil {
+		return &common.IdFqnIdentifier{Fqn: value}
+	}
+	return &common.IdFqnIdentifier{Id: value}
+}
+
+// ParseToIdNameIdentifier creates an IdNameIdentifier based on whether the input is a UUID or name
+func ParseToIdNameIdentifier(value string) *common.IdNameIdentifier {
+	_, err := uuid.Parse(value)
+	if err != nil {
+		return &common.IdNameIdentifier{Name: value}
+	}
+	return &common.IdNameIdentifier{Id: value}
+}
+
 //
 // Obligations
 //
@@ -107,9 +125,10 @@ func (h Handler) DeleteObligation(ctx context.Context, id, fqn string) error {
 // Obligation Values
 //
 
-func (h Handler) CreateObligationValue(ctx context.Context, obligation, value string, metadata *common.MetadataMutable) (*policy.ObligationValue, error) {
+func (h Handler) CreateObligationValue(ctx context.Context, obligation, value string, triggers []*obligations.ValueTriggerRequest, metadata *common.MetadataMutable) (*policy.ObligationValue, error) {
 	req := &obligations.CreateObligationValueRequest{
 		Value:    value,
+		Triggers: triggers,
 		Metadata: metadata,
 	}
 
@@ -144,10 +163,11 @@ func (h Handler) GetObligationValue(ctx context.Context, id, fqn string) (*polic
 	return resp.GetValue(), nil
 }
 
-func (h Handler) UpdateObligationValue(ctx context.Context, id, value string, metadata *common.MetadataMutable, behavior common.MetadataUpdateEnum) (*policy.ObligationValue, error) {
+func (h Handler) UpdateObligationValue(ctx context.Context, id, value string, triggers []*obligations.ValueTriggerRequest, metadata *common.MetadataMutable, behavior common.MetadataUpdateEnum) (*policy.ObligationValue, error) {
 	res, err := h.sdk.Obligations.UpdateObligationValue(ctx, &obligations.UpdateObligationValueRequest{
 		Id:                     id,
 		Value:                  value,
+		Triggers:               triggers,
 		Metadata:               metadata,
 		MetadataUpdateBehavior: behavior,
 	})
@@ -181,26 +201,9 @@ func (h Handler) CreateObligationTrigger(ctx context.Context, attributeValue, ac
 		Metadata: metadata,
 	}
 
-	_, err := uuid.Parse(attributeValue)
-	if err != nil {
-		req.AttributeValue = &common.IdFqnIdentifier{Fqn: attributeValue}
-	} else {
-		req.AttributeValue = &common.IdFqnIdentifier{Id: attributeValue}
-	}
-
-	_, err = uuid.Parse(action)
-	if err != nil {
-		req.Action = &common.IdNameIdentifier{Name: action}
-	} else {
-		req.Action = &common.IdNameIdentifier{Id: action}
-	}
-
-	_, err = uuid.Parse(obligationValue)
-	if err != nil {
-		req.ObligationValue = &common.IdFqnIdentifier{Fqn: obligationValue}
-	} else {
-		req.ObligationValue = &common.IdFqnIdentifier{Id: obligationValue}
-	}
+	req.AttributeValue = ParseToIdFqnIdentifier(attributeValue)
+	req.Action = ParseToIdNameIdentifier(action)
+	req.ObligationValue = ParseToIdFqnIdentifier(obligationValue)
 
 	if clientID != "" {
 		req.Context = &policy.RequestContext{

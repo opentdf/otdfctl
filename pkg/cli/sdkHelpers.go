@@ -2,6 +2,8 @@ package cli
 
 import (
 	"errors"
+	"fmt"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -154,4 +156,18 @@ func AggregateClientIDs(reqCtx []*policy.RequestContext) []string {
 		}
 	}
 	return ids
+}
+
+// Gets JSON from either a file path or a JSON string
+func GetJSONInput(data string) (string, error) {
+	if _, err := os.Stat(data); err == nil {
+		// It's a file path, read the content
+		fileContent, err := os.ReadFile(data)
+		if err != nil {
+			return "", fmt.Errorf("failed to read file %s: %w", data, err)
+		}
+		return string(fileContent), nil
+	}
+
+	return data, nil
 }
