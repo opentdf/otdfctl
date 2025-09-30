@@ -460,8 +460,8 @@ func parseTriggers(triggerInput string) ([]*obligations.ValueTriggerRequest, err
 
 		// Create the ValueTriggerRequest
 		valueTrigger := &obligations.ValueTriggerRequest{
-			Action:         handlers.ParseToIdNameIdentifier(tr.Action),
-			AttributeValue: handlers.ParseToIdFqnIdentifier(tr.AttributeValue),
+			Action:         handlers.ParseToIDNameIdentifier(tr.Action),
+			AttributeValue: handlers.ParseToIDFqnIdentifier(tr.AttributeValue),
 		}
 
 		// Add context if client_id is provided

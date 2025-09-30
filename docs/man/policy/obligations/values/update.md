@@ -48,7 +48,7 @@ Update an obligation value and assign one unscoped trigger to the new value.
 >more about `scoped` and `unscoped` triggers.
 
 ```shell
-otdfctl policy obligations values update --id 3c51a593-cbf8-419d-b7dc-b656d0bedfbb --value new_value --label "hello=world" --triggers `[{"action": "read", "attribute_value": "https://test.org/attr/test/value/red"}]`
+otdfctl policy obligations values update --id 3c51a593-cbf8-419d-b7dc-b656d0bedfbb --value new_value --label "hello=world" --triggers '[{"action": "read", "attribute_value": "https://test.org/attr/test/value/red"}]'
 ```
 
 Update triggers on an obligation value via a json file.

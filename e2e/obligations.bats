@@ -124,7 +124,7 @@ setup() {
           local match=true
           
           # Check attribute value ID if specified
-          if [ -n "$exp_attr_val_id" ] && [ "$exp_attr_val_id" != "null" ] && [ "$exp_attr_val_id" != "" ]; then
+          if [[ -n "$exp_attr_val_id" && "$exp_attr_val_id" != "null" ]]; then
             local actual_attr_val_id=$(echo "$json_output" | jq -r ".triggers[$i].attribute_value.id")
             if [ "$actual_attr_val_id" != "$exp_attr_val_id" ]; then
               match=false
@@ -787,7 +787,11 @@ EOF
   assert_not_equal "$(echo "$output" | jq -r '.id')" "null"
   trigger_id=$(echo "$output" | jq -r '.id')
 
+    # delete trigger
+  run_otdfctl_obl_triggers delete --id "$trigger_id" --force --json
+  assert_success
+  assert_equal "$(echo "$output" | jq -r '.id')" "$trigger_id"
+
   # cleanup
-  cleanup_trigger "$trigger_id"
   cleanup_obligation_value "$obl_val_id"
 }

@@ -9,8 +9,8 @@ import (
 	"github.com/opentdf/platform/protocol/go/policy/obligations"
 )
 
-// ParseToIdFqnIdentifier creates an IdFqnIdentifier based on whether the input is a UUID or FQN
-func ParseToIdFqnIdentifier(value string) *common.IdFqnIdentifier {
+// ParseToIDFqnIdentifier creates an IdFqnIdentifier based on whether the input is a UUID or FQN
+func ParseToIDFqnIdentifier(value string) *common.IdFqnIdentifier {
 	_, err := uuid.Parse(value)
 	if err != nil {
 		return &common.IdFqnIdentifier{Fqn: value}
@@ -18,8 +18,8 @@ func ParseToIdFqnIdentifier(value string) *common.IdFqnIdentifier {
 	return &common.IdFqnIdentifier{Id: value}
 }
 
-// ParseToIdNameIdentifier creates an IdNameIdentifier based on whether the input is a UUID or name
-func ParseToIdNameIdentifier(value string) *common.IdNameIdentifier {
+// ParseToIDNameIdentifier creates an IdNameIdentifier based on whether the input is a UUID or name
+func ParseToIDNameIdentifier(value string) *common.IdNameIdentifier {
 	_, err := uuid.Parse(value)
 	if err != nil {
 		return &common.IdNameIdentifier{Name: value}
@@ -201,9 +201,9 @@ func (h Handler) CreateObligationTrigger(ctx context.Context, attributeValue, ac
 		Metadata: metadata,
 	}
 
-	req.AttributeValue = ParseToIdFqnIdentifier(attributeValue)
-	req.Action = ParseToIdNameIdentifier(action)
-	req.ObligationValue = ParseToIdFqnIdentifier(obligationValue)
+	req.AttributeValue = ParseToIDFqnIdentifier(attributeValue)
+	req.Action = ParseToIDNameIdentifier(action)
+	req.ObligationValue = ParseToIDFqnIdentifier(obligationValue)
 
 	if clientID != "" {
 		req.Context = &policy.RequestContext{

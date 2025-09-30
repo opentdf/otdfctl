@@ -43,13 +43,13 @@ You can also create multiple obligation triggers while creating an obligation va
 Create an obligation value and create a non-scoped trigger that will map to the created value.
 
 ```shell
-otdfctl policy obligations values create --obligation 3c51a593-cbf8-419d-b7dc-b656d0bedfbb --value my_value --triggers `[{"action": "read", "attribute_value": "https://test.org/attr/test/value/red"}]`
+otdfctl policy obligations values create --obligation 3c51a593-cbf8-419d-b7dc-b656d0bedfbb --value my_value --triggers '[{"action": "read", "attribute_value": "https://test.org/attr/test/value/red"}]'
 ```
 
 Create an obligation value and create a scoped trigger that will map to the created value
 
 ```shell
-otdfctl policy obligations values create --obligation 3c51a593-cbf8-419d-b7dc-b656d0bedfbb --value my_value --triggers `[{"action": "read", "attribute_value": "https://test.org/attr/test/value/red", "context": {"pep": {"client_id": "a-pep" }}}]`
+otdfctl policy obligations values create --obligation 3c51a593-cbf8-419d-b7dc-b656d0bedfbb --value my_value --triggers '[{"action": "read", "attribute_value": "https://test.org/attr/test/value/red", "context": {"pep": {"client_id": "a-pep" }}}]'
 ```
 
 Create an obligation value and triggers, where the triggers come from a json file.
