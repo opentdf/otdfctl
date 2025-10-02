@@ -15,11 +15,12 @@ func createProviderConfig(cmd *cobra.Command, args []string) {
 	defer h.Close()
 
 	name := c.Flags.GetRequiredString("name")
+	manager := c.Flags.GetRequiredString("manager")
 	config := c.Flags.GetRequiredString("config")
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
 	// Do not need to get provider config after, since this endpoint returns the created config.
-	pc, err := h.CreateProviderConfig(c.Context(), name, []byte(config), getMetadataMutable(metadataLabels))
+	pc, err := h.CreateProviderConfig(c.Context(), name, manager, []byte(config), getMetadataMutable(metadataLabels))
 	if err != nil {
 		cli.ExitWithError("Failed to create provider config", err)
 	}
@@ -74,14 +75,15 @@ func updateProviderConfig(cmd *cobra.Command, args []string) {
 
 	id := c.Flags.GetRequiredID("id")
 	name := c.Flags.GetOptionalString("name")
+	manager := c.Flags.GetOptionalString("manager")
 	config := c.Flags.GetOptionalString("config")
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
-	if name == "" && config == "" && len(metadataLabels) == 0 {
+	if name == "" && manager == "" && config == "" && len(metadataLabels) == 0 {
 		cli.ExitWithError("At least one field (name, config, or metadata labels) must be updated", nil)
 	}
 
-	pc, err := h.UpdateProviderConfig(c.Context(), id, name, []byte(config), getMetadataMutable(metadataLabels), getMetadataUpdateBehavior())
+	pc, err := h.UpdateProviderConfig(c.Context(), id, name, manager, []byte(config), getMetadataMutable(metadataLabels), getMetadataUpdateBehavior())
 	if err != nil {
 		cli.ExitWithError("Failed to update provider config", err)
 	}
@@ -183,6 +185,12 @@ func init() {
 		createDoc.GetDocFlag("name").Description,
 	)
 	createDoc.Flags().StringP(
+		createDoc.GetDocFlag("manager").Name,
+		createDoc.GetDocFlag("manager").Shorthand,
+		createDoc.GetDocFlag("manager").Default,
+		createDoc.GetDocFlag("manager").Description,
+	)
+	createDoc.Flags().StringP(
 		createDoc.GetDocFlag("config").Name,
 		createDoc.GetDocFlag("config").Shorthand,
 		createDoc.GetDocFlag("config").Default,
@@ -224,6 +232,12 @@ func init() {
 		updateDoc.GetDocFlag("name").Shorthand,
 		updateDoc.GetDocFlag("name").Default,
 		updateDoc.GetDocFlag("name").Description,
+	)
+	updateDoc.Flags().StringP(
+		updateDoc.GetDocFlag("manager").Name,
+		updateDoc.GetDocFlag("manager").Shorthand,
+		updateDoc.GetDocFlag("manager").Default,
+		updateDoc.GetDocFlag("manager").Description,
 	)
 	updateDoc.Flags().StringP(
 		updateDoc.GetDocFlag("config").Name,
