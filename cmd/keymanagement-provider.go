@@ -80,7 +80,7 @@ func updateProviderConfig(cmd *cobra.Command, args []string) {
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
 	if name == "" && manager == "" && config == "" && len(metadataLabels) == 0 {
-		cli.ExitWithError("At least one field (name, config, or metadata labels) must be updated", nil)
+		cli.ExitWithError("At least one field (name, manager, config, or metadata labels) must be updated", nil)
 	}
 
 	pc, err := h.UpdateProviderConfig(c.Context(), id, name, manager, []byte(config), getMetadataMutable(metadataLabels), getMetadataUpdateBehavior())
