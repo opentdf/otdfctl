@@ -11,6 +11,9 @@ setup_file() {
 }
 
 setup() {
+    if [ "$RUN_EXPERIMENTAL_TESTS" != "true" ]; then
+        skip "Skipping experimental test"
+    fi
     load "${BATS_LIB_PATH}/bats-support/load.bash"
     load "${BATS_LIB_PATH}/bats-assert/load.bash"
 
