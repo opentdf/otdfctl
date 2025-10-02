@@ -4,11 +4,6 @@ go 1.24.0
 
 toolchain go1.24.2
 
-replace (
-	github.com/opentdf/platform/protocol/go => github.com/opentdf/platform/protocol/go v0.8.1-0.20250907050228-5290a51c5871
-	github.com/opentdf/platform/sdk => github.com/opentdf/platform/sdk v0.7.1-0.20250907050228-5290a51c5871
-)
-
 require (
 	github.com/adrg/frontmatter v0.2.0
 	github.com/charmbracelet/bubbles v0.21.0

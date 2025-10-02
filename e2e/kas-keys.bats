@@ -23,11 +23,9 @@ setup_file() {
   assert_success
   export KAS_REGISTRY_ID=$(echo "$output" | jq -r '.id')
 
-  if [ "$RUN_EXPERIMENTAL_TESTS" == "true" ]; then
-    run_otdfctl_provider_create --name "test-provider-config-kas-keys" --config '{}' --json
-    assert_success
-    export PC_ID=$(echo "$output" | jq -r '.id')
-  fi
+  run_otdfctl_provider_create --name "test-provider-config-kas-keys" --config '{}' --json
+  assert_success
+  export PC_ID=$(echo "$output" | jq -r '.id')
   export WRAPPING_KEY="9453b4d7cc55cf27926ae8f98a9d5aa159d51b7a4d478e440271ab261792a2bd"
   export PEM_B64=$(echo "pem" | base64)
 }
@@ -142,9 +140,6 @@ format_kas_name_as_uri() {
 }
 
 @test "kas-keys: create key (remote mode)" {
-  if [ "$RUN_EXPERIMENTAL_TESTS" != "true" ]; then
-    skip "Skipping experimental test"
-  fi
   KEY_ID=$(generate_key_id)
   run_otdfctl_key create --kas "${KAS_REGISTRY_ID}" --key-id "${KEY_ID}" --algorithm "rsa:2048" --mode "remote" --public-key-pem "${PEM_B64}" --provider-config-id "${PC_ID}" --wrapping-key-id "wrapping-key-remote" --json
   assert_success
@@ -164,9 +159,6 @@ format_kas_name_as_uri() {
 }
 
 @test "kas-keys: create key (provider mode)" {
-  if [ "$RUN_EXPERIMENTAL_TESTS" != "true" ]; then
-    skip "Skipping experimental test"
-  fi
   KEY_ID=$(generate_key_id)
   WRAPPING_KEY_ID="wrapping-key-for-provider"
   run_otdfctl_key create --kas "${KAS_REGISTRY_ID}" --key-id "${KEY_ID}" --algorithm "rsa:2048" --mode "provider" --provider-config-id "${PC_ID}" --wrapping-key-id "${WRAPPING_KEY_ID}" --public-key-pem "${PEM_B64}" --private-key-pem "${PEM_B64}" --json
