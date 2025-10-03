@@ -8,7 +8,6 @@ import (
 	"fmt"
 
 	"github.com/opentdf/platform/protocol/go/common"
-	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/opentdf/platform/protocol/go/policy/namespaces"
 )
 
@@ -54,13 +53,6 @@ func ConvertX5CToPEM(x5c string) ([]byte, error) {
 	return pem.EncodeToMemory(pemBlock), nil
 }
 
-// GetCertificate retrieves a certificate by ID
-func (h Handler) GetCertificate(ctx context.Context, id string) (*policy.Certificate, error) {
-	// Note: This would require adding a GetCertificate RPC to the namespace service
-	// For now, we'll get it via the namespace
-	return nil, fmt.Errorf("GetCertificate not yet implemented in platform API")
-}
-
 // AssignCertificateToNamespace assigns a certificate to a namespace
 func (h Handler) AssignCertificateToNamespace(ctx context.Context, namespaceID, x5c string, labels map[string]string) (*namespaces.AssignCertificateToNamespaceResponse, error) {
 	metadata := &common.MetadataMutable{}
@@ -97,31 +89,4 @@ func (h Handler) RemoveCertificateFromNamespace(ctx context.Context, namespaceID
 	}
 
 	return nil
-}
-
-// ListNamespaceCertificates lists certificates for a namespace
-func (h Handler) ListNamespaceCertificates(ctx context.Context, namespaceID string) ([]*policy.Certificate, error) {
-	ns, err := h.GetNamespace(ctx, namespaceID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get namespace: %w", err)
-	}
-
-	return ns.GetRootCerts(), nil
-}
-
-// GetNamespaceWithCertificates retrieves a namespace with its certificates
-func (h Handler) GetNamespaceWithCertificates(ctx context.Context, identifier string) (*policy.Namespace, error) {
-	req := &namespaces.GetNamespaceRequest{}
-
-	// Try to parse as UUID first, otherwise use as FQN
-	req.Identifier = &namespaces.GetNamespaceRequest_Fqn{
-		Fqn: identifier,
-	}
-
-	resp, err := h.sdk.Namespaces.GetNamespace(ctx, req)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get namespace [%s]: %w", identifier, err)
-	}
-
-	return resp.GetNamespace(), nil
 }
