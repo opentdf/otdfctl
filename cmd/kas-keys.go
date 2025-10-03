@@ -560,8 +560,7 @@ func policyListKeyMappings(cmd *cobra.Command, args []string) {
 		table.NewFlexColumn("namespace_mappings", "Namespaces", cli.FlexColumnWidthThree),
 		table.NewFlexColumn("attribute_mappings", "Attributes", cli.FlexColumnWidthThree),
 		table.NewFlexColumn("value_mappings", "Values", cli.FlexColumnWidthThree),
-	)
-	t.WithRows(rows)
+	).WithRows(rows)
 	t = cli.WithListPaginationFooter(t, resp.GetPagination())
 
 	HandleSuccess(cmd, "", t, resp)
