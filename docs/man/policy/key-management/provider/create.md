@@ -9,6 +9,10 @@ command:
       shorthand: n
       description: Name of the provider config to create
       required: true
+    - name: manager
+      shorthand: m
+      description: Key Manager for the provider config
+      required: true
     - name: config
       shorthand: c
       description: JSON configuration for the provider
