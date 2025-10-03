@@ -969,7 +969,7 @@ format_kas_name_as_uri() {
   assert_output --partial "wrapping-key must be hex encoded"
 }
 
-@test "kas-keys: import key sucessful" {
+@test "kas-keys: import key successful" {
   KEY_ID="imported-key-$(generate_key_id)"
   
   run_otdfctl_key import --key-id "${KEY_ID}" \
@@ -1015,7 +1015,7 @@ format_kas_name_as_uri() {
   assert_equal "$(echo "$output" | jq -r .key.legacy)" "true"
 }
 
-@test "kas-keys: import key succesful (legacy=false)" {
+@test "kas-keys: import key successful (legacy=false)" {
   KEY_ID="imported-key-$(generate_key_id)"
   
   run_otdfctl_key import --key-id "${KEY_ID}" \
