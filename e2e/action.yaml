@@ -72,8 +72,8 @@ runs:
         ./testrail-integration/upload-bats-test-results-to-testrail.sh
       continue-on-error: true
       env:
-#        TESTRAIL_USER: ${{ env.TESTRAIL_USER }}
-#        TESTRAIL_PASS: ${{ env.TESTRAIL_PASS }}
+        TESTRAIL_USER: ${{ env.TESTRAIL_USER }}
+        TESTRAIL_PASS: ${{ env.TESTRAIL_PASS }}
         TESTRAIL_CLI_RUN_NAME: ${{ inputs.testrail-run-name-for-cli-test }}
     - name: Upload TestRail mapping report
       uses: actions/upload-artifact@v4
