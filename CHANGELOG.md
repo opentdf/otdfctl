@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.25.0](https://github.com/opentdf/otdfctl/compare/v0.24.0...v0.25.0) (2025-10-06)
+
+
+### Features
+
+* add support for provider manager column ([#660](https://github.com/opentdf/otdfctl/issues/660)) ([fe4e50b](https://github.com/opentdf/otdfctl/commit/fe4e50ba9c1773f0b12622a924a4317ccdbe2ed6))
+* **core:** Add legacy flag to import and list. ([#641](https://github.com/opentdf/otdfctl/issues/641)) ([ffd0dc0](https://github.com/opentdf/otdfctl/commit/ffd0dc0fc84ef0cee3b896fc939d1c244da5728d))
+* **core:** Add obligation triggers ([#656](https://github.com/opentdf/otdfctl/issues/656)) ([8f6087f](https://github.com/opentdf/otdfctl/commit/8f6087fd2531628dda64eb8b0133830c6a21f9f6))
+* **core:** Adds policy-mode encrypt param ([#633](https://github.com/opentdf/otdfctl/issues/633)) ([9e83016](https://github.com/opentdf/otdfctl/commit/9e830168a38c0803396fd5c4c188fa62c0ccf5a0))
+* **core:** Create/Update triggers via obligation values. ([#658](https://github.com/opentdf/otdfctl/issues/658)) ([2a2f0c6](https://github.com/opentdf/otdfctl/commit/2a2f0c6c87ff9e7a543e4c4634d0be96dfe9e8e3))
+* **core:** obligations defs + vals CRUD ([#639](https://github.com/opentdf/otdfctl/issues/639)) ([3a3df0d](https://github.com/opentdf/otdfctl/commit/3a3df0d7b862fc56635b18d73af784ecd3066ae2))
+
+
+### Bug Fixes
+
+* **core:** add missing port flag ([#638](https://github.com/opentdf/otdfctl/issues/638)) ([c9bb4e5](https://github.com/opentdf/otdfctl/commit/c9bb4e50d0690cecda5ded7a41f572a10d18f6a6))
+* **core:** Clarifies not_found in attrs ([#649](https://github.com/opentdf/otdfctl/issues/649)) ([d46bd0f](https://github.com/opentdf/otdfctl/commit/d46bd0f3c60bc8b7f47789d93f842271791cf824))
+* **core:** render kas-registry key list-mappings table rows ([#663](https://github.com/opentdf/otdfctl/issues/663)) ([fb39718](https://github.com/opentdf/otdfctl/commit/fb39718aa23a626186dcb54d9115b837b66a9b79))
+
 ## [0.24.0](https://github.com/opentdf/otdfctl/compare/v0.23.0...v0.24.0) (2025-07-29)
 
 
