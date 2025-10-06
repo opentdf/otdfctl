@@ -1,12 +1,18 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
+	"strings"
+
+	"strconv"
 
 	"github.com/evertras/bubble-table/table"
 	"github.com/opentdf/otdfctl/pkg/cli"
+	"github.com/opentdf/otdfctl/pkg/handlers"
 	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/opentdf/platform/protocol/go/policy"
+	"github.com/opentdf/platform/protocol/go/policy/obligations"
 	"github.com/spf13/cobra"
 )
 
@@ -15,6 +21,13 @@ import (
 //
 
 var obligationValues []string
+
+// TriggerRequest represents the JSON structure for a trigger
+type TriggerRequest struct {
+	Action         string                 `json:"action"`
+	AttributeValue string                 `json:"attribute_value"`
+	Context        *policy.RequestContext `json:"context,omitempty"`
+}
 
 func policyCreateObligation(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
@@ -202,9 +215,16 @@ func policyCreateObligationValue(cmd *cobra.Command, args []string) {
 	ctx := cmd.Context()
 	obligation := c.Flags.GetRequiredString("obligation")
 	value := c.Flags.GetRequiredString("value")
+	triggerJSON := c.Flags.GetOptionalString("triggers")
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
-	oblVal, err := h.CreateObligationValue(ctx, obligation, value, getMetadataMutable(metadataLabels))
+	// Parse triggers if provided
+	triggers, err := parseTriggers(triggerJSON)
+	if err != nil {
+		cli.ExitWithError("Invalid trigger configuration", err)
+	}
+
+	oblVal, err := h.CreateObligationValue(ctx, obligation, value, triggers, getMetadataMutable(metadataLabels))
 	if err != nil {
 		cli.ExitWithError("Failed to create obligation value", err)
 	}
@@ -213,6 +233,7 @@ func policyCreateObligationValue(cmd *cobra.Command, args []string) {
 		{"Id", oblVal.GetId()},
 		{"Name", oblVal.GetObligation().GetName()},
 		{"Value", oblVal.GetValue()},
+		{"Number of Triggers", strconv.Itoa(len(oblVal.GetTriggers()))},
 	}
 	if mdRows := getMetadataRows(oblVal.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
@@ -247,6 +268,7 @@ func policyGetObligationValue(cmd *cobra.Command, args []string) {
 		{"Id", value.GetId()},
 		{"Name", value.GetObligation().GetName()},
 		{"Value", value.GetValue()},
+		{"Number of Triggers", strconv.Itoa(len(value.GetTriggers()))},
 	}
 	if mdRows := getMetadataRows(value.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
@@ -263,12 +285,20 @@ func policyUpdateObligationValue(cmd *cobra.Command, args []string) {
 
 	id := c.Flags.GetRequiredID("id")
 	value := c.Flags.GetOptionalString("value")
+	triggerJSON := c.Flags.GetOptionalString("triggers")
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
+
+	// Parse triggers if provided
+	triggers, err := parseTriggers(triggerJSON)
+	if err != nil {
+		cli.ExitWithError("Invalid trigger configuration", err)
+	}
 
 	updated, err := h.UpdateObligationValue(
 		cmd.Context(),
 		id,
 		value,
+		triggers,
 		getMetadataMutable(metadataLabels),
 		getMetadataUpdateBehavior(),
 	)
@@ -280,6 +310,7 @@ func policyUpdateObligationValue(cmd *cobra.Command, args []string) {
 		{"Id", id},
 		{"Name", updated.GetObligation().GetName()},
 		{"Value", updated.GetValue()},
+		{"Number of Triggers", strconv.Itoa(len(updated.GetTriggers()))},
 	}
 	if mdRows := getMetadataRows(updated.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
@@ -398,6 +429,50 @@ func getObligationTriggerRows(trigger *policy.ObligationTrigger) [][]string {
 		rows = append(rows, mdRows...)
 	}
 	return rows
+}
+
+// parseTriggers unmarshals the trigger JSON string or reads from file and validates required fields
+func parseTriggers(triggerInput string) ([]*obligations.ValueTriggerRequest, error) {
+	if triggerInput == "" {
+		return nil, nil
+	}
+
+	// Determine if input is a file path or JSON string
+	triggerJSON, err := cli.GetJSONInput(triggerInput)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get JSON input: %w", err)
+	}
+
+	var triggerRequests []TriggerRequest
+	if err := json.Unmarshal([]byte(triggerJSON), &triggerRequests); err != nil {
+		return nil, fmt.Errorf("failed to parse trigger JSON: %w", err)
+	}
+
+	var valueTriggerRequests []*obligations.ValueTriggerRequest
+	for i, tr := range triggerRequests {
+		// Validate required fields
+		if strings.TrimSpace(tr.Action) == "" {
+			return nil, fmt.Errorf("trigger at index %d: action is required", i)
+		}
+		if strings.TrimSpace(tr.AttributeValue) == "" {
+			return nil, fmt.Errorf("trigger at index %d: attribute_value is required", i)
+		}
+
+		// Create the ValueTriggerRequest
+		valueTrigger := &obligations.ValueTriggerRequest{
+			Action:         handlers.ParseToIDNameIdentifier(tr.Action),
+			AttributeValue: handlers.ParseToIDFqnIdentifier(tr.AttributeValue),
+		}
+
+		// Add context if client_id is provided
+		if tr.Context != nil {
+			valueTrigger.Context = tr.Context
+		}
+
+		valueTriggerRequests = append(valueTriggerRequests, valueTrigger)
+	}
+
+	return valueTriggerRequests, nil
 }
 
 func init() {
@@ -524,6 +599,12 @@ func init() {
 		createValueDoc.GetDocFlag("value").Default,
 		createValueDoc.GetDocFlag("value").Description,
 	)
+	createValueDoc.Flags().StringP(
+		createValueDoc.GetDocFlag("triggers").Name,
+		createValueDoc.GetDocFlag("triggers").Shorthand,
+		createValueDoc.GetDocFlag("triggers").Default,
+		createValueDoc.GetDocFlag("triggers").Description,
+	)
 	injectLabelFlags(&createValueDoc.Command, false)
 
 	updateValueDoc := man.Docs.GetCommand("policy/obligations/values/update",
@@ -540,6 +621,12 @@ func init() {
 		updateValueDoc.GetDocFlag("value").Shorthand,
 		updateValueDoc.GetDocFlag("value").Default,
 		updateValueDoc.GetDocFlag("value").Description,
+	)
+	updateValueDoc.Flags().StringP(
+		updateValueDoc.GetDocFlag("triggers").Name,
+		updateValueDoc.GetDocFlag("triggers").Shorthand,
+		updateValueDoc.GetDocFlag("triggers").Default,
+		updateValueDoc.GetDocFlag("triggers").Description,
 	)
 	injectLabelFlags(&updateValueDoc.Command, true)
 	deleteValueDoc := man.Docs.GetCommand("policy/obligations/values/delete",
