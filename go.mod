@@ -12,7 +12,7 @@ require (
 	github.com/charmbracelet/huh v0.5.2
 	github.com/charmbracelet/lipgloss v1.1.0
 	github.com/creasty/defaults v1.8.0
-	github.com/evertras/bubble-table v0.17.1
+	github.com/evertras/bubble-table v0.19.2
 	github.com/gabriel-vasile/mimetype v1.4.9
 	github.com/go-jose/go-jose/v3 v3.0.4
 	github.com/golang-jwt/jwt/v5 v5.2.2
