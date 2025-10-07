@@ -15,7 +15,7 @@ require (
 	github.com/evertras/bubble-table v0.19.2
 	github.com/gabriel-vasile/mimetype v1.4.9
 	github.com/go-jose/go-jose/v3 v3.0.4
-	github.com/golang-jwt/jwt/v5 v5.2.2
+	github.com/golang-jwt/jwt/v5 v5.3.0
 	github.com/google/uuid v1.6.0
 	github.com/opentdf/platform/lib/flattening v0.1.3
 	github.com/opentdf/platform/lib/ocrypto v0.6.0
