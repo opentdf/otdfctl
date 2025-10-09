@@ -116,9 +116,9 @@ teardown_file() {
     assert_output --partial ".emailAddress"
     assert_output --partial ".team.name"
     assert_output --partial ".org.name"
-    [ $(echo "$output" | jq -r '.[-1].subject_sets[0].condition_groups[0].conditions[0].subject_external_values[0]') = "piedpiper.com" ]
-    [ $(echo "$output" | jq -r '.[-1].id') = "$CREATED_ID" ]
-    [ $(echo "$output" | jq -r '.[-1].metadata.labels.fromfile') = "false" ]
+    matched_object=$(echo "$output" | jq -r --arg id "$CREATED_ID" '.[] | select(.id == $id)')
+    [ $(echo "$matched_object" | jq -r '.subject_sets[0].condition_groups[0].conditions[0].subject_external_values | contains(["piedpiper.com"])') = "true" ]
+    [ $(echo "$matched_object" | jq -r '.metadata.labels.fromfile') = "false" ]
 
   # validate deletion
   run_delete_scs "$CREATED_ID"
