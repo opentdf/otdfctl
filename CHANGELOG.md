@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.26.0](https://github.com/opentdf/otdfctl/compare/v0.25.0...v0.26.0) (2025-10-09)
+
+
+### Bug Fixes
+
+* **core:** Provider config manager table field empty ([#668](https://github.com/opentdf/otdfctl/issues/668)) ([89871f6](https://github.com/opentdf/otdfctl/commit/89871f6fde4d5d1b6cfca375723424bedcefc1f2))
+
 ## [0.25.0](https://github.com/opentdf/otdfctl/compare/v0.24.0...v0.25.0) (2025-10-06)
 
 
