@@ -29,6 +29,7 @@ func createProviderConfig(cmd *cobra.Command, args []string) {
 		{"ID", pc.GetId()},
 		{"Name", pc.GetName()},
 		{"Config", string(pc.GetConfigJson())},
+		{"Manager", string(pc.GetManager())},
 	}
 
 	if mdRows := getMetadataRows(pc.GetMetadata()); mdRows != nil {
@@ -57,6 +58,7 @@ func getProviderConfig(cmd *cobra.Command, args []string) {
 		{"ID", pc.GetId()},
 		{"Name", pc.GetName()},
 		{"Config", string(pc.GetConfigJson())},
+		{"Manager", string(pc.GetManager())},
 	}
 
 	if mdRows := getMetadataRows(pc.GetMetadata()); mdRows != nil {
@@ -92,6 +94,7 @@ func updateProviderConfig(cmd *cobra.Command, args []string) {
 		{"ID", pc.GetId()},
 		{"Name", pc.GetName()},
 		{"Config", string(pc.GetConfigJson())},
+		{"Manager", string(pc.GetManager())},
 	}
 
 	if mdRows := getMetadataRows(pc.GetMetadata()); mdRows != nil {
@@ -120,7 +123,8 @@ func listProviderConfig(cmd *cobra.Command, args []string) {
 	t := cli.NewTable(
 		// columns should be id, name, config, labels, created_at, updated_at
 		table.NewFlexColumn("id", "Provider Config ID", cli.FlexColumnWidthThree),
-		table.NewFlexColumn("name", "Provider Config Name", cli.FlexColumnWidthThree),
+		table.NewFlexColumn("name", "Provider Config Name", cli.FlexColumnWidthTwo),
+		table.NewFlexColumn("manager", "Manager", cli.FlexColumnWidthTwo),
 		table.NewFlexColumn("config", "Provider Config", cli.FlexColumnWidthOne),
 		table.NewFlexColumn("labels", "Labels", cli.FlexColumnWidthOne),
 		table.NewFlexColumn("created_at", "Created At", cli.FlexColumnWidthOne),
@@ -136,6 +140,7 @@ func listProviderConfig(cmd *cobra.Command, args []string) {
 			"labels":     metadata["Labels"],
 			"created_at": metadata["Created At"],
 			"updated_at": metadata["Updated At"],
+			"manager":    string(pc.GetManager()),
 		}))
 	}
 	t = t.WithRows(rows)
