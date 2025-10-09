@@ -29,7 +29,7 @@ func createProviderConfig(cmd *cobra.Command, args []string) {
 		{"ID", pc.GetId()},
 		{"Name", pc.GetName()},
 		{"Config", string(pc.GetConfigJson())},
-		{"Manager", string(pc.GetManager())},
+		{"Manager", pc.GetManager()},
 	}
 
 	if mdRows := getMetadataRows(pc.GetMetadata()); mdRows != nil {
@@ -58,7 +58,7 @@ func getProviderConfig(cmd *cobra.Command, args []string) {
 		{"ID", pc.GetId()},
 		{"Name", pc.GetName()},
 		{"Config", string(pc.GetConfigJson())},
-		{"Manager", string(pc.GetManager())},
+		{"Manager", pc.GetManager()},
 	}
 
 	if mdRows := getMetadataRows(pc.GetMetadata()); mdRows != nil {
@@ -94,7 +94,7 @@ func updateProviderConfig(cmd *cobra.Command, args []string) {
 		{"ID", pc.GetId()},
 		{"Name", pc.GetName()},
 		{"Config", string(pc.GetConfigJson())},
-		{"Manager", string(pc.GetManager())},
+		{"Manager", pc.GetManager()},
 	}
 
 	if mdRows := getMetadataRows(pc.GetMetadata()); mdRows != nil {
@@ -140,7 +140,7 @@ func listProviderConfig(cmd *cobra.Command, args []string) {
 			"labels":     metadata["Labels"],
 			"created_at": metadata["Created At"],
 			"updated_at": metadata["Updated At"],
-			"manager":    string(pc.GetManager()),
+			"manager":    pc.GetManager(),
 		}))
 	}
 	t = t.WithRows(rows)
