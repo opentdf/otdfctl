@@ -4,6 +4,14 @@ go 1.24.0
 
 toolchain go1.24.2
 
+replace github.com/opentdf/platform/protocol/go => ../platform/protocol/go
+
+replace github.com/opentdf/platform/sdk => ../platform/sdk
+
+replace github.com/opentdf/platform/lib/ocrypto => ../platform/lib/ocrypto
+
+replace github.com/opentdf/platform/lib/flattening => ../platform/lib/flattening
+
 require (
 	github.com/adrg/frontmatter v0.2.0
 	github.com/charmbracelet/bubbles v0.21.0
