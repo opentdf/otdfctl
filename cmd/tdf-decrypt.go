@@ -69,6 +69,7 @@ func dev_tdfDecryptCmd(cmd *cobra.Command, args []string) {
 		sessionKeyAlgorithm,
 		kasAllowList,
 		ignoreAllowlist,
+		nil,
 	)
 	if err != nil {
 		cli.ExitWithError("Failed to decrypt file", err)

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"bytes"
+	"context"
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/json"
@@ -153,6 +154,7 @@ func (h Handler) DecryptBytes(
 	sessionKeyAlgorithm ocrypto.KeyType,
 	kasAllowList []string,
 	ignoreAllowlist bool,
+	fulfillableObligations []string,
 ) (*bytes.Buffer, error) {
 	out := &bytes.Buffer{}
 	pt := io.Writer(out)
@@ -161,18 +163,34 @@ func (h Handler) DecryptBytes(
 	case sdk.Nano:
 		opts := []sdk.NanoTDFReaderOption{
 			sdk.WithNanoIgnoreAllowlist(ignoreAllowlist),
+			sdk.WithNanoTDFFulfillableObligationFQNs(fulfillableObligations),
 		}
 		if kasAllowList != nil {
 			opts = append(opts, sdk.WithNanoKasAllowlist(kasAllowList))
 		}
-		if _, err := h.sdk.ReadNanoTDF(pt, ec, opts...); err != nil {
+
+		r, err := h.sdk.LoadNanoTDF(context.Background(), ec, opts...)
+		if err != nil {
+			return nil, err
+		}
+
+		if _, err := r.DecryptNanoTDF(context.Background(), pt); err != nil {
+			if errors.Is(err, sdk.ErrRewrapForbidden) {
+				obligations, _ := r.Obligations(context.Background())
+				if len(obligations.FQNs) > 0 {
+					err = errors.Join(err, fmt.Errorf("\nrequired obligations: %v", obligations.FQNs))
+				}
+			}
+
 			return nil, err
 		}
 	case sdk.Standard:
 		opts := []sdk.TDFReaderOption{
 			sdk.WithDisableAssertionVerification(disableAssertionCheck),
 			sdk.WithSessionKeyType(sessionKeyAlgorithm),
-			sdk.WithIgnoreAllowlist(ignoreAllowlist)}
+			sdk.WithIgnoreAllowlist(ignoreAllowlist),
+			sdk.WithTDFFulfillableObligationFQNs(fulfillableObligations),
+		}
 		if kasAllowList != nil {
 			opts = append(opts, sdk.WithKasAllowlist(kasAllowList))
 		}
@@ -202,6 +220,13 @@ func (h Handler) DecryptBytes(
 		}
 		//nolint:errorlint // callers intended to test error equality directly
 		if _, err = io.Copy(pt, r); err != nil && err != io.EOF {
+			if errors.Is(err, sdk.ErrRewrapForbidden) {
+				obligations, _ := r.Obligations(context.Background())
+				if len(obligations.FQNs) > 0 {
+					err = errors.Join(err, fmt.Errorf("\nrequired obligations: %v", obligations.FQNs))
+				}
+			}
+
 			return nil, err
 		}
 	case sdk.Invalid:
