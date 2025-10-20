@@ -4,14 +4,6 @@ go 1.24.0
 
 toolchain go1.24.2
 
-replace github.com/opentdf/platform/protocol/go => ../platform/protocol/go
-
-replace github.com/opentdf/platform/sdk => ../platform/sdk
-
-replace github.com/opentdf/platform/lib/ocrypto => ../platform/lib/ocrypto
-
-replace github.com/opentdf/platform/lib/flattening => ../platform/lib/flattening
-
 require (
 	github.com/adrg/frontmatter v0.2.0
 	github.com/charmbracelet/bubbles v0.21.0
@@ -26,9 +18,9 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/google/uuid v1.6.0
 	github.com/opentdf/platform/lib/flattening v0.1.3
-	github.com/opentdf/platform/lib/ocrypto v0.6.0
-	github.com/opentdf/platform/protocol/go v0.10.0
-	github.com/opentdf/platform/sdk v0.8.0
+	github.com/opentdf/platform/lib/ocrypto v0.7.0
+	github.com/opentdf/platform/protocol/go v0.13.0
+	github.com/opentdf/platform/sdk v0.9.0
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/viper v1.20.1
 	github.com/stretchr/testify v1.10.0

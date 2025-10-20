@@ -54,16 +54,16 @@ func ConvertX5CToPEM(x5c string) ([]byte, error) {
 }
 
 // AssignCertificateToNamespace assigns a certificate to a namespace
-func (h Handler) AssignCertificateToNamespace(ctx context.Context, namespaceID, x5c string, labels map[string]string) (*namespaces.AssignCertificateToNamespaceResponse, error) {
+func (h Handler) AssignCertificateToNamespace(ctx context.Context, namespaceID, pem string, labels map[string]string) (*namespaces.AssignCertificateToNamespaceResponse, error) {
 	metadata := &common.MetadataMutable{}
 	if labels != nil {
 		metadata.Labels = labels
 	}
 
 	req := &namespaces.AssignCertificateToNamespaceRequest{
-		NamespaceId: namespaceID,
-		X5C:         x5c,
-		Metadata:    metadata,
+		Namespace: ParseToIDFqnIdentifier(namespaceID),
+		Pem:       pem,
+		Metadata:  metadata,
 	}
 
 	resp, err := h.sdk.Namespaces.AssignCertificateToNamespace(ctx, req)
@@ -78,7 +78,7 @@ func (h Handler) AssignCertificateToNamespace(ctx context.Context, namespaceID, 
 func (h Handler) RemoveCertificateFromNamespace(ctx context.Context, namespaceID, certID string) error {
 	req := &namespaces.RemoveCertificateFromNamespaceRequest{
 		NamespaceCertificate: &namespaces.NamespaceCertificate{
-			NamespaceId:   namespaceID,
+			Namespace:     ParseToIDFqnIdentifier(namespaceID),
 			CertificateId: certID,
 		},
 	}

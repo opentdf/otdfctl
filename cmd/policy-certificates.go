@@ -18,8 +18,8 @@ var (
 
 	policy_certificatesConvertCmd = &cobra.Command{
 		Use:   "convert-pem",
-		Short: "Convert PEM certificate to x5c format",
-		Long:  "Convert a PEM-encoded certificate file to x5c format (base64-encoded DER)",
+		Short: "Convert x5c certificate to PEM format",
+		Long:  "Convert an x5c format certificate (base64-encoded DER) to PEM-encoded certificate",
 		Run:   policy_convertPEMToX5C,
 	}
 
@@ -39,21 +39,21 @@ var (
 )
 
 func init() {
-	// Convert PEM to x5c
+	// Convert x5c to PEM
 	policy_certificatesConvertCmd.Flags().StringP(
 		"file",
 		"f",
 		"",
-		"Path to PEM certificate file",
+		"Path to x5c certificate file",
 	)
 	if err := policy_certificatesConvertCmd.MarkFlagRequired("file"); err != nil {
 		panic(err)
 	}
 	policy_certificatesConvertCmd.Flags().BoolP(
-		"output-pem",
-		"p",
+		"output-x5c",
+		"x",
 		false,
-		"Output as PEM format (for x5c to PEM conversion)",
+		"Output as x5c format (for PEM to x5c conversion)",
 	)
 
 	// Assign certificate to namespace
@@ -112,28 +112,28 @@ func policy_convertPEMToX5C(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 
 	filePath := c.Flags.GetRequiredString("file")
-	outputPEM := cmd.Flags().Lookup("output-pem").Value.String() == "true"
+	outputX5C := cmd.Flags().Lookup("output-x5c").Value.String() == "true"
 
 	data, err := os.ReadFile(filePath)
 	if err != nil {
 		cli.ExitWithError(fmt.Sprintf("Failed to read file (%s)", filePath), err)
 	}
 
-	if outputPEM {
-		// Convert x5c back to PEM
-		x5c := string(data)
-		pemData, err := handlers.ConvertX5CToPEM(x5c)
-		if err != nil {
-			cli.ExitWithError("Failed to convert x5c to PEM", err)
-		}
-		fmt.Println(string(pemData))
-	} else {
+	if outputX5C {
 		// Convert PEM to x5c
 		x5c, err := handlers.ConvertPEMToX5C(data)
 		if err != nil {
 			cli.ExitWithError("Failed to convert PEM to x5c", err)
 		}
 		fmt.Println(x5c)
+	} else {
+		// Convert x5c to PEM (default behavior)
+		x5c := string(data)
+		pemData, err := handlers.ConvertX5CToPEM(x5c)
+		if err != nil {
+			cli.ExitWithError("Failed to convert x5c to PEM", err)
+		}
+		fmt.Println(string(pemData))
 	}
 }
 
@@ -153,16 +153,13 @@ func policy_assignCertificateToNamespace(cmd *cobra.Command, args []string) {
 	filePath := c.Flags.GetRequiredString("file")
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
-	// Read and convert PEM file to x5c
+	// Read PEM file
 	data, err := os.ReadFile(filePath)
 	if err != nil {
 		cli.ExitWithError(fmt.Sprintf("Failed to read certificate file (%s)", filePath), err)
 	}
 
-	x5c, err := handlers.ConvertPEMToX5C(data)
-	if err != nil {
-		cli.ExitWithError("Failed to convert PEM to x5c format", err)
-	}
+	pem := string(data)
 
 	// Get metadata from labels
 	metadata := getMetadataMutable(metadataLabels)
@@ -172,16 +169,21 @@ func policy_assignCertificateToNamespace(cmd *cobra.Command, args []string) {
 	}
 
 	// Assign certificate to namespace
-	resp, err := h.AssignCertificateToNamespace(cmd.Context(), namespace, x5c, labels)
+	resp, err := h.AssignCertificateToNamespace(cmd.Context(), namespace, pem, labels)
 	if err != nil {
 		cli.ExitWithError(fmt.Sprintf("Failed to assign certificate to namespace (%s)", namespace), err)
 	}
 
 	// Prepare and display the result
+	// Get namespace identifier (either ID or FQN depending on what was provided)
+	namespaceIdentifier := resp.GetNamespaceCertificate().GetNamespace().GetId()
+	if namespaceIdentifier == "" {
+		namespaceIdentifier = resp.GetNamespaceCertificate().GetNamespace().GetFqn()
+	}
 	rows := [][]string{
-		{"Namespace ID", resp.GetNamespaceCertificate().GetNamespaceId()},
+		{"Namespace ID", namespaceIdentifier},
 		{"Certificate ID", resp.GetNamespaceCertificate().GetCertificateId()},
-		{"Certificate (preview)", truncateString(resp.GetCertificate().GetX5C(), 80)},
+		{"Certificate (preview)", truncateString(resp.GetCertificate().GetPem(), 80)},
 	}
 	t := cli.NewTabular(rows...)
 	HandleSuccess(cmd, namespace, t, resp)
