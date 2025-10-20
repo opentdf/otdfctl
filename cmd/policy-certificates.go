@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/opentdf/otdfctl/pkg/cli"
-	"github.com/opentdf/otdfctl/pkg/handlers"
 	"github.com/spf13/cobra"
 )
 
@@ -14,13 +13,6 @@ var (
 		Use:   "certificates",
 		Short: "Manage certificates for namespaces",
 		Long:  "Assign or remove root certificates from attribute namespaces. Use 'otdfctl policy attributes namespaces get' to view certificates.",
-	}
-
-	policy_certificatesConvertCmd = &cobra.Command{
-		Use:   "convert-pem",
-		Short: "Convert x5c certificate to PEM format",
-		Long:  "Convert an x5c format certificate (base64-encoded DER) to PEM-encoded certificate",
-		Run:   policy_convertPEMToX5C,
 	}
 
 	policy_certificatesAssignCmd = &cobra.Command{
@@ -39,23 +31,6 @@ var (
 )
 
 func init() {
-	// Convert x5c to PEM
-	policy_certificatesConvertCmd.Flags().StringP(
-		"file",
-		"f",
-		"",
-		"Path to x5c certificate file",
-	)
-	if err := policy_certificatesConvertCmd.MarkFlagRequired("file"); err != nil {
-		panic(err)
-	}
-	policy_certificatesConvertCmd.Flags().BoolP(
-		"output-x5c",
-		"x",
-		false,
-		"Output as x5c format (for PEM to x5c conversion)",
-	)
-
 	// Assign certificate to namespace
 	policy_certificatesAssignCmd.Flags().StringP(
 		"namespace",
@@ -101,40 +76,10 @@ func init() {
 	policy_certificatesCmd.AddCommand(
 		policy_certificatesAssignCmd,
 		policy_certificatesRemoveCmd,
-		policy_certificatesConvertCmd,
 	)
 
 	// Register with policy command
 	policyCmd.AddCommand(policy_certificatesCmd)
-}
-
-func policy_convertPEMToX5C(cmd *cobra.Command, args []string) {
-	c := cli.New(cmd, args)
-
-	filePath := c.Flags.GetRequiredString("file")
-	outputX5C := cmd.Flags().Lookup("output-x5c").Value.String() == "true"
-
-	data, err := os.ReadFile(filePath)
-	if err != nil {
-		cli.ExitWithError(fmt.Sprintf("Failed to read file (%s)", filePath), err)
-	}
-
-	if outputX5C {
-		// Convert PEM to x5c
-		x5c, err := handlers.ConvertPEMToX5C(data)
-		if err != nil {
-			cli.ExitWithError("Failed to convert PEM to x5c", err)
-		}
-		fmt.Println(x5c)
-	} else {
-		// Convert x5c to PEM (default behavior)
-		x5c := string(data)
-		pemData, err := handlers.ConvertX5CToPEM(x5c)
-		if err != nil {
-			cli.ExitWithError("Failed to convert x5c to PEM", err)
-		}
-		fmt.Println(string(pemData))
-	}
 }
 
 func truncateString(s string, maxLen int) string {
