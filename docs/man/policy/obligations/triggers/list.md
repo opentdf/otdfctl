@@ -25,5 +25,5 @@ otdfctl policy obligations triggers list --limit 10 --offset 0
 ```
 
 ```shell
-otdfctl policy obligations triggers list --limit 10 --offset 0 --namespace "https://example.com
+otdfctl policy obligations triggers list --limit 10 --offset 0 --namespace "https://example.com"
 ```

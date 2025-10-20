@@ -159,7 +159,7 @@ setup() {
           fi
           
           # Check attribute value FQN if specified
-          if [ "$match" = true ] && [ -n "$exp_attr_val_fqn" ] && [ "$exp_attr_val_fqn" != "" ]; then
+          if [ "$match" = true ] && [ -n "$exp_attr_val_fqn" ] && [ "$exp_attr_val_fqn" != "null" ]; then
             local actual_attr_val_fqn=$(echo "$json_output" | jq -r ".triggers[$i].attribute_value.fqn")
             if [ "$actual_attr_val_fqn" != "$exp_attr_val_fqn" ]; then
               match=false
@@ -167,7 +167,7 @@ setup() {
           fi
           
           # Check action ID if specified
-          if [ "$match" = true ] && [ -n "$exp_action_id" ] && [ "$exp_action_id" != "null" ] && [ "$exp_action_id" != "" ]; then
+          if [ "$match" = true ] && [ -n "$exp_action_id" ] && [ "$exp_action_id" != "null" ]; then
             local actual_action_id=$(echo "$json_output" | jq -r ".triggers[$i].action.id")
             if [ "$actual_action_id" != "$exp_action_id" ]; then
               match=false
@@ -175,7 +175,7 @@ setup() {
           fi
           
           # Check action name if specified
-          if [ "$match" = true ] && [ -n "$exp_action_name" ] && [ "$exp_action_name" != "" ]; then
+          if [ "$match" = true ] && [ -n "$exp_action_name" ] && [ "$exp_action_name" != "null" ]; then
             local actual_action_name=$(echo "$json_output" | jq -r ".triggers[$i].action.name")
             if [ "$actual_action_name" != "$exp_action_name" ]; then
               match=false
@@ -183,7 +183,7 @@ setup() {
           fi
           
           # Check client_id if specified
-          if [ "$match" = true ] && [ -n "$exp_client_id" ] && [ "$exp_client_id" != "" ]; then
+          if [ "$match" = true ] && [ -n "$exp_client_id" ] && [ "$exp_client_id" != "null" ]; then
             local actual_client_id=$(echo "$json_output" | jq -r "if .triggers[$i].context and (.triggers[$i].context | length) > 0 then .triggers[$i].context[0].pep.client_id // \"\" else \"\" end")
             if [ "$actual_client_id" != "$exp_client_id" ]; then
               match=false
@@ -191,7 +191,7 @@ setup() {
           fi
 
           # Check obligation value ID if specified
-          if [ "$match" = true ] && [ -n "$exp_obl_val_id" ] && [ "$exp_obl_val_id" != "null" ] && [ "$exp_obl_val_id" != "" ]; then
+          if [ "$match" = true ] && [ -n "$exp_obl_val_id" ] && [ "$exp_obl_val_id" != "null" ]; then
             local actual_obl_val_id=$(echo "$json_output" | jq -r ".triggers[$i].obligation_value.id")
             if [ "$actual_obl_val_id" != "$exp_obl_val_id" ]; then
               match=false
@@ -199,11 +199,11 @@ setup() {
           fi
 
           # Check obligation value FQN if specified
-          if [ "$match" = true ] && [ -n "$exp_obl_val_fqn" ] && [ "$exp_obl_val_fqn" != "" ]; then
+          if [ "$match" = true ] && [ -n "$exp_obl_val_fqn" ] && [ "$exp_obl_val_fqn" != "null" ]; then
             local actual_obl_val_namespace=$(echo "$json_output" | jq -r ".triggers[$i].obligation_value.obligation.namespace.fqn")
             local actual_obl_val_name=$(echo "$json_output" | jq -r ".triggers[$i].obligation_value.obligation.name")
             local actual_obl_val_value=$(echo "$json_output" | jq -r ".triggers[$i].obligation_value.value")
-            local actual_obl_val_fqn="${actual_obl_val_namespace}/obl/${actual_obl_val_name}/val/${actual_obl_val_value}"
+            local actual_obl_val_fqn="${actual_obl_val_namespace}/obl/${actual_obl_val_name}/value/${actual_obl_val_value}"
             if [ "$actual_obl_val_fqn" != "$exp_obl_val_fqn" ]; then
               match=false
             fi
@@ -227,12 +227,12 @@ setup() {
       export LIST_OBL_1_NAME="list_test_obl"
       export LIST_OBL_1_VAL="list_test_val"
       export LIST_OBL_1_FQN="https://$LIST_NS_1_NAME/obl/$LIST_OBL_1_NAME"
-      export LIST_OBL_VAL_1_FQN="$LIST_OBL_1_FQN/val/$LIST_OBL_1_VAL"
+      export LIST_OBL_VAL_1_FQN="$LIST_OBL_1_FQN/value/$LIST_OBL_1_VAL"
       export LIST_OBL_1_ID=""
       export LIST_OBL_2_NAME="list_test_obl"
       export LIST_OBL_2_VAL="list_test_val"
       export LIST_OBL_2_FQN="https://$LIST_NS_2_NAME/obl/$LIST_OBL_2_NAME"
-      export LIST_OBL_VAL_2_FQN="$LIST_OBL_2_FQN/val/$LIST_OBL_2_VAL"
+      export LIST_OBL_VAL_2_FQN="$LIST_OBL_2_FQN/value/$LIST_OBL_2_VAL"
       export LIST_OBL_2_ID=""
 
       run sh -c "./otdfctl $HOST $WITH_CREDS policy obligations get --fqn $LIST_OBL_1_FQN --json"
@@ -289,12 +289,9 @@ teardown_file() {
   # remove the obligation used in obligation values tests
   ./otdfctl $HOST $WITH_CREDS policy obligations delete --id "$OBL_ID" --force
 
-  # # remove the custom action used in obligation values tests
-  # ./otdfctl $HOST $WITH_CREDS policy actions delete --id "$CUSTOM_ACTION_ID" --force
-
   # remove shared actions
-  ./otdfctl $HOST $WITH_CREDS policy actions delete --id "$ACTION_1_ID" --force
-  ./otdfctl $HOST $WITH_CREDS policy actions delete --id "$ACTION_2_ID" --force
+  #./otdfctl $HOST $WITH_CREDS policy actions delete --id "$ACTION_1_ID" --force
+  #./otdfctl $HOST $WITH_CREDS policy actions delete --id "$ACTION_2_ID" --force
   
   # remove shared attributes
   ./otdfctl $HOST $WITH_CREDS policy attributes unsafe delete --id "$ATTR_ID" --force
