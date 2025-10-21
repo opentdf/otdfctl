@@ -290,8 +290,8 @@ teardown_file() {
   ./otdfctl $HOST $WITH_CREDS policy obligations delete --id "$OBL_ID" --force
 
   # remove shared actions
-  #./otdfctl $HOST $WITH_CREDS policy actions delete --id "$ACTION_1_ID" --force
-  #./otdfctl $HOST $WITH_CREDS policy actions delete --id "$ACTION_2_ID" --force
+  ./otdfctl $HOST $WITH_CREDS policy actions delete --id "$ACTION_1_ID" --force
+  ./otdfctl $HOST $WITH_CREDS policy actions delete --id "$ACTION_2_ID" --force
   
   # remove shared attributes
   ./otdfctl $HOST $WITH_CREDS policy attributes unsafe delete --id "$ATTR_ID" --force
