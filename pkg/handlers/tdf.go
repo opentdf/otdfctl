@@ -169,20 +169,13 @@ func (h Handler) DecryptBytes(
 			opts = append(opts, sdk.WithNanoKasAllowlist(kasAllowList))
 		}
 
-		r, err := h.sdk.LoadNanoTDF(context.Background(), ec, opts...)
+		n, err := h.sdk.LoadNanoTDF(context.Background(), ec, opts...)
 		if err != nil {
 			return nil, err
 		}
 
-		if _, err := r.DecryptNanoTDF(context.Background(), pt); err != nil {
-			if errors.Is(err, sdk.ErrRewrapForbidden) {
-				obligations, _ := r.Obligations(context.Background())
-				if len(obligations.FQNs) > 0 {
-					err = errors.Join(err, fmt.Errorf("\nrequired obligations: %v", obligations.FQNs))
-				}
-			}
-
-			return nil, err
+		if _, err := n.DecryptNanoTDF(context.Background(), pt); err != nil {
+			return nil, formatDecryptError(context.Background(), n.Obligations, err)
 		}
 	case sdk.Standard:
 		opts := []sdk.TDFReaderOption{
@@ -220,14 +213,7 @@ func (h Handler) DecryptBytes(
 		}
 		//nolint:errorlint // callers intended to test error equality directly
 		if _, err = io.Copy(pt, r); err != nil && err != io.EOF {
-			if errors.Is(err, sdk.ErrRewrapForbidden) {
-				obligations, _ := r.Obligations(context.Background())
-				if len(obligations.FQNs) > 0 {
-					err = errors.Join(err, fmt.Errorf("\nrequired obligations: %v", obligations.FQNs))
-				}
-			}
-
-			return nil, err
+			return nil, formatDecryptError(context.Background(), r.Obligations, err)
 		}
 	case sdk.Invalid:
 		return nil, errors.New("invalid TDF")
@@ -350,4 +336,15 @@ func correctKeyType(assertionKey sdk.AssertionKey, public bool) (interface{}, er
 		return privateKey, nil
 	}
 	return nil, fmt.Errorf("unsupported signing key alg: %v", assertionKey.Alg)
+}
+
+func formatDecryptError(ctx context.Context, getObligations func(ctx context.Context) (sdk.RequiredObligations, error), err error) error {
+	// Avoid calling Rewrap again, if the error is a 500 error from KAS
+	if errors.Is(err, sdk.ErrRewrapForbidden) {
+		obligations, _ := getObligations(ctx)
+		if len(obligations.FQNs) > 0 {
+			err = errors.Join(err, fmt.Errorf("\nrequired obligations: %v", obligations.FQNs))
+		}
+	}
+	return err
 }
