@@ -815,7 +815,7 @@ func prepareKeyContexts(
 func validatePublicKey(pemDecoded []byte, alg policy.Algorithm) error {
 	err := utils.ValidatePublicKeyPEM(pemDecoded, alg)
 	if err != nil {
-		return errors.Join(errors.New("invalid public key pem"), err)
+		return fmt.Errorf("invalid public key pem: %w", err)
 	}
 	return nil
 }
