@@ -313,8 +313,6 @@ func policyImportKasKey(cmd *cobra.Command, args []string) {
 		cli.ExitWithError("failed to wrap key", err)
 	}
 
-	// alg already parsed above
-
 	kasLookup, err := resolveKasIdentifier(kasIdentifier)
 	if err != nil {
 		cli.ExitWithError("Invalid kas identifier", err)
