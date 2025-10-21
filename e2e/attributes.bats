@@ -17,10 +17,11 @@ setup_file() {
 
   export KAS_URI="https://test-kas-for-attributes.com"
   export KAS_REG_ID=$(./otdfctl $HOST $WITH_CREDS policy kas-registry create --uri "$KAS_URI" --json | jq -r '.id')
-  export PEM="pem"
-  export PEM_B64=$(echo "$PEM" | base64)
+  # Generate a valid RSA public key and base64 encode (single-line)
+  export PEM_B64=$(openssl genrsa 2048 2>/dev/null | openssl rsa -pubout 2>/dev/null | base64 | tr -d '\n')
   export KAS_KEY_ID="test-key-for-attr"
   export KAS_KEY_SYSTEM_ID=$(./otdfctl $HOST $WITH_CREDS policy kas-registry key create --kas "$KAS_REG_ID" --key-id "$KAS_KEY_ID" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "${PEM_B64}" --json | jq -r '.key.id')
+  export PEM=$(echo "$PEM_B64" | base64 -d)
 }
 
 # always create a randomly named attribute
