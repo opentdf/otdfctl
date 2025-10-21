@@ -28,7 +28,7 @@ setup_file() {
     assert_success
     export PC_ID=$(echo "$output" | jq -r '.id')
   fi
-  export WRAPPING_KEY="9453b4d7cc55cf27926ae8f98a9d5aa159d51b7a4d478e440271ab261792a2bd"
+  export WRAPPING_KEY=$(openssl rand -hex 32)
   # Generate valid public keys and base64 encode (single-line)
   export PEM_B64_RSA=$(openssl genrsa 2048 2>/dev/null | openssl rsa -pubout 2>/dev/null | base64 | tr -d '\n')
   export PEM_B64_EC_P256=$(openssl ecparam -name prime256v1 -genkey 2>/dev/null | openssl ec -pubout 2>/dev/null | base64 | tr -d '\n')
