@@ -428,7 +428,7 @@ func policyListObligationTriggers(cmd *cobra.Command, args []string) {
 	}
 
 	t := cli.NewTable(
-		table.NewFlexColumn("id", "ID", cli.FlexColumnWidthTwo),
+		cli.NewUUIDColumn(),
 		table.NewFlexColumn("attribute", "Attribute Value FQN", cli.FlexColumnWidthThree),
 		table.NewFlexColumn("action", "Action", cli.FlexColumnWidthOne),
 		table.NewFlexColumn("obligation", "Obligation Value FQN", cli.FlexColumnWidthThree),
