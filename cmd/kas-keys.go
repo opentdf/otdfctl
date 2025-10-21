@@ -1,19 +1,19 @@
 package cmd
 
 import (
-    "encoding/base64"
-    "encoding/hex"
+	"encoding/base64"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"strconv"
 	"strings"
 
 	"github.com/evertras/bubble-table/table"
-    "github.com/opentdf/otdfctl/pkg/cli"
+	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/handlers"
 	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/opentdf/otdfctl/pkg/utils"
-    "github.com/opentdf/platform/lib/ocrypto"
+	"github.com/opentdf/platform/lib/ocrypto"
 	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/opentdf/platform/protocol/go/policy/kasregistry"
 	"github.com/spf13/cobra"
@@ -286,19 +286,19 @@ func policyImportKasKey(cmd *cobra.Command, args []string) {
 		*legacy = false
 	}
 
-    // Parse algorithm early for validation
-    alg, err := cli.KeyAlgToEnum(algorithm)
-    if err != nil {
-        cli.ExitWithError("Invalid algorithm", err)
-    }
+	// Parse algorithm early for validation
+	alg, err := cli.KeyAlgToEnum(algorithm)
+	if err != nil {
+		cli.ExitWithError("Invalid algorithm", err)
+	}
 
-    decodedPub, err := base64.StdEncoding.DecodeString(publicKeyPem)
-    if err != nil {
-        cli.ExitWithError("public-key-pem must be base64 encoded", err)
-    }
-    if err := validateAndConfirmPublicKey(c, decodedPub, alg); err != nil {
-        cli.ExitWithError("Invalid public key pem", err)
-    }
+	decodedPub, err := base64.StdEncoding.DecodeString(publicKeyPem)
+	if err != nil {
+		cli.ExitWithError("public-key-pem must be base64 encoded", err)
+	}
+	if err := validatePublicKey(decodedPub, alg); err != nil {
+		cli.ExitWithError("Invalid public key pem", err)
+	}
 	nonBase64PrivateKey, err := base64.StdEncoding.DecodeString(privateKeyPem)
 	if err != nil {
 		cli.ExitWithError("private-key-pem must be base64 encoded", err)
@@ -313,7 +313,7 @@ func policyImportKasKey(cmd *cobra.Command, args []string) {
 		cli.ExitWithError("failed to wrap key", err)
 	}
 
-    // alg already parsed above
+	// alg already parsed above
 
 	kasLookup, err := resolveKasIdentifier(kasIdentifier)
 	if err != nil {
@@ -760,9 +760,9 @@ func prepareKeyContexts(
 		if err != nil {
 			return nil, nil, "", errors.Join(errors.New("public key pem must be base64 encoded"), err)
 		}
-        if err := validatePublicKey(decodedPub, alg); err != nil {
-            return nil, nil, "", err
-        }
+		if err := validatePublicKey(decodedPub, alg); err != nil {
+			return nil, nil, "", err
+		}
 		_, err = base64.StdEncoding.DecodeString(privatePem)
 		if err != nil {
 			return nil, nil, "", errors.Join(errors.New("private key pem must be base64 encoded"), err)
@@ -782,9 +782,9 @@ func prepareKeyContexts(
 		if err != nil {
 			return nil, nil, "", errors.Join(errors.New("pem must be base64 encoded"), err)
 		}
-        if err := validatePublicKey(decoded, alg); err != nil {
-            return nil, nil, "", err
-        }
+		if err := validatePublicKey(decoded, alg); err != nil {
+			return nil, nil, "", err
+		}
 
 		publicKeyCtx = &policy.PublicKeyCtx{
 			Pem: pem,
@@ -798,9 +798,9 @@ func prepareKeyContexts(
 		if err != nil {
 			return nil, nil, "", errors.Join(errors.New("pem must be base64 encoded"), err)
 		}
-        if err := validatePublicKey(decoded, alg); err != nil {
-            return nil, nil, "", err
-        }
+		if err := validatePublicKey(decoded, alg); err != nil {
+			return nil, nil, "", err
+		}
 		publicKeyCtx = &policy.PublicKeyCtx{
 			Pem: pem,
 		}
@@ -815,11 +815,11 @@ func prepareKeyContexts(
 
 // validatePublicKey validates the PEM public key against the expected algorithm.
 func validatePublicKey(pemDecoded []byte, alg policy.Algorithm) error {
-    _, err := utils.ValidatePublicKeyPEM(pemDecoded, alg)
-    if err != nil {
-        return errors.Join(errors.New("invalid public key pem"), err)
-    }
-    return nil
+	err := utils.ValidatePublicKeyPEM(pemDecoded, alg)
+	if err != nil {
+		return errors.Join(errors.New("invalid public key pem"), err)
+	}
+	return nil
 }
 
 func policyUnsafeDeleteKasKey(cmd *cobra.Command, args []string) {
