@@ -32,6 +32,7 @@ setup_file() {
   # Generate valid public keys and base64 encode (single-line)
   export PEM_B64_RSA=$(openssl genrsa 2048 2>/dev/null | openssl rsa -pubout 2>/dev/null | base64 | tr -d '\n')
   export PEM_B64_EC_P256=$(openssl ecparam -name prime256v1 -genkey 2>/dev/null | openssl ec -pubout 2>/dev/null | base64 | tr -d '\n')
+  export PEM_B64_RSA_4096=$(openssl genrsa 4096 2>/dev/null | openssl rsa -pubout 2>/dev/null | base64 | tr -d '\n')
   export PEM_B64=${PEM_B64_RSA}
 }
 
@@ -427,7 +428,7 @@ format_kas_name_as_uri() {
   assert_equal "$(echo "$output" | jq -r .key.key_algorithm)" "3" # ec:secp256r1
   assert_equal "$(echo "$output" | jq -r .key.key_mode)" "4"      # public_key
   assert_equal "$(echo "$output" | jq -r .key.key_status)" "1"    # active
-  assert_equal "$(echo "$output" | jq -r .key.public_key_ctx.pem)" "${PEM_B64}"
+  assert_equal "$(echo "$output" | jq -r .key.public_key_ctx.pem)" "${PEM_B64_EC_P256}"
   assert_equal "$(echo "$output" | jq -r .key.private_key_ctx)" "null"
   assert_equal "$(echo "$output" | jq -r .key.legacy)" "null"
   assert_not_equal "$(echo "$output" | jq -r .key.metadata.created_at)" "null"
@@ -469,7 +470,7 @@ format_kas_name_as_uri() {
   assert_equal "$(echo "$output" | jq -r .key.key_algorithm)" "3" # ec:secp256r1
   assert_equal "$(echo "$output" | jq -r .key.key_mode)" "4"      # public_key
   assert_equal "$(echo "$output" | jq -r .key.key_status)" "1"    # active
-  assert_equal "$(echo "$output" | jq -r .key.public_key_ctx.pem)" "${PEM_B64}"
+  assert_equal "$(echo "$output" | jq -r .key.public_key_ctx.pem)" "${PEM_B64_EC_P256}"
   assert_equal "$(echo "$output" | jq -r .key.private_key_ctx)" "null"
   assert_equal "$(echo "$output" | jq -r .key.legacy)" "null"
   assert_not_equal "$(echo "$output" | jq -r .key.metadata.created_at)" "null"
@@ -579,12 +580,12 @@ format_kas_name_as_uri() {
   # Create a few keys to ensure there\'s something to list and to check structure
   KEY_ID_LIST_1=$(generate_key_id)
 
-  run_otdfctl_key create --kas "${KAS_REGISTRY_ID}" --key-id "${KEY_ID_LIST_1}" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "${PEM_B64}" --json
+  run_otdfctl_key create --kas "${KAS_REGISTRY_ID}" --key-id "${KEY_ID_LIST_1}" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "${PEM_B64_RSA}" --json
   assert_success
   local key1_system_id=$(echo "$output" | jq -r .key.id)
 
   KEY_ID_LIST_2=$(generate_key_id)
-  run_otdfctl_key create --kas "${KAS_REGISTRY_ID}" --key-id "${KEY_ID_LIST_2}" --algorithm "ec:secp256r1" --mode "public_key" --public-key-pem "${PEM_B64}" --json
+  run_otdfctl_key create --kas "${KAS_REGISTRY_ID}" --key-id "${KEY_ID_LIST_2}" --algorithm "ec:secp256r1" --mode "public_key" --public-key-pem "${PEM_B64_EC_P256}" --json
   assert_success
   local key2_system_id=$(echo "$output" | jq -r .key.id)
 
@@ -598,7 +599,7 @@ format_kas_name_as_uri() {
   assert_equal "$(echo "$output" | jq -r --arg id "${key1_system_id}" '.[] | select(.key.id == $id) | .key.key_mode')" "4"
   assert_equal "$(echo "$output" | jq -r --arg id "${key1_system_id}" '.[] | select(.key.id == $id) | .key.key_status')" "1"
   assert_equal "$(echo "$output" | jq -r --arg id "${key1_system_id}" '.[] | select(.key.id == $id) | .key.legacy')" "null"
-  assert_equal "$(echo "$output" | jq -r --arg id "${key1_system_id}" '.[] | select(.key.id == $id) | .key.public_key_ctx.pem')" "${PEM_B64}"
+  assert_equal "$(echo "$output" | jq -r --arg id "${key1_system_id}" '.[] | select(.key.id == $id) | .key.public_key_ctx.pem')" "${PEM_B64_RSA}"
   assert_equal "$(echo "$output" | jq -r --arg id "${key1_system_id}" '.[] | select(.key.id == $id) | .key.private_key_ctx')" "null"
   assert_not_equal "$(echo "$output" | jq -r --arg id "${key1_system_id}" '.[] | select(.key.id == $id) | .key.metadata.created_at')" "null"
   assert_not_equal "$(echo "$output" | jq -r --arg id "${key1_system_id}" '.[] | select(.key.id == $id) | .key.metadata.updated_at')" "null"
@@ -610,7 +611,7 @@ format_kas_name_as_uri() {
   assert_equal "$(echo "$output" | jq -r --arg id "${key2_system_id}" '.[] | select(.key.id == $id) | .key.key_mode')" "4"
   assert_equal "$(echo "$output" | jq -r --arg id "${key2_system_id}" '.[] | select(.key.id == $id) | .key.legacy')" "null"
   assert_equal "$(echo "$output" | jq -r --arg id "${key2_system_id}" '.[] | select(.key.id == $id) | .key.key_status')" "1"
-  assert_equal "$(echo "$output" | jq -r --arg id "${key2_system_id}" '.[] | select(.key.id == $id) | .key.public_key_ctx.pem')" "${PEM_B64}"
+  assert_equal "$(echo "$output" | jq -r --arg id "${key2_system_id}" '.[] | select(.key.id == $id) | .key.public_key_ctx.pem')" "${PEM_B64_EC_P256}"
   assert_equal "$(echo "$output" | jq -r --arg id "${key2_system_id}" '.[] | select(.key.id == $id) | .key.private_key_ctx')" "null"
   assert_not_equal "$(echo "$output" | jq -r --arg id "${key2_system_id}" '.[] | select(.key.id == $id) | .key.metadata.created_at')" "null"
   assert_not_equal "$(echo "$output" | jq -r --arg id "${key2_system_id}" '.[] | select(.key.id == $id) | .key.metadata.updated_at')" "null"
@@ -624,17 +625,17 @@ format_kas_name_as_uri() {
 
   # Create a known set of keys for pagination testing
   local key_p1_id=$(generate_key_id)
-  run_otdfctl_key create --kas "${KAS_ID_LIST}" --key-id "${key_p1_id}" --algorithm "rsa:4096" --mode "public_key" --public-key-pem "${PEM_B64}" --json
+  run_otdfctl_key create --kas "${KAS_ID_LIST}" --key-id "${key_p1_id}" --algorithm "rsa:4096" --mode "public_key" --public-key-pem "${PEM_B64_RSA_4096}" --json
   assert_success
   local key_p1_sys_id=$(echo "$output" | jq -r .key.id)
 
   local key_p2_id=$(generate_key_id)
-  run_otdfctl_key create --kas "${KAS_ID_LIST}" --key-id "${key_p2_id}" --algorithm "ec:secp256r1" --mode "public_key" --public-key-pem "${PEM_B64}" --json
+  run_otdfctl_key create --kas "${KAS_ID_LIST}" --key-id "${key_p2_id}" --algorithm "ec:secp256r1" --mode "public_key" --public-key-pem "${PEM_B64_EC_P256}" --json
   assert_success
   local key_p2_sys_id=$(echo "$output" | jq -r .key.id)
 
   local key_p3_id=$(generate_key_id)
-  run_otdfctl_key create --kas "${KAS_ID_LIST}" --key-id "${key_p3_id}" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "${PEM_B64}" --json
+  run_otdfctl_key create --kas "${KAS_ID_LIST}" --key-id "${key_p3_id}" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "${PEM_B64_RSA}" --json
   assert_success
   local key_p3_sys_id=$(echo "$output" | jq -r .key.id)
 
@@ -676,13 +677,13 @@ format_kas_name_as_uri() {
 
   # Ensure at least one rsa:2048 key exists for this KAS
   KEY_ID_LIST_RSA=$(generate_key_id)
-  run_otdfctl_key create --kas "${KAS_ID_LIST}" --key-id "${KEY_ID_LIST_RSA}" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "${PEM_B64}" --json
+  run_otdfctl_key create --kas "${KAS_ID_LIST}" --key-id "${KEY_ID_LIST_RSA}" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "${PEM_B64_RSA}" --json
   assert_success
   local rsa_key_sys_id=$(echo "$output" | jq -r .key.id)
 
   # Ensure at least one non-rsa:2048 key exists for this KAS to test filtering
   KEY_ID_LIST_EC=$(generate_key_id)
-  run_otdfctl_key create --kas "${KAS_ID_LIST}" --key-id "${KEY_ID_LIST_EC}" --algorithm "ec:secp256r1" --mode "public_key" --public-key-pem "${PEM_B64}" --json
+  run_otdfctl_key create --kas "${KAS_ID_LIST}" --key-id "${KEY_ID_LIST_EC}" --algorithm "ec:secp256r1" --mode "public_key" --public-key-pem "${PEM_B64_EC_P256}" --json
   assert_success
   local ec_key_sys_id=$(echo "$output" | jq -r .key.id)
 
@@ -695,7 +696,7 @@ format_kas_name_as_uri() {
   assert_equal "$(echo "$output" | jq -r --arg id "${rsa_key_sys_id}" '.[] | select(.key.id == $id) | .key.key_algorithm')" "1"
   assert_equal "$(echo "$output" | jq -r --arg id "${rsa_key_sys_id}" '.[] | select(.key.id == $id) | .key.key_mode')" "4"
   assert_equal "$(echo "$output" | jq -r --arg id "${rsa_key_sys_id}" '.[] | select(.key.id == $id) | .key.key_status')" "1"
-  assert_equal "$(echo "$output" | jq -r --arg id "${rsa_key_sys_id}" '.[] | select(.key.id == $id) | .key.public_key_ctx.pem')" "${PEM_B64}"
+  assert_equal "$(echo "$output" | jq -r --arg id "${rsa_key_sys_id}" '.[] | select(.key.id == $id) | .key.public_key_ctx.pem')" "${PEM_B64_RSA}"
   assert_equal "$(echo "$output" | jq -r --arg id "${rsa_key_sys_id}" '.[] | select(.key.id == $id) | .key.private_key_ctx')" "null"
   assert_not_equal "$(echo "$output" | jq -r --arg id "${rsa_key_sys_id}" '.[] | select(.key.id == $id) | .key.metadata.created_at')" "null"
   assert_not_equal "$(echo "$output" | jq -r --arg id "${rsa_key_sys_id}" '.[] | select(.key.id == $id) | .key.metadata.updated_at')" "null"
