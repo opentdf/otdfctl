@@ -29,7 +29,10 @@ setup_file() {
     export PC_ID=$(echo "$output" | jq -r '.id')
   fi
   export WRAPPING_KEY="9453b4d7cc55cf27926ae8f98a9d5aa159d51b7a4d478e440271ab261792a2bd"
-  export PEM_B64=$(echo "pem" | base64)
+  # Generate valid public keys and base64 encode (single-line)
+  export PEM_B64_RSA=$(openssl genrsa 2048 2>/dev/null | openssl rsa -pubout 2>/dev/null | base64 | tr -d '\n')
+  export PEM_B64_EC_P256=$(openssl ecparam -name prime256v1 -genkey 2>/dev/null | openssl ec -pubout 2>/dev/null | base64 | tr -d '\n')
+  export PEM_B64=${PEM_B64_RSA}
 }
 
 setup() {
@@ -126,7 +129,7 @@ format_kas_name_as_uri() {
 
 @test "kas-keys: create key (public_key mode)" {
   KEY_ID=$(generate_key_id)
-  run_otdfctl_key create --kas "${KAS_REGISTRY_ID}" --key-id "${KEY_ID}" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "${PEM_B64}" --json
+  run_otdfctl_key create --kas "${KAS_REGISTRY_ID}" --key-id "${KEY_ID}" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "${PEM_B64}" --no-confirm --json
   assert_success
   assert_equal "$(echo "$output" | jq -r .kas_id)" "${KAS_REGISTRY_ID}"
   assert_equal "$(echo "$output" | jq -r .key.key_id)" "${KEY_ID}"
@@ -146,7 +149,7 @@ format_kas_name_as_uri() {
     skip "Skipping experimental test"
   fi
   KEY_ID=$(generate_key_id)
-  run_otdfctl_key create --kas "${KAS_REGISTRY_ID}" --key-id "${KEY_ID}" --algorithm "rsa:2048" --mode "remote" --public-key-pem "${PEM_B64}" --provider-config-id "${PC_ID}" --wrapping-key-id "wrapping-key-remote" --json
+  run_otdfctl_key create --kas "${KAS_REGISTRY_ID}" --key-id "${KEY_ID}" --algorithm "rsa:2048" --mode "remote" --public-key-pem "${PEM_B64}" --provider-config-id "${PC_ID}" --wrapping-key-id "wrapping-key-remote" --no-confirm --json
   assert_success
   assert_equal "$(echo "$output" | jq -r .kas_id)" "${KAS_REGISTRY_ID}"
   assert_equal "$(echo "$output" | jq -r .key.key_id)" "${KEY_ID}"
@@ -169,7 +172,7 @@ format_kas_name_as_uri() {
   fi
   KEY_ID=$(generate_key_id)
   WRAPPING_KEY_ID="wrapping-key-for-provider"
-  run_otdfctl_key create --kas "${KAS_REGISTRY_ID}" --key-id "${KEY_ID}" --algorithm "rsa:2048" --mode "provider" --provider-config-id "${PC_ID}" --wrapping-key-id "${WRAPPING_KEY_ID}" --public-key-pem "${PEM_B64}" --private-key-pem "${PEM_B64}" --json
+  run_otdfctl_key create --kas "${KAS_REGISTRY_ID}" --key-id "${KEY_ID}" --algorithm "rsa:2048" --mode "provider" --provider-config-id "${PC_ID}" --wrapping-key-id "${WRAPPING_KEY_ID}" --public-key-pem "${PEM_B64}" --private-key-pem "${PEM_B64}" --no-confirm --json
   assert_success
   assert_equal "$(echo "$output" | jq -r .kas_id)" "${KAS_REGISTRY_ID}"
   assert_equal "$(echo "$output" | jq -r .key.key_id)" "${KEY_ID}"
@@ -186,7 +189,7 @@ format_kas_name_as_uri() {
 
 @test "kas-keys: create key with labels" {
   KEY_ID=$(generate_key_id)
-  run_otdfctl_key create --kas "${KAS_REGISTRY_ID}" --key-id "${KEY_ID}" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "${PEM_B64}" --label "env=dev" --label "owner=test" --json
+  run_otdfctl_key create --kas "${KAS_REGISTRY_ID}" --key-id "${KEY_ID}" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "${PEM_B64}" --label "env=dev" --label "owner=test" --no-confirm --json
   assert_success
   assert_equal "$(echo "$output" | jq -r .kas_id)" "${KAS_REGISTRY_ID}"
   assert_equal "$(echo "$output" | jq -r .key.key_id)" "${KEY_ID}"
@@ -294,6 +297,22 @@ format_kas_name_as_uri() {
   assert_output --partial "pem must be base64 encoded"
 }
 
+@test "kas-keys: create key (public_key mode, invalid PEM content)" {
+  KEY_ID=$(generate_key_id)
+  # base64 of a non-PEM string
+  BAD_PEM_B64=$(echo "not a pem" | base64 | tr -d '\n')
+  run_otdfctl_key create --kas "${KAS_REGISTRY_ID}" --key-id "${KEY_ID}" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "${BAD_PEM_B64}"
+  assert_failure
+  assert_output --partial "invalid public key pem"
+}
+
+@test "kas-keys: create key (public_key mode, EC key with RSA algorithm)" {
+  KEY_ID=$(generate_key_id)
+  run_otdfctl_key create --kas "${KAS_REGISTRY_ID}" --key-id "${KEY_ID}" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "${PEM_B64_EC_P256}"
+  assert_failure
+  assert_output --partial "invalid public key pem"
+}
+
 @test "kas-keys: create key (missing kas identifier)" {
   KEY_ID=$(generate_key_id)
   run_otdfctl_key create --key-id "${KEY_ID}" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "${PEM_B64}"
@@ -303,7 +322,7 @@ format_kas_name_as_uri() {
 
 @test "kas-keys: create key (using kasName)" {
   KEY_ID=$(generate_key_id)
-  run_otdfctl_key create --kas "${KAS_NAME}" --key-id "${KEY_ID}" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "${PEM_B64}" --json
+  run_otdfctl_key create --kas "${KAS_NAME}" --key-id "${KEY_ID}" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "${PEM_B64}" --no-confirm --json
   assert_success
   assert_equal "$(echo "$output" | jq -r .kas_id)" "${KAS_REGISTRY_ID}"
   assert_equal "$(echo "$output" | jq -r .key.key_id)" "${KEY_ID}"
@@ -319,7 +338,7 @@ format_kas_name_as_uri() {
 
 @test "kas-keys: create key (using kasUri)" {
   KEY_ID=$(generate_key_id)
-  run_otdfctl_key create --kas "${KAS_URI}" --key-id "${KEY_ID}" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "${PEM_B64}" --json
+  run_otdfctl_key create --kas "${KAS_URI}" --key-id "${KEY_ID}" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "${PEM_B64}" --no-confirm --json
   assert_success
   assert_equal "$(echo "$output" | jq -r .kas_id)" "${KAS_REGISTRY_ID}"
   assert_equal "$(echo "$output" | jq -r .key.key_id)" "${KEY_ID}"
@@ -374,7 +393,7 @@ format_kas_name_as_uri() {
 
 @test "kas-keys: get key by system ID" {
   KEY_ID_GET=$(generate_key_id)
-  run_otdfctl_key create --kas "${KAS_REGISTRY_ID}" --key-id "${KEY_ID_GET}" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "${PEM_B64}" --json
+  run_otdfctl_key create --kas "${KAS_REGISTRY_ID}" --key-id "${KEY_ID_GET}" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "${PEM_B64}" --no-confirm --json
   assert_success
   CREATED_KEY_SYSTEM_ID=$(echo "$output" | jq -r .key.id)
 
@@ -396,7 +415,7 @@ format_kas_name_as_uri() {
 @test "kas-keys: get key by user key-id and kasId" {
   KEY_ID_GET_USER=$(generate_key_id)
   # Using ec:secp256r1 and public_key mode for variety
-  run_otdfctl_key create --kas "${KAS_REGISTRY_ID}" --key-id "${KEY_ID_GET_USER}" --algorithm "ec:secp256r1" --mode "public_key" --public-key-pem "${PEM_B64}" --json
+  run_otdfctl_key create --kas "${KAS_REGISTRY_ID}" --key-id "${KEY_ID_GET_USER}" --algorithm "ec:secp256r1" --mode "public_key" --public-key-pem "${PEM_B64_EC_P256}" --no-confirm --json
   assert_success
   local created_key_system_id_for_get=$(echo "$output" | jq -r .key.id)
 
@@ -417,7 +436,7 @@ format_kas_name_as_uri() {
 
 @test "kas-keys: get key by user key-id and kasName" {
   KEY_ID_GET_USER_kas=$(generate_key_id)
-  run_otdfctl_key create --kas "kas-registry-for-keys-test" --key-id "${KEY_ID_GET_USER_kas}" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "${PEM_B64}" --json
+  run_otdfctl_key create --kas "kas-registry-for-keys-test" --key-id "${KEY_ID_GET_USER_kas}" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "${PEM_B64}" --no-confirm --json
   assert_success
   local created_key_system_id_for_kas_get=$(echo "$output" | jq -r .key.id)
 
@@ -438,7 +457,7 @@ format_kas_name_as_uri() {
 
 @test "kas-keys: get key by user key-id and kasUri" {
   KEY_ID_GET_USER_kas=$(generate_key_id)
-  run_otdfctl_key create --kas "${KAS_URI}" --key-id "${KEY_ID_GET_USER_kas}" --algorithm "ec:secp256r1" --mode "public_key" --public-key-pem "${PEM_B64}" --json
+  run_otdfctl_key create --kas "${KAS_URI}" --key-id "${KEY_ID_GET_USER_kas}" --algorithm "ec:secp256r1" --mode "public_key" --public-key-pem "${PEM_B64_EC_P256}" --no-confirm --json
   assert_success
   local created_key_system_id_for_kas_get=$(echo "$output" | jq -r .key.id)
 
@@ -460,7 +479,7 @@ format_kas_name_as_uri() {
 @test "kas-keys: get key (failure: only key-id, missing KAS identifier)" {
   KEY_ID_FAIL_GET=$(generate_key_id)
   # Create a key first so it potentially exists, though the failure should be due to missing KAS context for the get
-  run_otdfctl_key create --kas "${KAS_REGISTRY_ID}" --key-id "${KEY_ID_FAIL_GET}" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "${PEM_B64}" --json
+  run_otdfctl_key create --kas "${KAS_REGISTRY_ID}" --key-id "${KEY_ID_FAIL_GET}" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "${PEM_B64}" --no-confirm --json
   assert_success
 
   run_otdfctl_key get --key "${KEY_ID_FAIL_GET}" --json
@@ -489,7 +508,7 @@ format_kas_name_as_uri() {
 
 @test "kas-keys: update key labels (add)" {
   KEY_ID_UPDATE_LABEL=$(generate_key_id)
-  run_otdfctl_key create --kas "${KAS_REGISTRY_ID}" --key-id "${KEY_ID_UPDATE_LABEL}" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "${PEM_B64}" --label "initial=true" --json
+  run_otdfctl_key create --kas "${KAS_REGISTRY_ID}" --key-id "${KEY_ID_UPDATE_LABEL}" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "${PEM_B64}" --label "initial=true" --no-confirm --json
   assert_success
   UPDATE_KEY_LABEL_SYSTEM_ID=$(echo "$output" | jq -r .key.id)
   local initial_created_at_seconds=$(echo "$output" | jq -r .key.metadata.created_at.seconds)
@@ -519,7 +538,7 @@ format_kas_name_as_uri() {
 
 @test "kas-keys: update key labels (replace)" {
   KEY_ID_UPDATE_LABEL_REPLACE=$(generate_key_id)
-  run_otdfctl_key create --kas "${KAS_REGISTRY_ID}" --key-id "${KEY_ID_UPDATE_LABEL_REPLACE}" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "${PEM_B64}" --label "initial=true" --json
+  run_otdfctl_key create --kas "${KAS_REGISTRY_ID}" --key-id "${KEY_ID_UPDATE_LABEL_REPLACE}" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "${PEM_B64}" --label "initial=true" --no-confirm --json
   assert_success
   UPDATE_KEY_LABEL_REPLACE_SYSTEM_ID=$(echo "$output" | jq -r .key.id)
   local initial_created_at_replace_seconds=$(echo "$output" | jq -r .key.metadata.created_at.seconds)
