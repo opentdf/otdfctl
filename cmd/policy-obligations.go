@@ -413,6 +413,42 @@ func policyDeleteObligationTrigger(cmd *cobra.Command, args []string) {
 	HandleSuccess(cmd, id, t, resp)
 }
 
+func policyListObligationTriggers(cmd *cobra.Command, args []string) {
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
+	defer h.Close()
+
+	namespace := c.Flags.GetOptionalString("namespace")
+	limit := c.Flags.GetRequiredInt32("limit")
+	offset := c.Flags.GetRequiredInt32("offset")
+
+	resp, err := h.ListObligationTriggers(cmd.Context(), namespace, limit, offset)
+	if err != nil {
+		cli.ExitWithError("Failed to list obligation triggers", err)
+	}
+
+	t := cli.NewTable(
+		cli.NewUUIDColumn(),
+		table.NewFlexColumn("attribute", "Attribute Value FQN", cli.FlexColumnWidthThree),
+		table.NewFlexColumn("action", "Action", cli.FlexColumnWidthOne),
+		table.NewFlexColumn("obligation", "Obligation Value FQN", cli.FlexColumnWidthThree),
+		table.NewFlexColumn("client_ids", "Client IDs", cli.FlexColumnWidthOne),
+	)
+	rows := []table.Row{}
+	for _, r := range resp.GetTriggers() {
+		rows = append(rows, table.NewRow(table.RowData{
+			"id":         r.GetId(),
+			"attribute":  r.GetAttributeValue().GetFqn(),
+			"action":     r.GetAction().GetName(),
+			"obligation": buildObligationValueFQN(r.GetObligationValue().GetObligation().GetNamespace().GetFqn(), r.GetObligationValue().GetObligation().GetName(), r.GetObligationValue().GetValue()),
+			"client_ids": cli.CommaSeparated(cli.AggregateClientIDs(r.GetContext())),
+		}))
+	}
+	t = t.WithRows(rows)
+	t = cli.WithListPaginationFooter(t, resp.GetPagination())
+	HandleSuccess(cmd, "", t, resp)
+}
+
 func buildObligationValueFQN(namespaceFQN, obligationName, value string) string {
 	return fmt.Sprintf("%s/obl/%s/value/%s", namespaceFQN, obligationName, value)
 }
@@ -695,6 +731,17 @@ func init() {
 		deleteTriggerDoc.GetDocFlag("force").Description,
 	)
 
+	listTriggerDoc := man.Docs.GetCommand("policy/obligations/triggers/list",
+		man.WithRun(policyListObligationTriggers),
+	)
+	listTriggerDoc.Flags().StringP(
+		listTriggerDoc.GetDocFlag("namespace").Name,
+		listTriggerDoc.GetDocFlag("namespace").Shorthand,
+		listTriggerDoc.GetDocFlag("namespace").Default,
+		listTriggerDoc.GetDocFlag("namespace").Description,
+	)
+	injectListPaginationFlags(listTriggerDoc)
+
 	// Add commands to the policy command
 
 	policyObligationsDoc := man.Docs.GetCommand("policy/obligations",
@@ -720,6 +767,7 @@ func init() {
 		man.WithSubcommands(
 			createTriggerDoc,
 			deleteTriggerDoc,
+			listTriggerDoc,
 		),
 	)
 

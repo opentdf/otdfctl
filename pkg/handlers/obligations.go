@@ -232,3 +232,23 @@ func (h Handler) DeleteObligationTrigger(ctx context.Context, id string) (*polic
 
 	return resp.GetTrigger(), nil
 }
+
+func (h Handler) ListObligationTriggers(ctx context.Context, namespace string, limit, offset int32) (*obligations.ListObligationTriggersResponse, error) {
+	req := &obligations.ListObligationTriggersRequest{
+		Pagination: &policy.PageRequest{
+			Limit:  limit,
+			Offset: offset,
+		},
+	}
+
+	if namespace != "" {
+		_, err := uuid.Parse(namespace)
+		if err != nil {
+			req.NamespaceFqn = namespace
+		} else {
+			req.NamespaceId = namespace
+		}
+	}
+
+	return h.sdk.Obligations.ListObligationTriggers(ctx, req)
+}
