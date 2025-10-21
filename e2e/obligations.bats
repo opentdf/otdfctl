@@ -37,6 +37,31 @@ setup_file() {
     export ATTR_2_ID=$(echo "$attr_2_result" | jq -r '.id')
     export ATTR_2_VAL_ID=$(echo "$attr_2_result" | jq -r '.values[0].id')
     export ATTR_2_VAL_FQN=$(echo "$attr_2_result" | jq -r '.values[0].fqn')
+
+    # Create namespaces and attributes for list triggers tests
+    export LIST_NS_1_NAME="list-test-ns1.org"
+    export LIST_NS_1_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes namespaces create --name "$LIST_NS_1_NAME" --json | jq -r '.id')
+    export LIST_NS_1_FQN="https://$LIST_NS_1_NAME"
+    
+    export LIST_NS_2_NAME="list-test-ns2.org"
+    export LIST_NS_2_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes namespaces create --name "$LIST_NS_2_NAME" --json | jq -r '.id')
+    export LIST_NS_2_FQN="https://$LIST_NS_2_NAME"
+    
+    # Create attributes for list triggers tests
+    # Namespace 1 attributes
+    list_attr_1_result=$(./otdfctl $HOST $WITH_CREDS policy attributes create --name "list_test_attr" --namespace "$LIST_NS_1_ID" --rule "HIERARCHY" -v "val1" --json)
+    export LIST_ATTR_1_ID=$(echo "$list_attr_1_result" | jq -r '.id')
+    export LIST_ATTR_1_VAL_1_ID=$(echo "$list_attr_1_result" | jq -r '.values[0].id')
+    export LIST_ATTR_1_VAL_1_FQN=$(echo "$list_attr_1_result" | jq -r '.values[0].fqn')
+    
+    # Namespace 2 attributes
+    list_attr_2_result=$(./otdfctl $HOST $WITH_CREDS policy attributes create --name "list_test_attr" --namespace "$LIST_NS_2_ID" --rule "HIERARCHY" -v "val1" --json)
+    export LIST_ATTR_2_ID=$(echo "$list_attr_2_result" | jq -r '.id')
+    export LIST_ATTR_2_VAL_1_ID=$(echo "$list_attr_2_result" | jq -r '.values[0].id')
+    export LIST_ATTR_2_VAL_1_FQN=$(echo "$list_attr_2_result" | jq -r '.values[0].fqn')
+    
+    # Set global vars for list triggers tests that will get populated in setup_triggers_test_data
+    export CLIENT_ID_LIST="test-client-list"
 }
 
 setup() {
@@ -117,6 +142,8 @@ setup() {
         local exp_action_id="${TRIGGER_SPEC[2]}"
         local exp_action_name="${TRIGGER_SPEC[3]}"
         local exp_client_id="${TRIGGER_SPEC[4]}"
+        local exp_obl_val_id="${TRIGGER_SPEC[5]}"
+        local exp_obl_val_fqn="${TRIGGER_SPEC[6]}"
         
         # Find if this expected trigger exists in the response
         local found=false
@@ -132,7 +159,7 @@ setup() {
           fi
           
           # Check attribute value FQN if specified
-          if [ "$match" = true ] && [ -n "$exp_attr_val_fqn" ] && [ "$exp_attr_val_fqn" != "" ]; then
+          if [ "$match" = true ] && [ -n "$exp_attr_val_fqn" ] && [ "$exp_attr_val_fqn" != "null" ]; then
             local actual_attr_val_fqn=$(echo "$json_output" | jq -r ".triggers[$i].attribute_value.fqn")
             if [ "$actual_attr_val_fqn" != "$exp_attr_val_fqn" ]; then
               match=false
@@ -140,7 +167,7 @@ setup() {
           fi
           
           # Check action ID if specified
-          if [ "$match" = true ] && [ -n "$exp_action_id" ] && [ "$exp_action_id" != "null" ] && [ "$exp_action_id" != "" ]; then
+          if [ "$match" = true ] && [ -n "$exp_action_id" ] && [ "$exp_action_id" != "null" ]; then
             local actual_action_id=$(echo "$json_output" | jq -r ".triggers[$i].action.id")
             if [ "$actual_action_id" != "$exp_action_id" ]; then
               match=false
@@ -148,7 +175,7 @@ setup() {
           fi
           
           # Check action name if specified
-          if [ "$match" = true ] && [ -n "$exp_action_name" ] && [ "$exp_action_name" != "" ]; then
+          if [ "$match" = true ] && [ -n "$exp_action_name" ] && [ "$exp_action_name" != "null" ]; then
             local actual_action_name=$(echo "$json_output" | jq -r ".triggers[$i].action.name")
             if [ "$actual_action_name" != "$exp_action_name" ]; then
               match=false
@@ -156,9 +183,28 @@ setup() {
           fi
           
           # Check client_id if specified
-          if [ "$match" = true ] && [ -n "$exp_client_id" ] && [ "$exp_client_id" != "" ]; then
+          if [ "$match" = true ] && [ -n "$exp_client_id" ] && [ "$exp_client_id" != "null" ]; then
             local actual_client_id=$(echo "$json_output" | jq -r "if .triggers[$i].context and (.triggers[$i].context | length) > 0 then .triggers[$i].context[0].pep.client_id // \"\" else \"\" end")
             if [ "$actual_client_id" != "$exp_client_id" ]; then
+              match=false
+            fi
+          fi
+
+          # Check obligation value ID if specified
+          if [ "$match" = true ] && [ -n "$exp_obl_val_id" ] && [ "$exp_obl_val_id" != "null" ]; then
+            local actual_obl_val_id=$(echo "$json_output" | jq -r ".triggers[$i].obligation_value.id")
+            if [ "$actual_obl_val_id" != "$exp_obl_val_id" ]; then
+              match=false
+            fi
+          fi
+
+          # Check obligation value FQN if specified
+          if [ "$match" = true ] && [ -n "$exp_obl_val_fqn" ] && [ "$exp_obl_val_fqn" != "null" ]; then
+            local actual_obl_val_namespace=$(echo "$json_output" | jq -r ".triggers[$i].obligation_value.obligation.namespace.fqn")
+            local actual_obl_val_name=$(echo "$json_output" | jq -r ".triggers[$i].obligation_value.obligation.name")
+            local actual_obl_val_value=$(echo "$json_output" | jq -r ".triggers[$i].obligation_value.value")
+            local actual_obl_val_fqn="${actual_obl_val_namespace}/obl/${actual_obl_val_name}/value/${actual_obl_val_value}"
+            if [ "$actual_obl_val_fqn" != "$exp_obl_val_fqn" ]; then
               match=false
             fi
           fi
@@ -171,20 +217,77 @@ setup() {
         
         # Assert that we found this expected trigger
         if [ "$found" = false ]; then
-          echo "Expected trigger not found: attr_val_id=$exp_attr_val_id, attr_val_fqn=$exp_attr_val_fqn, action_id=$exp_action_id, action_name=$exp_action_name, client_id=$exp_client_id"
+          echo "Expected trigger not found: attr_val_id=$exp_attr_val_id, attr_val_fqn=$exp_attr_val_fqn, action_id=$exp_action_id, action_name=$exp_action_name, client_id=$exp_client_id, obl_val_id=$exp_obl_val_id, obl_val_fqn=$exp_obl_val_fqn"
           return 1
         fi
       done
     }
 
+    setup_triggers_test_data() {
+      export LIST_OBL_1_NAME="list_test_obl"
+      export LIST_OBL_1_VAL="list_test_val"
+      export LIST_OBL_1_FQN="https://$LIST_NS_1_NAME/obl/$LIST_OBL_1_NAME"
+      export LIST_OBL_VAL_1_FQN="$LIST_OBL_1_FQN/value/$LIST_OBL_1_VAL"
+      export LIST_OBL_1_ID=""
+      export LIST_OBL_2_NAME="list_test_obl"
+      export LIST_OBL_2_VAL="list_test_val"
+      export LIST_OBL_2_FQN="https://$LIST_NS_2_NAME/obl/$LIST_OBL_2_NAME"
+      export LIST_OBL_VAL_2_FQN="$LIST_OBL_2_FQN/value/$LIST_OBL_2_VAL"
+      export LIST_OBL_2_ID=""
+
+      run sh -c "./otdfctl $HOST $WITH_CREDS policy obligations get --fqn $LIST_OBL_1_FQN --json"
+      if [ $status -ne 0 ]; then
+        run sh -c "./otdfctl $HOST $WITH_CREDS policy obligations create --name "$LIST_OBL_1_NAME" --namespace "$LIST_NS_1_ID" --json"
+        assert_success
+        export LIST_OBL_1_ID=$(echo "$output" | jq -r '.id')
+
+        run sh -c "./otdfctl $HOST $WITH_CREDS policy obligations values create --obligation "$LIST_OBL_1_ID" --value "$LIST_OBL_1_VAL" --json"
+        assert_success
+        export LIST_OBL_VAL_1_ID=$(echo "$output" | jq -r '.id')
+
+        run sh -c "./otdfctl $HOST $WITH_CREDS policy obligations triggers create --attribute-value "$LIST_ATTR_1_VAL_1_ID" --action "$ACTION_1_ID" --obligation-value "$LIST_OBL_VAL_1_ID" --client-id "$CLIENT_ID_LIST" --json"
+        assert_success
+        export LIST_TRIGGER_1_ID=$(echo "$output" | jq -r '.id')
+      else
+        export LIST_OBL_1_ID=$(echo "$output" | jq -r '.id')
+        export LIST_OBL_VAL_1_ID=$(echo "$output" | jq -r '.values[0].id')
+        export LIST_TRIGGER_1_ID=$(echo "$output" | jq -r '.values[0].triggers[0].id')
+      fi
+
+      run sh -c "./otdfctl $HOST $WITH_CREDS policy obligations get --fqn $LIST_OBL_2_FQN --json"
+      if [ $status -ne 0 ]; then
+        run sh -c "./otdfctl $HOST $WITH_CREDS policy obligations create --name "$LIST_OBL_2_NAME" --namespace "$LIST_NS_2_ID" --json"
+        assert_success
+        export LIST_OBL_2_ID=$(echo "$output" | jq -r '.id')
+
+        run sh -c "./otdfctl $HOST $WITH_CREDS policy obligations values create --obligation "$LIST_OBL_2_ID" --value "$LIST_OBL_2_VAL" --json"
+        assert_success
+        export LIST_OBL_VAL_2_ID=$(echo "$output" | jq -r '.id')
+
+        run sh -c "./otdfctl $HOST $WITH_CREDS policy obligations triggers create --attribute-value "$LIST_ATTR_2_VAL_1_ID" --action "$ACTION_2_ID" --obligation-value "$LIST_OBL_VAL_2_ID" --client-id "$CLIENT_ID_LIST" --json"
+        assert_success
+        export LIST_TRIGGER_2_ID=$(echo "$output" | jq -r '.id')
+      else
+        export LIST_OBL_2_ID=$(echo "$output" | jq -r '.id')
+        export LIST_OBL_VAL_2_ID=$(echo "$output" | jq -r '.values[0].id')
+        export LIST_TRIGGER_2_ID=$(echo "$output" | jq -r '.values[0].triggers[0].id')
+      fi
+  }
+
+  validate_pagination() {
+    local json_output="$1"
+    local expected_offset="$2"
+    local expected_total="$3"
+    local expected_next_offset="$4"
+    assert_equal "$(echo "$json_output" | jq -r '.pagination.current_offset')" "$expected_offset"
+    assert_equal "$(echo "$json_output" | jq -r '.pagination.total')" "$expected_total"
+    assert_equal "$(echo "$json_output" | jq -r '.pagination.next_offset')" "$expected_next_offset"
+  }
 }
 
 teardown_file() {
   # remove the obligation used in obligation values tests
   ./otdfctl $HOST $WITH_CREDS policy obligations delete --id "$OBL_ID" --force
-
-  # # remove the custom action used in obligation values tests
-  # ./otdfctl $HOST $WITH_CREDS policy actions delete --id "$CUSTOM_ACTION_ID" --force
 
   # remove shared actions
   ./otdfctl $HOST $WITH_CREDS policy actions delete --id "$ACTION_1_ID" --force
@@ -197,12 +300,19 @@ teardown_file() {
   # remove the namespace used in obligation values tests
   ./otdfctl $HOST $WITH_CREDS policy attributes namespaces unsafe delete --id "$NS_ID" --force
   
+  # remove list triggers test namespaces
+  ./otdfctl $HOST $WITH_CREDS policy attributes namespaces unsafe delete --id "$LIST_NS_1_ID" --force
+  ./otdfctl $HOST $WITH_CREDS policy attributes namespaces unsafe delete --id "$LIST_NS_2_ID" --force
+  
   # cleanup shared triggers file
   rm -f "$SHARED_TRIGGERS_FILE"
 
   # clear out all test env vars
   unset HOST WITH_CREDS OBL_NAME OBL_ID NS_NAME NS_ID ACTION_1_NAME ACTION_1_ID ACTION_2_NAME ACTION_2_ID ATTR_NAME ATTR_VAL_NAME ATTR_ID ATTR_VAL_ID ATTR_VAL_FQN ATTR_2_NAME ATTR_2_VAL_NAME ATTR_2_ID ATTR_2_VAL_ID ATTR_2_VAL_FQN
+  unset CLIENT_ID_LIST LIST_NS_1_NAME LIST_NS_1_ID LIST_NS_1_FQN LIST_NS_2_NAME LIST_NS_2_ID LIST_NS_2_FQN
+  unset LIST_ATTR_1_ID LIST_ATTR_1_VAL_1_ID LIST_ATTR_1_VAL_1_FQN LIST_ATTR_2_ID LIST_ATTR_2_VAL_1_ID LIST_ATTR_2_VAL_1_FQN
 }
+
 
 @test "Create a obligation - Good" {
   run_otdfctl_obl create --name test_create_obl --namespace "$NS_ID" --json
@@ -794,4 +904,50 @@ EOF
 
   # cleanup
   cleanup_obligation_value "$obl_val_id"
+}
+
+@test "List obligation triggers - No filters" {
+  setup_triggers_test_data
+  
+  run_otdfctl_obl_triggers list --json
+  assert_success
+  
+  # Verify all our triggers are present
+  actual_triggers=$(echo "$output" | jq -r '.triggers | length')
+  assert [ "$actual_triggers" -ge 2 ]
+  validate_triggers "$output" "2" "$LIST_ATTR_2_VAL_1_ID;$LIST_ATTR_2_VAL_1_FQN;$ACTION_2_ID;$ACTION_2_NAME;$CLIENT_ID_LIST;$LIST_OBL_2_VAL_ID;$LIST_OBL_VAL_2_FQN" "$LIST_ATTR_1_VAL_1_ID;$LIST_ATTR_1_VAL_1_FQN;$ACTION_1_ID;$ACTION_1_NAME;$CLIENT_ID_LIST;$LIST_OBL_1_VAL_ID;$LIST_OBL_VAL_1_FQN"
+  validate_pagination "$output" "null" "2" "null"
+}
+
+@test "List obligation triggers - Limit and Offset" {
+  setup_triggers_test_data
+  run_otdfctl_obl_triggers list --limit 1 --offset 0 --json
+  assert_success
+  assert_equal "$(echo "$output" | jq -r '.triggers | length')" "1"
+  validate_triggers "$output" "1" "$LIST_ATTR_2_VAL_1_ID;$LIST_ATTR_2_VAL_1_FQN;$ACTION_2_ID;$ACTION_2_NAME;$CLIENT_ID_LIST;$LIST_OBL_2_VAL_ID;$LIST_OBL_VAL_2_FQN"
+  validate_pagination "$output" "null" "2" "1"
+
+  run_otdfctl_obl_triggers list --limit 1 --offset 1 --json
+  assert_success
+  assert_equal "$(echo "$output" | jq -r '.triggers | length')" "1"
+  validate_triggers "$output" "1" "$LIST_ATTR_1_VAL_1_ID;$LIST_ATTR_1_VAL_1_FQN;$ACTION_1_ID;$ACTION_1_NAME;$CLIENT_ID_LIST;$LIST_OBL_1_VAL_ID;$LIST_OBL_VAL_1_FQN"
+  validate_pagination "$output" "1" "2" "null"
+}
+
+@test "List obligation triggers - Filter by Namespace ID" {
+  setup_triggers_test_data
+  run_otdfctl_obl_triggers list --namespace "$LIST_NS_1_ID" --json
+  assert_success
+  assert_equal "$(echo "$output" | jq -r '.triggers | length')" "1"
+  validate_triggers "$output" "1" "$LIST_ATTR_1_VAL_1_ID;$LIST_ATTR_1_VAL_1_FQN;$ACTION_1_ID;$ACTION_1_NAME;$CLIENT_ID_LIST;$LIST_OBL_1_VAL_ID;$LIST_OBL_VAL_1_FQN"
+  validate_pagination "$output" "null" "1" "null"
+}
+
+@test "List obligation triggers - Filter by Namespace FQN" {
+  setup_triggers_test_data
+  run_otdfctl_obl_triggers list --namespace "https://$LIST_NS_2_NAME" --json
+  assert_success
+  assert_equal "$(echo "$output" | jq -r '.triggers | length')" "1"
+  validate_triggers "$output" "1" "$LIST_ATTR_2_VAL_1_ID;$LIST_ATTR_2_VAL_1_FQN;$ACTION_2_ID;$ACTION_2_NAME;$CLIENT_ID_LIST;$LIST_OBL_2_VAL_ID;$LIST_OBL_VAL_2_FQN"
+  validate_pagination "$output" "null" "1" "null"
 }
