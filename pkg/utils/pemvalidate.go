@@ -20,7 +20,7 @@ func ValidatePublicKeyPEM(pemBytes []byte, expected policy.Algorithm) error {
 		return fmt.Errorf("invalid public key pem: %w", err)
 	}
 
-	switch expected { //nolint:exhaustive
+	switch expected {
 	case policy.Algorithm_ALGORITHM_RSA_2048:
 		if enc.KeyType() != ocrypto.RSA2048Key {
 			return errors.New("algorithm mismatch: expected RSA 2048")
@@ -41,6 +41,8 @@ func ValidatePublicKeyPEM(pemBytes []byte, expected policy.Algorithm) error {
 		if enc.KeyType() != ocrypto.EC521Key {
 			return errors.New("algorithm mismatch: expected EC P-521")
 		}
+	case policy.Algorithm_ALGORITHM_UNSPECIFIED:
+		fallthrough
 	default:
 		return errors.New("unsupported or unspecified algorithm")
 	}
