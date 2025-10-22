@@ -200,10 +200,7 @@ setup() {
 
           # Check obligation value FQN if specified
           if [ "$match" = true ] && [ -n "$exp_obl_val_fqn" ] && [ "$exp_obl_val_fqn" != "null" ]; then
-            local actual_obl_val_namespace=$(echo "$json_output" | jq -r ".triggers[$i].obligation_value.obligation.namespace.fqn")
-            local actual_obl_val_name=$(echo "$json_output" | jq -r ".triggers[$i].obligation_value.obligation.name")
-            local actual_obl_val_value=$(echo "$json_output" | jq -r ".triggers[$i].obligation_value.value")
-            local actual_obl_val_fqn="${actual_obl_val_namespace}/obl/${actual_obl_val_name}/value/${actual_obl_val_value}"
+            local actual_obl_val_fqn=$(echo "$json_output" | jq -r ".triggers[$i].obligation_value.fqn")
             if [ "$actual_obl_val_fqn" != "$exp_obl_val_fqn" ]; then
               match=false
             fi
@@ -799,6 +796,7 @@ EOF
   # create trigger
   run_otdfctl_obl_triggers create --attribute-value "$ATTR_VAL_ID" --action "$ACTION_1_ID" --obligation-value "$obl_val_id" --json
   assert_success
+  echo "$output" >&2
   [ "$(echo "$output" | jq -r '.id')" != "null" ]
   trigger_id=$(echo "$output" | jq -r '.id')
   assert_equal "$(echo "$output" | jq -r '.attribute_value.id')" "$ATTR_VAL_ID"
@@ -809,6 +807,7 @@ EOF
   assert_equal "$(echo "$output" | jq -r '.obligation_value.value')" "test_obl_val_for_trigger"
   assert_equal "$(echo "$output" | jq -r '.obligation_value.obligation.id')" "$OBL_ID"
   assert_equal "$(echo "$output" | jq -r '.obligation_value.obligation.namespace.fqn')" "https://$NS_NAME"
+  assert_equal "$(echo "$output" | jq -r '.obligation_value.fqn')" "https://$NS_NAME/obl/$OBL_NAME/value/test_obl_val_for_trigger"
 
   # cleanup
   cleanup_trigger "$trigger_id"
@@ -834,6 +833,7 @@ EOF
   assert_equal "$(echo "$output" | jq -r '.obligation_value.value')" "test_obl_val_for_trigger"
   assert_equal "$(echo "$output" | jq -r '.obligation_value.obligation.id')" "$OBL_ID"
   assert_equal "$(echo "$output" | jq -r '.obligation_value.obligation.namespace.fqn')" "https://$NS_NAME"
+  assert_equal "$(echo "$output" | jq -r '.obligation_value.fqn')" "https://$NS_NAME/obl/$OBL_NAME/value/test_obl_val_for_trigger"
   assert_equal "$(echo "$output" | jq -r '.metadata.labels')" "null"
   assert_equal "$(echo "$output" | jq -r '.context.pep')" "null"
 
@@ -864,6 +864,7 @@ EOF
   assert_equal "$(echo "$output" | jq -r '.metadata.labels.my')" "label"
   assert_equal "$(echo "$output" | jq -r '.context | length')" "1"
   assert_equal "$(echo "$output" | jq -r '.context[0].pep.client_id')" "$client_id"
+  assert_equal "$(echo "$output" | jq -r '.obligations_value.fqn')" "https://$NS_NAME/obl/$OBL_NAME/value/test_obl_val_for_trigger"
 
   # cleanup
   cleanup_trigger "$trigger_id"
