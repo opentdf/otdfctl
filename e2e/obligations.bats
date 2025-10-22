@@ -863,7 +863,7 @@ EOF
   assert_equal "$(echo "$output" | jq -r '.metadata.labels.my')" "label"
   assert_equal "$(echo "$output" | jq -r '.context | length')" "1"
   assert_equal "$(echo "$output" | jq -r '.context[0].pep.client_id')" "$client_id"
-  assert_equal "$(echo "$output" | jq -r '.obligations_value.fqn')" "https://$NS_NAME/obl/$OBL_NAME/value/test_obl_val_for_trigger"
+  assert_equal "$(echo "$output" | jq -r '.obligation_value.fqn')" "https://$NS_NAME/obl/$OBL_NAME/value/test_obl_val_for_trigger"
 
   # cleanup
   cleanup_trigger "$trigger_id"
