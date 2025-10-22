@@ -68,7 +68,10 @@ setup_file() {
   export HOST='--host http://localhost:8080'
   export KAS_URI="https://test-kas-for-mappings.com"
   export KAS_NAME="kas-registry-for-mappings-test"
-  export PEM_B64=$(echo "pem" | base64)
+  # Generate valid public keys for different algorithms and base64 encode (single-line)
+  export PEM_B64_RSA_2048=$(openssl genrsa 2048 2>/dev/null | openssl rsa -pubout 2>/dev/null | base64 | tr -d '\n')
+  export PEM_B64_EC_P256=$(openssl ecparam -name prime256v1 -genkey 2>/dev/null | openssl ec -pubout 2>/dev/null | base64 | tr -d '\n')
+  export PEM_B64_RSA_4096=$(openssl genrsa 4096 2>/dev/null | openssl rsa -pubout 2>/dev/null | base64 | tr -d '\n')
 
   run_otdfctl_kas_registry_create --name $KAS_NAME --uri "$KAS_URI" --json
   assert_success
@@ -76,17 +79,17 @@ setup_file() {
 
   # Create three keys
   export KEY_ID_1=$(generate_key_id)
-  run_otdfctl_key create --kas "${KAS_REGISTRY_ID}" --key-id "${KEY_ID_1}" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "${PEM_B64}" --json
+  run_otdfctl_key create --kas "${KAS_REGISTRY_ID}" --key-id "${KEY_ID_1}" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "${PEM_B64_RSA_2048}" --json
   assert_success
   export SYSTEM_KEY_ID_1=$(echo "$output" | jq -r '.key.id')
 
   export KEY_ID_2=$(generate_key_id)
-  run_otdfctl_key create --kas "${KAS_REGISTRY_ID}" --key-id "${KEY_ID_2}" --algorithm "ec:secp256r1" --mode "public_key" --public-key-pem "${PEM_B64}" --json
+  run_otdfctl_key create --kas "${KAS_REGISTRY_ID}" --key-id "${KEY_ID_2}" --algorithm "ec:secp256r1" --mode "public_key" --public-key-pem "${PEM_B64_EC_P256}" --json
   assert_success
   export SYSTEM_KEY_ID_2=$(echo "$output" | jq -r '.key.id')
 
   export KEY_ID_3=$(generate_key_id)
-  run_otdfctl_key create --kas "${KAS_REGISTRY_ID}" --key-id "${KEY_ID_3}" --algorithm "rsa:4096" --mode "public_key" --public-key-pem "${PEM_B64}" --json
+  run_otdfctl_key create --kas "${KAS_REGISTRY_ID}" --key-id "${KEY_ID_3}" --algorithm "rsa:4096" --mode "public_key" --public-key-pem "${PEM_B64_RSA_4096}" --json
   assert_success
   export SYSTEM_KEY_ID_3=$(echo "$output" | jq -r '.key.id')
 

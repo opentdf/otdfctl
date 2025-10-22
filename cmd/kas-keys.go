@@ -286,8 +286,18 @@ func policyImportKasKey(cmd *cobra.Command, args []string) {
 		*legacy = false
 	}
 
-	if _, err := base64.StdEncoding.DecodeString(publicKeyPem); err != nil {
+	// Parse algorithm early for validation
+	alg, err := cli.KeyAlgToEnum(algorithm)
+	if err != nil {
+		cli.ExitWithError("Invalid algorithm", err)
+	}
+
+	decodedPub, err := base64.StdEncoding.DecodeString(publicKeyPem)
+	if err != nil {
 		cli.ExitWithError("public-key-pem must be base64 encoded", err)
+	}
+	if err := validatePublicKey(decodedPub, alg); err != nil {
+		cli.ExitWithError("Invalid public key pem", err)
 	}
 	nonBase64PrivateKey, err := base64.StdEncoding.DecodeString(privateKeyPem)
 	if err != nil {
@@ -301,11 +311,6 @@ func policyImportKasKey(cmd *cobra.Command, args []string) {
 	wrappedPrivateKey, err := wrapKey(string(nonBase64PrivateKey), wrappingKeyBytes)
 	if err != nil {
 		cli.ExitWithError("failed to wrap key", err)
-	}
-
-	alg, err := cli.KeyAlgToEnum(algorithm)
-	if err != nil {
-		cli.ExitWithError("Invalid algorithm", err)
 	}
 
 	kasLookup, err := resolveKasIdentifier(kasIdentifier)
@@ -749,9 +754,12 @@ func prepareKeyContexts(
 		providerConfigID = c.Flags.GetRequiredString("provider-config-id")
 		publicPem := c.Flags.GetRequiredString("public-key-pem")
 		privatePem := c.Flags.GetRequiredString("private-key-pem")
-		_, err := base64.StdEncoding.DecodeString(publicPem)
+		decodedPub, err := base64.StdEncoding.DecodeString(publicPem)
 		if err != nil {
 			return nil, nil, "", errors.Join(errors.New("public key pem must be base64 encoded"), err)
+		}
+		if err := validatePublicKey(decodedPub, alg); err != nil {
+			return nil, nil, "", err
 		}
 		_, err = base64.StdEncoding.DecodeString(privatePem)
 		if err != nil {
@@ -768,9 +776,12 @@ func prepareKeyContexts(
 		pem := c.Flags.GetRequiredString("public-key-pem")
 		providerConfigID = c.Flags.GetRequiredString("provider-config-id")
 
-		_, err := base64.StdEncoding.DecodeString(pem)
+		decoded, err := base64.StdEncoding.DecodeString(pem)
 		if err != nil {
 			return nil, nil, "", errors.Join(errors.New("pem must be base64 encoded"), err)
+		}
+		if err := validatePublicKey(decoded, alg); err != nil {
+			return nil, nil, "", err
 		}
 
 		publicKeyCtx = &policy.PublicKeyCtx{
@@ -781,9 +792,12 @@ func prepareKeyContexts(
 		}
 	case policy.KeyMode_KEY_MODE_PUBLIC_KEY_ONLY:
 		pem := c.Flags.GetRequiredString("public-key-pem")
-		_, err := base64.StdEncoding.DecodeString(pem)
+		decoded, err := base64.StdEncoding.DecodeString(pem)
 		if err != nil {
 			return nil, nil, "", errors.Join(errors.New("pem must be base64 encoded"), err)
+		}
+		if err := validatePublicKey(decoded, alg); err != nil {
+			return nil, nil, "", err
 		}
 		publicKeyCtx = &policy.PublicKeyCtx{
 			Pem: pem,
@@ -795,6 +809,15 @@ func prepareKeyContexts(
 	}
 
 	return publicKeyCtx, privateKeyCtx, providerConfigID, nil
+}
+
+// validatePublicKey validates the PEM public key against the expected algorithm.
+func validatePublicKey(pemDecoded []byte, alg policy.Algorithm) error {
+	err := utils.ValidatePublicKeyPEM(pemDecoded, alg)
+	if err != nil {
+		return fmt.Errorf("invalid public key pem: %w", err)
+	}
+	return nil
 }
 
 func policyUnsafeDeleteKasKey(cmd *cobra.Command, args []string) {
