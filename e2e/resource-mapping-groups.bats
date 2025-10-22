@@ -12,6 +12,7 @@ setup_file() {
         NS_NAME2="resource-mapping-groups-2.io"
         export NS2_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes namespaces create -n "$NS_NAME2" --json | jq -r '.id')
         ATTR_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes create --namespace "$NS_ID" --name attr1 --rule ANY_OF --json | jq -r '.id')
+        # Name is prefixed with RMG to avoid conflicts across tests when running in parallel
         export RMG_VAL1_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes values create --attribute-id "$ATTR_ID" --value val1 --json | jq -r '.id')
     
     # Create a resource mapping group
