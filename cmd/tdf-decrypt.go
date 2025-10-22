@@ -63,6 +63,7 @@ func dev_tdfDecryptCmd(cmd *cobra.Command, args []string) {
 	ignoreAllowlist := len(kasAllowList) == 1 && kasAllowList[0] == "*"
 
 	decrypted, err := h.DecryptBytes(
+		c.Context(),
 		bytesToDecrypt,
 		assertionVerification,
 		disableAssertionVerification,

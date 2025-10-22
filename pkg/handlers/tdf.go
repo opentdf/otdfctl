@@ -148,6 +148,7 @@ func (h Handler) EncryptBytes(
 }
 
 func (h Handler) DecryptBytes(
+	ctx context.Context,
 	toDecrypt []byte,
 	assertionVerificationKeysFile string,
 	disableAssertionCheck bool,
@@ -169,13 +170,13 @@ func (h Handler) DecryptBytes(
 			opts = append(opts, sdk.WithNanoKasAllowlist(kasAllowList))
 		}
 
-		n, err := h.sdk.LoadNanoTDF(context.Background(), ec, opts...)
+		n, err := h.sdk.LoadNanoTDF(ctx, ec, opts...)
 		if err != nil {
 			return nil, err
 		}
 
-		if _, err := n.DecryptNanoTDF(context.Background(), pt); err != nil {
-			return nil, formatDecryptError(context.Background(), n.Obligations, err)
+		if _, err := n.DecryptNanoTDF(ctx, pt); err != nil {
+			return nil, formatDecryptError(ctx, n.Obligations, err)
 		}
 	case sdk.Standard:
 		opts := []sdk.TDFReaderOption{
@@ -213,7 +214,7 @@ func (h Handler) DecryptBytes(
 		}
 		//nolint:errorlint // callers intended to test error equality directly
 		if _, err = io.Copy(pt, r); err != nil && err != io.EOF {
-			return nil, formatDecryptError(context.Background(), r.Obligations, err)
+			return nil, formatDecryptError(ctx, r.Obligations, err)
 		}
 	case sdk.Invalid:
 		return nil, errors.New("invalid TDF")
