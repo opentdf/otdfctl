@@ -440,7 +440,7 @@ func policyListObligationTriggers(cmd *cobra.Command, args []string) {
 			"id":         r.GetId(),
 			"attribute":  r.GetAttributeValue().GetFqn(),
 			"action":     r.GetAction().GetName(),
-			"obligation": buildObligationValueFQN(r.GetObligationValue().GetObligation().GetNamespace().GetFqn(), r.GetObligationValue().GetObligation().GetName(), r.GetObligationValue().GetValue()),
+			"obligation": r.GetObligationValue().GetFqn(),
 			"client_ids": cli.CommaSeparated(cli.AggregateClientIDs(r.GetContext())),
 		}))
 	}
@@ -449,16 +449,12 @@ func policyListObligationTriggers(cmd *cobra.Command, args []string) {
 	HandleSuccess(cmd, "", t, resp)
 }
 
-func buildObligationValueFQN(namespaceFQN, obligationName, value string) string {
-	return fmt.Sprintf("%s/obl/%s/value/%s", namespaceFQN, obligationName, value)
-}
-
 func getObligationTriggerRows(trigger *policy.ObligationTrigger) [][]string {
 	rows := [][]string{
 		{"Id", trigger.GetId()},
 		{"Attribute Value FQN", trigger.GetAttributeValue().GetFqn()},
 		{"Action", trigger.GetAction().GetName()},
-		{"Obligation Value FQN", buildObligationValueFQN(trigger.GetObligationValue().GetObligation().GetNamespace().GetFqn(), trigger.GetObligationValue().GetObligation().GetName(), trigger.GetObligationValue().GetValue())},
+		{"Obligation Value FQN", trigger.GetObligationValue().GetFqn()},
 		{"Client IDs", cli.CommaSeparated(cli.AggregateClientIDs(trigger.GetContext()))},
 	}
 	if mdRows := getMetadataRows(trigger.GetMetadata()); mdRows != nil {
