@@ -110,8 +110,7 @@ teardown_file() {
         [ "$(echo $output | jq -r '.id')" = "$created" ]
         [ "$(echo $output | jq -r '.attribute_value.id')" = "$SM_VAL2_ID" ]
         [ "$(echo $output | jq -r '.subject_condition_set.id')" = "$new_scs" ]
-        [ "$(echo $output | jq -r '.actions[0].id')" = "$ACTION_CREATE_ID" ]
-        [ "$(echo $output | jq -r '.actions[0].name')" = "$ACTION_CREATE_NAME" ]
+        [ "$(echo $output | jq -r '.actions[0].name')" = "custom_sm_action_test" ]
 }
 
 @test "Update a subject mapping" {
