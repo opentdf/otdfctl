@@ -796,7 +796,6 @@ EOF
   # create trigger
   run_otdfctl_obl_triggers create --attribute-value "$ATTR_VAL_ID" --action "$ACTION_1_ID" --obligation-value "$obl_val_id" --json
   assert_success
-  echo "$output" >&2
   [ "$(echo "$output" | jq -r '.id')" != "null" ]
   trigger_id=$(echo "$output" | jq -r '.id')
   assert_equal "$(echo "$output" | jq -r '.attribute_value.id')" "$ATTR_VAL_ID"
