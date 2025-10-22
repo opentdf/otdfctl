@@ -10,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"strings"
 
 	"github.com/opentdf/otdfctl/pkg/utils"
@@ -342,7 +343,11 @@ func correctKeyType(assertionKey sdk.AssertionKey, public bool) (interface{}, er
 func formatDecryptError(ctx context.Context, getObligations func(ctx context.Context) (sdk.RequiredObligations, error), err error) error {
 	// Avoid calling Rewrap again, if the error is a 500 error from KAS
 	if errors.Is(err, sdk.ErrRewrapForbidden) {
-		obligations, _ := getObligations(ctx)
+		obligations, oblErr := getObligations(ctx)
+		if oblErr != nil {
+			slog.DebugContext(ctx, "Failed to get obligations after decrypt, obligations must not be cached", "error", oblErr)
+		}
+
 		if len(obligations.FQNs) > 0 {
 			err = errors.Join(err, fmt.Errorf("\nrequired obligations: %v", obligations.FQNs))
 		}
