@@ -12,8 +12,8 @@ setup_file() {
         NS_NAME2="resource-mapping-groups-2.io"
         export NS2_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes namespaces create -n "$NS_NAME2" --json | jq -r '.id')
         ATTR_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes create --namespace "$NS_ID" --name attr1 --rule ANY_OF --json | jq -r '.id')
-        export VAL1_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes values create --attribute-id "$ATTR_ID" --value val1 --json | jq -r '.id')
-        export VAL2_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes values create --attribute-id "$ATTR_ID" --value val2 --json | jq -r '.id')
+        # Name is prefixed with RMG to avoid conflicts across tests when running in parallel
+        export RMG_VAL1_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes values create --attribute-id "$ATTR_ID" --value val1 --json | jq -r '.id')
     
     # Create a resource mapping group
         export RMG1_NAME="rmgrp-test"
@@ -21,9 +21,9 @@ setup_file() {
 
     # Create a couple resource mappings to val1 - comma separated
         export RM1_TERMS="valueone,valuefirst,first,one"
-        export RM1_ID=$(./otdfctl $HOST $WITH_CREDS policy resource-mappings create --attribute-value-id "$VAL1_ID" --terms "$RM1_TERMS" --group-id "$RMG1_ID" --json | jq -r '.id')
+        export RM1_ID=$(./otdfctl $HOST $WITH_CREDS policy resource-mappings create --attribute-value-id "$RMG_VAL1_ID" --terms "$RM1_TERMS" --group-id "$RMG1_ID" --json | jq -r '.id')
         export RM1_OTHER_TERMS="otherone,othervaluefirst,otherfirst,otherone"
-        export RM1_OTHER_ID=$(./otdfctl $HOST $WITH_CREDS policy resource-mappings create --attribute-value-id "$VAL1_ID" --terms "$RM1_OTHER_TERMS" --group-id "$RMG1_ID" --json | jq -r '.id')
+        export RM1_OTHER_ID=$(./otdfctl $HOST $WITH_CREDS policy resource-mappings create --attribute-value-id "$RMG_VAL1_ID" --terms "$RM1_OTHER_TERMS" --group-id "$RMG1_ID" --json | jq -r '.id')
 }
 
 setup() {
@@ -42,7 +42,7 @@ teardown_file() {
     ./otdfctl $HOST $WITH_CREDS policy attributes namespaces unsafe delete --force --id "$NS_ID"
     ./otdfctl $HOST $WITH_CREDS policy attributes namespaces unsafe delete --force --id "$NS2_ID"
 
-    unset HOST WITH_CREDS VAL1_ID VAL2_ID NS_ID NS2_ID RM1_TERMS RM1_ID RM1_OTHER_TERMS RM1_OTHER_ID RMG1_NAME RMG1_ID
+    unset HOST WITH_CREDS RMG_VAL1_ID NS_ID NS2_ID RM1_TERMS RM1_ID RM1_OTHER_TERMS RM1_OTHER_ID RMG1_NAME RMG1_ID
 }
 
 @test "Create resource mapping group" {
