@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.26.0](https://github.com/opentdf/otdfctl/compare/v0.25.0...v0.26.0) (2025-10-22)
+
+
+### Features
+
+* **core:** Add list obligation triggers. ([#677](https://github.com/opentdf/otdfctl/issues/677)) ([ac3bd5e](https://github.com/opentdf/otdfctl/commit/ac3bd5e55d0101d005b4bc8c6e24b6595d4ff859))
+* **core:** Append required obligations to error output ([#673](https://github.com/opentdf/otdfctl/issues/673)) ([7eae582](https://github.com/opentdf/otdfctl/commit/7eae58246047176d68a27022ecb862822a573794))
+
+
+### Bug Fixes
+
+* **core:** Provider config manager table field empty ([#668](https://github.com/opentdf/otdfctl/issues/668)) ([89871f6](https://github.com/opentdf/otdfctl/commit/89871f6fde4d5d1b6cfca375723424bedcefc1f2))
+* **core:** Use fqn populated on obligation value. ([#679](https://github.com/opentdf/otdfctl/issues/679)) ([7dd626e](https://github.com/opentdf/otdfctl/commit/7dd626ecb380725ef4c16fc98b44d3c861cd8244))
+* validate --public-key-pem value on key creation ([#678](https://github.com/opentdf/otdfctl/issues/678)) ([b1e69ef](https://github.com/opentdf/otdfctl/commit/b1e69efd5b8a22499ac95a1b9bc08f08b415e0a3))
+
 ## [0.25.0](https://github.com/opentdf/otdfctl/compare/v0.24.0...v0.25.0) (2025-10-06)
 
 
