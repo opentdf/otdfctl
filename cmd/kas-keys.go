@@ -427,8 +427,8 @@ func policyListKasKeys(cmd *cobra.Command, args []string) {
 	t := cli.NewTable(
 		// columns should be id, name, config, labels, created_at, updated_at
 		cli.NewUUIDColumn(),
-		table.NewFlexColumn("keyId", "Key ID", cli.FlexColumnWidthOne),
 		table.NewFlexColumn("kasUri", "KAS URI", cli.FlexColumnWidthThree),
+		table.NewFlexColumn("keyId", "Key ID", cli.FlexColumnWidthOne),
 		table.NewFlexColumn("keyAlgorithm", "Key Algorithm", cli.FlexColumnWidthOne),
 		table.NewFlexColumn("keyStatus", "Key Status", cli.FlexColumnWidthOne),
 		table.NewFlexColumn("keyMode", "Key Mode", cli.FlexColumnWidthOne),
@@ -452,8 +452,8 @@ func policyListKasKeys(cmd *cobra.Command, args []string) {
 
 		rows = append(rows, table.NewRow(table.RowData{
 			"id":           key.GetId(),
-			"keyId":        key.GetKeyId(),
 			"kasUri":       kasKey.GetKasUri(),
+			"keyId":        key.GetKeyId(),
 			"keyAlgorithm": algStr,
 			"keyStatus":    statusStr,
 			"keyMode":      modeStr,
