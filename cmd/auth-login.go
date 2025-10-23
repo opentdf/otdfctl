@@ -14,11 +14,13 @@ func auth_codeLogin(cmd *cobra.Command, args []string) {
 
 	c.Print("Initiating login...")
 	clientID := c.FlagHelper.GetRequiredString("client-id")
+	port := c.FlagHelper.GetOptionalString("port")
 	tok, err := auth.LoginWithPKCE(
 		cmd.Context(),
 		cp.GetEndpoint(),
 		clientID,
 		c.FlagHelper.GetOptionalBool("tls-no-verify"),
+		port,
 	)
 	if err != nil {
 		c.Println("failed")
@@ -58,6 +60,14 @@ func init() {
 		codeLoginCmd.GetDocFlag("client-id").Shorthand,
 		codeLoginCmd.GetDocFlag("client-id").Default,
 		codeLoginCmd.GetDocFlag("client-id").Description,
+	)
+
+	// intentionally a string flag to support an empty port which represents a dynamic port
+	codeLoginCmd.Flags().StringP(
+		codeLoginCmd.GetDocFlag("port").Name,
+		codeLoginCmd.GetDocFlag("port").Shorthand,
+		codeLoginCmd.GetDocFlag("port").Default,
+		codeLoginCmd.GetDocFlag("port").Description,
 	)
 	authCmd.AddCommand(&codeLoginCmd.Command)
 }

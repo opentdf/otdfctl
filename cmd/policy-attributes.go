@@ -77,7 +77,6 @@ func policy_getAttribute(cmd *cobra.Command, args []string) {
 		{"Rule", a.Rule},
 		{"Values", cli.CommaSeparated(a.Values)},
 		{"Namespace", a.Namespace},
-		{"Associated Keys", cli.CommaSeparated(a.KeyIds)},
 	}
 	if mdRows := getMetadataRows(attr.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
@@ -311,12 +310,12 @@ func policyAssignKeyToAttribute(cmd *cobra.Command, args []string) {
 	defer h.Close()
 
 	attribute := c.Flags.GetRequiredString("attribute")
-	keyID := c.Flags.GetRequiredID("keyId")
+	keyID := c.Flags.GetRequiredID("key-id")
 
 	// Get the attribute to show meaningful information in case of error
 	attrKey, err := h.AssignKeyToAttribute(c.Context(), attribute, keyID)
 	if err != nil {
-		errMsg := fmt.Sprintf("Failed to assign key: (%s) to attribue: (%s)", keyID, attribute)
+		errMsg := fmt.Sprintf("Failed to assign key: (%s) to attribute: (%s)", keyID, attribute)
 		cli.ExitWithError(errMsg, err)
 	}
 
@@ -335,7 +334,7 @@ func policyRemoveKeyFromAttribute(cmd *cobra.Command, args []string) {
 	defer h.Close()
 
 	attribute := c.Flags.GetRequiredString("attribute")
-	keyID := c.Flags.GetRequiredID("keyId")
+	keyID := c.Flags.GetRequiredID("key-id")
 
 	err := h.RemoveKeyFromAttribute(c.Context(), attribute, keyID)
 	if err != nil {
@@ -504,10 +503,10 @@ func init() {
 		assignKasKeyCmd.GetDocFlag("attribute").Description,
 	)
 	assignKasKeyCmd.Flags().StringP(
-		assignKasKeyCmd.GetDocFlag("keyId").Name,
-		assignKasKeyCmd.GetDocFlag("keyId").Shorthand,
-		assignKasKeyCmd.GetDocFlag("keyId").Default,
-		assignKasKeyCmd.GetDocFlag("keyId").Description,
+		assignKasKeyCmd.GetDocFlag("key-id").Name,
+		assignKasKeyCmd.GetDocFlag("key-id").Shorthand,
+		assignKasKeyCmd.GetDocFlag("key-id").Default,
+		assignKasKeyCmd.GetDocFlag("key-id").Description,
 	)
 
 	removeKasKeyCmd := man.Docs.GetCommand("policy/attributes/key/remove",
@@ -520,10 +519,10 @@ func init() {
 		removeKasKeyCmd.GetDocFlag("attribute").Description,
 	)
 	removeKasKeyCmd.Flags().StringP(
-		removeKasKeyCmd.GetDocFlag("keyId").Name,
-		removeKasKeyCmd.GetDocFlag("keyId").Shorthand,
-		removeKasKeyCmd.GetDocFlag("keyId").Default,
-		removeKasKeyCmd.GetDocFlag("keyId").Description,
+		removeKasKeyCmd.GetDocFlag("key-id").Name,
+		removeKasKeyCmd.GetDocFlag("key-id").Shorthand,
+		removeKasKeyCmd.GetDocFlag("key-id").Default,
+		removeKasKeyCmd.GetDocFlag("key-id").Description,
 	)
 
 	keyCmd.AddSubcommands(assignKasKeyCmd, removeKasKeyCmd)

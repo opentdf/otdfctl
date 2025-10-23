@@ -2,14 +2,14 @@ package handlers
 
 import (
 	"context"
-	"errors"
 
+	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/opentdf/platform/protocol/go/policy/kasregistry"
 )
 
 // GetBaseKey retrieves a base key from the KAS registry.
 // This is a stub function and needs to be implemented.
-func (h Handler) GetBaseKey(ctx context.Context) (*kasregistry.SimpleKasKey, error) {
+func (h Handler) GetBaseKey(ctx context.Context) (*policy.SimpleKasKey, error) {
 	resp, err := h.sdk.KeyAccessServerRegistry.GetBaseKey(ctx, &kasregistry.GetBaseKeyRequest{})
 	if err != nil {
 		return nil, err
@@ -20,17 +20,15 @@ func (h Handler) GetBaseKey(ctx context.Context) (*kasregistry.SimpleKasKey, err
 
 func (h Handler) SetBaseKey(ctx context.Context, id string, key *kasregistry.KasKeyIdentifier) (*kasregistry.SetBaseKeyResponse, error) {
 	req := kasregistry.SetBaseKeyRequest{}
-	switch {
-	case id != "":
+
+	if id != "" && key == nil {
 		req.ActiveKey = &kasregistry.SetBaseKeyRequest_Id{
 			Id: id,
 		}
-	case key != nil:
+	} else if key != nil {
 		req.ActiveKey = &kasregistry.SetBaseKeyRequest_Key{
 			Key: key,
 		}
-	default:
-		return nil, errors.New("id or key must be provided")
 	}
 
 	return h.sdk.KeyAccessServerRegistry.SetBaseKey(ctx, &req)

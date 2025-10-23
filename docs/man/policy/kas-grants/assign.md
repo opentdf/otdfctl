@@ -1,5 +1,5 @@
 ---
-title: Assign a grant
+title: (Deprecated) Assign a grant
 
 command:
   name: assign
@@ -35,6 +35,8 @@ command:
       description: Destructively replace entire set of existing metadata 'labels' with any provided to this command
       default: false
 ---
+
+# Deprecated\n\nThis command is deprecated. Use `policy attributes namespace key assign`, `policy attributes key assign`, or `policy attributes value key assign` instead.
 
 Assign a registered Key Access Server (KAS) to an attribute namespace, definition, or value.
 

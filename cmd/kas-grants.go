@@ -19,65 +19,29 @@ func policy_assignKasGrant(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
-	ctx := cmd.Context()
-	nsID := c.Flags.GetOptionalID("namespace-id")
-	attrID := c.Flags.GetOptionalID("attribute-id")
-	valID := c.Flags.GetOptionalID("value-id")
-	kasID := c.Flags.GetRequiredID("kas-id")
+	cmd.Println(cli.WarningMessage(`Grants are now Key Mappings. To assign a key to attribute definition, value or namespace use the following commands.
 
-	count := 0
-	for _, v := range []string{nsID, attrID, valID} {
-		if v != "" {
-			count++
-		}
-	}
-	if count != 1 {
-		cli.ExitWithError("Must specify exactly one Attribute Namespace ID, Definition ID, or Value ID to assign", errors.New("invalid flag values"))
-	}
+	policy attributes namespace key assign
 
-	var (
-		id    string
-		res   interface{}
-		err   error
-		rowID []string
-	)
-
-	kas, err := h.GetKasRegistryEntry(ctx, handlers.KasIdentifier{
-		ID: kasID,
-	})
-	if err != nil || kas == nil {
-		cli.ExitWithError("Failed to get registered KAS", err)
-	}
-
-	//nolint:gocritic,nestif // this is more readable than a switch statement
-	if nsID != "" {
-		res, err = h.AssignKasGrantToNamespace(ctx, nsID, kasID)
-		if err != nil {
-			cli.ExitWithError("Failed to assign KAS Grant for Namespace", err)
-		}
-		rowID = []string{"Namespace ID", nsID}
-	} else if attrID != "" {
-		res, err = h.AssignKasGrantToAttribute(ctx, attrID, kasID)
-		if err != nil {
-			cli.ExitWithError("Failed to assign KAS Grant for Attribute Definition", err)
-		}
-		rowID = []string{"Attribute ID", attrID}
-	} else {
-		res, err = h.AssignKasGrantToValue(ctx, valID, kasID)
-		if err != nil {
-			cli.ExitWithError("Failed to assign KAS Grant for Attribute Value", err)
-		}
-		rowID = []string{"Value ID", valID}
-	}
-
-	t := cli.NewTabular(rowID, []string{"KAS ID", kasID}, []string{"Granted KAS URI", kas.GetUri()})
-	HandleSuccess(cmd, id, t, res)
+	policy attributes key assign
+	
+	policy attributes value key assign
+	`))
 }
 
 func policy_unassignKasGrant(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
 	defer h.Close()
+
+	cmd.Println(cli.WarningMessage(`Grants are now Key Mappings. The unassign grant command will be removed in the next release.
+	
+	policy attributes namespace key remove
+
+	policy attributes key remove
+	
+	policy attributes value key remove
+	`))
 
 	ctx := cmd.Context()
 	nsID := c.Flags.GetOptionalID("namespace-id")
@@ -166,6 +130,9 @@ func policy_listKasGrants(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := NewHandler(c)
 	defer h.Close()
+
+	cmd.Println(cli.WarningMessage(`Grants are now Key Mappings. The ability to list grants will be removed in the next release.`))
+
 	kasF := c.Flags.GetOptionalString("kas")
 	limit := c.Flags.GetRequiredInt32("limit")
 	offset := c.Flags.GetRequiredInt32("offset")

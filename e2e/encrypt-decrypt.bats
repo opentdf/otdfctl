@@ -22,6 +22,17 @@ setup_file() {
   NS_ID=$(./otdfctl --host $HOST $WITH_CREDS $DEBUG_LEVEL policy attributes namespaces create -n "testing-enc-dec.io" --json | jq -r '.id')
   ATTR_ID=$(./otdfctl --host $HOST $WITH_CREDS $DEBUG_LEVEL policy attributes create --namespace "$NS_ID" -n attr1 -r ALL_OF --json | jq -r '.id')
   VAL_ID=$(./otdfctl --host $HOST $WITH_CREDS $DEBUG_LEVEL policy attributes values create --attribute-id "$ATTR_ID" -v value1 --json | jq -r '.id')
+  ATTR_OBL_VAL_OUTPUT=$(./otdfctl --host $HOST $WITH_CREDS $DEBUG_LEVEL policy attributes values create --attribute-id "$ATTR_ID" -v test_attr_obligation_value --json)
+  export ATTR_OBL_VAL_ID=$(echo $ATTR_OBL_VAL_OUTPUT | jq -r '.id')
+  export ATTR_OBL_VAL_FQN=$(echo $ATTR_OBL_VAL_OUTPUT | jq -r '.fqn')
+
+  # Create obligations
+  OBL_ID=$(./otdfctl --host $HOST $WITH_CREDS $DEBUG_LEVEL policy obligations create -n test_obligation -s "$NS_ID" --json | jq -r '.id')
+  OBL_VAL_OUTPUT=$(./otdfctl --host $HOST $WITH_CREDS $DEBUG_LEVEL policy obligations values create -o "$OBL_ID" -v test_obligation_value --json)
+  OBL_VAL_ID=$(echo $OBL_VAL_OUTPUT | jq -r '.id')
+  export OBL_VAL_FQN=$(echo $OBL_VAL_OUTPUT | jq -r '.fqn')
+  OBL_TRIG_ID=$(./otdfctl --host $HOST $WITH_CREDS $DEBUG_LEVEL policy obligations triggers create --obligation-value "$OBL_VAL_ID" --attribute-value "$ATTR_OBL_VAL_FQN" --action "read" --json | jq -r '.id')
+
   # entitles opentdf client id for client credentials CLI user
   SCS='[{"condition_groups":[{"conditions":[{"operator":1,"subject_external_values":["opentdf"],"subject_external_selector_value":".clientId"}],"boolean_operator":2}]}]'
   
@@ -97,7 +108,7 @@ teardown_file(){
   [[ $assertions_present == "\"assertion1\"" ]]
 }
 
-@test "roundtrip TDF3, assertions with HS265 keys and verification, file" {
+@test "roundtrip TDF3, assertions with HS256 keys and verification, file" {
   ./otdfctl encrypt -o $OUTFILE_GO_MOD --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS -a $FQN --with-assertions $SIGNED_ASSERTIONS_HS256 --tdf-type tdf3 $INFILE_GO_MOD
   ./otdfctl decrypt -o $RESULTFILE_GO_MOD --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --with-assertion-verification-keys $SIGNED_ASSERTION_VERIFICATON_HS256 --tdf-type tdf3 $OUTFILE_GO_MOD
   diff $INFILE_GO_MOD $RESULTFILE_GO_MOD
@@ -133,6 +144,12 @@ teardown_file(){
 @test "roundtrip NANO, one attribute, stdin" {
   echo $SECRET_TEXT | ./otdfctl encrypt --tdf-type nano -o $OUT_TXT --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS -a $FQN
   ./otdfctl decrypt --tdf-type nano --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS $OUTFILE_TXT | grep "$SECRET_TEXT"
+}
+
+@test "roundtrip NANO, one attribute, stdin, plaintext policy mode" {
+  echo $SECRET_TEXT | ./otdfctl encrypt --tdf-type nano -o $OUT_TXT --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS -a $MIXED_CASE_FQN --policy-mode plaintext
+  ./otdfctl decrypt --tdf-type nano --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS $OUTFILE_TXT | grep "$SECRET_TEXT"
+  grep -a "$MIXED_CASE_FQN" "$OUTFILE_TXT"
 }
 
 @test "roundtrip NANO, one attribute, mixed case FQN, stdin" {
@@ -175,7 +192,7 @@ teardown_file(){
   ./otdfctl encrypt -o $OUTFILE_GO_MOD --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --tdf-type tdf3  $INFILE_GO_MOD
   run sh -c "./otdfctl decrypt --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --tdf-type tdf3 --kas-allowlist '*' $OUTFILE_GO_MOD"
   assert_success
-  assert_output --partial "KasAllowlist is ignored"
+  assert_output --partial "kasAllowlist is ignored"
 }
 
 @test "roundtrip NANO, with allowlist containing platform kas" {
@@ -195,5 +212,41 @@ teardown_file(){
   ./otdfctl encrypt -o $OUTFILE_GO_MOD --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --tdf-type nano  $INFILE_GO_MOD
   run sh -c "./otdfctl decrypt --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --tdf-type nano --kas-allowlist '*' $OUTFILE_GO_MOD"
   assert_success
-  assert_output --partial "KasAllowlist is ignored"
+  assert_output --partial "kasAllowlist is ignored"
+}
+
+@test "roundtrip TDF3/Nano, not entitled to data, no required obligations returned" {
+  # TDF3
+  run sh -c "./otdfctl encrypt -o $OUTFILE_GO_MOD --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS -a $ATTR_OBL_VAL_FQN $INFILE_GO_MOD"
+  assert_success
+  run sh -c "./otdfctl decrypt --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS $OUTFILE_GO_MOD"
+  assert_failure
+  refute_output --partial "required obligations: $OBL_VAL_FQN"
+
+  # NANO
+  run sh -c "./otdfctl encrypt -o $OUTFILE_GO_MOD --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS -a $ATTR_OBL_VAL_FQN --tdf-type nano $INFILE_GO_MOD"
+  assert_success
+  run sh -c "./otdfctl decrypt --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS $OUTFILE_GO_MOD"
+  assert_failure
+  refute_output --partial "required obligations: $OBL_VAL_FQN"
+}
+
+@test "roundtrip TDF3/Nano, entitled to data, required obligations returned" {
+  # Handle subject mapping
+  run sh -c "./otdfctl policy subject-mappings create --attribute-value-id $ATTR_OBL_VAL_ID --action read --subject-condition-set-new '[{\"conditionGroups\":[{\"conditions\":[{\"operator\":\"SUBJECT_MAPPING_OPERATOR_ENUM_IN\",\"subjectExternalValues\":[\"opentdf\"],\"subjectExternalSelectorValue\":\".clientId\"}], \"booleanOperator\":\"CONDITION_BOOLEAN_TYPE_ENUM_OR\"}]}]' --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS"
+  assert_success
+
+  # TDF3
+  run sh -c "./otdfctl encrypt -o $OUTFILE_GO_MOD --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS -a $ATTR_OBL_VAL_FQN $INFILE_GO_MOD"
+  assert_success
+  run sh -c "./otdfctl decrypt --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS $OUTFILE_GO_MOD"
+  assert_failure
+  assert_output --partial "required obligations: [$OBL_VAL_FQN]"
+
+  # NANO
+  run sh -c "./otdfctl encrypt -o $OUTFILE_GO_MOD --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS -a $ATTR_OBL_VAL_FQN --tdf-type nano $INFILE_GO_MOD"
+  assert_success
+  run sh -c "./otdfctl decrypt --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS $OUTFILE_GO_MOD"
+  assert_failure
+  assert_output --partial "required obligations: [$OBL_VAL_FQN]"
 }

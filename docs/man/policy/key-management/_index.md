@@ -3,7 +3,6 @@ title: Key management
 
 command:
   name: keymanagement
-  hidden: true
   aliases:
     - k
   flags:
@@ -12,4 +11,4 @@ command:
       default: 'false'
 ---
 
-Set of commands for managing provider configuration.
+Set of commands for managing key configuration, currently supports managing key provider configuration via the `provider` command.
