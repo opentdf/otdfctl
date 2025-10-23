@@ -17,14 +17,9 @@ import (
 	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/opentdf/platform/protocol/go/policy/kasregistry"
 	"github.com/spf13/cobra"
-	"google.golang.org/protobuf/encoding/protojson"
-	"google.golang.org/protobuf/proto"
 )
 
 const (
-	defaultAlg           = 0
-	defaultMode          = 0
-	defaultStatus        = 0
 	rsa2048Len           = 2048
 	rsa4096Len           = 4096
 	ecSecp256Len         = 256
@@ -151,15 +146,8 @@ func modeToEnum(mode string) (policy.KeyMode, error) {
 }
 
 func getTableRows(kasKey *policy.KasKey) [][]string {
-	var providerConfig []byte
 	var err error
 	asymkey := kasKey.GetKey()
-	if asymkey.GetProviderConfig() != nil {
-		providerConfig, err = proto.Marshal(asymkey.GetProviderConfig())
-		if err != nil {
-			cli.ExitWithError("Failed to marshal provider config", err)
-		}
-	}
 
 	statusStr, err := enumToStatus(asymkey.GetKeyStatus())
 	if err != nil {
@@ -174,15 +162,6 @@ func getTableRows(kasKey *policy.KasKey) [][]string {
 		cli.ExitWithError("Failed to convert algorithm", err)
 	}
 
-	pubCtxBytes, err := protojson.Marshal(asymkey.GetPublicKeyCtx())
-	if err != nil {
-		cli.ExitWithError("Failed to marshal public key context", err)
-	}
-	privateKeyBytes, err := protojson.Marshal(asymkey.GetPrivateKeyCtx())
-	if err != nil {
-		cli.ExitWithError("Failed to marshal private key context", err)
-	}
-
 	rows := [][]string{
 		{"ID", asymkey.GetId()},
 		{"KasUri", kasKey.GetKasUri()},
@@ -190,9 +169,6 @@ func getTableRows(kasKey *policy.KasKey) [][]string {
 		{"Algorithm", algStr},
 		{"Status", statusStr},
 		{"Mode", modeStr},
-		{"PubKeyCtx", string(pubCtxBytes)},
-		{"PrivateKeyCtx", string(privateKeyBytes)},
-		{"ProviderConfig", string(providerConfig)},
 		{"Legacy", strconv.FormatBool(asymkey.GetLegacy())},
 	}
 	return rows
@@ -450,30 +426,16 @@ func policyListKasKeys(cmd *cobra.Command, args []string) {
 
 	t := cli.NewTable(
 		// columns should be id, name, config, labels, created_at, updated_at
-		table.NewFlexColumn("id", "ID", cli.FlexColumnWidthOne),
+		cli.NewUUIDColumn(),
 		table.NewFlexColumn("keyId", "Key ID", cli.FlexColumnWidthOne),
 		table.NewFlexColumn("keyAlgorithm", "Key Algorithm", cli.FlexColumnWidthOne),
 		table.NewFlexColumn("keyStatus", "Key Status", cli.FlexColumnWidthOne),
 		table.NewFlexColumn("keyMode", "Key Mode", cli.FlexColumnWidthOne),
-		table.NewFlexColumn("pubKeyCtx", "Public Key Context", cli.FlexColumnWidthThree),
-		table.NewFlexColumn("privateKeyCtx", "Private Key Context", cli.FlexColumnWidthThree),
-		table.NewFlexColumn("providerConfig", "Provider Configuration", cli.FlexColumnWidthThree),
-		table.NewFlexColumn("labels", "Labels", cli.FlexColumnWidthOne),
-		table.NewFlexColumn("created_at", "Created At", cli.FlexColumnWidthOne),
-		table.NewFlexColumn("updated_at", "Updated At", cli.FlexColumnWidthOne),
 		table.NewFlexColumn("legacy", "Legacy", cli.FlexColumnWidthOne),
 	)
 	rows := []table.Row{}
 	for _, kasKey := range keys {
 		key := kasKey.GetKey()
-		metadata := cli.ConstructMetadata(key.GetMetadata())
-		var providerConfig []byte
-		if key.GetProviderConfig() != nil {
-			providerConfig, err = proto.Marshal(key.GetProviderConfig())
-			if err != nil {
-				cli.ExitWithError("Failed to marshal provider config", err)
-			}
-		}
 		statusStr, err := enumToStatus(key.GetKeyStatus())
 		if err != nil {
 			cli.ExitWithError("Failed to convert status", err)
@@ -487,28 +449,13 @@ func policyListKasKeys(cmd *cobra.Command, args []string) {
 			cli.ExitWithError("Failed to convert algorithm", err)
 		}
 
-		pubCtxBytes, err := protojson.Marshal(key.GetPublicKeyCtx())
-		if err != nil {
-			cli.ExitWithError("Failed to marshal public key context", err)
-		}
-		privateKeyBytes, err := protojson.Marshal(key.GetPrivateKeyCtx())
-		if err != nil {
-			cli.ExitWithError("Failed to marshal private key context", err)
-		}
-
 		rows = append(rows, table.NewRow(table.RowData{
-			"id":             key.GetId(),
-			"keyId":          key.GetKeyId(),
-			"keyAlgorithm":   algStr,
-			"keyStatus":      statusStr,
-			"keyMode":        modeStr,
-			"pubKeyCtx":      string(pubCtxBytes),
-			"privateKeyCtx":  string(privateKeyBytes),
-			"providerConfig": string(providerConfig),
-			"labels":         metadata["Labels"],
-			"created_at":     metadata["Created At"],
-			"updated_at":     metadata["Updated At"],
-			"legacy":         strconv.FormatBool(key.GetLegacy()),
+			"id":           key.GetId(),
+			"keyId":        key.GetKeyId(),
+			"keyAlgorithm": algStr,
+			"keyStatus":    statusStr,
+			"keyMode":      modeStr,
+			"legacy":       strconv.FormatBool(key.GetLegacy()),
 		}))
 	}
 	t = t.WithRows(rows)
