@@ -53,7 +53,9 @@
     "roundtrip TDF3, ignoring allowlist": "C871548",
     "roundtrip NANO, with allowlist containing platform kas": "C871549",
     "roundtrip NANO, with allowlist containing non existent kas (should fail)": "C871550",
-    "roundtrip NANO, ignoring allowlist": "C871551"
+    "roundtrip NANO, ignoring allowlist": "C871551",
+    "roundtrip TDF3/Nano, not entitled to data, no required obligations returned": "C875374",
+    "roundtrip TDF3/Nano, entitled to data, required obligations returned": "C875375"
   },
   "KAS Grants": {
     "Unassign rejects more than one type of grant at once": "C793434",
@@ -88,6 +90,8 @@
     "kas-keys: create key (provider mode, missing provider-config-id)": "C874472",
     "kas-keys: create key (remote mode, pem not base64)": "C874473",
     "kas-keys: create key (public_key mode, pem not base64)": "C874474",
+    "kas-keys: create key (public_key mode, invalid PEM content)": "C875376",
+    "kas-keys: create key (public_key mode, EC key with RSA algorithm)": "C875377",
     "kas-keys: create key (missing kas identifier)": "C874475",
     "kas-keys: create key (using kasName)": "C874476",
     "kas-keys: create key (using kasUri)": "C874477",
@@ -211,7 +215,11 @@
     "Create an obligation trigger - Required Only - FQNs - Success": "C875309",
     "Create an obligation trigger - Optional Fields - Success": "C875310",
     "Create an obligation trigger - Bad": "C875311",
-    "Delete an obligation trigger - Good": "C875312"
+    "Delete an obligation trigger - Good": "C875312",
+    "List obligation triggers - No filters": "C875378",
+    "List obligation triggers - Limit and Offset": "C875379",
+    "List obligation triggers - Filter by Namespace ID": "C875380",
+    "List obligation triggers - Filter by Namespace FQN": "C875381"
   },
   "Profile": {
     "profile create": "C793453",
