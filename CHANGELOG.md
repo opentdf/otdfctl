@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.26.1](https://github.com/opentdf/otdfctl/compare/v0.26.0...v0.26.1) (2025-10-29)
+
+
+### Bug Fixes
+
+* **core:** Ensure IDs are displayed for keys. [backport to release/v0.26] ([#682](https://github.com/opentdf/otdfctl/issues/682)) ([6091c98](https://github.com/opentdf/otdfctl/commit/6091c989b06c0543d8ea353ea7824bf0ab1b0d95))
+
 ## [0.26.0](https://github.com/opentdf/otdfctl/compare/v0.25.0...v0.26.0) (2025-10-22)
 
 
