@@ -221,14 +221,14 @@ teardown_file(){
   assert_success
   run sh -c "./otdfctl decrypt --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS $OUTFILE_GO_MOD"
   assert_failure
-  refute_output --partial "required obligations: $OBL_VAL_FQN"
+  refute_output --partial "required obligations"
 
   # NANO
   run sh -c "./otdfctl encrypt -o $OUTFILE_GO_MOD --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS -a $ATTR_OBL_VAL_FQN --tdf-type nano $INFILE_GO_MOD"
   assert_success
   run sh -c "./otdfctl decrypt --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS $OUTFILE_GO_MOD"
   assert_failure
-  refute_output --partial "required obligations: $OBL_VAL_FQN"
+  refute_output --partial "required obligations"
 }
 
 @test "roundtrip TDF3/Nano, entitled to data, required obligations returned" {
