@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.26.2](https://github.com/opentdf/otdfctl/compare/v0.26.1...v0.26.2) (2025-10-30)
+
+
+### Bug Fixes
+
+* **core:** Fix obligation smoke test [backport to release/v0.26] ([#688](https://github.com/opentdf/otdfctl/issues/688)) ([fad29bc](https://github.com/opentdf/otdfctl/commit/fad29bc23a946cbb5f6f296d9ca3ec9c51667aea))
+
 ## [0.26.1](https://github.com/opentdf/otdfctl/compare/v0.26.0...v0.26.1) (2025-10-29)
 
 
