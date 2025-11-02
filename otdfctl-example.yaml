@@ -1,3 +1,11 @@
 output:
   # acceptable formats: json or styled
   format: styled
+# Find full list of attributes for ollama in API documentation: https://github.com/ollama/ollama/blob/main/docs/api.md
+chat:
+  model: "llama3.1:8b-instruct-q5_K_S"
+  apiUrl: "http://localhost:11434/api/generate"
+  logLength: 20
+  verbose: true
+  tokenLimit: 1000
+  numGPU: 1
