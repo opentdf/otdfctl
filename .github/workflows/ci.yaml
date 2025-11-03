@@ -2,6 +2,11 @@ name: "CI"
 
 on:
   pull_request: {}
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: "45 0 * * *"
 
 jobs:
   govulncheck:
