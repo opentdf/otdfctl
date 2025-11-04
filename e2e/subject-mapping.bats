@@ -115,8 +115,19 @@ teardown_file() {
 }
 
 @test "Update a subject mapping" {
-    created=$(./otdfctl $HOST $WITH_CREDS policy sm create -a "$SM_VAL1_ID" --action "$ACTION_READ_NAME" --subject-condition-set-new "$SCS_1" --json | jq -r '.id')
-    additional_scs=$(./otdfctl $HOST $WITH_CREDS policy scs create -s "$SCS_2" --json | jq -r '.id')
+    run ./otdfctl $HOST $WITH_CREDS policy sm create -a "$SM_VAL1_ID" --action "$ACTION_READ_NAME" --subject-condition-set-new "$SCS_1" --json
+    created=$(echo "$output" | jq -r '.id')
+    assert [ "$created" != "null" ]
+    assert [ -n "$created" ]
+    
+    # Create additional SCS and verify it was created successfully
+    run ./otdfctl $HOST $WITH_CREDS policy scs create -s "$SCS_2" --json
+    assert_success
+    additional_scs=$(echo "$output" | jq -r '.id')
+    assert [ "$additional_scs" != "null" ]
+    assert [ -n "$additional_scs" ]
+    
+
 
     # replace the action (always destructive replacement)
     run_otdfctl_sm update --id "$created" --action "$ACTION_CREATE_NAME" --json
@@ -130,6 +141,7 @@ teardown_file() {
         assert_success
         [ "$(echo $output | jq -r '.id')" = "$created" ]
         [ "$(echo $output | jq -r '.subject_condition_set.id')" = "$additional_scs" ]
+    echo "$output" >&2
 }
 
 @test "List subject mappings" {
