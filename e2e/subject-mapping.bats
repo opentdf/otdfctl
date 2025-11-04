@@ -141,6 +141,7 @@ teardown_file() {
         assert_success
         [ "$(echo $output | jq -r '.id')" = "$created" ]
         [ "$(echo $output | jq -r '.subject_condition_set.id')" = "$additional_scs" ]
+    # Add debug log for DSPX-1873
     echo "$output" >&2
 }
 
