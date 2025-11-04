@@ -95,8 +95,16 @@ teardown_file() {
 }
 
 @test "Get subject mapping" {
-    new_scs=$(./otdfctl $HOST $WITH_CREDS policy scs create -s "$SCS_2" --json | jq -r '.id')
-    created=$(./otdfctl $HOST $WITH_CREDS policy sm create -a "$SM_VAL2_ID" --action "custom_sm_action_test" --subject-condition-set-id "$new_scs" --json | jq -r '.id')
+    run ./otdfctl $HOST $WITH_CREDS policy scs create -s "$SCS_2" --json
+    assert_success
+    new_scs=$(echo "$output" | jq -r '.id')
+    assert [[ -n "$new_scs" && "$new_scs" != "null" ]]
+
+    run ./otdfctl $HOST $WITH_CREDS policy sm create -a "$SM_VAL2_ID" --action "custom_sm_action_test" --subject-condition-set-id "$new_scs" --json
+    assert_success
+    created=$(echo "$output" | jq -r '.id')
+    assert [[ -n "$created" && "$created" != "null" ]]
+    
     # table
     run_otdfctl_sm get --id "$created"
         assert_success
@@ -115,8 +123,16 @@ teardown_file() {
 }
 
 @test "Update a subject mapping" {
-    created=$(./otdfctl $HOST $WITH_CREDS policy sm create -a "$SM_VAL1_ID" --action "$ACTION_READ_NAME" --subject-condition-set-new "$SCS_1" --json | jq -r '.id')
-    additional_scs=$(./otdfctl $HOST $WITH_CREDS policy scs create -s "$SCS_2" --json | jq -r '.id')
+    run ./otdfctl $HOST $WITH_CREDS policy sm create -a "$SM_VAL1_ID" --action "$ACTION_READ_NAME" --subject-condition-set-new "$SCS_1" --json
+    assert_success
+    created=$(echo "$output" | jq -r '.id')
+    assert [[ -n "$created" && "$created" != "null" ]]
+    
+    # Create additional SCS and verify it was created successfully
+    run ./otdfctl $HOST $WITH_CREDS policy scs create -s "$SCS_2" --json
+    assert_success
+    additional_scs=$(echo "$output" | jq -r '.id')
+    assert [[ -n "$additional_scs" && "$additional_scs" != "null" ]]
 
     # replace the action (always destructive replacement)
     run_otdfctl_sm update --id "$created" --action "$ACTION_CREATE_NAME" --json
@@ -130,6 +146,8 @@ teardown_file() {
         assert_success
         [ "$(echo $output | jq -r '.id')" = "$created" ]
         [ "$(echo $output | jq -r '.subject_condition_set.id')" = "$additional_scs" ]
+    # Add debug log for DSPX-1873
+    echo "$output" >&2
 }
 
 @test "List subject mappings" {
