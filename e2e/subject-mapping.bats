@@ -110,14 +110,14 @@ teardown_file() {
         assert_line --regexp "Id.*$created"
         assert_line --regexp "Attribute Value: Id.*$SM_VAL2_ID"
         assert_line --regexp "Attribute Value: Value.*value2"
-        assert_line --regexp "Subject Condition Set: Id.*$new_scs"
+        assert_line --regexp "Subject Condition Set: Id.*$SCS_2_ID"
 
     # json
     run_otdfctl_sm get --id "$created" --json
         assert_success
         [ "$(echo $output | jq -r '.id')" = "$created" ]
         [ "$(echo $output | jq -r '.attribute_value.id')" = "$SM_VAL2_ID" ]
-        [ "$(echo $output | jq -r '.subject_condition_set.id')" = "$new_scs" ]
+        [ "$(echo $output | jq -r '.subject_condition_set.id')" = "$SCS_2_ID" ]
         [ "$(echo $output | jq -r '.actions[0].name')" = "custom_sm_action_test" ]
 }
 
