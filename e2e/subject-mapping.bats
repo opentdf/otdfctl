@@ -98,12 +98,15 @@ teardown_file() {
     run ./otdfctl $HOST $WITH_CREDS policy scs create -s "$SCS_2" --json
     assert_success
     new_scs=$(echo "$output" | jq -r '.id')
-    assert [[ -n "$new_scs" && "$new_scs" != "null" ]]
+    assert_not_equal "$new_scs" "null"
+    assert_not_equal "$new_scs" ""
+    
 
     run ./otdfctl $HOST $WITH_CREDS policy sm create -a "$SM_VAL2_ID" --action "custom_sm_action_test" --subject-condition-set-id "$new_scs" --json
     assert_success
     created=$(echo "$output" | jq -r '.id')
-    assert [[ -n "$created" && "$created" != "null" ]]
+    assert_not_equal "$created" "null"
+    assert_not_equal "$created" ""
     
     # table
     run_otdfctl_sm get --id "$created"
@@ -126,13 +129,15 @@ teardown_file() {
     run ./otdfctl $HOST $WITH_CREDS policy sm create -a "$SM_VAL1_ID" --action "$ACTION_READ_NAME" --subject-condition-set-new "$SCS_1" --json
     assert_success
     created=$(echo "$output" | jq -r '.id')
-    assert [[ -n "$created" && "$created" != "null" ]]
+    assert_not_equal "$created" "null"
+    assert_not_equal "$created" ""
     
     # Create additional SCS and verify it was created successfully
     run ./otdfctl $HOST $WITH_CREDS policy scs create -s "$SCS_2" --json
     assert_success
     additional_scs=$(echo "$output" | jq -r '.id')
-    assert [[ -n "$additional_scs" && "$additional_scs" != "null" ]]
+    assert_not_equal "$additional_scs" "null"
+    assert_not_equal "$additional_scs" ""
 
     # replace the action (always destructive replacement)
     run_otdfctl_sm update --id "$created" --action "$ACTION_CREATE_NAME" --json
