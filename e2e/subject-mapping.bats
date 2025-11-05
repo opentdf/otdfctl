@@ -17,6 +17,9 @@ setup_file() {
     export SCS_1='[{"condition_groups":[{"conditions":[{"operator":1,"subject_external_values":["ShinyThing"],"subject_external_selector_value":".team.name"},{"operator":2,"subject_external_values":["marketing"],"subject_external_selector_value":".org.name"}],"boolean_operator":1}]}]'
     export SCS_2='[{"condition_groups":[{"conditions":[{"operator":2,"subject_external_values":["CoolTool","RadService"],"subject_external_selector_value":".team.name"},{"operator":1,"subject_external_values":["sales"],"subject_external_selector_value":".org.name"}],"boolean_operator":2}]}]'
 
+    # Pre-create SCS used by Get/Update tests to avoid eventual-consistency flakes
+    export SCS_2_ID=$(./otdfctl $HOST $WITH_CREDS policy scs create -s "$SCS_2" --json | jq -r '.id')
+
     export ACTION_READ_NAME='read'
     export ACTION_READ_ID=$(./otdfctl $HOST $WITH_CREDS policy actions get --name "$ACTION_READ_NAME" --json | jq -r '.id')
     export ACTION_CREATE_NAME='create'
@@ -95,14 +98,7 @@ teardown_file() {
 }
 
 @test "Get subject mapping" {
-    run ./otdfctl $HOST $WITH_CREDS policy scs create -s "$SCS_2" --json
-    assert_success
-    new_scs=$(echo "$output" | jq -r '.id')
-    assert_not_equal "$new_scs" "null"
-    assert_not_equal "$new_scs" ""
-    
-
-    run ./otdfctl $HOST $WITH_CREDS policy sm create -a "$SM_VAL2_ID" --action "custom_sm_action_test" --subject-condition-set-id "$new_scs" --json
+    run ./otdfctl $HOST $WITH_CREDS policy sm create -a "$SM_VAL2_ID" --action "custom_sm_action_test" --subject-condition-set-id "$SCS_2_ID" --json
     assert_success
     created=$(echo "$output" | jq -r '.id')
     assert_not_equal "$created" "null"
@@ -114,14 +110,14 @@ teardown_file() {
         assert_line --regexp "Id.*$created"
         assert_line --regexp "Attribute Value: Id.*$SM_VAL2_ID"
         assert_line --regexp "Attribute Value: Value.*value2"
-        assert_line --regexp "Subject Condition Set: Id.*$new_scs"
+        assert_line --regexp "Subject Condition Set: Id.*$SCS_2_ID"
 
     # json
     run_otdfctl_sm get --id "$created" --json
         assert_success
         [ "$(echo $output | jq -r '.id')" = "$created" ]
         [ "$(echo $output | jq -r '.attribute_value.id')" = "$SM_VAL2_ID" ]
-        [ "$(echo $output | jq -r '.subject_condition_set.id')" = "$new_scs" ]
+        [ "$(echo $output | jq -r '.subject_condition_set.id')" = "$SCS_2_ID" ]
         [ "$(echo $output | jq -r '.actions[0].name')" = "custom_sm_action_test" ]
 }
 
@@ -131,13 +127,6 @@ teardown_file() {
     created=$(echo "$output" | jq -r '.id')
     assert_not_equal "$created" "null"
     assert_not_equal "$created" ""
-    
-    # Create additional SCS and verify it was created successfully
-    run ./otdfctl $HOST $WITH_CREDS policy scs create -s "$SCS_2" --json
-    assert_success
-    additional_scs=$(echo "$output" | jq -r '.id')
-    assert_not_equal "$additional_scs" "null"
-    assert_not_equal "$additional_scs" ""
 
     # replace the action (always destructive replacement)
     run_otdfctl_sm update --id "$created" --action "$ACTION_CREATE_NAME" --json
@@ -147,10 +136,10 @@ teardown_file() {
         [ "$(echo $output | jq -r '.actions[0].id')" = "$ACTION_CREATE_ID" ]
 
     # reassign the SCS being mapped to
-    run_otdfctl_sm update --id "$created" --subject-condition-set-id "$additional_scs" --json
+    run_otdfctl_sm update --id "$created" --subject-condition-set-id "$SCS_2_ID" --json
         assert_success
         [ "$(echo $output | jq -r '.id')" = "$created" ]
-        [ "$(echo $output | jq -r '.subject_condition_set.id')" = "$additional_scs" ]
+        [ "$(echo $output | jq -r '.subject_condition_set.id')" = "$SCS_2_ID" ]
     # Add debug log for DSPX-1873
     echo "$output" >&2
 }
