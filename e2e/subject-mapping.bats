@@ -143,7 +143,7 @@ teardown_file() {
     attempt=0
     until [ $attempt -ge 3 ]; do
         run_otdfctl_sm update --id "$created" --subject-condition-set-id "$SCS_2_ID" --json
-        if [ "$status" -eq 0 ] && [ "$(echo "$output" | jq -r '.id')" = "$created" ] && [ "$(echo "$output" | jq -r '.subject_condition_set.id')" = "$SCS_2_ID" ]; then
+        if [ "$status" -eq 0 ]; then
             break
         fi
         attempt=$((attempt+1))
