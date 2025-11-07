@@ -17,9 +17,6 @@ setup_file() {
     export SCS_1='[{"condition_groups":[{"conditions":[{"operator":1,"subject_external_values":["ShinyThing"],"subject_external_selector_value":".team.name"},{"operator":2,"subject_external_values":["marketing"],"subject_external_selector_value":".org.name"}],"boolean_operator":1}]}]'
     export SCS_2='[{"condition_groups":[{"conditions":[{"operator":2,"subject_external_values":["CoolTool","RadService"],"subject_external_selector_value":".team.name"},{"operator":1,"subject_external_values":["sales"],"subject_external_selector_value":".org.name"}],"boolean_operator":2}]}]'
 
-    # Pre-create SCS used by Get/Update tests to avoid eventual-consistency flakes
-    export SCS_2_ID=$(./otdfctl $HOST $WITH_CREDS policy scs create -s "$SCS_2" --json | jq -r '.id')
-
     export ACTION_READ_NAME='read'
     export ACTION_READ_ID=$(./otdfctl $HOST $WITH_CREDS policy actions get --name "$ACTION_READ_NAME" --json | jq -r '.id')
     export ACTION_CREATE_NAME='create'
@@ -98,7 +95,7 @@ teardown_file() {
 }
 
 @test "Get subject mapping" {
-    run ./otdfctl $HOST $WITH_CREDS policy sm create -a "$SM_VAL2_ID" --action "custom_sm_action_test" --subject-condition-set-new "$SCS_1" --json
+    run ./otdfctl $HOST $WITH_CREDS policy sm create -a "$SM_VAL2_ID" --action "read" --subject-condition-set-new "$SCS_1" --json
     assert_success
     created=$(echo "$output" | jq -r '.id')
     scs_1_id=$(echo "$output" | jq -r '.subject_condition_set.id')
@@ -124,35 +121,32 @@ teardown_file() {
         [ "$(echo $output | jq -r '.actions[0].name')" = "custom_sm_action_test" ]
 }
 
-#@test "Update a subject mapping" {
-#    run ./otdfctl $HOST $WITH_CREDS policy sm create -a "$SM_VAL1_ID" --action "$ACTION_READ_NAME" --subject-condition-set-new "$SCS_1" --json
-#    assert_success
-#    created=$(echo "$output" | jq -r '.id')
-#    assert_not_equal "$created" "null"
-#    assert_not_equal "$created" ""
-#
-#    # replace the action (always destructive replacement)
-#    run_otdfctl_sm update --id "$created" --action "$ACTION_CREATE_NAME" --json
-#        assert_success
-#        [ "$(echo $output | jq -r '.id')" = "$created" ]
-#        [ "$(echo $output | jq -r '.actions[0].name')" = "$ACTION_CREATE_NAME" ]
-#        [ "$(echo $output | jq -r '.actions[0].id')" = "$ACTION_CREATE_ID" ]
-#
-#    # reassign the SCS being mapped to
-#    # retry up to 3 times with small backoff for eventual consistency
-#    attempt=0
-#    until [ $attempt -ge 3 ]; do
-#        run_otdfctl_sm update --id "$created" --subject-condition-set-id "$SCS_2_ID" --json
-#        if [ "$status" -eq 0 ]; then
-#            break
-#        fi
-#        attempt=$((attempt+1))
-#        sleep 1
-#    done
-#        assert_success
-#        [ "$(echo "$output" | jq -r '.id')" = "$created" ]
-#        [ "$(echo "$output" | jq -r '.subject_condition_set.id')" = "$SCS_2_ID" ]
-#}
+@test "Update a subject mapping" {
+    run ./otdfctl $HOST $WITH_CREDS policy sm create -a "$SM_VAL1_ID" --action "$ACTION_READ_NAME" --subject-condition-set-new "$SCS_2" --json
+    assert_success
+    scs_to_update_with_id=$(echo "$output" | jq -r '.subject_condition_set.id')
+    assert_not_equal "$scs_to_update_with" "null"
+    assert_not_equal "$scs_to_update_with" ""
+
+    run ./otdfctl $HOST $WITH_CREDS policy sm create -a "$SM_VAL1_ID" --action "$ACTION_READ_NAME" --subject-condition-set-new "$SCS_1" --json
+    assert_success
+    created=$(echo "$output" | jq -r '.id')
+    assert_not_equal "$created" "null"
+    assert_not_equal "$created" ""
+
+    # replace the action (always destructive replacement)
+    run_otdfctl_sm update --id "$created" --action "$ACTION_CREATE_NAME" --json
+        assert_success
+        [ "$(echo $output | jq -r '.id')" = "$created" ]
+        [ "$(echo $output | jq -r '.actions[0].name')" = "$ACTION_CREATE_NAME" ]
+        [ "$(echo $output | jq -r '.actions[0].id')" = "$ACTION_CREATE_ID" ]
+
+    # reassign the SCS being mapped to
+    run_otdfctl_sm update --id "$created" --subject-condition-set-id "$scs_to_update_with_id" --json
+    assert_success
+    assert_equal "$(echo $output | jq -r '.id')" "$created"
+    assert_equal "$(echo $output | jq -r '.subject_condition_set.id')" "$scs_to_update_with_id"
+}
 
 @test "List subject mappings" {
     created=$(./otdfctl $HOST $WITH_CREDS policy sm create -a "$SM_VAL1_ID" --action "$ACTION_CREATE_NAME" --subject-condition-set-new "$SCS_2" --json | jq -r '.id')
