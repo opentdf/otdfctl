@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.27.0](https://github.com/opentdf/otdfctl/compare/v0.26.0...v0.27.0) (2025-11-07)
+
+
+### Bug Fixes
+
+* **core:** Ensure IDs are displayed for keys. ([#681](https://github.com/opentdf/otdfctl/issues/681)) ([c5c9989](https://github.com/opentdf/otdfctl/commit/c5c9989f2a7ae9e8865e03ae761df830a4c54b15))
+* **core:** Fix obligation smoke test ([#687](https://github.com/opentdf/otdfctl/issues/687)) ([c8e9b20](https://github.com/opentdf/otdfctl/commit/c8e9b2004f21ac87a0a0d4bce9c546796928ba2d))
+* **main:** Add SCS creation in setup_file ([#693](https://github.com/opentdf/otdfctl/issues/693)) ([33ae971](https://github.com/opentdf/otdfctl/commit/33ae9712944e5175a047c8e1eba2cbe08a021955))
+* **main:** Subject mapping tests ([#691](https://github.com/opentdf/otdfctl/issues/691)) ([6c137c0](https://github.com/opentdf/otdfctl/commit/6c137c04b8c407cd9117c0828657eb9e5c3c2819))
+* **main:** Update flaky subject mapping tests ([#694](https://github.com/opentdf/otdfctl/issues/694)) ([b3cd4df](https://github.com/opentdf/otdfctl/commit/b3cd4df40b5e7e315ff4109f34b8d5d8ffd36c0f))
+* **main:** Use assertion helpers ([#692](https://github.com/opentdf/otdfctl/issues/692)) ([2956244](https://github.com/opentdf/otdfctl/commit/2956244d6d9947e7d09b20070f31dd0cff7f1d5b))
+
 ## [0.26.0](https://github.com/opentdf/otdfctl/compare/v0.25.0...v0.26.0) (2025-10-22)
 
 
