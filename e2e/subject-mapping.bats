@@ -95,7 +95,7 @@ teardown_file() {
 }
 
 @test "Get subject mapping" {
-    run ./otdfctl $HOST $WITH_CREDS policy sm create -a "$SM_VAL2_ID" --action "read" --subject-condition-set-new "$SCS_1" --json
+    run ./otdfctl $HOST $WITH_CREDS policy sm create -a "$SM_VAL2_ID" --action "custom_sm_action_test" --subject-condition-set-new "$SCS_1" --json
     assert_success
     created=$(echo "$output" | jq -r '.id')
     scs_1_id=$(echo "$output" | jq -r '.subject_condition_set.id')
@@ -125,8 +125,8 @@ teardown_file() {
     run ./otdfctl $HOST $WITH_CREDS policy sm create -a "$SM_VAL1_ID" --action "$ACTION_READ_NAME" --subject-condition-set-new "$SCS_2" --json
     assert_success
     scs_to_update_with_id=$(echo "$output" | jq -r '.subject_condition_set.id')
-    assert_not_equal "$scs_to_update_with" "null"
-    assert_not_equal "$scs_to_update_with" ""
+    assert_not_equal "$scs_to_update_with_id" "null"
+    assert_not_equal "$scs_to_update_with_id" ""
 
     run ./otdfctl $HOST $WITH_CREDS policy sm create -a "$SM_VAL1_ID" --action "$ACTION_READ_NAME" --subject-condition-set-new "$SCS_1" --json
     assert_success
