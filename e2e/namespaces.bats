@@ -103,7 +103,7 @@ teardown_file() {
 
 @test "List namespaces - when active" {
   run_otdfctl_ns list --json
-  echo $output | jq --arg id "$NS_ID" '.[] | select(.[]? | type == "object" and .id == $id)'
+  echo $output | jq --arg id "$NS_ID" '.namespaces[] | select(.id == $id)'
   assert_not_equal $(echo $output | jq '.pagination') "null"
 
   run_otdfctl_ns list --state inactive --json
@@ -223,7 +223,7 @@ teardown_file() {
 
 @test "List namespaces - when inactive" {
   run_otdfctl_ns list --json
-  echo $output | jq --arg id "$NS_ID" '.[] | select(.[]? | type == "object" and .id == $id)'
+  echo $output | jq --arg id "$NS_ID" '.namespaces[] | select(.id == $id)'
   assert_not_equal $(echo $output | jq '.pagination') "null"
 
   # json
@@ -250,7 +250,7 @@ teardown_file() {
 
 @test "List namespaces - when reactivated" {
   run_otdfctl_ns list --json
-  echo $output | jq --arg id "$NS_ID" '.[] | select(.[]? | type == "object" and .id == $id)'
+  echo $output | jq --arg id "$NS_ID" '.namespaces[] | select(.id == $id)'
   assert_not_equal $(echo $output | jq '.pagination') "null"
 
   run_otdfctl_ns list --state inactive --json
