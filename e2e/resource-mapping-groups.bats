@@ -118,8 +118,8 @@ teardown_file() {
     run_otdfctl_rmg list --json
     assert_success
     [[ "$(echo "$output" | jq -r '.resource_mapping_groups | length')" -ge 1 ]]
-    found_rmg=$(echo "$output" | jq -r --arg id "$RMG1_ID" '.resource_mapping_groups[] | select(.id == $id) | .id')
-    assert_equal "$found_rmg" "$RMG1_ID"
+    found_rmg=$(echo "$output" | jq -c --arg id "$RMG1_ID" '.resource_mapping_groups as $a | ($a | map(.id) | index($id)) as $i | $a[$i]')
+    assert_equal "$(echo "$found_rmg" | jq -r '.id')" "$RMG1_ID"
     assert_equal "$(echo "$found_rmg" | jq -r '.name')" "$RMG1_NAME"
     [[ "$(echo "$output" | jq -r '.pagination.total')" -ge 1 ]]
     assert_equal "$(echo "$output" | jq -r '.pagination.current_offset')" "null"
