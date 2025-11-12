@@ -42,18 +42,13 @@ func (h Handler) GetKasRegistryEntry(ctx context.Context, identifer KasIdentifie
 	return resp.GetKeyAccessServer(), nil
 }
 
-func (h Handler) ListKasRegistryEntries(ctx context.Context, limit, offset int32) ([]*policy.KeyAccessServer, *policy.PageResponse, error) {
-	resp, err := h.sdk.KeyAccessServerRegistry.ListKeyAccessServers(ctx, &kasregistry.ListKeyAccessServersRequest{
+func (h Handler) ListKasRegistryEntries(ctx context.Context, limit, offset int32) (*kasregistry.ListKeyAccessServersResponse, error) {
+	return h.sdk.KeyAccessServerRegistry.ListKeyAccessServers(ctx, &kasregistry.ListKeyAccessServersRequest{
 		Pagination: &policy.PageRequest{
 			Limit:  limit,
 			Offset: offset,
 		},
 	})
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return resp.GetKeyAccessServers(), resp.GetPagination(), nil
 }
 
 // Creates the KAS registry and then returns the KAS

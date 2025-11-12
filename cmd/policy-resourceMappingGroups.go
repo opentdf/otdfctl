@@ -69,7 +69,7 @@ func policyListResourceMappingGroups(cmd *cobra.Command, args []string) {
 	limit := c.Flags.GetRequiredInt32("limit")
 	offset := c.Flags.GetRequiredInt32("offset")
 
-	rmgList, page, err := h.ListResourceMappingGroups(cmd.Context(), limit, offset)
+	resp, err := h.ListResourceMappingGroups(cmd.Context(), limit, offset)
 	if err != nil {
 		cli.ExitWithError("Failed to list resource mapping groups", err)
 	}
@@ -83,7 +83,7 @@ func policyListResourceMappingGroups(cmd *cobra.Command, args []string) {
 		table.NewFlexColumn("updated_at", "Updated At", cli.FlexColumnWidthOne),
 	)
 	rows := []table.Row{}
-	for _, rmg := range rmgList {
+	for _, rmg := range resp.GetResourceMappingGroups() {
 		metadata := cli.ConstructMetadata(rmg.GetMetadata())
 		rows = append(rows, table.NewRow(table.RowData{
 			"id":         rmg.GetId(),
@@ -95,8 +95,8 @@ func policyListResourceMappingGroups(cmd *cobra.Command, args []string) {
 		}))
 	}
 	t = t.WithRows(rows)
-	t = cli.WithListPaginationFooter(t, page)
-	HandleSuccess(cmd, "", t, rmgList)
+	t = cli.WithListPaginationFooter(t, resp.GetPagination())
+	HandleSuccess(cmd, "", t, resp)
 }
 
 func policyUpdateResourceMappingGroup(cmd *cobra.Command, args []string) {

@@ -60,7 +60,7 @@ func policy_listAttributeValue(cmd *cobra.Command, args []string) {
 	limit := c.Flags.GetRequiredInt32("limit")
 	offset := c.Flags.GetRequiredInt32("offset")
 
-	vals, page, err := h.ListAttributeValues(cmd.Context(), attrId, state, limit, offset)
+	resp, err := h.ListAttributeValues(cmd.Context(), attrId, state, limit, offset)
 	if err != nil {
 		cli.ExitWithError("Failed to list attribute values", err)
 	}
@@ -73,7 +73,7 @@ func policy_listAttributeValue(cmd *cobra.Command, args []string) {
 		table.NewFlexColumn("updated_at", "Updated At", cli.FlexColumnWidthOne),
 	)
 	rows := []table.Row{}
-	for _, val := range vals {
+	for _, val := range resp.GetValues() {
 		v := cli.GetSimpleAttributeValue(val)
 		rows = append(rows, table.NewRow(table.RowData{
 			"id":         v.Id,
@@ -85,8 +85,8 @@ func policy_listAttributeValue(cmd *cobra.Command, args []string) {
 		}))
 	}
 	t = t.WithRows(rows)
-	t = cli.WithListPaginationFooter(t, page)
-	HandleSuccess(cmd, "", t, vals)
+	t = cli.WithListPaginationFooter(t, resp.GetPagination())
+	HandleSuccess(cmd, "", t, resp)
 }
 
 func policy_updateAttributeValue(cmd *cobra.Command, args []string) {

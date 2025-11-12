@@ -149,4 +149,10 @@ teardown() {
     run_otdfctl_kasr list
     assert_output --partial "Total"
     assert_line --regexp "Current Offset.*0"
+
+    run_otdfctl_kasr list --json
+    assert_success
+    assert_not_equal $(echo "$output" | jq -r ".pagination") "null"
+    total=$(echo "$output" | jq -r ".pagination.total")
+    [[ $total -ge 1 ]]
 }

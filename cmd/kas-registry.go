@@ -63,7 +63,7 @@ func policy_listKeyAccessRegistries(cmd *cobra.Command, args []string) {
 	limit := c.Flags.GetRequiredInt32("limit")
 	offset := c.Flags.GetRequiredInt32("offset")
 
-	list, page, err := h.ListKasRegistryEntries(cmd.Context(), limit, offset)
+	resp, err := h.ListKasRegistryEntries(cmd.Context(), limit, offset)
 	if err != nil {
 		cli.ExitWithError("Failed to list Registered KAS entries", err)
 	}
@@ -75,7 +75,7 @@ func policy_listKeyAccessRegistries(cmd *cobra.Command, args []string) {
 		table.NewFlexColumn("pk", "PublicKey", cli.FlexColumnWidthFour),
 	)
 	rows := []table.Row{}
-	for _, kas := range list {
+	for _, kas := range resp.GetKeyAccessServers() {
 		//TODO: Remove in next release
 		key := policy.PublicKey{}
 		key.PublicKey = &policy.PublicKey_Cached{Cached: kas.GetPublicKey().GetCached()}
@@ -90,8 +90,8 @@ func policy_listKeyAccessRegistries(cmd *cobra.Command, args []string) {
 		}))
 	}
 	t = t.WithRows(rows)
-	t = cli.WithListPaginationFooter(t, page)
-	HandleSuccess(cmd, "", t, list)
+	t = cli.WithListPaginationFooter(t, resp.GetPagination())
+	HandleSuccess(cmd, "", t, resp)
 }
 
 func policy_createKeyAccessRegistry(cmd *cobra.Command, args []string) {

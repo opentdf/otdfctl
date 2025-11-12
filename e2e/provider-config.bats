@@ -95,12 +95,13 @@ delete_pc_by_id() {
 }
 @test "list provider configurations" {
     NAME="tst-config-4"
-    run_otdfctl_key_pc create --name "$NAME" --config '"$VALID_CONFIG"' --json
+    run_otdfctl_key_pc create --name "$NAME" --config '"$VALID_CONFIG"' --manager "fake-manager" --json
     assert_success
     ID=$(echo "$output" | jq -r '.id')
     run_otdfctl_key_pc list --json
     assert_success
-    assert_not_equal "$(echo "$output" | jq -r length)" "0"
+    assert_equal "$(echo "$output" | jq '.provider_configs | length')" "1"
+    assert_equal "$(echo "$output" | jq '.pagination.total')" "1"
     run_otdfctl_key_pc list
         assert_output --partial "Total"
         assert_line --regexp "Current Offset.*0"

@@ -115,7 +115,7 @@ func listProviderConfig(cmd *cobra.Command, args []string) {
 	offset := c.Flags.GetRequiredInt32("offset")
 
 	// Get all provider configs
-	providerConfigs, page, err := h.ListProviderConfigs(c.Context(), limit, offset)
+	resp, err := h.ListProviderConfigs(c.Context(), limit, offset)
 	if err != nil {
 		cli.ExitWithError("Failed to list provider configs", err)
 	}
@@ -131,7 +131,7 @@ func listProviderConfig(cmd *cobra.Command, args []string) {
 		table.NewFlexColumn("updated_at", "Updated At", cli.FlexColumnWidthOne),
 	)
 	rows := []table.Row{}
-	for _, pc := range providerConfigs {
+	for _, pc := range resp.GetProviderConfigs() {
 		metadata := cli.ConstructMetadata(pc.GetMetadata())
 		rows = append(rows, table.NewRow(table.RowData{
 			"id":         pc.GetId(),
@@ -144,8 +144,8 @@ func listProviderConfig(cmd *cobra.Command, args []string) {
 		}))
 	}
 	t = t.WithRows(rows)
-	t = cli.WithListPaginationFooter(t, page)
-	HandleSuccess(cmd, "", t, providerConfigs)
+	t = cli.WithListPaginationFooter(t, resp.GetPagination())
+	HandleSuccess(cmd, "", t, resp)
 }
 
 func deleteProviderConfig(cmd *cobra.Command, args []string) {

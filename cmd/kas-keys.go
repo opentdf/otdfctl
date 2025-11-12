@@ -419,7 +419,7 @@ func policyListKasKeys(cmd *cobra.Command, args []string) {
 	}
 
 	// Get the list of keys.
-	keys, page, err := h.ListKasKeys(c.Context(), limit, offset, alg, kasLookup, legacy)
+	resp, err := h.ListKasKeys(c.Context(), limit, offset, alg, kasLookup, legacy)
 	if err != nil {
 		cli.ExitWithError("Failed to list kas keys", err)
 	}
@@ -435,7 +435,7 @@ func policyListKasKeys(cmd *cobra.Command, args []string) {
 		table.NewFlexColumn("legacy", "Legacy", cli.FlexColumnWidthOne),
 	)
 	rows := []table.Row{}
-	for _, kasKey := range keys {
+	for _, kasKey := range resp.GetKasKeys() {
 		key := kasKey.GetKey()
 		statusStr, err := enumToStatus(key.GetKeyStatus())
 		if err != nil {
@@ -461,8 +461,8 @@ func policyListKasKeys(cmd *cobra.Command, args []string) {
 		}))
 	}
 	t = t.WithRows(rows)
-	t = cli.WithListPaginationFooter(t, page)
-	HandleSuccess(cmd, "", t, keys)
+	t = cli.WithListPaginationFooter(t, resp.GetPagination())
+	HandleSuccess(cmd, "", t, resp)
 }
 
 func policyListKeyMappings(cmd *cobra.Command, args []string) {
