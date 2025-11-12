@@ -14,7 +14,7 @@ delete_all_keys_in_kas() {
   assert_success
 
   local key_ids=()
-  local keys_to_delete=$(echo "$output" | jq -c '.[] | {id: .key.id, key_id: .key.key_id, kas_uri: .kas_uri}')
+  local keys_to_delete=$(echo "$output" | jq -c '.kas_keys[] | {id: .key.id, key_id: .key.key_id, kas_uri: .kas_uri}')
 
   if [ -z "$keys_to_delete" ]; then
     echo "No keys found to delete in KAS registry: $kas_id"
