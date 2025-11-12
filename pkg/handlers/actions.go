@@ -28,18 +28,13 @@ func (h Handler) GetAction(ctx context.Context, id string, name string) (*policy
 	return resp.GetAction(), nil
 }
 
-func (h Handler) ListActions(ctx context.Context, limit, offset int32) ([]*policy.Action, []*policy.Action, *policy.PageResponse, error) {
-	resp, err := h.sdk.Actions.ListActions(ctx, &actions.ListActionsRequest{
+func (h Handler) ListActions(ctx context.Context, limit, offset int32) (*actions.ListActionsResponse, error) {
+	return h.sdk.Actions.ListActions(ctx, &actions.ListActionsRequest{
 		Pagination: &policy.PageRequest{
 			Limit:  limit,
 			Offset: offset,
 		},
 	})
-	if err != nil {
-		return nil, nil, nil, err
-	}
-
-	return resp.GetActionsStandard(), resp.GetActionsCustom(), resp.GetPagination(), nil
 }
 
 func (h Handler) CreateAction(ctx context.Context, name string, metadata *common.MetadataMutable) (*policy.Action, error) {

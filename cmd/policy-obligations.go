@@ -103,7 +103,7 @@ func policyListObligations(cmd *cobra.Command, args []string) {
 	limit := c.Flags.GetRequiredInt32("limit")
 	offset := c.Flags.GetRequiredInt32("offset")
 
-	obls, page, err := h.ListObligations(cmd.Context(), limit, offset, namespace)
+	resp, err := h.ListObligations(cmd.Context(), limit, offset, namespace)
 	if err != nil {
 		cli.ExitWithError("Failed to list obligations", err)
 	}
@@ -114,7 +114,7 @@ func policyListObligations(cmd *cobra.Command, args []string) {
 		table.NewFlexColumn("values", "Values", cli.FlexColumnWidthTwo),
 	)
 	rows := []table.Row{}
-	for _, r := range obls {
+	for _, r := range resp.GetObligations() {
 		simpleObligationValues := cli.GetSimpleObligationValues(r.GetValues())
 		rows = append(rows, table.NewRow(table.RowData{
 			"id":     r.GetId(),
@@ -123,8 +123,8 @@ func policyListObligations(cmd *cobra.Command, args []string) {
 		}))
 	}
 	t = t.WithRows(rows)
-	t = cli.WithListPaginationFooter(t, page)
-	HandleSuccess(cmd, "", t, obls)
+	t = cli.WithListPaginationFooter(t, resp.GetPagination())
+	HandleSuccess(cmd, "", t, resp)
 }
 
 func policyUpdateObligation(cmd *cobra.Command, args []string) {

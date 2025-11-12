@@ -6,7 +6,6 @@ import (
 	"github.com/evertras/bubble-table/table"
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/man"
-	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/spf13/cobra"
 )
 
@@ -52,7 +51,7 @@ func policyListActions(cmd *cobra.Command, args []string) {
 	limit := c.Flags.GetRequiredInt32("limit")
 	offset := c.Flags.GetRequiredInt32("offset")
 
-	stdActions, customActions, page, err := h.ListActions(cmd.Context(), limit, offset)
+	resp, err := h.ListActions(cmd.Context(), limit, offset)
 	if err != nil {
 		cli.ExitWithError("Failed to list actions", err)
 	}
@@ -62,26 +61,24 @@ func policyListActions(cmd *cobra.Command, args []string) {
 		table.NewFlexColumn("action_type", "Action Type", cli.FlexColumnWidthFour),
 	)
 	rows := []table.Row{}
-	for _, a := range stdActions {
+	for _, a := range resp.GetActionsStandard() {
 		rows = append(rows, table.NewRow(table.RowData{
 			"id":          a.GetId(),
 			"action_type": "standard",
 			"name":        a.GetName(),
 		}))
 	}
-	for _, a := range customActions {
+	for _, a := range resp.GetActionsCustom() {
 		rows = append(rows, table.NewRow(table.RowData{
 			"id":          a.GetId(),
 			"action_type": "custom",
 			"name":        a.GetName(),
 		}))
 	}
-	list := append([]*policy.Action{}, stdActions...)
-	list = append(list, customActions...)
 
 	t = t.WithRows(rows)
-	t = cli.WithListPaginationFooter(t, page)
-	HandleSuccess(cmd, "", t, list)
+	t = cli.WithListPaginationFooter(t, resp.GetPagination())
+	HandleSuccess(cmd, "", t, resp)
 }
 
 func policyCreateAction(cmd *cobra.Command, args []string) {
