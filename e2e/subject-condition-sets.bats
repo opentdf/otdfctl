@@ -116,9 +116,11 @@ teardown_file() {
     assert_output --partial ".emailAddress"
     assert_output --partial ".team.name"
     assert_output --partial ".org.name"
-    matched_object=$(echo "$output" | jq -r --arg id "$CREATED_ID" '.[] | select(.id == $id)')
+    matched_object=$(echo "$output" | jq -r --arg id "$CREATED_ID" '.subject_condition_sets[] | select(.id == $id)')
     [ $(echo "$matched_object" | jq -r '.subject_sets[0].condition_groups[0].conditions[0].subject_external_values | contains(["piedpiper.com"])') = "true" ]
     [ $(echo "$matched_object" | jq -r '.metadata.labels.fromfile') = "false" ]
+    [[ $(echo "$output" | jq -r ".pagination.total") -ge 1 ]]
+
 
   # validate deletion
   run_delete_scs "$CREATED_ID"

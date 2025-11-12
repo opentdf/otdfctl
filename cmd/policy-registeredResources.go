@@ -8,7 +8,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/man"
-	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/opentdf/platform/protocol/go/policy/registeredresources"
 	"github.com/spf13/cobra"
 )
@@ -99,7 +98,7 @@ func policyListRegisteredResources(cmd *cobra.Command, args []string) {
 	limit := c.Flags.GetRequiredInt32("limit")
 	offset := c.Flags.GetRequiredInt32("offset")
 
-	resources, page, err := h.ListRegisteredResources(cmd.Context(), limit, offset)
+	resp, err := h.ListRegisteredResources(cmd.Context(), limit, offset)
 	if err != nil {
 		cli.ExitWithError("Failed to list registered resources", err)
 	}
@@ -111,7 +110,7 @@ func policyListRegisteredResources(cmd *cobra.Command, args []string) {
 		// todo: do we need to show metadata labels and created/updated at?
 	)
 	rows := []table.Row{}
-	for _, r := range resources {
+	for _, r := range resp.GetResources() {
 		simpleRegResValues := cli.GetSimpleRegisteredResourceValues(r.GetValues())
 		rows = append(rows, table.NewRow(table.RowData{
 			"id":     r.GetId(),
@@ -121,8 +120,8 @@ func policyListRegisteredResources(cmd *cobra.Command, args []string) {
 		}))
 	}
 	t = t.WithRows(rows)
-	t = cli.WithListPaginationFooter(t, page)
-	HandleSuccess(cmd, "", t, resources)
+	t = cli.WithListPaginationFooter(t, resp.GetPagination())
+	HandleSuccess(cmd, "", t, resp)
 }
 
 func policyUpdateRegisteredResource(cmd *cobra.Command, args []string) {
@@ -298,7 +297,7 @@ func policyListRegisteredResourceValues(cmd *cobra.Command, args []string) {
 		resourceID = resourceByName.GetId()
 	}
 
-	values, page, err := h.ListRegisteredResourceValues(ctx, resourceID, limit, offset)
+	resp, err := h.ListRegisteredResourceValues(ctx, resourceID, limit, offset)
 	if err != nil {
 		cli.ExitWithError("Failed to list registered resource values", err)
 	}
@@ -309,7 +308,7 @@ func policyListRegisteredResourceValues(cmd *cobra.Command, args []string) {
 		table.NewFlexColumn("action-attribute-values", "Action Attribute Values", cli.FlexColumnWidthFour),
 	)
 	rows := []table.Row{}
-	for _, v := range values {
+	for _, v := range resp.GetValues() {
 		simpleActionAttributeValues := cli.GetSimpleRegisteredResourceActionAttributeValues(v.GetActionAttributeValues())
 
 		rows = append(rows, table.NewRow(table.RowData{
@@ -318,11 +317,10 @@ func policyListRegisteredResourceValues(cmd *cobra.Command, args []string) {
 			"action-attribute-values": cli.CommaSeparated(simpleActionAttributeValues),
 		}))
 	}
-	list := append([]*policy.RegisteredResourceValue{}, values...)
 
 	t = t.WithRows(rows)
-	t = cli.WithListPaginationFooter(t, page)
-	HandleSuccess(cmd, "", t, list)
+	t = cli.WithListPaginationFooter(t, resp.GetPagination())
+	HandleSuccess(cmd, "", t, resp)
 }
 
 func policyUpdateRegisteredResourceValue(cmd *cobra.Command, args []string) {

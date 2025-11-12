@@ -45,18 +45,13 @@ func (h Handler) GetRegisteredResource(ctx context.Context, id, name string) (*p
 	return resp.GetResource(), nil
 }
 
-func (h Handler) ListRegisteredResources(ctx context.Context, limit, offset int32) ([]*policy.RegisteredResource, *policy.PageResponse, error) {
-	resp, err := h.sdk.RegisteredResources.ListRegisteredResources(ctx, &registeredresources.ListRegisteredResourcesRequest{
+func (h Handler) ListRegisteredResources(ctx context.Context, limit, offset int32) (*registeredresources.ListRegisteredResourcesResponse, error) {
+	return h.sdk.RegisteredResources.ListRegisteredResources(ctx, &registeredresources.ListRegisteredResourcesRequest{
 		Pagination: &policy.PageRequest{
 			Limit:  limit,
 			Offset: offset,
 		},
 	})
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return resp.GetResources(), resp.GetPagination(), nil
 }
 
 func (h Handler) UpdateRegisteredResource(ctx context.Context, id, name string, metadata *common.MetadataMutable, behavior common.MetadataUpdateEnum) (*policy.RegisteredResource, error) {
@@ -119,19 +114,14 @@ func (h Handler) GetRegisteredResourceValue(ctx context.Context, id, fqn string)
 	return resp.GetValue(), nil
 }
 
-func (h Handler) ListRegisteredResourceValues(ctx context.Context, resourceID string, limit, offset int32) ([]*policy.RegisteredResourceValue, *policy.PageResponse, error) {
-	resp, err := h.sdk.RegisteredResources.ListRegisteredResourceValues(ctx, &registeredresources.ListRegisteredResourceValuesRequest{
+func (h Handler) ListRegisteredResourceValues(ctx context.Context, resourceID string, limit, offset int32) (*registeredresources.ListRegisteredResourceValuesResponse, error) {
+	return h.sdk.RegisteredResources.ListRegisteredResourceValues(ctx, &registeredresources.ListRegisteredResourceValuesRequest{
 		ResourceId: resourceID,
 		Pagination: &policy.PageRequest{
 			Limit:  limit,
 			Offset: offset,
 		},
 	})
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return resp.GetValues(), resp.GetPagination(), nil
 }
 
 func (h Handler) UpdateRegisteredResourceValue(ctx context.Context, id, value string, actionAttributeValues []*registeredresources.ActionAttributeValue, metadata *common.MetadataMutable, behavior common.MetadataUpdateEnum) (*policy.RegisteredResourceValue, error) {
