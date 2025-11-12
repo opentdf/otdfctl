@@ -159,7 +159,7 @@ teardown_file() {
 
     run_otdfctl_sm list --json
     assert_success
-    assert_equal "$(echo $output | jq -r '.subject_mappings[] | select(.id == \"$created\") | .attribute_value.fqn')" "https://subject-mappings.net/attr/attr1/value/val1"
+    assert_equal "$(echo "$output" | jq -r --arg id "$created" '.subject_mappings[] | select(.id == $id) | .attribute_value.fqn')" "https://subject-mappings.net/attr/attr1/value/val1"
     assert_not_equal $(echo "$output" | jq -r 'pagination') "null"
     total=$(echo "$output" | jq -r '.pagination.total')
     [[ "$total" -ge 1 ]]
