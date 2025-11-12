@@ -144,6 +144,14 @@ teardown_file() {
     assert_output --partial "test_list_rr_2"
     assert_output --partial "Total"
     assert_line --regexp "Current Offset.*0"
+  
+  run_otdfctl_reg_res list --json
+  assert_success
+  assert_output --partial "$reg_res1_id"
+  assert_output --partial "test_list_rr_1"
+  assert_output --partial "$reg_res2_id"
+  assert_output --partial "test_list_rr_2"
+  [[ $(echo "$output" | jq -r '.pagination.total') -ge 1 ]]
 
   # cleanup
   run_otdfctl_reg_res delete --id $reg_res1_id --force
@@ -343,12 +351,20 @@ teardown_file() {
     assert_success
     assert_output --partial "$reg_res_val1_id"
     assert_output --partial "test_list_rr_val_1"
-    # check for partial FQN due to possible trimmed output
     assert_output --partial "$READ_ACTION_NAME -> https://$NS_NAME/attr/$ATTR_NAME"
     assert_output --partial "$reg_res_val2_id"
     assert_output --partial "test_list_rr_val_2"
     assert_output --partial "Total"
     assert_line --regexp "Current Offset.*0"
+
+  run_otdfctl_reg_res_values list --resource "$RR_NAME" --json
+  assert_success
+  assert_output --partial "$reg_res_val1_id"
+  assert_output --partial "test_list_rr_val_1"
+  assert_output --partial "https://$NS_NAME/attr/$ATTR_NAME/value/test_reg_res_attr__val_1"
+  assert_output --partial "$reg_res_val2_id"
+  assert_output --partial "test_list_rr_val_2"
+  [[ $(echo "$output" | jq -r '.pagination.total') -ge 1 ]]
 
   # cleanup
   run_otdfctl_reg_res_values delete --id $reg_res_val1_id --force
