@@ -849,7 +849,7 @@ format_kas_name_as_uri() {
 
   run_otdfctl_key list --kas "${KAS_ID_LIST}" --json
   assert_success
-  assert_equal "$(echo "$output" | jq '. | length')" "2"
+  assert_equal "$(echo "$output" | jq '.kas_keys | length')" "2"
   assert_equal "$(echo "$output" | jq -r --arg id "${NON_LEGACY_KEY_ID}" '.kas_keys[] | select(.key.key_id == $id) | .key.key_id')" "${NON_LEGACY_KEY_ID}"
   assert_equal "$(echo "$output" | jq -r --arg id "${KEY_ID_LEGACY}" '.kas_keys[] | select(.key.key_id == $id) | .key.key_id')" "${KEY_ID_LEGACY}"
 
