@@ -71,7 +71,7 @@ func (h Handler) UpdateProviderConfig(
 	return resp.GetProviderConfig(), nil
 }
 
-func (h Handler) ListProviderConfigs(ctx context.Context, limit, offset int32) ([]*policy.KeyProviderConfig, *policy.PageResponse, error) {
+func (h Handler) ListProviderConfigs(ctx context.Context, limit, offset int32) (*keymanagement.ListProviderConfigsResponse, error) {
 	req := keymanagement.ListProviderConfigsRequest{
 		Pagination: &policy.PageRequest{
 			Limit:  limit,
@@ -79,12 +79,7 @@ func (h Handler) ListProviderConfigs(ctx context.Context, limit, offset int32) (
 		},
 	}
 
-	resp, err := h.sdk.KeyManagement.ListProviderConfigs(ctx, &req)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return resp.GetProviderConfigs(), resp.GetPagination(), nil
+	return h.sdk.KeyManagement.ListProviderConfigs(ctx, &req)
 }
 
 func (h *Handler) DeleteProviderConfig(ctx context.Context, id string) error {

@@ -593,28 +593,28 @@ format_kas_name_as_uri() {
   assert_success
 
   # For key1:
-  assert_equal "$(echo "$output" | jq -r --arg id "${key1_system_id}" '.[] | select(.key.id == $id) | .key.id')" "${key1_system_id}"
-  assert_equal "$(echo "$output" | jq -r --arg id "${key1_system_id}" '.[] | select(.key.id == $id) | .key.key_id')" "${KEY_ID_LIST_1}"
-  assert_equal "$(echo "$output" | jq -r --arg id "${key1_system_id}" '.[] | select(.key.id == $id) | .key.key_algorithm')" "1"
-  assert_equal "$(echo "$output" | jq -r --arg id "${key1_system_id}" '.[] | select(.key.id == $id) | .key.key_mode')" "4"
-  assert_equal "$(echo "$output" | jq -r --arg id "${key1_system_id}" '.[] | select(.key.id == $id) | .key.key_status')" "1"
-  assert_equal "$(echo "$output" | jq -r --arg id "${key1_system_id}" '.[] | select(.key.id == $id) | .key.legacy')" "null"
-  assert_equal "$(echo "$output" | jq -r --arg id "${key1_system_id}" '.[] | select(.key.id == $id) | .key.public_key_ctx.pem')" "${PEM_B64_RSA}"
-  assert_equal "$(echo "$output" | jq -r --arg id "${key1_system_id}" '.[] | select(.key.id == $id) | .key.private_key_ctx')" "null"
-  assert_not_equal "$(echo "$output" | jq -r --arg id "${key1_system_id}" '.[] | select(.key.id == $id) | .key.metadata.created_at')" "null"
-  assert_not_equal "$(echo "$output" | jq -r --arg id "${key1_system_id}" '.[] | select(.key.id == $id) | .key.metadata.updated_at')" "null"
+  assert_equal "$(echo "$output" | jq -r --arg id "${key1_system_id}" '.kas_keys[] | select(.key.id == $id) | .key.id')" "${key1_system_id}"
+  assert_equal "$(echo "$output" | jq -r --arg id "${key1_system_id}" '.kas_keys[] | select(.key.id == $id) | .key.key_id')" "${KEY_ID_LIST_1}"
+  assert_equal "$(echo "$output" | jq -r --arg id "${key1_system_id}" '.kas_keys[] | select(.key.id == $id) | .key.key_algorithm')" "1"
+  assert_equal "$(echo "$output" | jq -r --arg id "${key1_system_id}" '.kas_keys[] | select(.key.id == $id) | .key.key_mode')" "4"
+  assert_equal "$(echo "$output" | jq -r --arg id "${key1_system_id}" '.kas_keys[] | select(.key.id == $id) | .key.key_status')" "1"
+  assert_equal "$(echo "$output" | jq -r --arg id "${key1_system_id}" '.kas_keys[] | select(.key.id == $id) | .key.legacy')" "null"
+  assert_equal "$(echo "$output" | jq -r --arg id "${key1_system_id}" '.kas_keys[] | select(.key.id == $id) | .key.public_key_ctx.pem')" "${PEM_B64_RSA}"
+  assert_equal "$(echo "$output" | jq -r --arg id "${key1_system_id}" '.kas_keys[] | select(.key.id == $id) | .key.private_key_ctx')" "null"
+  assert_not_equal "$(echo "$output" | jq -r --arg id "${key1_system_id}" '.kas_keys[] | select(.key.id == $id) | .key.metadata.created_at')" "null"
+  assert_not_equal "$(echo "$output" | jq -r --arg id "${key1_system_id}" '.kas_keys[] | select(.key.id == $id) | .key.metadata.updated_at')" "null"
 
   # For key2:
-  assert_equal "$(echo "$output" | jq -r --arg id "${key2_system_id}" '.[] | select(.key.id == $id) | .key.id')" "${key2_system_id}"
-  assert_equal "$(echo "$output" | jq -r --arg id "${key2_system_id}" '.[] | select(.key.id == $id) | .key.key_id')" "${KEY_ID_LIST_2}"
-  assert_equal "$(echo "$output" | jq -r --arg id "${key2_system_id}" '.[] | select(.key.id == $id) | .key.key_algorithm')" "3"
-  assert_equal "$(echo "$output" | jq -r --arg id "${key2_system_id}" '.[] | select(.key.id == $id) | .key.key_mode')" "4"
-  assert_equal "$(echo "$output" | jq -r --arg id "${key2_system_id}" '.[] | select(.key.id == $id) | .key.legacy')" "null"
-  assert_equal "$(echo "$output" | jq -r --arg id "${key2_system_id}" '.[] | select(.key.id == $id) | .key.key_status')" "1"
-  assert_equal "$(echo "$output" | jq -r --arg id "${key2_system_id}" '.[] | select(.key.id == $id) | .key.public_key_ctx.pem')" "${PEM_B64_EC_P256}"
-  assert_equal "$(echo "$output" | jq -r --arg id "${key2_system_id}" '.[] | select(.key.id == $id) | .key.private_key_ctx')" "null"
-  assert_not_equal "$(echo "$output" | jq -r --arg id "${key2_system_id}" '.[] | select(.key.id == $id) | .key.metadata.created_at')" "null"
-  assert_not_equal "$(echo "$output" | jq -r --arg id "${key2_system_id}" '.[] | select(.key.id == $id) | .key.metadata.updated_at')" "null"
+  assert_equal "$(echo "$output" | jq -r --arg id "${key2_system_id}" '.kas_keys[] | select(.key.id == $id) | .key.id')" "${key2_system_id}"
+  assert_equal "$(echo "$output" | jq -r --arg id "${key2_system_id}" '.kas_keys[] | select(.key.id == $id) | .key.key_id')" "${KEY_ID_LIST_2}"
+  assert_equal "$(echo "$output" | jq -r --arg id "${key2_system_id}" '.kas_keys[] | select(.key.id == $id) | .key.key_algorithm')" "3"
+  assert_equal "$(echo "$output" | jq -r --arg id "${key2_system_id}" '.kas_keys[] | select(.key.id == $id) | .key.key_mode')" "4"
+  assert_equal "$(echo "$output" | jq -r --arg id "${key2_system_id}" '.kas_keys[] | select(.key.id == $id) | .key.legacy')" "null"
+  assert_equal "$(echo "$output" | jq -r --arg id "${key2_system_id}" '.kas_keys[] | select(.key.id == $id) | .key.key_status')" "1"
+  assert_equal "$(echo "$output" | jq -r --arg id "${key2_system_id}" '.kas_keys[] | select(.key.id == $id) | .key.public_key_ctx.pem')" "${PEM_B64_EC_P256}"
+  assert_equal "$(echo "$output" | jq -r --arg id "${key2_system_id}" '.kas_keys[] | select(.key.id == $id) | .key.private_key_ctx')" "null"
+  assert_not_equal "$(echo "$output" | jq -r --arg id "${key2_system_id}" '.kas_keys[] | select(.key.id == $id) | .key.metadata.created_at')" "null"
+  assert_not_equal "$(echo "$output" | jq -r --arg id "${key2_system_id}" '.kas_keys[] | select(.key.id == $id) | .key.metadata.updated_at')" "null"
 }
 
 @test "kas-keys: list keys (pagination with limit and offset)" {
@@ -642,28 +642,28 @@ format_kas_name_as_uri() {
   # Test: limit 1, offset 0 - should get the first key (order dependent on server, so we check for one of them)
   run_otdfctl_key list --kas "${KAS_ID_LIST}" --limit 1 --offset 0 --json
   assert_success
-  assert_equal "$(echo "$output" | jq '. | length')" "1"
-  local found_id_limit1_offset0=$(echo "$output" | jq -r '.[0].key.id')
+  assert_equal "$(echo "$output" | jq '.kas_keys | length')" "1"
+  local found_id_limit1_offset0=$(echo "$output" | jq -r '.kas_keys[0].key.id')
 
   # Test: limit 1, offset 1 - should get the second key
   run_otdfctl_key list --kas "${KAS_ID_LIST}" --limit 1 --offset 1 --json
   assert_success
-  assert_equal "$(echo "$output" | jq '. | length')" "1"
-  local found_id_limit1_offset1=$(echo "$output" | jq -r '.[0].key.id')
+  assert_equal "$(echo "$output" | jq '.kas_keys | length')" "1"
+  local found_id_limit1_offset1=$(echo "$output" | jq -r '.kas_keys[0].key.id')
   assert_not_equal "${found_id_limit1_offset1}" "${found_id_limit1_offset0}"
 
   run_otdfctl_key list --kas "${KAS_ID_LIST}" --limit 3 --offset 0 --json # Fetch up to 3
   assert_success
-  local count_limit3_offset0=$(echo "$output" | jq '. | length')
+  local count_limit3_offset0=$(echo "$output" | jq '.kas_keys | length')
   assert_equal "${count_limit3_offset0}" 3
-  assert_equal "$(echo "$output" | jq -r --arg id "${key_p1_sys_id}" '.[] | select(.key.id == $id) | .key.id')" "${key_p1_sys_id}"
-  assert_equal "$(echo "$output" | jq -r --arg id "${key_p2_sys_id}" '.[] | select(.key.id == $id) | .key.id')" "${key_p2_sys_id}"
-  assert_equal "$(echo "$output" | jq -r --arg id "${key_p3_sys_id}" '.[] | select(.key.id == $id) | .key.id')" "${key_p3_sys_id}"
+  assert_equal "$(echo "$output" | jq -r --arg id "${key_p1_sys_id}" '.kas_keys[] | select(.key.id == $id) | .key.id')" "${key_p1_sys_id}"
+  assert_equal "$(echo "$output" | jq -r --arg id "${key_p2_sys_id}" '.kas_keys[] | select(.key.id == $id) | .key.id')" "${key_p2_sys_id}"
+  assert_equal "$(echo "$output" | jq -r --arg id "${key_p3_sys_id}" '.kas_keys[] | select(.key.id == $id) | .key.id')" "${key_p3_sys_id}"
 
   # Test: limit 1, offset (large number, e.g., 100) - should get 0 keys
   run_otdfctl_key list --kas "${KAS_ID_LIST}" --limit 1 --offset 100 --json
   assert_success
-  assert_equal "$(echo $output | jq '. | length')" "0"
+  assert_equal "$(echo $output | jq '.kas_keys | length')" "0"
 
   delete_all_keys_in_kas "$KAS_ID_LIST"
   delete_kas_registry "$KAS_ID_LIST"
@@ -691,18 +691,18 @@ format_kas_name_as_uri() {
   assert_success
   # Every key in the list should be rsa:2048
   # And our specific RSA key should be present
-  assert_equal "$(echo "$output" | jq -r --arg id "${rsa_key_sys_id}" '.[] | select(.key.id == $id) | .key.id')" "${rsa_key_sys_id}"
-  assert_equal "$(echo "$output" | jq -r --arg id "${rsa_key_sys_id}" '.[] | select(.key.id == $id) | .key.key_id')" "${KEY_ID_LIST_RSA}"
-  assert_equal "$(echo "$output" | jq -r --arg id "${rsa_key_sys_id}" '.[] | select(.key.id == $id) | .key.key_algorithm')" "1"
-  assert_equal "$(echo "$output" | jq -r --arg id "${rsa_key_sys_id}" '.[] | select(.key.id == $id) | .key.key_mode')" "4"
-  assert_equal "$(echo "$output" | jq -r --arg id "${rsa_key_sys_id}" '.[] | select(.key.id == $id) | .key.key_status')" "1"
-  assert_equal "$(echo "$output" | jq -r --arg id "${rsa_key_sys_id}" '.[] | select(.key.id == $id) | .key.public_key_ctx.pem')" "${PEM_B64_RSA}"
-  assert_equal "$(echo "$output" | jq -r --arg id "${rsa_key_sys_id}" '.[] | select(.key.id == $id) | .key.private_key_ctx')" "null"
-  assert_not_equal "$(echo "$output" | jq -r --arg id "${rsa_key_sys_id}" '.[] | select(.key.id == $id) | .key.metadata.created_at')" "null"
-  assert_not_equal "$(echo "$output" | jq -r --arg id "${rsa_key_sys_id}" '.[] | select(.key.id == $id) | .key.metadata.updated_at')" "null"
+  assert_equal "$(echo "$output" | jq -r --arg id "${rsa_key_sys_id}" '.kas_keys[] | select(.key.id == $id) | .key.id')" "${rsa_key_sys_id}"
+  assert_equal "$(echo "$output" | jq -r --arg id "${rsa_key_sys_id}" '.kas_keys[] | select(.key.id == $id) | .key.key_id')" "${KEY_ID_LIST_RSA}"
+  assert_equal "$(echo "$output" | jq -r --arg id "${rsa_key_sys_id}" '.kas_keys[] | select(.key.id == $id) | .key.key_algorithm')" "1"
+  assert_equal "$(echo "$output" | jq -r --arg id "${rsa_key_sys_id}" '.kas_keys[] | select(.key.id == $id) | .key.key_mode')" "4"
+  assert_equal "$(echo "$output" | jq -r --arg id "${rsa_key_sys_id}" '.kas_keys[] | select(.key.id == $id) | .key.key_status')" "1"
+  assert_equal "$(echo "$output" | jq -r --arg id "${rsa_key_sys_id}" '.kas_keys[] | select(.key.id == $id) | .key.public_key_ctx.pem')" "${PEM_B64_RSA}"
+  assert_equal "$(echo "$output" | jq -r --arg id "${rsa_key_sys_id}" '.kas_keys[] | select(.key.id == $id) | .key.private_key_ctx')" "null"
+  assert_not_equal "$(echo "$output" | jq -r --arg id "${rsa_key_sys_id}" '.kas_keys[] | select(.key.id == $id) | .key.metadata.created_at')" "null"
+  assert_not_equal "$(echo "$output" | jq -r --arg id "${rsa_key_sys_id}" '.kas_keys[] | select(.key.id == $id) | .key.metadata.updated_at')" "null"
 
   # Check that all listed keys have key_algorithm 1 (algorithmORITHM_RSA_2048)
-  local count_non_rsa=$(echo "$output" | jq '[.[] | select(.key.key_algorithm != 1)] | length')
+  local count_non_rsa=$(echo "$output" | jq '[.kas_keys[] | select(.key.key_algorithm != 1)] | length')
   assert_equal "$count_non_rsa" "0"
 
   delete_all_keys_in_kas "$KAS_ID_LIST"
@@ -723,23 +723,23 @@ format_kas_name_as_uri() {
   # List keys for the new KAS
   run_otdfctl_key list --kas "${KAS_ID_LIST}" --json
   assert_success
-  assert_equal "$(echo "$output" | jq -r '.[0].kas_id')" "${KAS_ID_LIST}"
-  assert_equal "$(echo "$output" | jq -r '.[0].key.id')" "${kas_filter_key_sys_id}"
-  assert_equal "$(echo "$output" | jq -r '.[0].key.key_id')" "${KEY_ID_LIST_KAS_FILTER}"
-  assert_equal "$(echo "$output" | jq -r '.[0].key.key_algorithm')" "1"
-  assert_equal "$(echo "$output" | jq -r '.[0].key.key_mode')" "4"
-  assert_equal "$(echo "$output" | jq -r '.[0].key.key_status')" "1"
-  assert_equal "$(echo "$output" | jq -r '.[0].key.legacy')" "null"
-  assert_equal "$(echo "$output" | jq -r '.[0].key.public_key_ctx.pem')" "${PEM_B64}"
-  assert_equal "$(echo "$output" | jq -r '.[0].key.private_key_ctx')" "null"
-  assert_not_equal "$(echo "$output" | jq -r '.[0].key.metadata.created_at')" "null"
-  assert_not_equal "$(echo "$output" | jq -r '.[0].key.metadata.updated_at')" "null"
-  assert_equal "$(echo "$output" | jq '. | length')" "1"
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].kas_id')" "${KAS_ID_LIST}"
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.id')" "${kas_filter_key_sys_id}"
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.key_id')" "${KEY_ID_LIST_KAS_FILTER}"
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.key_algorithm')" "1"
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.key_mode')" "4"
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.key_status')" "1"
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.legacy')" "null"
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.public_key_ctx.pem')" "${PEM_B64}"
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.private_key_ctx')" "null"
+  assert_not_equal "$(echo "$output" | jq -r '.kas_keys[0].key.metadata.created_at')" "null"
+  assert_not_equal "$(echo "$output" | jq -r '.kas_keys[0].key.metadata.updated_at')" "null"
+  assert_equal "$(echo "$output" | jq '.kas_keys | length')" "1"
 
   # List keys for the default KAS_REGISTRY_ID and ensure the new key is not present
   run_otdfctl_key list --kas "${KAS_REGISTRY_ID}" --json
   assert_success
-  assert_equal "$(echo "$output" | jq -r --arg id "${kas_filter_key_sys_id}" '[.[] | select(.key.id == $id)] | length')" "0"
+  assert_equal "$(echo "$output" | jq -r --arg id "${kas_filter_key_sys_id}" '[.kas_keys[] | select(.key.id == $id)] | length')" "0"
 
   delete_all_keys_in_kas "$KAS_ID_LIST"
   delete_kas_registry "$KAS_ID_LIST"
@@ -760,17 +760,17 @@ format_kas_name_as_uri() {
 
   run_otdfctl_key list --kas "${lower_kas_name}" --json
   assert_success
-  assert_equal "$(echo "$output" | jq -r '.[0].kas_id')" "${KAS_ID_LIST}"
-  assert_equal "$(echo "$output" | jq -r '.[0].key.id')" "${kas_name_filter_key_sys_id}"
-  assert_equal "$(echo "$output" | jq -r '.[0].key.key_id')" "${KEY_ID_LIST_KAS_NAME_FILTER}"
-  assert_equal "$(echo "$output" | jq -r '.[0].key.key_algorithm')" "1"
-  assert_equal "$(echo "$output" | jq -r '.[0].key.key_mode')" "4"
-  assert_equal "$(echo "$output" | jq -r '.[0].key.key_status')" "1"
-  assert_equal "$(echo "$output" | jq -r '.[0].key.public_key_ctx.pem')" "${PEM_B64}"
-  assert_equal "$(echo "$output" | jq -r '.[0].key.private_key_ctx')" "null"
-  assert_equal "$(echo "$output" | jq -r '.[0].key.legacy')" "null"
-  assert_not_equal "$(echo "$output" | jq -r '.[0].key.metadata.created_at')" "null"
-  assert_not_equal "$(echo "$output" | jq -r '.[0].key.metadata.updated_at')" "null"
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].kas_id')" "${KAS_ID_LIST}"
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.id')" "${kas_name_filter_key_sys_id}"
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.key_id')" "${KEY_ID_LIST_KAS_NAME_FILTER}"
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.key_algorithm')" "1"
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.key_mode')" "4"
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.key_status')" "1"
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.public_key_ctx.pem')" "${PEM_B64}"
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.private_key_ctx')" "null"
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.legacy')" "null"
+  assert_not_equal "$(echo "$output" | jq -r '.kas_keys[0].key.metadata.created_at')" "null"
+  assert_not_equal "$(echo "$output" | jq -r '.kas_keys[0].key.metadata.updated_at')" "null"
 
   delete_all_keys_in_kas "$KAS_ID_LIST"
   delete_kas_registry "$KAS_ID_LIST"
@@ -790,14 +790,14 @@ format_kas_name_as_uri() {
 
   run_otdfctl_key list --kas "${KAS_URI_LIST}" --json
   assert_success
-  assert_equal "$(echo "$output" | jq -r '.[0].kas_id')" "${KAS_ID_LIST}"
-  assert_equal "$(echo "$output" | jq -r '.[0].key.id')" "${kas_uri_filter_key_sys_id}"
-  assert_equal "$(echo "$output" | jq -r '.[0].key.key_id')" "${KEY_ID_LIST_KAS_URI_FILTER}"
-  assert_equal "$(echo "$output" | jq -r '.[0].key.key_algorithm')" "1"
-  assert_equal "$(echo "$output" | jq -r '.[0].key.key_mode')" "4"
-  assert_equal "$(echo "$output" | jq -r '.[0].key.key_status')" "1"
-  assert_equal "$(echo "$output" | jq -r '.[0].key.legacy')" "null"
-  assert_equal "$(echo "$output" | jq -r '.[0].key.public_key_ctx.pem')" "${PEM_B64}"
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].kas_id')" "${KAS_ID_LIST}"
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.id')" "${kas_uri_filter_key_sys_id}"
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.key_id')" "${KEY_ID_LIST_KAS_URI_FILTER}"
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.key_algorithm')" "1"
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.key_mode')" "4"
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.key_status')" "1"
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.legacy')" "null"
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.public_key_ctx.pem')" "${PEM_B64}"
 
   delete_all_keys_in_kas "$KAS_ID_LIST"
   delete_kas_registry "$KAS_ID_LIST"
@@ -837,21 +837,21 @@ format_kas_name_as_uri() {
   # List keys with legacy=true
   run_otdfctl_key list --legacy true --kas "${KAS_ID_LIST}" --json
   assert_success
-  assert_equal "$(echo "$output" | jq '. | length')" "1"
-  assert_equal "$(echo "$output" | jq -r '.[0].key.key_id')" "${KEY_ID_LEGACY}"
-  assert_equal "$(echo "$output" | jq -r '.[0].key.legacy')" "true"
+  assert_equal "$(echo "$output" | jq '.kas_keys | length')" "1"
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.key_id')" "${KEY_ID_LEGACY}"
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.legacy')" "true"
 
   run_otdfctl_key list --legacy false --kas "${KAS_ID_LIST}" --json
   assert_success
-  assert_equal "$(echo "$output" | jq '. | length')" "1"
-  assert_equal "$(echo "$output" | jq -r '.[0].key.key_id')" "${NON_LEGACY_KEY_ID}"
-  assert_equal "$(echo "$output" | jq -r '.[0].key.legacy')" "null"
+  assert_equal "$(echo "$output" | jq '.kas_keys | length')" "1"
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.key_id')" "${NON_LEGACY_KEY_ID}"
+  assert_equal "$(echo "$output" | jq -r '.kas_keys[0].key.legacy')" "null"
 
   run_otdfctl_key list --kas "${KAS_ID_LIST}" --json
   assert_success
   assert_equal "$(echo "$output" | jq '. | length')" "2"
-  assert_equal "$(echo "$output" | jq -r --arg id "${NON_LEGACY_KEY_ID}" '.[] | select(.key.key_id == $id) | .key.key_id')" "${NON_LEGACY_KEY_ID}"
-  assert_equal "$(echo "$output" | jq -r --arg id "${KEY_ID_LEGACY}" '.[] | select(.key.key_id == $id) | .key.key_id')" "${KEY_ID_LEGACY}"
+  assert_equal "$(echo "$output" | jq -r --arg id "${NON_LEGACY_KEY_ID}" '.kas_keys[] | select(.key.key_id == $id) | .key.key_id')" "${NON_LEGACY_KEY_ID}"
+  assert_equal "$(echo "$output" | jq -r --arg id "${KEY_ID_LEGACY}" '.kas_keys[] | select(.key.key_id == $id) | .key.key_id')" "${KEY_ID_LEGACY}"
 
   delete_all_keys_in_kas "$KAS_ID_LIST"
   delete_kas_registry "$KAS_ID_LIST"
