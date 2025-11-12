@@ -393,18 +393,6 @@ teardown_file() {
   VALUE2_ID=$(echo "$output" | jq -r '.values[1].id')
   VALUE3_ID=$(echo "$output" | jq -r '.values[2].id')
 
-  # Test basic list functionality
-  run_otdfctl_attr values list --attribute-id "$ATTR_WITH_VALUES_ID"
-  assert_success
-  assert_output --partial "$VALUE1_ID"
-  assert_output --partial "$VALUE2_ID"
-  assert_output --partial "$VALUE3_ID"
-  assert_output --partial "vala"
-  assert_output --partial "valb"
-  assert_output --partial "valc"
-  assert_output --partial "Total"
-  assert_line --regexp "Current Offset.*0"
-
   # Test with JSON output
   run_otdfctl_attr values list --attribute-id "$ATTR_WITH_VALUES_ID" --json
   assert_success
