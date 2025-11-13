@@ -37,6 +37,7 @@ func styleDoc(doc string) string {
 		// glamour.WithAutoStyle(),
 		glamour.WithStyles(ds),
 		glamour.WithWordWrap(w),
+		glamour.WithPreservedNewLines(),
 	)
 
 	// Render the content

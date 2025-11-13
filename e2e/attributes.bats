@@ -1,9 +1,12 @@
 #!/usr/bin/env bats
 
+load "${BATS_LIB_PATH}/bats-support/load.bash"
+load "${BATS_LIB_PATH}/bats-assert/load.bash"
+load "otdfctl-utils.sh"
+
 # Tests for attributes
 
 setup_file() {
-  echo -n '{"clientId":"opentdf","clientSecret":"secret"}' >creds.json
   export WITH_CREDS='--with-client-creds-file ./creds.json'
   export HOST='--host http://localhost:8080'
 
@@ -14,17 +17,15 @@ setup_file() {
 
   export KAS_URI="https://test-kas-for-attributes.com"
   export KAS_REG_ID=$(./otdfctl $HOST $WITH_CREDS policy kas-registry create --uri "$KAS_URI" --json | jq -r '.id')
-  export PEM="pem"
-  export PEM_B64=$(echo "$PEM" | base64)
+  # Generate a valid RSA public key and base64 encode (single-line)
+  export PEM_B64=$(openssl genrsa 2048 2>/dev/null | openssl rsa -pubout 2>/dev/null | base64 | tr -d '\n')
   export KAS_KEY_ID="test-key-for-attr"
   export KAS_KEY_SYSTEM_ID=$(./otdfctl $HOST $WITH_CREDS policy kas-registry key create --kas "$KAS_REG_ID" --key-id "$KAS_KEY_ID" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "${PEM_B64}" --json | jq -r '.key.id')
+  export PEM=$(echo "$PEM_B64" | base64 -d)
 }
 
 # always create a randomly named attribute
 setup() {
-  load "${BATS_LIB_PATH}/bats-support/load.bash"
-  load "${BATS_LIB_PATH}/bats-assert/load.bash"
-
   # invoke binary with credentials
   run_otdfctl_attr() {
     run sh -c "./otdfctl $HOST $WITH_CREDS policy attributes $*"
@@ -42,8 +43,8 @@ teardown() {
 teardown_file() {
   # remove the namespace
   ./otdfctl $HOST $WITH_CREDS policy attributes namespaces unsafe delete --id "$NS_ID" --force
-  # Cannot delete kas registry with keys attached
-  # ./otdfctl $HOST $WITH_CREDS policy kas-registry delete --id "$KAS_REG_ID" --force
+  delete_all_keys_in_kas "$KAS_REG_ID"
+  delete_kas_registry "$KAS_REG_ID"
 
   # clear out all test env vars
   unset HOST WITH_CREDS NS_NAME NS_ID ATTR_NAME_RANDOM KAS_REG_ID KAS_KEY_ID KAS_URI KAS_KEY_SYSTEM_ID PEM PEM_B64 ATTR_ID

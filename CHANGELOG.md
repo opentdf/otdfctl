@@ -1,5 +1,81 @@
 # Changelog
 
+## [0.26.0](https://github.com/opentdf/otdfctl/compare/v0.25.0...v0.26.0) (2025-10-22)
+
+
+### Features
+
+* **core:** Add list obligation triggers. ([#677](https://github.com/opentdf/otdfctl/issues/677)) ([ac3bd5e](https://github.com/opentdf/otdfctl/commit/ac3bd5e55d0101d005b4bc8c6e24b6595d4ff859))
+* **core:** Append required obligations to error output ([#673](https://github.com/opentdf/otdfctl/issues/673)) ([7eae582](https://github.com/opentdf/otdfctl/commit/7eae58246047176d68a27022ecb862822a573794))
+
+
+### Bug Fixes
+
+* **core:** Provider config manager table field empty ([#668](https://github.com/opentdf/otdfctl/issues/668)) ([89871f6](https://github.com/opentdf/otdfctl/commit/89871f6fde4d5d1b6cfca375723424bedcefc1f2))
+* **core:** Use fqn populated on obligation value. ([#679](https://github.com/opentdf/otdfctl/issues/679)) ([7dd626e](https://github.com/opentdf/otdfctl/commit/7dd626ecb380725ef4c16fc98b44d3c861cd8244))
+* validate --public-key-pem value on key creation ([#678](https://github.com/opentdf/otdfctl/issues/678)) ([b1e69ef](https://github.com/opentdf/otdfctl/commit/b1e69efd5b8a22499ac95a1b9bc08f08b415e0a3))
+
+## [0.25.0](https://github.com/opentdf/otdfctl/compare/v0.24.0...v0.25.0) (2025-10-06)
+
+
+### Features
+
+* add support for provider manager column ([#660](https://github.com/opentdf/otdfctl/issues/660)) ([fe4e50b](https://github.com/opentdf/otdfctl/commit/fe4e50ba9c1773f0b12622a924a4317ccdbe2ed6))
+* **core:** Add legacy flag to import and list. ([#641](https://github.com/opentdf/otdfctl/issues/641)) ([ffd0dc0](https://github.com/opentdf/otdfctl/commit/ffd0dc0fc84ef0cee3b896fc939d1c244da5728d))
+* **core:** Add obligation triggers ([#656](https://github.com/opentdf/otdfctl/issues/656)) ([8f6087f](https://github.com/opentdf/otdfctl/commit/8f6087fd2531628dda64eb8b0133830c6a21f9f6))
+* **core:** Adds policy-mode encrypt param ([#633](https://github.com/opentdf/otdfctl/issues/633)) ([9e83016](https://github.com/opentdf/otdfctl/commit/9e830168a38c0803396fd5c4c188fa62c0ccf5a0))
+* **core:** Create/Update triggers via obligation values. ([#658](https://github.com/opentdf/otdfctl/issues/658)) ([2a2f0c6](https://github.com/opentdf/otdfctl/commit/2a2f0c6c87ff9e7a543e4c4634d0be96dfe9e8e3))
+* **core:** obligations defs + vals CRUD ([#639](https://github.com/opentdf/otdfctl/issues/639)) ([3a3df0d](https://github.com/opentdf/otdfctl/commit/3a3df0d7b862fc56635b18d73af784ecd3066ae2))
+
+
+### Bug Fixes
+
+* **core:** add missing port flag ([#638](https://github.com/opentdf/otdfctl/issues/638)) ([c9bb4e5](https://github.com/opentdf/otdfctl/commit/c9bb4e50d0690cecda5ded7a41f572a10d18f6a6))
+* **core:** Clarifies not_found in attrs ([#649](https://github.com/opentdf/otdfctl/issues/649)) ([d46bd0f](https://github.com/opentdf/otdfctl/commit/d46bd0f3c60bc8b7f47789d93f842271791cf824))
+* **core:** render kas-registry key list-mappings table rows ([#663](https://github.com/opentdf/otdfctl/issues/663)) ([fb39718](https://github.com/opentdf/otdfctl/commit/fb39718aa23a626186dcb54d9115b837b66a9b79))
+
+## [0.24.0](https://github.com/opentdf/otdfctl/compare/v0.23.0...v0.24.0) (2025-07-29)
+
+
+### Features
+
+* **core:** Delete kas keys ([#627](https://github.com/opentdf/otdfctl/issues/627)) ([e2acb67](https://github.com/opentdf/otdfctl/commit/e2acb670b66ffb8d8c889a240f784c1a02ec42b5))
+* **core:** expose registered resources commands ([#631](https://github.com/opentdf/otdfctl/issues/631)) ([18530b8](https://github.com/opentdf/otdfctl/commit/18530b8c623c67afcd7515ccd2bacb9d2de14fef))
+* **core:** Key mappings command ([#623](https://github.com/opentdf/otdfctl/issues/623)) ([28403c6](https://github.com/opentdf/otdfctl/commit/28403c600e0fff9404d6be79207330046237b5d4))
+* **core:** Registered Resources - action attribute values update confirmation ([#620](https://github.com/opentdf/otdfctl/issues/620)) ([2ad0b9e](https://github.com/opentdf/otdfctl/commit/2ad0b9e9260785ac5bd7603b0d7f95b8957cba11))
+
+## [0.23.0](https://github.com/opentdf/otdfctl/compare/v0.22.0...v0.23.0) (2025-07-01)
+
+
+### Features
+
+* **core:** Import keys. ([#617](https://github.com/opentdf/otdfctl/issues/617)) ([4dc69e6](https://github.com/opentdf/otdfctl/commit/4dc69e6eaf2cdb23116b97ca2448bbbd57346f49))
+
+## [0.22.0](https://github.com/opentdf/otdfctl/compare/v0.21.0...v0.22.0) (2025-06-24)
+
+
+### ⚠ BREAKING CHANGES
+
+* remove the ability to assign grants ([#604](https://github.com/opentdf/otdfctl/issues/604))
+
+### Features
+
+* **core:** dynamic port allocation ([#606](https://github.com/opentdf/otdfctl/issues/606)) ([75552e1](https://github.com/opentdf/otdfctl/commit/75552e187eef204b03b1d13d55920fa43ec3cf30))
+* **core:** Uncomment code and pull in new protos. ([#594](https://github.com/opentdf/otdfctl/issues/594)) ([2883e50](https://github.com/opentdf/otdfctl/commit/2883e5060ca1f9d22f9a9500293fc407e7f4bcfd))
+* **core:** Unhide key commands. ([#607](https://github.com/opentdf/otdfctl/issues/607)) ([a3660d9](https://github.com/opentdf/otdfctl/commit/a3660d9e8271e3fd179e6521eab02a2b096a01db))
+* remove the ability to assign grants ([#604](https://github.com/opentdf/otdfctl/issues/604)) ([c9f0d82](https://github.com/opentdf/otdfctl/commit/c9f0d822747a62a6253c441ede144238715da50b))
+
+
+### Bug Fixes
+
+* add more Deprecated text to kas-grants ([#605](https://github.com/opentdf/otdfctl/issues/605)) ([2106d2f](https://github.com/opentdf/otdfctl/commit/2106d2f5189de49fe05b94025228474ffdb026ae))
+* **ci:** Trigger for release-please (testing) ([#580](https://github.com/opentdf/otdfctl/issues/580)) ([5cd33f9](https://github.com/opentdf/otdfctl/commit/5cd33f9f9b5fb66b2cc9c0c795bd84cf10630298))
+* **core:** Change base key name so tests run last. ([#611](https://github.com/opentdf/otdfctl/issues/611)) ([464b179](https://github.com/opentdf/otdfctl/commit/464b179a3134890943d8319bdee41cbad9078d64))
+* **core:** Move key management under policy. ([#597](https://github.com/opentdf/otdfctl/issues/597)) ([d657e96](https://github.com/opentdf/otdfctl/commit/d657e96cab3afc516437ae08321ab45aff376460))
+* disable kas-registry --public-keys and --publickey-remote flags ([#603](https://github.com/opentdf/otdfctl/issues/603)) ([279bbbd](https://github.com/opentdf/otdfctl/commit/279bbbd8ced14765c97ae3928421d38737ac0a8d))
+* enforce hex encoded wrapping-key ([#581](https://github.com/opentdf/otdfctl/issues/581)) ([416e215](https://github.com/opentdf/otdfctl/commit/416e215abf0c910aa4d18dc84729f89ea578fd4d))
+* **main:** Use cmd.Context for resource mapping group commands ([#592](https://github.com/opentdf/otdfctl/issues/592)) ([b5d8b6f](https://github.com/opentdf/otdfctl/commit/b5d8b6f6c335483873cec90363d94e0196d18b14))
+
 ## [0.21.0](https://github.com/opentdf/otdfctl/compare/v0.20.0...v0.21.0) (2025-05-29)
 
 

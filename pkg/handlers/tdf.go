@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"bytes"
+	"context"
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/json"
@@ -9,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"strings"
 
 	"github.com/opentdf/otdfctl/pkg/utils"
@@ -48,6 +50,7 @@ func (h Handler) EncryptBytes(
 	ecdsaBinding bool,
 	assertions string,
 	wrappingKeyAlgorithm ocrypto.KeyType,
+	policyMode string,
 	targetMode string,
 ) (*bytes.Buffer, error) {
 	var encrypted []byte
@@ -58,6 +61,9 @@ func (h Handler) EncryptBytes(
 	case "", TDF_TYPE_TDF3, TDF_TYPE_ZTDF:
 		if ecdsaBinding {
 			return nil, errors.New("ECDSA policy binding is not supported for ZTDF")
+		}
+		if policyMode != "" {
+			return nil, errors.New("policy mode is not supported for ZTDF")
 		}
 
 		opts := []sdk.TDFOption{
@@ -121,6 +127,17 @@ func (h Handler) EncryptBytes(
 		if ecdsaBinding {
 			nanoTDFConfig.EnableECDSAPolicyBinding()
 		}
+		switch policyMode {
+		case "", "encrypted":
+			err = nanoTDFConfig.SetPolicyMode(sdk.NanoTDFPolicyModeEncrypted)
+		case "plaintext":
+			err = nanoTDFConfig.SetPolicyMode(sdk.NanoTDFPolicyModePlainText)
+		default:
+			return nil, fmt.Errorf("policy mode unrecognized: [%s]", policyMode)
+		}
+		if err != nil {
+			return nil, fmt.Errorf("failed to set policy mode: [%w]", err)
+		}
 		// create the nano TDF
 		if _, err = h.sdk.CreateNanoTDF(enc, bytes.NewReader(unencrypted), *nanoTDFConfig); err != nil {
 			return nil, err
@@ -132,12 +149,14 @@ func (h Handler) EncryptBytes(
 }
 
 func (h Handler) DecryptBytes(
+	ctx context.Context,
 	toDecrypt []byte,
 	assertionVerificationKeysFile string,
 	disableAssertionCheck bool,
 	sessionKeyAlgorithm ocrypto.KeyType,
 	kasAllowList []string,
 	ignoreAllowlist bool,
+	fulfillableObligations []string,
 ) (*bytes.Buffer, error) {
 	out := &bytes.Buffer{}
 	pt := io.Writer(out)
@@ -146,18 +165,27 @@ func (h Handler) DecryptBytes(
 	case sdk.Nano:
 		opts := []sdk.NanoTDFReaderOption{
 			sdk.WithNanoIgnoreAllowlist(ignoreAllowlist),
+			sdk.WithNanoTDFFulfillableObligationFQNs(fulfillableObligations),
 		}
 		if kasAllowList != nil {
 			opts = append(opts, sdk.WithNanoKasAllowlist(kasAllowList))
 		}
-		if _, err := h.sdk.ReadNanoTDF(pt, ec, opts...); err != nil {
+
+		n, err := h.sdk.LoadNanoTDF(ctx, ec, opts...)
+		if err != nil {
 			return nil, err
+		}
+
+		if _, err := n.DecryptNanoTDF(ctx, pt); err != nil {
+			return nil, formatDecryptError(ctx, n.Obligations, err)
 		}
 	case sdk.Standard:
 		opts := []sdk.TDFReaderOption{
 			sdk.WithDisableAssertionVerification(disableAssertionCheck),
 			sdk.WithSessionKeyType(sessionKeyAlgorithm),
-			sdk.WithIgnoreAllowlist(ignoreAllowlist)}
+			sdk.WithIgnoreAllowlist(ignoreAllowlist),
+			sdk.WithTDFFulfillableObligationFQNs(fulfillableObligations),
+		}
 		if kasAllowList != nil {
 			opts = append(opts, sdk.WithKasAllowlist(kasAllowList))
 		}
@@ -187,7 +215,7 @@ func (h Handler) DecryptBytes(
 		}
 		//nolint:errorlint // callers intended to test error equality directly
 		if _, err = io.Copy(pt, r); err != nil && err != io.EOF {
-			return nil, err
+			return nil, formatDecryptError(ctx, r.Obligations, err)
 		}
 	case sdk.Invalid:
 		return nil, errors.New("invalid TDF")
@@ -310,4 +338,19 @@ func correctKeyType(assertionKey sdk.AssertionKey, public bool) (interface{}, er
 		return privateKey, nil
 	}
 	return nil, fmt.Errorf("unsupported signing key alg: %v", assertionKey.Alg)
+}
+
+func formatDecryptError(ctx context.Context, getObligations func(ctx context.Context) (sdk.RequiredObligations, error), err error) error {
+	// Avoid calling Rewrap again, if the error is a 500 error from KAS
+	if errors.Is(err, sdk.ErrRewrapForbidden) {
+		obligations, oblErr := getObligations(ctx)
+		if oblErr != nil {
+			slog.DebugContext(ctx, "Failed to get obligations after decrypt, obligations must not be cached", "error", oblErr)
+		}
+
+		if len(obligations.FQNs) > 0 {
+			err = errors.Join(err, fmt.Errorf("\nrequired obligations: %v", obligations.FQNs))
+		}
+	}
+	return err
 }

@@ -28,10 +28,12 @@ command:
       shorthand: c
 ---
 
-Create a Subject Mapping to entitle an entity (via existing or new Subject Condition Set) to action(s) on an Attribute Value.
+Create a Subject Mapping to entitle an entity (via an existing or new Subject Condition Set) to Action(s)
+on an Attribute Value.
 
-Subject Mappings may entitle actions with standard names ('create', 'read', 'update', 'delete'), custom names, or by their
-stored 'id' within policy.
+Subject Mappings may entitle Actions with standard names ('create', 'read', 'update', 'delete'), custom names,
+or by their stored 'id' within policy. If the referenced Action name does not already exist within policy,
+it will be created along with the new Subject Mapping.
 
 For more information about actions, see the `actions` subcommand.
 

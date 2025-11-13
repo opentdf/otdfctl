@@ -10,11 +10,12 @@ import (
 
 func (h Handler) CreateProviderConfig(
 	ctx context.Context,
-	name string,
+	name, manager string,
 	config []byte,
 	metadata *common.MetadataMutable) (*policy.KeyProviderConfig, error) {
 	req := keymanagement.CreateProviderConfigRequest{
 		Name:       name,
+		Manager:    manager,
 		ConfigJson: config,
 		Metadata:   metadata,
 	}
@@ -49,13 +50,14 @@ func (h Handler) GetProviderConfig(ctx context.Context, id, name string) (*polic
 
 func (h Handler) UpdateProviderConfig(
 	ctx context.Context,
-	id, name string,
+	id, name, manager string,
 	config []byte,
 	metadata *common.MetadataMutable,
 	behavior common.MetadataUpdateEnum) (*policy.KeyProviderConfig, error) {
 	req := keymanagement.UpdateProviderConfigRequest{
 		Id:                     id,
 		Name:                   name,
+		Manager:                manager,
 		ConfigJson:             config,
 		Metadata:               metadata,
 		MetadataUpdateBehavior: behavior,
