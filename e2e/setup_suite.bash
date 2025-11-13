@@ -26,4 +26,6 @@ setup_suite(){
     fi
     echo "BATS_LIB_PATH: $BATS_LIB_PATH"
     export BATS_LIB_PATH=$BATS_LIB_PATH
+
+    echo -n '{"clientId":"opentdf","clientSecret":"secret"}' > creds.json
 }

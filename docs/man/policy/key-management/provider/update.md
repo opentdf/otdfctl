@@ -12,6 +12,9 @@ command:
     - name: name
       shorthand: n
       description: New name for the provider config
+    - name: manager
+      shorthand: m
+      description: New key manager for the provider config
     - name: config
       shorthand: c
       description: New JSON configuration for the provider

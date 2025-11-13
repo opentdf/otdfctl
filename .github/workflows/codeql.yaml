@@ -4,8 +4,10 @@ on:
   schedule:
     - cron: '0 13 * * 1' # At 1:00 PM UTC every Monday
   pull_request:
-    paths:
-      - '.github/workflows/codeql.yaml'
+    branches:
+      - "main"
+      - "release/*"
+      - "feature/*"
 
 jobs:
   analyze:
@@ -23,7 +25,7 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
     - name: Set up Go
       uses: actions/setup-go@v5

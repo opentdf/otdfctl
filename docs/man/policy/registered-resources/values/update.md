@@ -19,6 +19,8 @@ command:
       description: "Optional metadata 'labels' in the format: key=value"
       shorthand: l
       default: ''
+    - name: force
+      description: Force update without interactive confirmation
 ---
 
 Update any or all of the `value`, action attribute values, and metadata labels for a Registered Resource Value.

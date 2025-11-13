@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/evertras/bubble-table/table"
@@ -16,14 +17,9 @@ import (
 	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/opentdf/platform/protocol/go/policy/kasregistry"
 	"github.com/spf13/cobra"
-	"google.golang.org/protobuf/encoding/protojson"
-	"google.golang.org/protobuf/proto"
 )
 
 const (
-	defaultAlg           = 0
-	defaultMode          = 0
-	defaultStatus        = 0
 	rsa2048Len           = 2048
 	rsa4096Len           = 4096
 	ecSecp256Len         = 256
@@ -150,15 +146,8 @@ func modeToEnum(mode string) (policy.KeyMode, error) {
 }
 
 func getTableRows(kasKey *policy.KasKey) [][]string {
-	var providerConfig []byte
 	var err error
 	asymkey := kasKey.GetKey()
-	if asymkey.GetProviderConfig() != nil {
-		providerConfig, err = proto.Marshal(asymkey.GetProviderConfig())
-		if err != nil {
-			cli.ExitWithError("Failed to marshal provider config", err)
-		}
-	}
 
 	statusStr, err := enumToStatus(asymkey.GetKeyStatus())
 	if err != nil {
@@ -173,25 +162,14 @@ func getTableRows(kasKey *policy.KasKey) [][]string {
 		cli.ExitWithError("Failed to convert algorithm", err)
 	}
 
-	pubCtxBytes, err := protojson.Marshal(asymkey.GetPublicKeyCtx())
-	if err != nil {
-		cli.ExitWithError("Failed to marshal public key context", err)
-	}
-	privateKeyBytes, err := protojson.Marshal(asymkey.GetPrivateKeyCtx())
-	if err != nil {
-		cli.ExitWithError("Failed to marshal private key context", err)
-	}
-
 	rows := [][]string{
 		{"ID", asymkey.GetId()},
-		{"KasUri", kasKey.GetKasUri()},
-		{"KeyId", asymkey.GetKeyId()},
+		{"KAS URI", kasKey.GetKasUri()},
+		{"Key ID", asymkey.GetKeyId()},
 		{"Algorithm", algStr},
 		{"Status", statusStr},
 		{"Mode", modeStr},
-		{"PubKeyCtx", string(pubCtxBytes)},
-		{"PrivateKeyCtx", string(privateKeyBytes)},
-		{"ProviderConfig", string(providerConfig)},
+		{"Legacy", strconv.FormatBool(asymkey.GetLegacy())},
 	}
 	return rows
 }
@@ -247,6 +225,7 @@ func policyCreateKasKey(cmd *cobra.Command, args []string) {
 		privateKeyCtx,
 		providerConfigID,
 		getMetadataMutable(metadataLabels),
+		false,
 	)
 	if err != nil {
 		cli.ExitWithError("Failed to create kas key", err)
@@ -258,6 +237,98 @@ func policyCreateKasKey(cmd *cobra.Command, args []string) {
 	}
 	t := cli.NewTabular(rows...)
 	HandleSuccess(cmd, kasKey.GetKey().GetId(), t, kasKey)
+}
+
+func policyImportKasKey(cmd *cobra.Command, args []string) {
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
+	defer h.Close()
+
+	privateKeyPem := c.Flags.GetRequiredString("private-key-pem")
+	wrappingKey := c.Flags.GetRequiredString("wrapping-key")
+	wrappingKeyID := c.Flags.GetRequiredString("wrapping-key-id")
+	publicKeyPem := c.Flags.GetRequiredString("public-key-pem")
+	keyIdentifier := c.Flags.GetRequiredString("key-id")
+	algorithm := c.Flags.GetRequiredString("algorithm")
+	kasIdentifier := c.Flags.GetRequiredString("kas")
+	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
+
+	legacy, err := getLegacyFlag(c)
+	if err != nil {
+		cli.ExitWithError("Invalid legacy flag", err)
+	}
+	if legacy == nil {
+		legacy = new(bool)
+		*legacy = false
+	}
+
+	// Parse algorithm early for validation
+	alg, err := cli.KeyAlgToEnum(algorithm)
+	if err != nil {
+		cli.ExitWithError("Invalid algorithm", err)
+	}
+
+	decodedPub, err := base64.StdEncoding.DecodeString(publicKeyPem)
+	if err != nil {
+		cli.ExitWithError("public-key-pem must be base64 encoded", err)
+	}
+	if err := validatePublicKey(decodedPub, alg); err != nil {
+		cli.ExitWithError("Invalid public key pem", err)
+	}
+	nonBase64PrivateKey, err := base64.StdEncoding.DecodeString(privateKeyPem)
+	if err != nil {
+		cli.ExitWithError("private-key-pem must be base64 encoded", err)
+	}
+
+	wrappingKeyBytes, err := hex.DecodeString(wrappingKey)
+	if err != nil {
+		cli.ExitWithError("wrapping-key must be hex encoded", err)
+	}
+	wrappedPrivateKey, err := wrapKey(string(nonBase64PrivateKey), wrappingKeyBytes)
+	if err != nil {
+		cli.ExitWithError("failed to wrap key", err)
+	}
+
+	kasLookup, err := resolveKasIdentifier(kasIdentifier)
+	if err != nil {
+		cli.ExitWithError("Invalid kas identifier", err)
+	}
+	var resolvedKasID string
+	if kasLookup.ID != "" {
+		resolvedKasID = kasLookup.ID
+	} else {
+		// If not a UUID, resolve it to get the UUID
+		kasEntry, err := h.GetKasRegistryEntry(c.Context(), kasLookup)
+		if err != nil {
+			cli.ExitWithError(fmt.Sprintf("Failed to resolve KAS identifier '%s'", kasIdentifier), err)
+		}
+		resolvedKasID = kasEntry.GetId()
+	}
+
+	importedKey, err := h.CreateKasKey(c.Context(),
+		resolvedKasID,
+		keyIdentifier,
+		alg,
+		policy.KeyMode_KEY_MODE_CONFIG_ROOT_KEY,
+		&policy.PublicKeyCtx{Pem: publicKeyPem},
+		&policy.PrivateKeyCtx{
+			KeyId:      wrappingKeyID,
+			WrappedKey: base64.StdEncoding.EncodeToString(wrappedPrivateKey),
+		},
+		"",
+		getMetadataMutable(metadataLabels),
+		*legacy,
+	)
+	if err != nil {
+		cli.ExitWithError("Failed to import kas key", err)
+	}
+
+	rows := getTableRows(importedKey)
+	if mdRows := getMetadataRows(importedKey.GetKey().GetMetadata()); mdRows != nil {
+		rows = append(rows, mdRows...)
+	}
+	t := cli.NewTabular(rows...)
+	HandleSuccess(cmd, importedKey.GetKey().GetId(), t, importedKey)
 }
 
 func policyGetKasKey(cmd *cobra.Command, args []string) {
@@ -337,6 +408,10 @@ func policyListKasKeys(cmd *cobra.Command, args []string) {
 		}
 	}
 	kasIdentifier := c.Flags.GetOptionalString("kas")
+	legacy, err := getLegacyFlag(c)
+	if err != nil {
+		cli.ExitWithError("Invalid legacy flag", err)
+	}
 
 	kasLookup, err := resolveKasIdentifier(kasIdentifier)
 	if err != nil {
@@ -344,36 +419,24 @@ func policyListKasKeys(cmd *cobra.Command, args []string) {
 	}
 
 	// Get the list of keys.
-	keys, page, err := h.ListKasKeys(c.Context(), limit, offset, alg, kasLookup)
+	keys, page, err := h.ListKasKeys(c.Context(), limit, offset, alg, kasLookup, legacy)
 	if err != nil {
 		cli.ExitWithError("Failed to list kas keys", err)
 	}
 
 	t := cli.NewTable(
 		// columns should be id, name, config, labels, created_at, updated_at
-		table.NewFlexColumn("id", "ID", cli.FlexColumnWidthOne),
+		cli.NewUUIDColumn(),
+		table.NewFlexColumn("kasUri", "KAS URI", cli.FlexColumnWidthThree),
 		table.NewFlexColumn("keyId", "Key ID", cli.FlexColumnWidthOne),
 		table.NewFlexColumn("keyAlgorithm", "Key Algorithm", cli.FlexColumnWidthOne),
 		table.NewFlexColumn("keyStatus", "Key Status", cli.FlexColumnWidthOne),
 		table.NewFlexColumn("keyMode", "Key Mode", cli.FlexColumnWidthOne),
-		table.NewFlexColumn("pubKeyCtx", "Public Key Context", cli.FlexColumnWidthThree),
-		table.NewFlexColumn("privateKeyCtx", "Private Key Context", cli.FlexColumnWidthThree),
-		table.NewFlexColumn("providerConfig", "Provider Configuration", cli.FlexColumnWidthThree),
-		table.NewFlexColumn("labels", "Labels", cli.FlexColumnWidthOne),
-		table.NewFlexColumn("created_at", "Created At", cli.FlexColumnWidthOne),
-		table.NewFlexColumn("updated_at", "Updated At", cli.FlexColumnWidthOne),
+		table.NewFlexColumn("legacy", "Legacy", cli.FlexColumnWidthOne),
 	)
 	rows := []table.Row{}
 	for _, kasKey := range keys {
 		key := kasKey.GetKey()
-		metadata := cli.ConstructMetadata(key.GetMetadata())
-		var providerConfig []byte
-		if key.GetProviderConfig() != nil {
-			providerConfig, err = proto.Marshal(key.GetProviderConfig())
-			if err != nil {
-				cli.ExitWithError("Failed to marshal provider config", err)
-			}
-		}
 		statusStr, err := enumToStatus(key.GetKeyStatus())
 		if err != nil {
 			cli.ExitWithError("Failed to convert status", err)
@@ -387,32 +450,99 @@ func policyListKasKeys(cmd *cobra.Command, args []string) {
 			cli.ExitWithError("Failed to convert algorithm", err)
 		}
 
-		pubCtxBytes, err := protojson.Marshal(key.GetPublicKeyCtx())
-		if err != nil {
-			cli.ExitWithError("Failed to marshal public key context", err)
-		}
-		privateKeyBytes, err := protojson.Marshal(key.GetPrivateKeyCtx())
-		if err != nil {
-			cli.ExitWithError("Failed to marshal private key context", err)
-		}
-
 		rows = append(rows, table.NewRow(table.RowData{
-			"id":             key.GetId(),
-			"keyId":          key.GetKeyId(),
-			"keyAlgorithm":   algStr,
-			"keyStatus":      statusStr,
-			"keyMode":        modeStr,
-			"pubKeyCtx":      string(pubCtxBytes),
-			"privateKeyCtx":  string(privateKeyBytes),
-			"providerConfig": string(providerConfig),
-			"labels":         metadata["Labels"],
-			"created_at":     metadata["Created At"],
-			"updated_at":     metadata["Updated At"],
+			"id":           key.GetId(),
+			"kasUri":       kasKey.GetKasUri(),
+			"keyId":        key.GetKeyId(),
+			"keyAlgorithm": algStr,
+			"keyStatus":    statusStr,
+			"keyMode":      modeStr,
+			"legacy":       strconv.FormatBool(key.GetLegacy()),
 		}))
 	}
 	t = t.WithRows(rows)
 	t = cli.WithListPaginationFooter(t, page)
 	HandleSuccess(cmd, "", t, keys)
+}
+
+func policyListKeyMappings(cmd *cobra.Command, args []string) {
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
+	defer h.Close()
+
+	limit := c.Flags.GetRequiredInt32("limit")
+	offset := c.Flags.GetRequiredInt32("offset")
+	id := c.Flags.GetOptionalID("id")
+	keyID := c.Flags.GetOptionalString("key-id")
+	kasIdentifier := c.Flags.GetOptionalString("kas")
+
+	var keyIdentifier *kasregistry.KasKeyIdentifier
+	// Since keyID and kasIdentifier are required together, if one is provided, the other must be provided as well.
+	if id == "" && keyID != "" {
+		kasLookup, err := resolveKasIdentifier(kasIdentifier)
+		if err != nil {
+			cli.ExitWithError("Could not resolve KAS identifier", err)
+		}
+		keyIdentifier = &kasregistry.KasKeyIdentifier{
+			Kid: keyID,
+		}
+		switch {
+		case kasLookup.ID != "":
+			keyIdentifier.Identifier = &kasregistry.KasKeyIdentifier_KasId{
+				KasId: kasLookup.ID,
+			}
+		case kasLookup.URI != "":
+			keyIdentifier.Identifier = &kasregistry.KasKeyIdentifier_Uri{
+				Uri: kasLookup.URI,
+			}
+		case kasLookup.Name != "":
+			keyIdentifier.Identifier = &kasregistry.KasKeyIdentifier_Name{
+				Name: kasLookup.Name,
+			}
+		}
+	}
+
+	resp, err := h.ListKeyMappings(c.Context(), limit, offset, id, keyIdentifier)
+	if err != nil {
+		cli.ExitWithError("Could not list key mappings", err)
+	}
+
+	rows := getKeyMappingsTableRows(resp.GetKeyMappings())
+	t := cli.NewTable(
+		table.NewFlexColumn("kas_uri", "KAS URI", cli.FlexColumnWidthOne),
+		table.NewFlexColumn("key_id", "Key ID", cli.FlexColumnWidthOne),
+		table.NewFlexColumn("namespace_mappings", "Namespaces", cli.FlexColumnWidthThree),
+		table.NewFlexColumn("attribute_mappings", "Attributes", cli.FlexColumnWidthThree),
+		table.NewFlexColumn("value_mappings", "Values", cli.FlexColumnWidthThree),
+	).WithRows(rows)
+	t = cli.WithListPaginationFooter(t, resp.GetPagination())
+
+	HandleSuccess(cmd, "", t, resp)
+}
+
+func getKeyMappingsTableRows(mappings []*kasregistry.KeyMapping) []table.Row {
+	rows := make([]table.Row, len(mappings))
+	for i, m := range mappings {
+		rows[i] = table.NewRow(table.RowData{
+			"kas_uri":            m.GetKasUri(),
+			"key_id":             m.GetKid(),
+			"namespace_mappings": formatMappedPolicyObject(m.GetNamespaceMappings()),
+			"attribute_mappings": formatMappedPolicyObject(m.GetAttributeMappings()),
+			"value_mappings":     formatMappedPolicyObject(m.GetValueMappings()),
+		})
+	}
+	return rows
+}
+
+func formatMappedPolicyObject(m []*kasregistry.MappedPolicyObject) string {
+	if len(m) == 0 {
+		return "No mappings found"
+	}
+	fqns := make([]string, len(m))
+	for i, obj := range m {
+		fqns[i] = obj.GetFqn()
+	}
+	return strings.Join(fqns, ", ")
 }
 
 func policyRotateKasKey(cmd *cobra.Command, args []string) {
@@ -573,9 +703,12 @@ func prepareKeyContexts(
 		providerConfigID = c.Flags.GetRequiredString("provider-config-id")
 		publicPem := c.Flags.GetRequiredString("public-key-pem")
 		privatePem := c.Flags.GetRequiredString("private-key-pem")
-		_, err := base64.StdEncoding.DecodeString(publicPem)
+		decodedPub, err := base64.StdEncoding.DecodeString(publicPem)
 		if err != nil {
 			return nil, nil, "", errors.Join(errors.New("public key pem must be base64 encoded"), err)
+		}
+		if err := validatePublicKey(decodedPub, alg); err != nil {
+			return nil, nil, "", err
 		}
 		_, err = base64.StdEncoding.DecodeString(privatePem)
 		if err != nil {
@@ -592,9 +725,12 @@ func prepareKeyContexts(
 		pem := c.Flags.GetRequiredString("public-key-pem")
 		providerConfigID = c.Flags.GetRequiredString("provider-config-id")
 
-		_, err := base64.StdEncoding.DecodeString(pem)
+		decoded, err := base64.StdEncoding.DecodeString(pem)
 		if err != nil {
 			return nil, nil, "", errors.Join(errors.New("pem must be base64 encoded"), err)
+		}
+		if err := validatePublicKey(decoded, alg); err != nil {
+			return nil, nil, "", err
 		}
 
 		publicKeyCtx = &policy.PublicKeyCtx{
@@ -605,9 +741,12 @@ func prepareKeyContexts(
 		}
 	case policy.KeyMode_KEY_MODE_PUBLIC_KEY_ONLY:
 		pem := c.Flags.GetRequiredString("public-key-pem")
-		_, err := base64.StdEncoding.DecodeString(pem)
+		decoded, err := base64.StdEncoding.DecodeString(pem)
 		if err != nil {
 			return nil, nil, "", errors.Join(errors.New("pem must be base64 encoded"), err)
+		}
+		if err := validatePublicKey(decoded, alg); err != nil {
+			return nil, nil, "", err
 		}
 		publicKeyCtx = &policy.PublicKeyCtx{
 			Pem: pem,
@@ -619,6 +758,62 @@ func prepareKeyContexts(
 	}
 
 	return publicKeyCtx, privateKeyCtx, providerConfigID, nil
+}
+
+// validatePublicKey validates the PEM public key against the expected algorithm.
+func validatePublicKey(pemDecoded []byte, alg policy.Algorithm) error {
+	err := utils.ValidatePublicKeyPEM(pemDecoded, alg)
+	if err != nil {
+		return fmt.Errorf("invalid public key pem: %w", err)
+	}
+	return nil
+}
+
+func policyUnsafeDeleteKasKey(cmd *cobra.Command, args []string) {
+	c := cli.New(cmd, args)
+	h := NewHandler(c)
+	defer h.Close()
+
+	ctx := cmd.Context()
+	id := c.Flags.GetRequiredID("id")
+	kid := c.Flags.GetRequiredString("key-id")
+	kasURI := c.Flags.GetRequiredString("kas-uri")
+	force := c.Flags.GetOptionalBool("force")
+
+	cli.ConfirmAction(cli.ActionDelete, fmt.Sprintf("key with kas uri: %s, and key identifier: %s", kasURI, kid), fmt.Sprintf("Id: %s", id), force)
+
+	key, err := h.UnsafeDeleteKasKey(ctx, id, kid, kasURI)
+	if err != nil {
+		cli.ExitWithError(fmt.Sprintf("Failed to delete key (%s)", id), err)
+	}
+
+	rows := [][]string{
+		{"Deleted", "true"},
+		{"Id", key.GetKey().GetId()},
+		{"KasURI", key.GetKasUri()},
+		{"Key Identifier", key.GetKey().GetKeyId()},
+	}
+	t := cli.NewTabular(rows...)
+	HandleSuccess(cmd, id, t, key)
+}
+
+func getLegacyFlag(c *cli.Cli) (*bool, error) {
+	var (
+		legacy *bool
+		err    error
+	)
+
+	legacyStr := c.Flags.GetOptionalString("legacy")
+	if legacyStr == "" {
+		return legacy, nil
+	}
+
+	legacy = new(bool)
+	*legacy, err = strconv.ParseBool(legacyStr)
+	if err != nil {
+		return nil, errors.New("invalid value for legacy flag. Must be true or false")
+	}
+	return legacy, nil
 }
 
 func init() {
@@ -726,6 +921,12 @@ func init() {
 		listDoc.GetDocFlag("kas").Default,
 		listDoc.GetDocFlag("kas").Description,
 	)
+	listDoc.Flags().StringP(
+		listDoc.GetDocFlag("legacy").Name,
+		listDoc.GetDocFlag("legacy").Shorthand,
+		listDoc.GetDocFlag("legacy").Default,
+		listDoc.GetDocFlag("legacy").Description,
+	)
 	injectListPaginationFlags(listDoc)
 
 	// Rotate Kas Key
@@ -794,6 +995,117 @@ func init() {
 	)
 	injectLabelFlags(&rotateDoc.Command, true)
 
-	policyKasRegistryKeysCmd.AddSubcommands(createDoc, getDoc, updateDoc, listDoc, rotateDoc)
+	// Import Kas Key
+	importDoc := man.Docs.GetCommand("policy/kas-registry/key/import",
+		man.WithRun(policyImportKasKey),
+	)
+	importDoc.Flags().StringP(
+		importDoc.GetDocFlag("key-id").Name,
+		importDoc.GetDocFlag("key-id").Shorthand,
+		importDoc.GetDocFlag("key-id").Default,
+		importDoc.GetDocFlag("key-id").Description,
+	)
+	importDoc.Flags().StringP(
+		importDoc.GetDocFlag("algorithm").Name,
+		importDoc.GetDocFlag("algorithm").Shorthand,
+		importDoc.GetDocFlag("algorithm").Default,
+		importDoc.GetDocFlag("algorithm").Description,
+	)
+	importDoc.Flags().StringP(
+		importDoc.GetDocFlag("kas").Name,
+		importDoc.GetDocFlag("kas").Shorthand,
+		importDoc.GetDocFlag("kas").Default,
+		importDoc.GetDocFlag("kas").Description,
+	)
+	importDoc.Flags().StringP(
+		importDoc.GetDocFlag("wrapping-key-id").Name,
+		importDoc.GetDocFlag("wrapping-key-id").Shorthand,
+		importDoc.GetDocFlag("wrapping-key-id").Default,
+		importDoc.GetDocFlag("wrapping-key-id").Description,
+	)
+	importDoc.Flags().StringP(
+		importDoc.GetDocFlag("wrapping-key").Name,
+		importDoc.GetDocFlag("wrapping-key").Shorthand,
+		importDoc.GetDocFlag("wrapping-key").Default,
+		importDoc.GetDocFlag("wrapping-key").Description,
+	)
+	importDoc.Flags().StringP(
+		importDoc.GetDocFlag("public-key-pem").Name,
+		importDoc.GetDocFlag("public-key-pem").Shorthand,
+		importDoc.GetDocFlag("public-key-pem").Default,
+		importDoc.GetDocFlag("public-key-pem").Description,
+	)
+	importDoc.Flags().StringP(
+		importDoc.GetDocFlag("private-key-pem").Name,
+		importDoc.GetDocFlag("private-key-pem").Shorthand,
+		importDoc.GetDocFlag("private-key-pem").Default,
+		importDoc.GetDocFlag("private-key-pem").Description,
+	)
+	importDoc.Flags().StringP(
+		importDoc.GetDocFlag("legacy").Name,
+		importDoc.GetDocFlag("legacy").Shorthand,
+		importDoc.GetDocFlag("legacy").Default,
+		importDoc.GetDocFlag("legacy").Description,
+	)
+	injectLabelFlags(&importDoc.Command, false)
+
+	mappingsDoc := man.Docs.GetCommand("policy/kas-registry/key/list-mappings",
+		man.WithRun(policyListKeyMappings),
+	)
+	mappingsDoc.Flags().StringP(
+		mappingsDoc.GetDocFlag("id").Name,
+		mappingsDoc.GetDocFlag("id").Shorthand,
+		mappingsDoc.GetDocFlag("id").Default,
+		mappingsDoc.GetDocFlag("id").Description,
+	)
+	mappingsDoc.Flags().StringP(
+		mappingsDoc.GetDocFlag("key-id").Name,
+		mappingsDoc.GetDocFlag("key-id").Shorthand,
+		mappingsDoc.GetDocFlag("key-id").Default,
+		mappingsDoc.GetDocFlag("key-id").Description,
+	)
+	mappingsDoc.Flags().StringP(
+		mappingsDoc.GetDocFlag("kas").Name,
+		mappingsDoc.GetDocFlag("kas").Shorthand,
+		mappingsDoc.GetDocFlag("kas").Default,
+		mappingsDoc.GetDocFlag("kas").Description,
+	)
+	mappingsDoc.MarkFlagsMutuallyExclusive("key-id", "id")
+	mappingsDoc.MarkFlagsMutuallyExclusive("kas", "id")
+	mappingsDoc.MarkFlagsRequiredTogether("key-id", "kas")
+	injectListPaginationFlags(mappingsDoc)
+
+	// Unsafe Delete Kas Key
+	unsafeCmd := man.Docs.GetCommand("policy/kas-registry/key/unsafe")
+	unsafeCmd.PersistentFlags().Bool(
+		unsafeCmd.GetDocFlag("force").Name,
+		false,
+		unsafeCmd.GetDocFlag("force").Description,
+	)
+
+	unsafeDeleteDoc := man.Docs.GetCommand("policy/kas-registry/key/unsafe/delete",
+		man.WithRun(policyUnsafeDeleteKasKey),
+	)
+	unsafeDeleteDoc.Flags().StringP(
+		unsafeDeleteDoc.GetDocFlag("id").Name,
+		unsafeDeleteDoc.GetDocFlag("id").Shorthand,
+		unsafeDeleteDoc.GetDocFlag("id").Default,
+		unsafeDeleteDoc.GetDocFlag("id").Description,
+	)
+	unsafeDeleteDoc.Flags().StringP(
+		unsafeDeleteDoc.GetDocFlag("key-id").Name,
+		unsafeDeleteDoc.GetDocFlag("key-id").Shorthand,
+		unsafeDeleteDoc.GetDocFlag("key-id").Default,
+		unsafeDeleteDoc.GetDocFlag("key-id").Description,
+	)
+	unsafeDeleteDoc.Flags().StringP(
+		unsafeDeleteDoc.GetDocFlag("kas-uri").Name,
+		unsafeDeleteDoc.GetDocFlag("kas-uri").Shorthand,
+		unsafeDeleteDoc.GetDocFlag("kas-uri").Default,
+		unsafeDeleteDoc.GetDocFlag("kas-uri").Description,
+	)
+
+	unsafeCmd.AddSubcommands(unsafeDeleteDoc)
+	policyKasRegistryKeysCmd.AddSubcommands(createDoc, getDoc, updateDoc, listDoc, rotateDoc, importDoc, mappingsDoc, unsafeCmd)
 	policyKasRegCmd.AddCommand(&policyKasRegistryKeysCmd.Command)
 }

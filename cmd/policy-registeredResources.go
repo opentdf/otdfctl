@@ -334,8 +334,16 @@ func policyUpdateRegisteredResourceValue(cmd *cobra.Command, args []string) {
 	value := c.Flags.GetOptionalString("value")
 	actionAttributeValues = c.Flags.GetStringSlice("action-attribute-value", actionAttributeValues, cli.FlagsStringSliceOptions{Min: 0})
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
+	force := c.Flags.GetOptionalBool("force")
 
 	parsedActionAttributeValues := parseActionAttributeValueArgs(actionAttributeValues)
+
+	// only confirm if new action attribute values provided
+	if len(parsedActionAttributeValues) > 0 {
+		cli.ConfirmActionSubtext(cli.ActionUpdate, "registered resource value", id,
+			"All existing action attribute values will be replaced with the new ones provided.",
+			force)
+	}
 
 	updated, err := h.UpdateRegisteredResourceValue(
 		cmd.Context(),
@@ -590,6 +598,11 @@ func init() {
 		updateValueDoc.GetDocFlag("action-attribute-value").Description,
 	)
 	injectLabelFlags(&updateValueDoc.Command, true)
+	updateValueDoc.Flags().Bool(
+		updateValueDoc.GetDocFlag("force").Name,
+		false,
+		updateValueDoc.GetDocFlag("force").Description,
+	)
 
 	deleteValueDoc := man.Docs.GetCommand("policy/registered-resources/values/delete",
 		man.WithRun(policyDeleteRegisteredResourceValue),

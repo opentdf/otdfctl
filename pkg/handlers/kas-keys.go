@@ -7,6 +7,7 @@ import (
 	"github.com/opentdf/platform/protocol/go/common"
 	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/opentdf/platform/protocol/go/policy/kasregistry"
+	"github.com/opentdf/platform/protocol/go/policy/unsafe"
 )
 
 type RotateKeyResult struct {
@@ -24,6 +25,7 @@ func (h Handler) CreateKasKey(
 	privKeyCtx *policy.PrivateKeyCtx,
 	providerConfigID string,
 	metadata *common.MetadataMutable,
+	legacy bool,
 ) (*policy.KasKey, error) {
 	req := kasregistry.CreateKeyRequest{
 		KasId:            kasID,
@@ -34,6 +36,7 @@ func (h Handler) CreateKasKey(
 		PrivateKeyCtx:    privKeyCtx,
 		ProviderConfigId: providerConfigID,
 		Metadata:         metadata,
+		Legacy:           legacy,
 	}
 
 	resp, err := h.sdk.KeyAccessServerRegistry.CreateKey(ctx, &req)
@@ -86,7 +89,8 @@ func (h Handler) ListKasKeys(
 	ctx context.Context,
 	limit, offset int32,
 	algorithm policy.Algorithm,
-	identifier KasIdentifier) ([]*policy.KasKey, *policy.PageResponse, error) {
+	identifier KasIdentifier,
+	legacy *bool) ([]*policy.KasKey, *policy.PageResponse, error) {
 	req := kasregistry.ListKeysRequest{
 		Pagination: &policy.PageRequest{
 			Limit:  limit,
@@ -109,6 +113,7 @@ func (h Handler) ListKasKeys(
 			KasUri: identifier.URI,
 		}
 	}
+	req.Legacy = legacy
 
 	resp, err := h.sdk.KeyAccessServerRegistry.ListKeys(ctx, &req)
 	if err != nil {
@@ -116,6 +121,38 @@ func (h Handler) ListKasKeys(
 	}
 
 	return resp.GetKasKeys(), resp.GetPagination(), nil
+}
+
+func (h Handler) ListKeyMappings(
+	ctx context.Context,
+	limit, offset int32,
+	keySystemID string,
+	keyUserIdentifier *kasregistry.KasKeyIdentifier,
+) (*kasregistry.ListKeyMappingsResponse, error) {
+	req := kasregistry.ListKeyMappingsRequest{
+		Pagination: &policy.PageRequest{
+			Limit:  limit,
+			Offset: offset,
+		},
+	}
+
+	switch {
+	case keySystemID != "":
+		req.Identifier = &kasregistry.ListKeyMappingsRequest_Id{
+			Id: keySystemID,
+		}
+	case keyUserIdentifier != nil:
+		req.Identifier = &kasregistry.ListKeyMappingsRequest_Key{
+			Key: keyUserIdentifier,
+		}
+	}
+
+	resp, err := h.sdk.KeyAccessServerRegistry.ListKeyMappings(ctx, &req)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
 }
 
 func (h Handler) RotateKasKey(
@@ -150,4 +187,13 @@ func (h Handler) RotateKasKey(
 		KasKey:           resp.GetKasKey(),
 		RotatedResources: resp.GetRotatedResources(),
 	}, nil
+}
+
+func (h Handler) UnsafeDeleteKasKey(ctx context.Context, id, kid, kasURI string) (*policy.KasKey, error) {
+	resp, err := h.sdk.Unsafe.UnsafeDeleteKasKey(ctx, &unsafe.UnsafeDeleteKasKeyRequest{
+		Id:     id,
+		Kid:    kid,
+		KasUri: kasURI,
+	})
+	return resp.GetKey(), err
 }

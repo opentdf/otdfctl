@@ -11,6 +11,9 @@ setup_file() {
 }
 
 setup() {
+    if [ "$RUN_EXPERIMENTAL_TESTS" != "true" ]; then
+        skip "Skipping experimental test"
+    fi
     load "${BATS_LIB_PATH}/bats-support/load.bash"
     load "${BATS_LIB_PATH}/bats-assert/load.bash"
 
@@ -159,4 +162,19 @@ delete_pc_by_id() {
   run_otdfctl_key_pc delete
   assert_failure
   assert_output --partial "Flag '--id' is required"
+}
+
+@test "delete provider configuration fail -- no force" {
+  NAME="test-config-9"
+  run_otdfctl_key_pc create --name "$NAME" --config '"$VALID_CONFIG"' --json
+  ID=$(echo "$output" | jq -r '.id')
+  run_otdfctl_key_pc delete --id "$ID"
+  assert_failure
+  assert_output --partial "The '--force' flag is required for this operation"
+  delete_pc_by_id "$ID"
+}
+
+teardown_file() {
+  # clear out all test env vars
+  unset HOST WITH_CREDS DEBUG_LEVEL VALID_CONFIG BASE64_CONFIG
 }

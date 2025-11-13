@@ -2,6 +2,8 @@ package cli
 
 import (
 	"errors"
+	"fmt"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -74,6 +76,14 @@ func GetSimpleAttributeValue(v *policy.Value) SimpleAttributeValue {
 	}
 }
 
+func GetSimpleObligationValues(v []*policy.ObligationValue) []string {
+	values := make([]string, len(v))
+	for i, val := range v {
+		values[i] = val.GetValue()
+	}
+	return values
+}
+
 func GetSimpleRegisteredResourceValues(v []*policy.RegisteredResourceValue) []string {
 	values := make([]string, len(v))
 	for i, val := range v {
@@ -133,4 +143,31 @@ func KeyEnumToAlg(enum policy.Algorithm) (string, error) {
 	default:
 		return "", errors.New("invalid enum algorithm")
 	}
+}
+
+func AggregateClientIDs(reqCtx []*policy.RequestContext) []string {
+	ids := []string{}
+	seen := map[string]bool{}
+	for _, r := range reqCtx {
+		id := r.GetPep().GetClientId()
+		if id != "" && !seen[id] {
+			ids = append(ids, id)
+			seen[id] = true
+		}
+	}
+	return ids
+}
+
+// Gets JSON from either a file path or a JSON string
+func GetJSONInput(data string) (string, error) {
+	if _, err := os.Stat(data); err == nil {
+		// It's a file path, read the content
+		fileContent, err := os.ReadFile(data)
+		if err != nil {
+			return "", fmt.Errorf("failed to read file %s: %w", data, err)
+		}
+		return string(fileContent), nil
+	}
+
+	return data, nil
 }

@@ -11,10 +11,11 @@ command:
       description: Force deletion without interactive confirmation
 ---
 
-Removes a Custom Action from platform Policy. Standard Actions cannot be deleted.
+Removes a Custom Action from platform Policy. Standard Actions ('create', 'read', 'update',
+'delete'), cannot be deleted.
 
-Action deletion cascades to entitlement Subject Mappings, Obligations, and Registered
-Resource entitlement requirements.
+Action deletion cascades to any associated entitlement Subject Mappings, Obligations,
+and Registered Resource entitlement requirements.
 
 Make sure you know what you are doing.
 

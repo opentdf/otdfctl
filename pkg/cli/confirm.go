@@ -22,6 +22,32 @@ const (
 	InputNameFQNUpdated = "deprecated fully qualified name (FQN) being altered"
 )
 
+func ConfirmActionSubtext(action, resource, id, subtext string, force bool) {
+	if force {
+		return
+	}
+	var confirm bool
+	title := fmt.Sprintf("Are you sure you want to %s %s:\n\n\t%s", action, resource, id)
+	if subtext != "" {
+		// since we don't return an error to stay consistent with the original function,
+		// only append the subtext if populated
+		title += fmt.Sprintf("\n\n%s", subtext)
+	}
+	err := huh.NewConfirm().
+		Title(title).
+		Affirmative("yes").
+		Negative("no").
+		Value(&confirm).
+		Run()
+	if err != nil {
+		ExitWithError("Confirmation prompt failed", err)
+	}
+
+	if !confirm {
+		ExitWithError("Aborted", nil)
+	}
+}
+
 func ConfirmAction(action, resource, id string, force bool) {
 	if force {
 		return

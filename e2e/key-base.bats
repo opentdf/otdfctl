@@ -1,7 +1,11 @@
 #!/usr/bin/env bats
 
+# NEEDS TO RUN AFTER encrypt-decrypt.bats
+load "${BATS_LIB_PATH}/bats-support/load.bash"
+load "${BATS_LIB_PATH}/bats-assert/load.bash"
+load "otdfctl-utils.sh"
+
 setup_file() {
-  echo -n '{"clientId":"opentdf","clientSecret":"secret"}' >creds.json
   export WITH_CREDS='--with-client-creds-file ./creds.json'
   export HOST='--host http://localhost:8080'
 
@@ -18,9 +22,6 @@ setup_file() {
 }
 
 setup() {
-  load "${BATS_LIB_PATH}/bats-support/load.bash"
-  load "${BATS_LIB_PATH}/bats-assert/load.bash"
-
   # invoke binary with credentials for base key commands
   run_otdfctl_base_key() {
     run sh -c "./otdfctl policy kas-registry key base $HOST $WITH_CREDS $*"
@@ -28,8 +29,11 @@ setup() {
 }
 
 teardown_file() {
+  # Note: A key will be present still, due to a FK where we do
+  # not allow keys to be deleted if they are currently set as the base key.
+  delete_all_keys_in_kas "$KAS_REGISTRY_ID_BASE_KEY_TEST"
+
   unset HOST WITH_CREDS KAS_REGISTRY_ID_BASE_KEY_TEST KAS_NAME_BASE_KEY_TEST KAS_URI_BASE_KEY_TEST REGULAR_KEY_ID_FOR_BASE_TEST WRAPPING_KEY KAS_KEY_SYSTEM_ID
-  rm -f creds.json
 }
 
 # --- get base key tests ---

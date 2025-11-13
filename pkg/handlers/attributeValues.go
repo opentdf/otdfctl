@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/opentdf/platform/protocol/go/common"
@@ -52,7 +53,7 @@ func (h *Handler) GetAttributeValue(ctx context.Context, identifier string) (*po
 	}
 	resp, err := h.sdk.Attributes.GetAttributeValue(ctx, req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get attribute value [%s]: %w", identifier, err)
 	}
 
 	return resp.GetValue(), nil
