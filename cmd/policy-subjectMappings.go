@@ -62,7 +62,7 @@ func policyListSubjectMappings(cmd *cobra.Command, args []string) {
 	limit := c.Flags.GetRequiredInt32("limit")
 	offset := c.Flags.GetRequiredInt32("offset")
 
-	list, page, err := h.ListSubjectMappings(cmd.Context(), limit, offset)
+	resp, err := h.ListSubjectMappings(cmd.Context(), limit, offset)
 	if err != nil {
 		cli.ExitWithError("Failed to get subject mappings", err)
 	}
@@ -75,7 +75,7 @@ func policyListSubjectMappings(cmd *cobra.Command, args []string) {
 		table.NewFlexColumn("subject_condition_set", "Subject Condition Set", cli.FlexColumnWidthThree),
 	)
 	rows := []table.Row{}
-	for _, sm := range list {
+	for _, sm := range resp.GetSubjectMappings() {
 		var actionsJSON []byte
 		if actionsJSON, err = json.Marshal(sm.GetActions()); err != nil {
 			cli.ExitWithError("Error marshalling subject mapping actions", err)
@@ -96,8 +96,8 @@ func policyListSubjectMappings(cmd *cobra.Command, args []string) {
 		}))
 	}
 	t = t.WithRows(rows)
-	t = cli.WithListPaginationFooter(t, page)
-	HandleSuccess(cmd, "", t, list)
+	t = cli.WithListPaginationFooter(t, resp.GetPagination())
+	HandleSuccess(cmd, "", t, resp)
 }
 
 func policyCreateSubjectMapping(cmd *cobra.Command, args []string) {

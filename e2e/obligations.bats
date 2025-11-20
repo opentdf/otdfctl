@@ -397,6 +397,12 @@ teardown_file() {
     assert_output --partial "test_list_obl_2"
     assert_output --partial "Total"
     assert_line --regexp "Current Offset.*0"
+  
+  run_otdfctl_obl list --json
+  assert_success
+  assert_not_equal $(echo "$output" | jq -r 'pagination') "null"
+  total=$(echo "$output" | jq -r '.pagination.total')
+  [[ "$total" -ge 1 ]]
 
   # cleanup
   run_otdfctl_obl delete --id $obl1_id --force
