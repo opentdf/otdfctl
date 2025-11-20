@@ -19,17 +19,13 @@ func (h Handler) GetSubjectConditionSet(ctx context.Context, id string) (*policy
 	return resp.GetSubjectConditionSet(), nil
 }
 
-func (h Handler) ListSubjectConditionSets(ctx context.Context, limit, offset int32) ([]*policy.SubjectConditionSet, *policy.PageResponse, error) {
-	resp, err := h.sdk.SubjectMapping.ListSubjectConditionSets(ctx, &subjectmapping.ListSubjectConditionSetsRequest{
+func (h Handler) ListSubjectConditionSets(ctx context.Context, limit, offset int32) (*subjectmapping.ListSubjectConditionSetsResponse, error) {
+	return h.sdk.SubjectMapping.ListSubjectConditionSets(ctx, &subjectmapping.ListSubjectConditionSetsRequest{
 		Pagination: &policy.PageRequest{
 			Limit:  limit,
 			Offset: offset,
 		},
 	})
-	if err != nil {
-		return nil, nil, err
-	}
-	return resp.GetSubjectConditionSets(), resp.GetPagination(), err
 }
 
 // Creates and returns the created subject condition set

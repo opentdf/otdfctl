@@ -131,6 +131,16 @@ teardown_file() {
         assert_output --partial "valueone, valuefirst, first"
         assert_output --partial "Total"
         assert_line --regexp "Current Offset.*0"
+
+    run_otdfctl_rm list --json
+    assert_success
+    [[ "$(echo "$output" | jq -r '.resource_mappings | length')" -ge 1 ]]
+    found_rm=$(echo "$output" | jq -c --arg id "$RM1_ID" '.resource_mappings as $a | ($a | map(.id) | index($id)) as $i | $a[$i]')
+    assert_equal "$(echo "$found_rm" | jq -r '.id')" "$RM1_ID"
+    assert_equal "$(echo "$found_rm" | jq -r '.attribute_value.id')" "$RM_VAL1_ID"
+    [[ "$(echo "$output" | jq -r '.pagination.total')" -ge 1 ]]
+    assert_equal "$(echo "$output" | jq -r '.pagination.current_offset')" "null"
+    assert_equal "$(echo "$output" | jq -r '.pagination.next_offset')" "null"
 }
 
 @test "Delete resource mapping" {
