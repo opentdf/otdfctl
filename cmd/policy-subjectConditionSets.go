@@ -146,7 +146,7 @@ func policy_listSubjectConditionSets(cmd *cobra.Command, args []string) {
 	limit := c.Flags.GetRequiredInt32("limit")
 	offset := c.Flags.GetRequiredInt32("offset")
 
-	scsList, page, err := h.ListSubjectConditionSets(cmd.Context(), limit, offset)
+	resp, err := h.ListSubjectConditionSets(cmd.Context(), limit, offset)
 	if err != nil {
 		cli.ExitWithError("Error listing subject condition sets", err)
 	}
@@ -159,7 +159,7 @@ func policy_listSubjectConditionSets(cmd *cobra.Command, args []string) {
 		table.NewFlexColumn("updated_at", "Updated At", cli.FlexColumnWidthOne),
 	)
 	rows := []table.Row{}
-	for _, scs := range scsList {
+	for _, scs := range resp.GetSubjectConditionSets() {
 		subjectSetsJSON, err := marshalSubjectSetsProto(scs.GetSubjectSets())
 		if err != nil {
 			cli.ExitWithError("Error marshalling subject condition set", err)
@@ -174,8 +174,8 @@ func policy_listSubjectConditionSets(cmd *cobra.Command, args []string) {
 		}))
 	}
 	t = t.WithRows(rows)
-	t = cli.WithListPaginationFooter(t, page)
-	HandleSuccess(cmd, "", t, scsList)
+	t = cli.WithListPaginationFooter(t, resp.GetPagination())
+	HandleSuccess(cmd, "", t, resp)
 }
 
 func policy_updateSubjectConditionSet(cmd *cobra.Command, args []string) {
