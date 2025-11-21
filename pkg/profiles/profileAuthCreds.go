@@ -14,7 +14,7 @@ type AuthCredentials struct {
 }
 
 type AuthCredentialsAccessToken struct {
-	ClientID     string `json:"clientID"`
+	ClientID     string `json:"clientId"`
 	AccessToken  string `json:"accessToken"`
 	RefreshToken string `json:"refreshToken"`
 	Expiration   int64  `json:"expiration"`
