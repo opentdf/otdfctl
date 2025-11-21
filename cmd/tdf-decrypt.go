@@ -135,7 +135,7 @@ func init() {
 		decryptCmd.GetDocFlag("kas-allowlist").Description,
 	)
 
-	decryptCmd.Command.GroupID = TDF
+	decryptCmd.GroupID = TDF
 
 	RootCmd.AddCommand(&decryptCmd.Command)
 }

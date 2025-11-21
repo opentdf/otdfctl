@@ -115,9 +115,9 @@ func init() {
 	tdf_InspectCmd := man.Docs.GetCommand("inspect",
 		man.WithRun(tdf_InspectCmd),
 	)
-	tdf_InspectCmd.Command.GroupID = TDF
+	tdf_InspectCmd.GroupID = TDF
 
-	tdf_InspectCmd.Command.PreRun = func(cmd *cobra.Command, args []string) {
+	tdf_InspectCmd.PreRun = func(cmd *cobra.Command, args []string) {
 		// Set the json flag to true since we only support json output
 		cmd.SetArgs(append(args, "--json"))
 	}
