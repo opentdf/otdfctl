@@ -28,7 +28,7 @@ import (
 const authCallbackPath = "/callback"
 
 type ClientCredentials struct {
-	ClientID     string `json:"clientID"`
+	ClientID     string `json:"clientId"`
 	ClientSecret string `json:"clientSecret"`
 }
 
