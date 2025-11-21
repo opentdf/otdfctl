@@ -36,10 +36,10 @@ var profileCreateCmd = &cobra.Command{
 		endpoint := args[1]
 
 		setDefault := c.FlagHelper.GetOptionalBool("set-default")
-		TLSNoVerify := c.FlagHelper.GetOptionalBool("tls-no-verify")
+		tlsNoVerify := c.FlagHelper.GetOptionalBool("tls-no-verify")
 
 		c.Printf("Creating profile %s... ", profileName)
-		if err := profile.AddProfile(profileName, endpoint, TLSNoVerify, setDefault); err != nil {
+		if err := profile.AddProfile(profileName, endpoint, tlsNoVerify, setDefault); err != nil {
 			c.Println("failed")
 			c.ExitWithError("Failed to create profile", err)
 		}
