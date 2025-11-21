@@ -211,7 +211,7 @@ func init() {
 		encryptCmd.GetDocFlag("target-mode").Default,
 		encryptCmd.GetDocFlag("target-mode").Description,
 	)
-	encryptCmd.Command.GroupID = TDF
+	encryptCmd.GroupID = TDF
 
 	RootCmd.AddCommand(&encryptCmd.Command)
 }
