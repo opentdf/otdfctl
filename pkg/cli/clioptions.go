@@ -1,15 +1,15 @@
 package cli
 
 type cliOptions struct {
-	printerJson bool
+	printerJSON bool
 }
 
 type cliVariadicOption func(cliOptions) cliOptions
 
-// WithPrintJson is a variadic option that enforces JSON output for the printer
-func WithPrintJson() cliVariadicOption {
+// WithPrintJSON is a variadic option that enforces JSON output for the printer
+func WithPrintJSON() cliVariadicOption {
 	return func(o cliOptions) cliOptions {
-		o.printerJson = true
+		o.printerJSON = true
 		return o
 	}
 }

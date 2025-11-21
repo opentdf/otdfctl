@@ -41,7 +41,7 @@ type tdfInspectResult struct {
 }
 
 func tdf_InspectCmd(cmd *cobra.Command, args []string) {
-	c := cli.New(cmd, args, cli.WithPrintJson())
+	c := cli.New(cmd, args, cli.WithPrintJSON())
 	h := NewHandler(c)
 	defer h.Close()
 
@@ -80,7 +80,7 @@ func tdf_InspectCmd(cmd *cobra.Command, args []string) {
 			Attributes: result.Attributes,
 		}
 
-		c.PrintJson(m)
+		c.PrintJSON(m)
 	} else if result.NanoHeader != nil {
 		kas, err := result.NanoHeader.GetKasURL().GetURL()
 		if err != nil {
@@ -105,7 +105,7 @@ func tdf_InspectCmd(cmd *cobra.Command, args []string) {
 			Cipher:       cipherName,
 		}
 
-		c.PrintJson(n)
+		c.PrintJSON(n)
 	} else {
 		c.ExitWithError("failed to inspect TDF", nil)
 	}

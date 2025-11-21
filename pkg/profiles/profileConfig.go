@@ -14,7 +14,7 @@ type ProfileStore struct {
 type ProfileConfig struct {
 	Name            string          `json:"profile"`
 	Endpoint        string          `json:"endpoint"`
-	TlsNoVerify     bool            `json:"tlsNoVerify"`
+	TLSNoVerify     bool            `json:"tlsNoVerify"`
 	AuthCredentials AuthCredentials `json:"authCredentials"`
 }
 
@@ -32,7 +32,7 @@ func NewProfileStore(newStore NewStoreInterface, profileName string, endpoint st
 		config: ProfileConfig{
 			Name:        profileName,
 			Endpoint:    u.String(),
-			TlsNoVerify: tlsNoVerify,
+			TLSNoVerify: tlsNoVerify,
 		},
 	}
 	return p, nil
@@ -82,11 +82,11 @@ func (p *ProfileStore) SetEndpoint(endpoint string) error {
 
 // TLS No Verify
 func (p *ProfileStore) GetTLSNoVerify() bool {
-	return p.config.TlsNoVerify
+	return p.config.TLSNoVerify
 }
 
 func (p *ProfileStore) SetTLSNoVerify(tlsNoVerify bool) error {
-	p.config.TlsNoVerify = tlsNoVerify
+	p.config.TLSNoVerify = tlsNoVerify
 	return p.Save()
 }
 

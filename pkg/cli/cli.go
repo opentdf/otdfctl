@@ -19,7 +19,7 @@ type Cli struct {
 // New creates a new Cli object
 func New(cmd *cobra.Command, args []string, options ...cliVariadicOption) *Cli {
 	opts := cliOptions{
-		printerJson: false,
+		printerJSON: false,
 	}
 	for _, opt := range options {
 		opts = opt(opts)
@@ -39,7 +39,7 @@ func New(cmd *cobra.Command, args []string, options ...cliVariadicOption) *Cli {
 	cli.FlagHelper = cli.Flags
 
 	cli.printer = newPrinter(cli)
-	if opts.printerJson {
+	if opts.printerJSON {
 		cli.printer.setJson(true)
 	}
 

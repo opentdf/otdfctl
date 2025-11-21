@@ -46,7 +46,7 @@ func (h Handler) EncryptBytes(
 	unencrypted []byte,
 	attrValues []string,
 	mimeType string,
-	kasUrlPath string,
+	kasURLPath string,
 	ecdsaBinding bool,
 	assertions string,
 	wrappingKeyAlgorithm ocrypto.KeyType,
@@ -69,7 +69,7 @@ func (h Handler) EncryptBytes(
 		opts := []sdk.TDFOption{
 			sdk.WithDataAttributes(attrValues...),
 			sdk.WithKasInformation(sdk.KASInfo{
-				URL: h.platformEndpoint + kasUrlPath,
+				URL: h.platformEndpoint + kasURLPath,
 			}),
 			sdk.WithMimeType(mimeType),
 			sdk.WithWrappingKeyAlg(wrappingKeyAlgorithm),
@@ -116,7 +116,7 @@ func (h Handler) EncryptBytes(
 			return nil, err
 		}
 		// set the KAS URL
-		if err = nanoTDFConfig.SetKasURL(h.platformEndpoint + kasUrlPath); err != nil {
+		if err = nanoTDFConfig.SetKasURL(h.platformEndpoint + kasURLPath); err != nil {
 			return nil, err
 		}
 		// set the attributes

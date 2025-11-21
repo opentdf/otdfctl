@@ -17,18 +17,18 @@ func auth_clientCredentials(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	_, cp := InitProfile(c, false)
 
-	var clientId string
+	var clientID string
 	var clientSecret string
 
 	if len(args) > 0 {
-		clientId = args[0]
+		clientID = args[0]
 	}
 	if len(args) > 1 {
 		clientSecret = args[1]
 	}
 
-	if clientId == "" {
-		clientId = cli.AskForInput("Enter client id: ")
+	if clientID == "" {
+		clientID = cli.AskForInput("Enter client id: ")
 	}
 	if clientSecret == "" {
 		clientSecret = cli.AskForSecret("Enter client secret: ")
@@ -37,7 +37,7 @@ func auth_clientCredentials(cmd *cobra.Command, args []string) {
 	// Set the client credentials
 	err := cp.SetAuthCredentials(profiles.AuthCredentials{
 		AuthType:     profiles.PROFILE_AUTH_TYPE_CLIENT_CREDENTIALS,
-		ClientId:     clientId,
+		ClientID:     clientID,
 		ClientSecret: clientSecret,
 	})
 	if err != nil {

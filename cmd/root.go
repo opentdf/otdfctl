@@ -163,7 +163,7 @@ func NewHandler(c *cli.Cli) handlers.Handler {
 			// add credentials to the temporary profile
 			if err := cp.SetAuthCredentials(profiles.AuthCredentials{
 				AuthType:     profiles.PROFILE_AUTH_TYPE_CLIENT_CREDENTIALS,
-				ClientId:     cc.ClientId,
+				ClientID:     cc.ClientID,
 				ClientSecret: cc.ClientSecret,
 			}); err != nil {
 				cli.ExitWithError("Failed to set client credentials", err)
