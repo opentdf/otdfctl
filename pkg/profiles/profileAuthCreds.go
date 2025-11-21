@@ -7,14 +7,14 @@ const (
 
 type AuthCredentials struct {
 	AuthType string `json:"authType"`
-	ClientId string `json:"clientId"`
+	ClientID string `json:"clientID"`
 	// Used for client credentials
 	ClientSecret string                     `json:"clientSecret,omitempty"`
 	AccessToken  AuthCredentialsAccessToken `json:"accessToken,omitempty"`
 }
 
 type AuthCredentialsAccessToken struct {
-	ClientID     string `json:"clientId"`
+	ClientID     string `json:"clientID"`
 	AccessToken  string `json:"accessToken"`
 	RefreshToken string `json:"refreshToken"`
 	Expiration   int64  `json:"expiration"`

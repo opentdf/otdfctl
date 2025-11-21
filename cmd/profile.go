@@ -36,10 +36,10 @@ var profileCreateCmd = &cobra.Command{
 		endpoint := args[1]
 
 		setDefault := c.FlagHelper.GetOptionalBool("set-default")
-		tlsNoVerify := c.FlagHelper.GetOptionalBool("tls-no-verify")
+		TLSNoVerify := c.FlagHelper.GetOptionalBool("tls-no-verify")
 
 		c.Printf("Creating profile %s... ", profileName)
-		if err := profile.AddProfile(profileName, endpoint, tlsNoVerify, setDefault); err != nil {
+		if err := profile.AddProfile(profileName, endpoint, TLSNoVerify, setDefault); err != nil {
 			c.Println("failed")
 			c.ExitWithError("Failed to create profile", err)
 		}
@@ -89,7 +89,7 @@ var profileGetCmd = &cobra.Command{
 		ac := p.GetAuthCredentials()
 		if ac.AuthType == profiles.PROFILE_AUTH_TYPE_CLIENT_CREDENTIALS {
 			maskedSecret := "********"
-			auth = "client-credentials (" + ac.ClientId + ", " + maskedSecret + ")"
+			auth = "client-credentials (" + ac.ClientID + ", " + maskedSecret + ")"
 		}
 
 		t := cli.NewTabular(

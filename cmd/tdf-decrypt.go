@@ -20,7 +20,7 @@ var kasAllowList []string
 const TDF_MAX_FILE_SIZE = int64(10 * 1024 * 1024 * 1024) // 10 GB
 
 func dev_tdfDecryptCmd(cmd *cobra.Command, args []string) {
-	c := cli.New(cmd, args, cli.WithPrintJson())
+	c := cli.New(cmd, args, cli.WithPrintJSON())
 	h := NewHandler(c)
 	defer h.Close()
 

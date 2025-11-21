@@ -21,14 +21,14 @@ func policy_createResourceMapping(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
-	attrId := c.Flags.GetRequiredID("attribute-value-id")
+	attrID := c.Flags.GetRequiredID("attribute-value-id")
 	grpID := c.Flags.GetOptionalID("group-id")
 	terms = c.Flags.GetStringSlice("terms", terms, cli.FlagsStringSliceOptions{
 		Min: 1,
 	})
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
-	resourceMapping, err := h.CreateResourceMapping(attrId, terms, grpID, getMetadataMutable(metadataLabels))
+	resourceMapping, err := h.CreateResourceMapping(attrID, terms, grpID, getMetadataMutable(metadataLabels))
 	if err != nil {
 		cli.ExitWithError("Failed to create resource mapping", err)
 	}

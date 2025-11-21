@@ -76,9 +76,9 @@ func (c *Cli) Debugln(args ...interface{}) {
 	}
 }
 
-// PrintJson prints the given value as json
+// PrintJSON prints the given value as json
 // ignores the printer enabled flag
-func (c *Cli) PrintJson(v interface{}) {
+func (c *Cli) PrintJSON(v interface{}) {
 	b, err := json.MarshalIndent(v, "", "  ")
 	if err != nil {
 		ExitWithError("failed to marshal json", err)
@@ -88,7 +88,7 @@ func (c *Cli) PrintJson(v interface{}) {
 
 func (c *Cli) PrintIfJSON(v interface{}) {
 	if c.printer.json {
-		c.PrintJson(v)
+		c.PrintJSON(v)
 	}
 }
 
