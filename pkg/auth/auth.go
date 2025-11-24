@@ -143,9 +143,9 @@ func GetSDKAuthOptionFromProfile(profile *profiles.ProfileStore) (sdk.Option, er
 	c := profile.GetAuthCredentials()
 
 	switch c.AuthType {
-	case profiles.PROFILE_AUTH_TYPE_CLIENT_CREDENTIALS:
+	case profiles.AuthTypeClientCredentials:
 		return sdk.WithClientCredentials(c.ClientID, c.ClientSecret, nil), nil
-	case profiles.PROFILE_AUTH_TYPE_ACCESS_TOKEN:
+	case profiles.AuthTypeAccessToken:
 		tokenSource := oauth2.StaticTokenSource(buildToken(&c))
 		return sdk.WithOAuthAccessTokenSource(tokenSource), nil
 	default:
@@ -158,13 +158,13 @@ func ValidateProfileAuthCredentials(ctx context.Context, profile *profiles.Profi
 	switch c.AuthType {
 	case "":
 		return ErrProfileCredentialsNotFound
-	case profiles.PROFILE_AUTH_TYPE_CLIENT_CREDENTIALS:
+	case profiles.AuthTypeClientCredentials:
 		_, err := GetTokenWithClientCreds(ctx, profile.GetEndpoint(), c.ClientID, c.ClientSecret, profile.GetTLSNoVerify())
 		if err != nil {
 			return err
 		}
 		return nil
-	case profiles.PROFILE_AUTH_TYPE_ACCESS_TOKEN:
+	case profiles.AuthTypeAccessToken:
 		if !buildToken(&c).Valid() {
 			return ErrAccessTokenExpired
 		}
@@ -177,9 +177,9 @@ func ValidateProfileAuthCredentials(ctx context.Context, profile *profiles.Profi
 func GetTokenWithProfile(ctx context.Context, profile *profiles.ProfileStore) (*oauth2.Token, error) {
 	c := profile.GetAuthCredentials()
 	switch c.AuthType {
-	case profiles.PROFILE_AUTH_TYPE_CLIENT_CREDENTIALS:
+	case profiles.AuthTypeClientCredentials:
 		return GetTokenWithClientCreds(ctx, profile.GetEndpoint(), c.ClientID, c.ClientSecret, profile.GetTLSNoVerify())
-	case profiles.PROFILE_AUTH_TYPE_ACCESS_TOKEN:
+	case profiles.AuthTypeAccessToken:
 		return buildToken(&c), nil
 	default:
 		return nil, ErrInvalidAuthType

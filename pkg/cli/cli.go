@@ -40,7 +40,7 @@ func New(cmd *cobra.Command, args []string, options ...cliVariadicOption) *Cli {
 
 	cli.printer = newPrinter(cli)
 	if opts.printerJSON {
-		cli.printer.setJson(true)
+		cli.printer.setJSON(true)
 	}
 
 	return cli

@@ -28,7 +28,7 @@ func newPrinter(cli *Cli) *Printer {
 			ExitWithError("failed to get json flag", err)
 			return nil
 		}
-		p.setJson(json)
+		p.setJSON(json)
 	}
 
 	// if debug output is enabled, enable debug output
@@ -44,7 +44,7 @@ func newPrinter(cli *Cli) *Printer {
 	return p
 }
 
-func (p *Printer) setJson(json bool) {
+func (p *Printer) setJSON(json bool) {
 	p.json = json
 	p.enabled = !json
 }

@@ -7,9 +7,9 @@ import (
 // This variable is used to store the version of the profiles. Since the profiles structure might
 // change in the future, this variable is used to keep track of the version of the profiles and will
 // be used to determine how to handle migration of the profiles.
-const PROFILES_VERSION_v1_0 = "1.0"
+const SchemaVersionV1 = "1.0"
 
-const PROFILES_VERSION_LATEST = PROFILES_VERSION_v1_0
+const SchemaVersionLatest = SchemaVersionV1
 
 type GlobalStore struct {
 	store StoreInterface
@@ -26,7 +26,7 @@ type GlobalConfig struct {
 // load global config or create a new one
 func LoadGlobalConfig(newStore func(string, string) StoreInterface) (*GlobalStore, error) {
 	p := &GlobalStore{
-		store: newStore(config.AppName, STORE_KEY_GLOBAL),
+		store: newStore(config.AppName, StoreKeyGlobal),
 
 		config: GlobalConfig{
 			Profiles:       make([]string, 0),
@@ -38,11 +38,11 @@ func LoadGlobalConfig(newStore func(string, string) StoreInterface) (*GlobalStor
 		err := p.store.Get(&p.config)
 
 		// check the version of the profiles
-		if p.config.ProfilesVersion != PROFILES_VERSION_LATEST {
+		if p.config.ProfilesVersion != SchemaVersionLatest {
 			// handle migration of the profiles
 			// currently, there is no migration needed
 			// so we just set the version to the latest version
-			p.config.ProfilesVersion = PROFILES_VERSION_LATEST
+			p.config.ProfilesVersion = SchemaVersionLatest
 			err = p.store.Set(p.config)
 			if err != nil {
 				return nil, err
@@ -53,7 +53,7 @@ func LoadGlobalConfig(newStore func(string, string) StoreInterface) (*GlobalStor
 	}
 
 	// set the version of the profiles to the latest version
-	p.config.ProfilesVersion = PROFILES_VERSION_LATEST
+	p.config.ProfilesVersion = SchemaVersionLatest
 	err := p.store.Set(p.config)
 	return p, err
 }

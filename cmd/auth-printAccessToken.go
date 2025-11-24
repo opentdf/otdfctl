@@ -17,9 +17,9 @@ func auth_printAccessToken(cmd *cobra.Command, args []string) {
 
 	ac := cp.GetAuthCredentials()
 	switch ac.AuthType {
-	case profiles.PROFILE_AUTH_TYPE_CLIENT_CREDENTIALS:
+	case profiles.AuthTypeClientCredentials:
 		c.Printf("Getting access token for %s... ", ac.ClientID)
-	case profiles.PROFILE_AUTH_TYPE_ACCESS_TOKEN:
+	case profiles.AuthTypeAccessToken:
 		c.Printf("Getting profile's stored access token... ")
 	default:
 		c.ExitWithError("Invalid auth type", nil)

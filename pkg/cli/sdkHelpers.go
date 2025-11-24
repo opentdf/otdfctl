@@ -14,7 +14,7 @@ import (
 )
 
 type SimpleAttribute struct {
-	Id        string
+	ID        string
 	Name      string
 	Rule      string
 	Values    []string
@@ -57,7 +57,7 @@ func GetSimpleAttribute(a *policy.Attribute) SimpleAttribute {
 	}
 
 	return SimpleAttribute{
-		Id:        a.GetId(),
+		ID:        a.GetId(),
 		Name:      a.GetName(),
 		Rule:      handlers.GetAttributeRuleFromAttributeType(a.GetRule()),
 		Values:    values,

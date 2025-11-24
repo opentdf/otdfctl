@@ -39,7 +39,7 @@ func InitAttributeView(ctx context.Context, id string, h handlers.Handler) (Attr
 	attr, _ := h.GetAttribute(ctx, id)
 	sa := cli.GetSimpleAttribute(attr)
 	items := []list.Item{
-		AttributeSubItem{title: "ID", description: sa.Id},
+		AttributeSubItem{title: "ID", description: sa.ID},
 		AttributeSubItem{title: "Name", description: sa.Name},
 		AttributeSubItem{title: "Rule", description: sa.Rule},
 		AttributeSubItem{title: "Values", description: cli.CommaSeparated(sa.Values)},
