@@ -59,7 +59,7 @@ func init() {
 			}
 
 			for _, p := range cfg.Profiles {
-				err := testProfile.AddProfile(p.Name, p.Endpoint, p.TlsNoVerify, cfg.DefaultProfile == p.Name)
+				err := testProfile.AddProfile(p.Name, p.Endpoint, p.TLSNoVerify, cfg.DefaultProfile == p.Name)
 				if err != nil {
 					panic(err)
 				}

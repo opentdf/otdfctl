@@ -18,13 +18,13 @@ func policy_createAttributeValue(cmd *cobra.Command, args []string) {
 	defer h.Close()
 
 	ctx := cmd.Context()
-	attrId := c.FlagHelper.GetRequiredID("attribute-id")
+	attrID := c.FlagHelper.GetRequiredID("attribute-id")
 	value := c.FlagHelper.GetRequiredString("value")
 	metadataLabels = c.FlagHelper.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
-	attr, err := h.GetAttribute(ctx, attrId)
+	attr, err := h.GetAttribute(ctx, attrID)
 	if err != nil {
-		cli.ExitWithError(fmt.Sprintf("Failed to get parent attribute (%s)", attrId), err)
+		cli.ExitWithError(fmt.Sprintf("Failed to get parent attribute (%s)", attrID), err)
 	}
 
 	v, err := h.CreateAttributeValue(ctx, attr.GetId(), value, getMetadataMutable(metadataLabels))
@@ -55,12 +55,12 @@ func policy_listAttributeValue(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
-	attrId := c.FlagHelper.GetRequiredID("attribute-id")
+	attrID := c.FlagHelper.GetRequiredID("attribute-id")
 	state := cli.GetState(cmd)
 	limit := c.Flags.GetRequiredInt32("limit")
 	offset := c.Flags.GetRequiredInt32("offset")
 
-	resp, err := h.ListAttributeValues(cmd.Context(), attrId, state, limit, offset)
+	resp, err := h.ListAttributeValues(cmd.Context(), attrID, state, limit, offset)
 	if err != nil {
 		cli.ExitWithError("Failed to list attribute values", err)
 	}
@@ -76,7 +76,7 @@ func policy_listAttributeValue(cmd *cobra.Command, args []string) {
 	for _, val := range resp.GetValues() {
 		v := cli.GetSimpleAttributeValue(val)
 		rows = append(rows, table.NewRow(table.RowData{
-			"id":         v.Id,
+			"id":         v.ID,
 			"fqn":        v.FQN,
 			"active":     v.Active,
 			"labels":     v.Metadata["Labels"],

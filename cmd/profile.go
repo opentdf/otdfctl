@@ -89,7 +89,7 @@ var profileGetCmd = &cobra.Command{
 		ac := p.GetAuthCredentials()
 		if ac.AuthType == profiles.PROFILE_AUTH_TYPE_CLIENT_CREDENTIALS {
 			maskedSecret := "********"
-			auth = "client-credentials (" + ac.ClientId + ", " + maskedSecret + ")"
+			auth = "client-credentials (" + ac.ClientID + ", " + maskedSecret + ")"
 		}
 
 		t := cli.NewTabular(

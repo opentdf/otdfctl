@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-func NewHttpClient(tlsNoVerify bool) *http.Client {
+func NewHTTPClient(tlsNoVerify bool) *http.Client {
 	return &http.Client{
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{

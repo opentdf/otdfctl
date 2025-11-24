@@ -54,7 +54,7 @@ func (c *Cli) ExitWithSuccess(msg string) {
 
 func (c *Cli) ExitWithJSON(v interface{}) {
 	if c.printer.json {
-		c.PrintJson(v)
+		c.PrintJSON(v)
 		os.Exit(0)
 	}
 }
