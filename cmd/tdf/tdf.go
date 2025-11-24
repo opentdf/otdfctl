@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/opentdf/otdfctl/pkg/cli"
-	"github.com/spf13/cobra"
 )
 
 const (
@@ -14,12 +13,6 @@ const (
 	TDF         = "TDF"
 	// GroupID is the group ID for TDF commands
 	GroupID = TDF
-)
-
-var (
-	EncryptCmd *cobra.Command
-	DecryptCmd *cobra.Command
-	InspectCmd *cobra.Command
 )
 
 func readPipedStdin() []byte {

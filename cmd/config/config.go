@@ -10,10 +10,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	Cmd    *cobra.Command
-	cfgKey string
-)
+var cfgKey string
 
 func updateOutput(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
@@ -30,18 +27,16 @@ func updateOutput(cmd *cobra.Command, args []string) {
 	c.Println(cli.SuccessMessage(fmt.Sprintf("Output format updated to %s", format)))
 }
 
-func init() {
-	outputCmd := man.Docs.GetCommand("config/output",
-		man.WithRun(updateOutput),
-	)
-	outputCmd.Flags().String(
-		outputCmd.GetDocFlag("format").Name,
-		outputCmd.GetDocFlag("format").Default,
-		outputCmd.GetDocFlag("format").Description,
-	)
+var (
+	outputDoc = man.Docs.GetCommand("config/output", man.WithRun(updateOutput))
+	configDoc = man.Docs.GetCommand("config", man.WithSubcommands(outputDoc))
+	Cmd       = &configDoc.Command
+)
 
-	cmd := man.Docs.GetCommand("config",
-		man.WithSubcommands(outputCmd),
+func init() {
+	outputDoc.Flags().String(
+		outputDoc.GetDocFlag("format").Name,
+		outputDoc.GetDocFlag("format").Default,
+		outputDoc.GetDocFlag("format").Description,
 	)
-	Cmd = &cmd.Command
 }

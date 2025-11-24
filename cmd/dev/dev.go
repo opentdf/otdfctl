@@ -14,7 +14,7 @@ var (
 	// Command holding playground-style development
 	devCmd = man.Docs.GetCommand("dev")
 
-	Cmd *cobra.Command
+	Cmd = &devCmd.Command
 )
 
 func designSystemRun(cmd *cobra.Command, args []string) {
@@ -61,5 +61,4 @@ func init() {
 		man.WithRun(designSystemRun),
 	)
 	devCmd.AddCommand(&designCmd.Command)
-	Cmd = &devCmd.Command
 }

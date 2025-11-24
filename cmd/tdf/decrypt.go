@@ -13,8 +13,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var assertionVerification string
-var kasAllowList []string
+var (
+	assertionVerification string
+	kasAllowList          []string
+
+	decryptDoc = man.Docs.GetCommand("decrypt", man.WithRun(decryptRun))
+	DecryptCmd = &decryptDoc.Command
+)
 
 func decryptRun(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args, cli.WithPrintJSON())
@@ -91,48 +96,43 @@ func decryptRun(cmd *cobra.Command, args []string) {
 }
 
 func init() {
-	decrypt := man.Docs.GetCommand("decrypt",
-		man.WithRun(decryptRun),
-	)
-	decrypt.Flags().StringP(
-		decrypt.GetDocFlag("out").Name,
-		decrypt.GetDocFlag("out").Shorthand,
-		decrypt.GetDocFlag("out").Default,
-		decrypt.GetDocFlag("out").Description,
+	decryptDoc.Flags().StringP(
+		decryptDoc.GetDocFlag("out").Name,
+		decryptDoc.GetDocFlag("out").Shorthand,
+		decryptDoc.GetDocFlag("out").Default,
+		decryptDoc.GetDocFlag("out").Description,
 	)
 	// deprecated flag
-	decrypt.Flags().StringP(
-		decrypt.GetDocFlag("tdf-type").Name,
-		decrypt.GetDocFlag("tdf-type").Shorthand,
-		decrypt.GetDocFlag("tdf-type").Default,
-		decrypt.GetDocFlag("tdf-type").Description,
+	decryptDoc.Flags().StringP(
+		decryptDoc.GetDocFlag("tdf-type").Name,
+		decryptDoc.GetDocFlag("tdf-type").Shorthand,
+		decryptDoc.GetDocFlag("tdf-type").Default,
+		decryptDoc.GetDocFlag("tdf-type").Description,
 	)
-	decrypt.Flags().StringVarP(
+	decryptDoc.Flags().StringVarP(
 		&assertionVerification,
-		decrypt.GetDocFlag("with-assertion-verification-keys").Name,
-		decrypt.GetDocFlag("with-assertion-verification-keys").Shorthand,
+		decryptDoc.GetDocFlag("with-assertion-verification-keys").Name,
+		decryptDoc.GetDocFlag("with-assertion-verification-keys").Shorthand,
 		"",
-		decrypt.GetDocFlag("with-assertion-verification-keys").Description,
+		decryptDoc.GetDocFlag("with-assertion-verification-keys").Description,
 	)
-	decrypt.Flags().String(
-		decrypt.GetDocFlag("session-key-algorithm").Name,
-		decrypt.GetDocFlag("session-key-algorithm").Default,
-		decrypt.GetDocFlag("session-key-algorithm").Description,
+	decryptDoc.Flags().String(
+		decryptDoc.GetDocFlag("session-key-algorithm").Name,
+		decryptDoc.GetDocFlag("session-key-algorithm").Default,
+		decryptDoc.GetDocFlag("session-key-algorithm").Description,
 	)
-	decrypt.Flags().Bool(
-		decrypt.GetDocFlag("no-verify-assertions").Name,
-		decrypt.GetDocFlag("no-verify-assertions").DefaultAsBool(),
-		decrypt.GetDocFlag("no-verify-assertions").Description,
+	decryptDoc.Flags().Bool(
+		decryptDoc.GetDocFlag("no-verify-assertions").Name,
+		decryptDoc.GetDocFlag("no-verify-assertions").DefaultAsBool(),
+		decryptDoc.GetDocFlag("no-verify-assertions").Description,
 	)
-	decrypt.Flags().StringSliceVarP(
+	decryptDoc.Flags().StringSliceVarP(
 		&kasAllowList,
-		decrypt.GetDocFlag("kas-allowlist").Name,
-		decrypt.GetDocFlag("kas-allowlist").Shorthand,
+		decryptDoc.GetDocFlag("kas-allowlist").Name,
+		decryptDoc.GetDocFlag("kas-allowlist").Shorthand,
 		nil,
-		decrypt.GetDocFlag("kas-allowlist").Description,
+		decryptDoc.GetDocFlag("kas-allowlist").Description,
 	)
 
-	decrypt.GroupID = TDF
-
-	DecryptCmd = &decrypt.Command
+	decryptDoc.GroupID = TDF
 }

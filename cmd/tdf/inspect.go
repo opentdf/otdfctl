@@ -41,6 +41,11 @@ type tdfInspectResult struct {
 	Attributes []string           `json:"attributes"`
 }
 
+var (
+	inspectDoc = man.Docs.GetCommand("inspect", man.WithRun(inspectRun))
+	InspectCmd = &inspectDoc.Command
+)
+
 func inspectRun(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args, cli.WithPrintJSON())
 	h := common.NewHandler(c)
@@ -113,14 +118,10 @@ func inspectRun(cmd *cobra.Command, args []string) {
 }
 
 func init() {
-	inspect := man.Docs.GetCommand("inspect",
-		man.WithRun(inspectRun),
-	)
-	inspect.GroupID = TDF
+	inspectDoc.GroupID = TDF
 
-	inspect.PreRun = func(cmd *cobra.Command, args []string) {
+	inspectDoc.PreRun = func(cmd *cobra.Command, args []string) {
 		// Set the json flag to true since we only support json output
 		cmd.SetArgs(append(args, "--json"))
 	}
-	InspectCmd = &inspect.Command
 }

@@ -17,8 +17,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var attrValues []string
-var assertions string
+var (
+	attrValues []string
+	assertions string
+
+	encryptDoc = man.Docs.GetCommand("encrypt", man.WithRun(encryptRun))
+	EncryptCmd = &encryptDoc.Command
+)
 
 func encryptRun(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args, cli.WithPrintJSON())
@@ -144,66 +149,61 @@ func encryptRun(cmd *cobra.Command, args []string) {
 }
 
 func init() {
-	encrypt := man.Docs.GetCommand("encrypt",
-		man.WithRun(encryptRun),
+	encryptDoc.Flags().StringP(
+		encryptDoc.GetDocFlag("out").Name,
+		encryptDoc.GetDocFlag("out").Shorthand,
+		encryptDoc.GetDocFlag("out").Default,
+		encryptDoc.GetDocFlag("out").Description,
 	)
-	encrypt.Flags().StringP(
-		encrypt.GetDocFlag("out").Name,
-		encrypt.GetDocFlag("out").Shorthand,
-		encrypt.GetDocFlag("out").Default,
-		encrypt.GetDocFlag("out").Description,
-	)
-	encrypt.Flags().StringSliceVarP(
+	encryptDoc.Flags().StringSliceVarP(
 		&attrValues,
-		encrypt.GetDocFlag("attr").Name,
-		encrypt.GetDocFlag("attr").Shorthand,
+		encryptDoc.GetDocFlag("attr").Name,
+		encryptDoc.GetDocFlag("attr").Shorthand,
 		[]string{},
-		encrypt.GetDocFlag("attr").Description,
+		encryptDoc.GetDocFlag("attr").Description,
 	)
-	encrypt.Flags().StringVarP(
+	encryptDoc.Flags().StringVarP(
 		&assertions,
-		encrypt.GetDocFlag("with-assertions").Name,
-		encrypt.GetDocFlag("with-assertions").Shorthand,
+		encryptDoc.GetDocFlag("with-assertions").Name,
+		encryptDoc.GetDocFlag("with-assertions").Shorthand,
 		"",
-		encrypt.GetDocFlag("with-assertions").Description,
+		encryptDoc.GetDocFlag("with-assertions").Description,
 	)
-	encrypt.Flags().String(
-		encrypt.GetDocFlag("mime-type").Name,
-		encrypt.GetDocFlag("mime-type").Default,
-		encrypt.GetDocFlag("mime-type").Description,
+	encryptDoc.Flags().String(
+		encryptDoc.GetDocFlag("mime-type").Name,
+		encryptDoc.GetDocFlag("mime-type").Default,
+		encryptDoc.GetDocFlag("mime-type").Description,
 	)
-	encrypt.Flags().String(
-		encrypt.GetDocFlag("tdf-type").Name,
-		encrypt.GetDocFlag("tdf-type").Default,
-		encrypt.GetDocFlag("tdf-type").Description,
+	encryptDoc.Flags().String(
+		encryptDoc.GetDocFlag("tdf-type").Name,
+		encryptDoc.GetDocFlag("tdf-type").Default,
+		encryptDoc.GetDocFlag("tdf-type").Description,
 	)
-	encrypt.Flags().StringP(
-		encrypt.GetDocFlag("wrapping-key-algorithm").Name,
-		encrypt.GetDocFlag("wrapping-key-algorithm").Shorthand,
-		encrypt.GetDocFlag("wrapping-key-algorithm").Default,
-		encrypt.GetDocFlag("wrapping-key-algorithm").Description,
+	encryptDoc.Flags().StringP(
+		encryptDoc.GetDocFlag("wrapping-key-algorithm").Name,
+		encryptDoc.GetDocFlag("wrapping-key-algorithm").Shorthand,
+		encryptDoc.GetDocFlag("wrapping-key-algorithm").Default,
+		encryptDoc.GetDocFlag("wrapping-key-algorithm").Description,
 	)
-	encrypt.Flags().Bool(
-		encrypt.GetDocFlag("ecdsa-binding").Name,
+	encryptDoc.Flags().Bool(
+		encryptDoc.GetDocFlag("ecdsa-binding").Name,
 		false,
-		encrypt.GetDocFlag("ecdsa-binding").Description,
+		encryptDoc.GetDocFlag("ecdsa-binding").Description,
 	)
-	encrypt.Flags().String(
-		encrypt.GetDocFlag("kas-url-path").Name,
-		encrypt.GetDocFlag("kas-url-path").Default,
-		encrypt.GetDocFlag("kas-url-path").Description,
+	encryptDoc.Flags().String(
+		encryptDoc.GetDocFlag("kas-url-path").Name,
+		encryptDoc.GetDocFlag("kas-url-path").Default,
+		encryptDoc.GetDocFlag("kas-url-path").Description,
 	)
-	encrypt.Flags().String(
-		encrypt.GetDocFlag("policy-mode").Name,
-		encrypt.GetDocFlag("policy-mode").Default,
-		encrypt.GetDocFlag("policy-mode").Description,
+	encryptDoc.Flags().String(
+		encryptDoc.GetDocFlag("policy-mode").Name,
+		encryptDoc.GetDocFlag("policy-mode").Default,
+		encryptDoc.GetDocFlag("policy-mode").Description,
 	)
-	encrypt.Flags().String(
-		encrypt.GetDocFlag("target-mode").Name,
-		encrypt.GetDocFlag("target-mode").Default,
-		encrypt.GetDocFlag("target-mode").Description,
+	encryptDoc.Flags().String(
+		encryptDoc.GetDocFlag("target-mode").Name,
+		encryptDoc.GetDocFlag("target-mode").Default,
+		encryptDoc.GetDocFlag("target-mode").Description,
 	)
-	encrypt.GroupID = TDF
-
-	EncryptCmd = &encrypt.Command
+	encryptDoc.GroupID = TDF
 }

@@ -8,12 +8,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var authCmd = man.Docs.GetCommand("auth", man.WithHiddenFlags(
-	"with-client-creds",
-	"with-client-creds-file",
-))
+var (
+	authCmd = man.Docs.GetCommand("auth", man.WithHiddenFlags(
+		"with-client-creds",
+		"with-client-creds-file",
+	))
 
-var Cmd *cobra.Command
+	Cmd = &authCmd.Command
+)
 
 func init() {
 	authCmd.PersistentPreRun = func(cmd *cobra.Command, args []string) {
@@ -25,6 +27,4 @@ func init() {
 			)
 		}
 	}
-
-	Cmd = &authCmd.Command
 }
