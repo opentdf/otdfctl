@@ -1,8 +1,8 @@
 package profiles
 
 const (
-	PROFILE_AUTH_TYPE_CLIENT_CREDENTIALS = "client-credentials"
-	PROFILE_AUTH_TYPE_ACCESS_TOKEN       = "access-token"
+	AuthTypeClientCredentials = "client-credentials"
+	AuthTypeAccessToken       = "access-token"
 )
 
 type AuthCredentials struct {

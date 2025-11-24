@@ -123,12 +123,12 @@ func policy_updateResourceMapping(cmd *cobra.Command, args []string) {
 	defer h.Close()
 
 	id := c.Flags.GetRequiredID("id")
-	attrValueId := c.Flags.GetOptionalID("attribute-value-id")
+	attrValueID := c.Flags.GetOptionalID("attribute-value-id")
 	grpID := c.Flags.GetOptionalID("group-id")
 	terms = c.Flags.GetStringSlice("terms", terms, cli.FlagsStringSliceOptions{})
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
-	resourceMapping, err := h.UpdateResourceMapping(id, attrValueId, grpID, terms, getMetadataMutable(metadataLabels), getMetadataUpdateBehavior())
+	resourceMapping, err := h.UpdateResourceMapping(id, attrValueID, grpID, terms, getMetadataMutable(metadataLabels), getMetadataUpdateBehavior())
 	if err != nil {
 		cli.ExitWithError(fmt.Sprintf("Failed to update resource mapping (%s)", id), err)
 	}

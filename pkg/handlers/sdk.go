@@ -18,7 +18,6 @@ var (
 
 type Handler struct {
 	sdk              *sdk.SDK
-	OIDC_TOKEN       string
 	platformEndpoint string
 }
 

@@ -24,6 +24,9 @@ var (
 	profile *profiles.Profile
 
 	RootCmd = &man.Docs.GetDoc("<root>").Command
+
+	// devCmd is the command for playground-style development
+	devCmd = man.Docs.GetCommand("dev")
 )
 
 type version struct {
@@ -141,7 +144,7 @@ func NewHandler(c *cli.Cli) handlers.Handler {
 			}
 
 			if err := cp.SetAuthCredentials(profiles.AuthCredentials{
-				AuthType: profiles.PROFILE_AUTH_TYPE_ACCESS_TOKEN,
+				AuthType: profiles.AuthTypeAccessToken,
 				AccessToken: profiles.AuthCredentialsAccessToken{
 					AccessToken: withAccessToken,
 					Expiration:  claims.Expiration,
@@ -162,7 +165,7 @@ func NewHandler(c *cli.Cli) handlers.Handler {
 
 			// add credentials to the temporary profile
 			if err := cp.SetAuthCredentials(profiles.AuthCredentials{
-				AuthType:     profiles.PROFILE_AUTH_TYPE_CLIENT_CREDENTIALS,
+				AuthType:     profiles.AuthTypeClientCredentials,
 				ClientID:     cc.ClientID,
 				ClientSecret: cc.ClientSecret,
 			}); err != nil {

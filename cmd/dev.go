@@ -15,9 +15,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// devCmd is the command for playground-style development
-var devCmd = man.Docs.GetCommand("dev")
-
 var (
 	metadataLabels        []string
 	defaultListFlagLimit  int32 = 300

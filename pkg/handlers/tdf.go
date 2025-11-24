@@ -28,10 +28,10 @@ var (
 )
 
 const (
-	TDF_TYPE_ZTDF            = "ztdf"
-	TDF_TYPE_TDF3            = "tdf3" // alias for TDF
-	TDF_TYPE_NANO            = "nano"
-	MAX_ASSERTIONS_FILE_SIZE = int64(5 * 1024 * 1024) // 5MB
+	TDF_TYPE_ZTDF         = "ztdf"
+	TDF_TYPE_TDF3         = "tdf3" // alias for TDF
+	TDF_TYPE_NANO         = "nano"
+	MaxAssertionsFileSize = int64(5 * 1024 * 1024) // 5MB
 )
 
 type TDFInspect struct {
@@ -81,7 +81,7 @@ func (h Handler) EncryptBytes(
 			err := json.Unmarshal([]byte(assertions), &assertionConfigs)
 			if err != nil {
 				// if unable to marshal to json, interpret as file string and try to read from file
-				assertionBytes, err := utils.ReadBytesFromFile(assertions, MAX_ASSERTIONS_FILE_SIZE)
+				assertionBytes, err := utils.ReadBytesFromFile(assertions, MaxAssertionsFileSize)
 				if err != nil {
 					return nil, fmt.Errorf("unable to read assertions file: %w", err)
 				}
@@ -192,7 +192,7 @@ func (h Handler) DecryptBytes(
 		var assertionVerificationKeys sdk.AssertionVerificationKeys
 		if assertionVerificationKeysFile != "" {
 			// read the file
-			assertionVerificationBytes, err := utils.ReadBytesFromFile(assertionVerificationKeysFile, MAX_ASSERTIONS_FILE_SIZE)
+			assertionVerificationBytes, err := utils.ReadBytesFromFile(assertionVerificationKeysFile, MaxAssertionsFileSize)
 			if err != nil {
 				return nil, fmt.Errorf("unable to read assertions verification keys file: %w", err)
 			}

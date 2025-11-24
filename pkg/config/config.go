@@ -26,7 +26,7 @@ var (
 	TestMode = ""
 
 	// Test terminal size is a runtime env var to allow for testing of terminal output
-	TEST_TERMINAL_WIDTH = "TEST_TERMINAL_WIDTH"
+	TestTerminalWidth = "TEST_TERMINAL_WIDTH"
 )
 
 type Output struct {

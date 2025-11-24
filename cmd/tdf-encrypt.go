@@ -20,7 +20,7 @@ const (
 	TDFTYPE_ZTDF = "ztdf"
 	TDF3         = "tdf3"
 	NANO         = "nano"
-	Size_1MB     = 1024 * 1024
+	Size1MB      = 1024 * 1024
 )
 
 var attrValues []string
@@ -95,7 +95,7 @@ func dev_tdfEncryptCmd(cmd *cobra.Command, args []string) {
 	if fileMimeType == "" {
 		slog.Debug("Detecting mime type of file")
 		// get the mime type of the file
-		mimetype.SetLimit(Size_1MB) // limit to 1MB
+		mimetype.SetLimit(Size1MB) // limit to 1MB
 		m := mimetype.Detect(bytesSlice)
 		// default to application/octet-stream if no mime type is detected
 		fileMimeType = m.String()

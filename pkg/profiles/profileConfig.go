@@ -93,5 +93,5 @@ func (p *ProfileStore) SetTLSNoVerify(tlsNoVerify bool) error {
 // utility functions
 
 func getStoreKey(n string) string {
-	return STORE_KEY_PROFILE + "-" + n
+	return StoreKeyProfile + "-" + n
 }
