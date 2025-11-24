@@ -279,10 +279,10 @@ func Login(ctx context.Context, platformEndpoint, tokenURL, authURL, publicClien
 	}
 	tok := oidcCLI.CodeFlow[*oidc.IDTokenClaims](ctx, relyingParty, authCallbackPath, authCodeFlowPort, stateProvider)
 	return &oauth2.Token{
-		AccessToken:  tok.Token.AccessToken,
-		TokenType:    tok.Token.TokenType,
-		RefreshToken: tok.Token.RefreshToken,
-		Expiry:       tok.Token.Expiry,
+		AccessToken:  tok.AccessToken,
+		TokenType:    tok.TokenType,
+		RefreshToken: tok.RefreshToken,
+		Expiry:       tok.Expiry,
 	}, nil
 }
 

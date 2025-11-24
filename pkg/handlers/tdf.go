@@ -284,7 +284,7 @@ func correctKeyType(assertionKey sdk.AssertionKey, public bool) (interface{}, er
 	if !ok {
 		return nil, errors.New("unable to convert assertion key to string")
 	}
-	//nolint:nestif // nested its within switch mainly for error catching
+
 	switch assertionKey.Alg {
 	case sdk.AssertionKeyAlgHS256:
 		// convert the hs256 key to []byte

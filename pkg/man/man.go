@@ -176,7 +176,7 @@ func ProcessEmbeddedDocs(manFiles embed.FS) {
 		case "en":
 			Docs.En[cmd] = doc
 		default:
-			//nolint:govet // constance of language string is not a concern
+
 			return fmt.Errorf("unknown language [%s]", lang)
 		}
 		return nil
