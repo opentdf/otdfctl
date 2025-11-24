@@ -16,6 +16,9 @@ import (
 )
 
 var (
+	// devCmd is the command for playground-style development
+	devCmd = man.Docs.GetCommand("dev")
+
 	metadataLabels        []string
 	defaultListFlagLimit  int32 = 300
 	defaultListFlagOffset int32 = 0

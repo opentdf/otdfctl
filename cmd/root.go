@@ -24,9 +24,6 @@ var (
 	profile *profiles.Profile
 
 	RootCmd = &man.Docs.GetDoc("<root>").Command
-
-	// devCmd is the command for playground-style development
-	devCmd = man.Docs.GetCommand("dev")
 )
 
 type version struct {
