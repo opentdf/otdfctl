@@ -1,3 +1,4 @@
+//nolint:staticcheck // deprecated KAS grant functions are still supported while migrating
 package handlers
 
 import (

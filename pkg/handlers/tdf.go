@@ -13,6 +13,7 @@ import (
 	"log/slog"
 	"strings"
 
+	"github.com/opentdf/otdfctl/pkg/tdf"
 	"github.com/opentdf/otdfctl/pkg/utils"
 	"github.com/opentdf/platform/lib/ocrypto"
 	"github.com/opentdf/platform/sdk"
@@ -28,9 +29,6 @@ var (
 )
 
 const (
-	TDF_TYPE_ZTDF         = "ztdf"
-	TDF_TYPE_TDF3         = "tdf3" // alias for TDF
-	TDF_TYPE_NANO         = "nano"
 	MaxAssertionsFileSize = int64(5 * 1024 * 1024) // 5MB
 )
 
@@ -58,7 +56,7 @@ func (h Handler) EncryptBytes(
 
 	switch tdfType {
 	// Encrypt the data as a ZTDF
-	case "", TDF_TYPE_TDF3, TDF_TYPE_ZTDF:
+	case "", tdf.TypeTDF3, tdf.TypeZTDF:
 		if ecdsaBinding {
 			return nil, errors.New("ECDSA policy binding is not supported for ZTDF")
 		}
@@ -110,7 +108,7 @@ func (h Handler) EncryptBytes(
 		return enc, err
 
 	// Encrypt the data as a Nano TDF
-	case TDF_TYPE_NANO:
+	case tdf.TypeNanoTDF:
 		nanoTDFConfig, err := h.sdk.NewNanoTDFConfig()
 		if err != nil {
 			return nil, err
