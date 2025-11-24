@@ -206,9 +206,10 @@ const (
 // GetFreePort returns an available TCP port on localhost.
 // The function works by asking the operating system to assign
 // a free port (by using port 0), then returns that assigned port.
-func GetFreePort() (int, error) {
+func GetFreePort(ctx context.Context) (int, error) {
 	// Create a listener on localhost with port 0 (OS will assign a free port)
-	listener, err := net.Listen("tcp", "localhost:0")
+	cfg := &net.ListenConfig{}
+	listener, err := cfg.Listen(ctx, "tcp", "localhost:0")
 	if err != nil {
 		return 0, fmt.Errorf("failed to find available port: %w", err)
 	}
@@ -244,7 +245,7 @@ func Login(ctx context.Context, platformEndpoint, tokenURL, authURL, publicClien
 	}
 
 	if strings.TrimSpace(authCodeFlowPort) == "" {
-		port, err := GetFreePort()
+		port, err := GetFreePort(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("failed to find available port for auth code flow: %w", err)
 		}

@@ -1,0 +1,47 @@
+package auth
+
+import (
+	"github.com/opentdf/otdfctl/cmd/common"
+	"github.com/opentdf/otdfctl/pkg/auth"
+	"github.com/opentdf/otdfctl/pkg/cli"
+	"github.com/opentdf/otdfctl/pkg/man"
+	"github.com/opentdf/otdfctl/pkg/profiles"
+	"github.com/spf13/cobra"
+)
+
+func logout(cmd *cobra.Command, args []string) {
+	c := cli.New(cmd, args)
+	_, cp := common.InitProfile(c, false)
+	c.Println("Initiating logout...")
+
+	// we can only revoke access tokens stored for the code login flow, not client credentials
+	creds := cp.GetAuthCredentials()
+	if creds.AuthType == profiles.AuthTypeAccessToken {
+		c.Println("Revoking access token...")
+		if err := auth.RevokeAccessToken(
+			cmd.Context(),
+			cp.GetEndpoint(),
+			creds.AccessToken.ClientID,
+			creds.AccessToken.RefreshToken,
+			c.FlagHelper.GetOptionalBool("tls-no-verify"),
+		); err != nil {
+			c.Println("failed")
+			c.ExitWithError("An error occurred while revoking the access token", err)
+		}
+	}
+
+	if err := cp.SetAuthCredentials(profiles.AuthCredentials{}); err != nil {
+		c.Println("failed")
+		c.ExitWithError("An error occurred while logging out", err)
+	}
+	c.Println("ok")
+}
+
+var codeLogoutCmd *man.Doc
+
+func init() {
+	codeLogoutCmd = man.Docs.GetCommand("auth/logout",
+		man.WithRun(logout),
+	)
+	Cmd.AddCommand(&codeLogoutCmd.Command)
+}
