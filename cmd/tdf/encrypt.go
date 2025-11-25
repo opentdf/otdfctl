@@ -148,7 +148,6 @@ func encryptRun(cmd *cobra.Command, args []string) {
 	}
 }
 
-// InitEncryptCommand sets up the encrypt command with all flags.
 func InitEncryptCommand() {
 	encryptDoc.Flags().StringP(
 		encryptDoc.GetDocFlag("out").Name,

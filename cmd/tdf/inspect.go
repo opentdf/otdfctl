@@ -117,7 +117,6 @@ func inspectRun(cmd *cobra.Command, args []string) {
 	}
 }
 
-// InitInspectCommand sets up the inspect command.
 func InitInspectCommand() {
 	inspectDoc.GroupID = TDF
 

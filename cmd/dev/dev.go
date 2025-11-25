@@ -56,14 +56,11 @@ func renderDSMessages() string {
 	return cli.SuccessMessage("Success message") + "\n" + cli.ErrorMessage("Error message", nil)
 }
 
-// InitCommands sets up the dev command and its subcommands.
 func InitCommands() {
-	// Add design-system command
 	designCmd := man.Docs.GetCommand("dev/design-system",
 		man.WithRun(designSystemRun),
 	)
 	devCmd.AddCommand(&designCmd.Command)
 
-	// Add selectors command (from selectors.go)
 	initSelectorsCommands()
 }

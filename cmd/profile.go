@@ -173,7 +173,6 @@ var profileSetEndpointCmd = &cobra.Command{
 	},
 }
 
-// InitProfileCommands sets up the profile command and its subcommands with flags.
 func InitProfileCommands() {
 	profileCreateCmd.Flags().Bool("set-default", false, "Set the profile as default")
 	profileCreateCmd.Flags().Bool("tls-no-verify", false, "Disable TLS verification")

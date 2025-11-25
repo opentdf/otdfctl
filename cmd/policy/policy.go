@@ -85,10 +85,7 @@ func injectListPaginationFlags(listDoc *man.Doc) {
 	)
 }
 
-// InitCommands sets up all policy subcommands and their flags.
-// Call this explicitly from main before executing the root command.
 func InitCommands() {
-	// Initialize all subcommands
 	initActionsCommands()
 	initAttributesCommands()
 	initAttributeValuesCommands()
