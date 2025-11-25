@@ -14,8 +14,6 @@ import (
 var (
 	runningInLinux    = runtime.GOOS == "linux"
 	runningInTestMode = config.TestMode == "true"
-
-	prof = common.Profile
 )
 
 var profileCmd = &cobra.Command{
@@ -59,8 +57,8 @@ var profileListCmd = &cobra.Command{
 		c := cli.New(cmd, args)
 		common.InitProfile(c, false)
 
-		for _, p := range prof.GetGlobalConfig().ListProfiles() {
-			if p == prof.GetGlobalConfig().GetDefaultProfile() {
+		for _, p := range common.Profile.GetGlobalConfig().ListProfiles() {
+			if p == common.Profile.GetGlobalConfig().GetDefaultProfile() {
 				c.Printf("* %s\n", p)
 				continue
 			}
@@ -78,13 +76,13 @@ var profileGetCmd = &cobra.Command{
 		common.InitProfile(c, false)
 
 		profileName := args[0]
-		p, err := prof.GetProfile(profileName)
+		p, err := common.Profile.GetProfile(profileName)
 		if err != nil {
 			c.ExitWithError("Failed to load profile", err)
 		}
 
 		isDefault := "false"
-		if p.GetProfileName() == prof.GetGlobalConfig().GetDefaultProfile() {
+		if p.GetProfileName() == common.Profile.GetGlobalConfig().GetDefaultProfile() {
 			isDefault = "true"
 		}
 
@@ -118,7 +116,7 @@ var profileDeleteCmd = &cobra.Command{
 		// TODO: suggest delete-all command to delete all profiles including default
 
 		c.Printf("Deleting profile %s... ", profileName)
-		if err := prof.DeleteProfile(profileName); err != nil {
+		if err := common.Profile.DeleteProfile(profileName); err != nil {
 			if errors.Is(err, profiles.ErrDeletingDefaultProfile) {
 				c.ExitWithWarning("Profile is set as default. Please set another profile as default before deleting.")
 			}
@@ -141,7 +139,7 @@ var profileSetDefaultCmd = &cobra.Command{
 		profileName := args[0]
 
 		c.Printf("Setting profile %s as default... ", profileName)
-		if err := prof.SetDefaultProfile(profileName); err != nil {
+		if err := common.Profile.SetDefaultProfile(profileName); err != nil {
 			c.ExitWithError("Failed to set default profile", err)
 		}
 		c.Println("ok")
@@ -160,7 +158,7 @@ var profileSetEndpointCmd = &cobra.Command{
 		profileName := args[0]
 		endpoint := args[1]
 
-		p, err := prof.GetProfile(profileName)
+		p, err := common.Profile.GetProfile(profileName)
 		if err != nil {
 			cli.ExitWithError("Failed to load profile", err)
 		}
