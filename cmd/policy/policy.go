@@ -87,7 +87,10 @@ func injectListPaginationFlags(listDoc *man.Doc) {
 	)
 }
 
-func init() {
+// InitCommands sets up all policy subcommands and their flags.
+// Call this explicitly from main before executing the root command.
+func InitCommands() {
+	// Register persistent json flag
 	doc := man.Docs.GetDoc("policy")
 	Cmd.PersistentFlags().BoolVar(
 		&outputFormatJSON,
@@ -95,4 +98,22 @@ func init() {
 		doc.GetDocFlag("json").DefaultAsBool(),
 		doc.GetDocFlag("json").Description,
 	)
+
+	// Initialize all subcommands
+	initActionsCommands()
+	initAttributesCommands()
+	initAttributeValuesCommands()
+	initNamespacesCommands()
+	initSubjectConditionSetsCommands()
+	initSubjectMappingsCommands()
+	initObligationsCommands()
+	initResourceMappingsCommands()
+	initResourceMappingGroupsCommands()
+	initRegisteredResourcesCommands()
+	initKeyManagementCommands()
+	initKeyManagementProviderCommands()
+	initKASRegistryCommands()
+	initKASKeysCommands()
+	initKASGrantsCommands()
+	initBaseKeysCommands()
 }

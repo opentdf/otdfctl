@@ -33,7 +33,8 @@ var (
 	Cmd       = &configDoc.Command
 )
 
-func init() {
+// InitCommands sets up the config command and its flags.
+func InitCommands() {
 	outputDoc.Flags().String(
 		outputDoc.GetDocFlag("format").Name,
 		outputDoc.GetDocFlag("format").Default,

@@ -316,7 +316,7 @@ func pruneSubjectConditionSet(cmd *cobra.Command, args []string) {
 
 var subjectConditionSetsCmd *cobra.Command
 
-func init() {
+func initSubjectConditionSetsCommands() {
 	createDoc := man.Docs.GetCommand("policy/subject-condition-sets/create",
 		man.WithRun(createSubjectConditionSet),
 	)

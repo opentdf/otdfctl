@@ -50,25 +50,25 @@ func codeLogin(cmd *cobra.Command, args []string) {
 	c.Println("ok")
 }
 
-var codeLoginCmd *man.Doc
+// newLoginCmd creates and configures the login command with all flags.
+func newLoginCmd() *cobra.Command {
+	doc := man.Docs.GetCommand("auth/login", man.WithRun(codeLogin))
 
-func init() {
-	codeLoginCmd = man.Docs.GetCommand("auth/login",
-		man.WithRun(codeLogin),
-	)
-	codeLoginCmd.Flags().StringP(
-		codeLoginCmd.GetDocFlag("client-id").Name,
-		codeLoginCmd.GetDocFlag("client-id").Shorthand,
-		codeLoginCmd.GetDocFlag("client-id").Default,
-		codeLoginCmd.GetDocFlag("client-id").Description,
+	// Register flags
+	doc.Flags().StringP(
+		doc.GetDocFlag("client-id").Name,
+		doc.GetDocFlag("client-id").Shorthand,
+		doc.GetDocFlag("client-id").Default,
+		doc.GetDocFlag("client-id").Description,
 	)
 
 	// intentionally a string flag to support an empty port which represents a dynamic port
-	codeLoginCmd.Flags().StringP(
-		codeLoginCmd.GetDocFlag("port").Name,
-		codeLoginCmd.GetDocFlag("port").Shorthand,
-		codeLoginCmd.GetDocFlag("port").Default,
-		codeLoginCmd.GetDocFlag("port").Description,
+	doc.Flags().StringP(
+		doc.GetDocFlag("port").Name,
+		doc.GetDocFlag("port").Shorthand,
+		doc.GetDocFlag("port").Default,
+		doc.GetDocFlag("port").Description,
 	)
-	Cmd.AddCommand(&codeLoginCmd.Command)
+
+	return &doc.Command
 }

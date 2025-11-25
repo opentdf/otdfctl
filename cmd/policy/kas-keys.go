@@ -817,7 +817,7 @@ func getLegacyFlag(c *cli.Cli) (*bool, error) {
 	return legacy, nil
 }
 
-func init() {
+func initKASKeysCommands() {
 	// Create Kas Key
 	createDoc := man.Docs.GetCommand("policy/kas-registry/key/create",
 		man.WithRun(policyCreateKasKey),

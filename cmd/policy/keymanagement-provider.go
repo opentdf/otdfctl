@@ -179,7 +179,7 @@ func deleteProviderConfig(cmd *cobra.Command, args []string) {
 	common.HandleSuccess(cmd, id, t, nil)
 }
 
-func init() {
+func initKeyManagementProviderCommands() {
 	// Create Provider Config
 	createDoc := man.Docs.GetCommand("policy/key-management/provider/create",
 		man.WithRun(createProviderConfig),

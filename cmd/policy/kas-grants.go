@@ -207,7 +207,7 @@ func listKasGrants(cmd *cobra.Command, args []string) {
 	common.HandleSuccess(cmd, "", t, grants)
 }
 
-func init() {
+func initKASGrantsCommands() {
 	assignCmd := man.Docs.GetCommand("policy/kas-grants/assign",
 		man.WithRun(assignKasGrant),
 	)

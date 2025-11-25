@@ -447,7 +447,7 @@ func parseActionAttributeValueArgs(args []string) []*registeredresources.ActionA
 	return parsed
 }
 
-func init() {
+func initRegisteredResourcesCommands() {
 	// Registered Resources commands
 
 	getDoc := man.Docs.GetCommand("policy/registered-resources/get",

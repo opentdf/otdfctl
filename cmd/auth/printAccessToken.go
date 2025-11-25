@@ -9,9 +9,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var printAccessTokenCmd = man.Docs.GetCommand("auth/print-access-token",
-	man.WithRun(printAccessTokenRun))
-
 func printAccessTokenRun(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	_, cp := common.InitProfile(c, false)
@@ -36,12 +33,16 @@ func printAccessTokenRun(cmd *cobra.Command, args []string) {
 	c.PrintIfJSON(tok)
 }
 
-func init() {
-	printAccessTokenCmd.Flags().Bool(
-		printAccessTokenCmd.GetDocFlag("json").Name,
-		printAccessTokenCmd.GetDocFlag("json").DefaultAsBool(),
-		printAccessTokenCmd.GetDocFlag("json").Description,
+// newPrintAccessTokenCmd creates and configures the print-access-token command.
+func newPrintAccessTokenCmd() *cobra.Command {
+	doc := man.Docs.GetCommand("auth/print-access-token", man.WithRun(printAccessTokenRun))
+
+	// Register flags
+	doc.Flags().Bool(
+		doc.GetDocFlag("json").Name,
+		doc.GetDocFlag("json").DefaultAsBool(),
+		doc.GetDocFlag("json").Description,
 	)
 
-	Cmd.AddCommand(&printAccessTokenCmd.Command)
+	return &doc.Command
 }

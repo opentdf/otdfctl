@@ -320,7 +320,7 @@ func policyRemoveKeyFromNamespace(cmd *cobra.Command, args []string) {
 	common.HandleSuccess(cmd, namespace, t, nil)
 }
 
-func init() {
+func initNamespacesCommands() {
 	getCmd := man.Docs.GetCommand("policy/attributes/namespaces/get",
 		man.WithRun(getAttributeNamespace),
 	)

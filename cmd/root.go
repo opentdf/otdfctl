@@ -128,4 +128,17 @@ func init() {
 		rootCmd.GetDocFlag("with-access-token").Description,
 	)
 	RootCmd.AddGroup(&cobra.Group{ID: tdf.GroupID})
+
+	// Initialize all subcommands that have been refactored to use explicit initialization
+	auth.InitCommands()
+	configCmd.InitCommands()
+	policy.InitCommands()
+	dev.InitCommands()
+	tdf.InitEncryptCommand()
+	tdf.InitDecryptCommand()
+	tdf.InitInspectCommand()
+	InitProfileCommands()
+
+	// Add interactive command
+	RootCmd.AddCommand(newInteractiveCmd())
 }

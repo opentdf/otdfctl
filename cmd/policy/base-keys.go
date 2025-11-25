@@ -141,7 +141,8 @@ func setBaseKey(cmd *cobra.Command, args []string) {
 	common.HandleSuccess(cmd, "", t, baseKey)
 }
 
-func init() {
+// initBaseKeysCommands sets up the base-keys command and its subcommands.
+func initBaseKeysCommands() {
 	getDoc := man.Docs.GetCommand("policy/kas-registry/key/base/get",
 		man.WithRun(getBaseKey),
 	)

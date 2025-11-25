@@ -179,7 +179,7 @@ func deleteResourceMapping(cmd *cobra.Command, args []string) {
 	common.HandleSuccess(cmd, resourceMapping.GetId(), t, resourceMapping)
 }
 
-func init() {
+func initResourceMappingsCommands() {
 	createDoc := man.Docs.GetCommand("policy/resource-mappings/create",
 		man.WithRun(createResourceMapping),
 	)

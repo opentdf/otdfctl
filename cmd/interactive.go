@@ -8,8 +8,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func init() {
-	cmd := man.Docs.GetCommand("interactive",
+// newInteractiveCmd creates and configures the interactive command.
+func newInteractiveCmd() *cobra.Command {
+	doc := man.Docs.GetCommand("interactive",
 		man.WithRun(func(cmd *cobra.Command, args []string) {
 			c := cli.New(cmd, args)
 			h := common.NewHandler(c)
@@ -17,5 +18,5 @@ func init() {
 			tui.StartTea(h)
 		}),
 	)
-	RootCmd.AddCommand(&cmd.Command)
+	return &doc.Command
 }

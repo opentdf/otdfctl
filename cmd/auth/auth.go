@@ -17,7 +17,10 @@ var (
 	Cmd = &authCmd.Command
 )
 
-func init() {
+// InitCommands sets up all auth subcommands and their flags.
+// Call this explicitly from main before executing the root command.
+func InitCommands() {
+	// Set up platform-specific warning for Linux
 	authCmd.PersistentPreRun = func(cmd *cobra.Command, args []string) {
 		// not supported on linux
 		if runtime.GOOS == "linux" {
@@ -27,4 +30,11 @@ func init() {
 			)
 		}
 	}
+
+	// Register all subcommands
+	Cmd.AddCommand(newLoginCmd())
+	Cmd.AddCommand(newLogoutCmd())
+	Cmd.AddCommand(newClientCredentialsCmd())
+	Cmd.AddCommand(newClearClientCredentialsCmd())
+	Cmd.AddCommand(newPrintAccessTokenCmd())
 }

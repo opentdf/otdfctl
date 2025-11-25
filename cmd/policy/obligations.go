@@ -508,7 +508,7 @@ func parseTriggers(triggerInput string) ([]*obligations.ValueTriggerRequest, err
 	return valueTriggerRequests, nil
 }
 
-func init() {
+func initObligationsCommands() {
 	// Obligations commands
 	getDoc := man.Docs.GetCommand("policy/obligations/get",
 		man.WithRun(policyGetObligation),

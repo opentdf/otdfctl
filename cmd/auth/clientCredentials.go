@@ -9,11 +9,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var clientCredentialsCmd = man.Docs.GetCommand("auth/client-credentials",
-	man.WithRun(clientCredentialsRun),
-	man.WithHiddenFlags("with-client-creds", "with-client-creds-file"),
-)
-
 func clientCredentialsRun(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	_, cp := common.InitProfile(c, false)
@@ -62,6 +57,11 @@ func clientCredentialsRun(cmd *cobra.Command, args []string) {
 	c.Println("ok")
 }
 
-func init() {
-	Cmd.AddCommand(&clientCredentialsCmd.Command)
+// newClientCredentialsCmd creates and configures the client-credentials command.
+func newClientCredentialsCmd() *cobra.Command {
+	doc := man.Docs.GetCommand("auth/client-credentials",
+		man.WithRun(clientCredentialsRun),
+		man.WithHiddenFlags("with-client-creds", "with-client-creds-file"),
+	)
+	return &doc.Command
 }

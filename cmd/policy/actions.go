@@ -166,7 +166,7 @@ func policyUpdateAction(cmd *cobra.Command, args []string) {
 	common.HandleSuccess(cmd, id, t, updated)
 }
 
-func init() {
+func initActionsCommands() {
 	getDoc := man.Docs.GetCommand("policy/actions/get",
 		man.WithRun(policyGetAction),
 	)

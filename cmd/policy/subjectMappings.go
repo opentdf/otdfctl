@@ -317,7 +317,7 @@ func policyMatchSubjectMappings(cmd *cobra.Command, args []string) {
 	common.HandleSuccess(cmd, "", t, matched)
 }
 
-func init() {
+func initSubjectMappingsCommands() {
 	getDoc := man.Docs.GetCommand("policy/subject-mappings/get",
 		man.WithRun(policyGetSubjectMapping),
 	)

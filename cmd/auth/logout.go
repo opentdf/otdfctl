@@ -37,11 +37,8 @@ func logout(cmd *cobra.Command, args []string) {
 	c.Println("ok")
 }
 
-var codeLogoutCmd *man.Doc
-
-func init() {
-	codeLogoutCmd = man.Docs.GetCommand("auth/logout",
-		man.WithRun(logout),
-	)
-	Cmd.AddCommand(&codeLogoutCmd.Command)
+// newLogoutCmd creates and configures the logout command.
+func newLogoutCmd() *cobra.Command {
+	doc := man.Docs.GetCommand("auth/logout", man.WithRun(logout))
+	return &doc.Command
 }

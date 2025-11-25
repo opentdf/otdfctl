@@ -278,7 +278,7 @@ func policyRemoveKeyFromAttrValue(cmd *cobra.Command, args []string) {
 	common.HandleSuccess(cmd, value, t, nil)
 }
 
-func init() {
+func initAttributeValuesCommands() {
 	createCmd := man.Docs.GetCommand("policy/attributes/values/create",
 		man.WithRun(createAttributeValue),
 	)

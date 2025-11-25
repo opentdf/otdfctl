@@ -59,7 +59,9 @@ func selectorsTest(cmd *cobra.Command, args []string) {
 	cli.PrintSuccessTable(cmd, "", t)
 }
 
-func init() {
+// initSelectorsCommands sets up the selectors subcommand and its children.
+// Called from dev.go InitCommands.
+func initSelectorsCommands() {
 	genCmd := man.Docs.GetCommand("dev/selectors/generate",
 		man.WithRun(selectorsGen),
 	)

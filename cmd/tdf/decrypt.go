@@ -95,7 +95,8 @@ func decryptRun(cmd *cobra.Command, args []string) {
 	}
 }
 
-func init() {
+// InitDecryptCommand sets up the decrypt command with all flags.
+func InitDecryptCommand() {
 	decryptDoc.Flags().StringP(
 		decryptDoc.GetDocFlag("out").Name,
 		decryptDoc.GetDocFlag("out").Shorthand,

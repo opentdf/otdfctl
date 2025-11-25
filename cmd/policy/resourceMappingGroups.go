@@ -154,7 +154,7 @@ func policyDeleteResourceMappingGroup(cmd *cobra.Command, args []string) {
 	common.HandleSuccess(cmd, resourceMappingGroup.GetId(), t, resourceMappingGroup)
 }
 
-func init() {
+func initResourceMappingGroupsCommands() {
 	createDoc := man.Docs.GetCommand("policy/resource-mapping-groups/create",
 		man.WithRun(policyCreateResourceMappingGroup),
 	)

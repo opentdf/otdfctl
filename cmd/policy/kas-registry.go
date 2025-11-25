@@ -213,7 +213,7 @@ func deleteKeyAccessRegistry(cmd *cobra.Command, args []string) {
 	common.HandleSuccess(cmd, kas.GetId(), t, kas)
 }
 
-func init() {
+func initKASRegistryCommands() {
 	getDoc := man.Docs.GetCommand("policy/kas-registry/get",
 		man.WithRun(getKeyAccessRegistry),
 	)
