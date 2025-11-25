@@ -19,8 +19,6 @@ var (
 		Short: man.Docs.GetDoc("policy").Short,
 		Long:  man.Docs.GetDoc("policy").Long,
 	}
-
-	outputFormatJSON bool
 )
 
 func getMetadataRows(m *common.Metadata) [][]string {
@@ -90,15 +88,6 @@ func injectListPaginationFlags(listDoc *man.Doc) {
 // InitCommands sets up all policy subcommands and their flags.
 // Call this explicitly from main before executing the root command.
 func InitCommands() {
-	// Register persistent json flag
-	doc := man.Docs.GetDoc("policy")
-	Cmd.PersistentFlags().BoolVar(
-		&outputFormatJSON,
-		doc.GetDocFlag("json").Name,
-		doc.GetDocFlag("json").DefaultAsBool(),
-		doc.GetDocFlag("json").Description,
-	)
-
 	// Initialize all subcommands
 	initActionsCommands()
 	initAttributesCommands()

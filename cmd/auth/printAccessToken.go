@@ -36,13 +36,5 @@ func printAccessTokenRun(cmd *cobra.Command, args []string) {
 // newPrintAccessTokenCmd creates and configures the print-access-token command.
 func newPrintAccessTokenCmd() *cobra.Command {
 	doc := man.Docs.GetCommand("auth/print-access-token", man.WithRun(printAccessTokenRun))
-
-	// Register flags
-	doc.Flags().Bool(
-		doc.GetDocFlag("json").Name,
-		doc.GetDocFlag("json").DefaultAsBool(),
-		doc.GetDocFlag("json").Description,
-	)
-
 	return &doc.Command
 }
