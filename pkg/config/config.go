@@ -37,11 +37,6 @@ type Config struct {
 	Output Output `yaml:"output"`
 }
 
-// captures all CLI flags that will override pre-specified config values
-type ConfigFlagOverrides struct {
-	OutputFormatJSON bool
-}
-
 const (
 	OutputJSON   = "json"
 	OutputStyled = "styled"

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"runtime"
 
+	"github.com/opentdf/otdfctl/cmd/common"
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/config"
 	"github.com/opentdf/otdfctl/pkg/profiles"
@@ -30,7 +31,7 @@ var profileCreateCmd = &cobra.Command{
 	Args: cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		c := cli.New(cmd, args)
-		InitProfile(c, true)
+		common.InitProfile(c, true)
 
 		profileName := args[0]
 		endpoint := args[1]
@@ -39,7 +40,7 @@ var profileCreateCmd = &cobra.Command{
 		tlsNoVerify := c.FlagHelper.GetOptionalBool("tls-no-verify")
 
 		c.Printf("Creating profile %s... ", profileName)
-		if err := profile.AddProfile(profileName, endpoint, tlsNoVerify, setDefault); err != nil {
+		if err := common.Profile.AddProfile(profileName, endpoint, tlsNoVerify, setDefault); err != nil {
 			c.Println("failed")
 			c.ExitWithError("Failed to create profile", err)
 		}
@@ -54,10 +55,10 @@ var profileListCmd = &cobra.Command{
 	Short: "List profiles",
 	Run: func(cmd *cobra.Command, args []string) {
 		c := cli.New(cmd, args)
-		InitProfile(c, false)
+		common.InitProfile(c, false)
 
-		for _, p := range profile.GetGlobalConfig().ListProfiles() {
-			if p == profile.GetGlobalConfig().GetDefaultProfile() {
+		for _, p := range common.Profile.GetGlobalConfig().ListProfiles() {
+			if p == common.Profile.GetGlobalConfig().GetDefaultProfile() {
 				c.Printf("* %s\n", p)
 				continue
 			}
@@ -72,16 +73,16 @@ var profileGetCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		c := cli.New(cmd, args)
-		InitProfile(c, false)
+		common.InitProfile(c, false)
 
 		profileName := args[0]
-		p, err := profile.GetProfile(profileName)
+		p, err := common.Profile.GetProfile(profileName)
 		if err != nil {
 			c.ExitWithError("Failed to load profile", err)
 		}
 
 		isDefault := "false"
-		if p.GetProfileName() == profile.GetGlobalConfig().GetDefaultProfile() {
+		if p.GetProfileName() == common.Profile.GetGlobalConfig().GetDefaultProfile() {
 			isDefault = "true"
 		}
 
@@ -108,14 +109,14 @@ var profileDeleteCmd = &cobra.Command{
 	Short: "Delete a profile",
 	Run: func(cmd *cobra.Command, args []string) {
 		c := cli.New(cmd, args)
-		InitProfile(c, false)
+		common.InitProfile(c, false)
 
 		profileName := args[0]
 
 		// TODO: suggest delete-all command to delete all profiles including default
 
 		c.Printf("Deleting profile %s... ", profileName)
-		if err := profile.DeleteProfile(profileName); err != nil {
+		if err := common.Profile.DeleteProfile(profileName); err != nil {
 			if errors.Is(err, profiles.ErrDeletingDefaultProfile) {
 				c.ExitWithWarning("Profile is set as default. Please set another profile as default before deleting.")
 			}
@@ -133,12 +134,12 @@ var profileSetDefaultCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		c := cli.New(cmd, args)
-		InitProfile(c, false)
+		common.InitProfile(c, false)
 
 		profileName := args[0]
 
 		c.Printf("Setting profile %s as default... ", profileName)
-		if err := profile.SetDefaultProfile(profileName); err != nil {
+		if err := common.Profile.SetDefaultProfile(profileName); err != nil {
 			c.ExitWithError("Failed to set default profile", err)
 		}
 		c.Println("ok")
@@ -152,12 +153,12 @@ var profileSetEndpointCmd = &cobra.Command{
 	Args: cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		c := cli.New(cmd, args)
-		InitProfile(c, false)
+		common.InitProfile(c, false)
 
 		profileName := args[0]
 		endpoint := args[1]
 
-		p, err := profile.GetProfile(profileName)
+		p, err := common.Profile.GetProfile(profileName)
 		if err != nil {
 			cli.ExitWithError("Failed to load profile", err)
 		}
@@ -170,7 +171,7 @@ var profileSetEndpointCmd = &cobra.Command{
 	},
 }
 
-func init() {
+func InitProfileCommands() {
 	profileCreateCmd.Flags().Bool("set-default", false, "Set the profile as default")
 	profileCreateCmd.Flags().Bool("tls-no-verify", false, "Disable TLS verification")
 

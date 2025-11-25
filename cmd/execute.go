@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/opentdf/otdfctl/cmd/common"
 	"github.com/opentdf/otdfctl/pkg/config"
 	"github.com/spf13/cobra"
 )
@@ -48,7 +49,7 @@ func Execute(opts ...ExecuteOptFunc) {
 	// }
 	// TODO remove this when we force creation of the config
 	if cfg != nil {
-		OtdfctlCfg = *cfg
+		common.OtdfctlCfg = *cfg
 	}
 
 	if c.mountTo != nil {
