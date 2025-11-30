@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"errors"
+	"fmt"
 	"runtime"
 	"strings"
 
@@ -22,7 +23,6 @@ const (
 var (
 	runningInLinux        = runtime.GOOS == "linux"
 	runningInTestMode     = config.TestMode == "true"
-	errCreatingPlatform   = errors.New("error when creating platform")
 	errCreatingNewProfile = errors.New("error creating profile")
 	errCleaningUpKeyring  = errors.New("error occurred when cleaning up keyring")
 )
@@ -30,7 +30,7 @@ var (
 func newFileStoreProfiler() *osprofiles.Profiler {
 	platform, err := osplatform.NewPlatform(config.ServicePublisher, config.AppName, runtime.GOOS)
 	if err != nil {
-		cli.ExitWithError(errCreatingPlatform.Error(), err)
+		cli.ExitWithError(profiles.ErrCreatingPlatform.Error(), err)
 	}
 	profiler, err := osprofiles.New(config.AppName, osprofiles.WithFileStore(platform.UserAppConfigDirectory()))
 	if err != nil {
@@ -77,30 +77,27 @@ var profileCreateCmd = &cobra.Command{
 	//nolint:mnd // two args
 	Args: cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
+		var storeType profiles.ProfileDriver
+
 		c := cli.New(cmd, args)
 		profileName := args[0]
 		endpoint := args[1]
 
 		setDefault := c.FlagHelper.GetOptionalBool("set-default")
 		tlsNoVerify := c.FlagHelper.GetOptionalBool("tls-no-verify")
+		store := c.FlagHelper.GetOptionalString("store")
+		switch store {
+		case string(profiles.PROFILE_DRIVER_FILE_SYSTEM):
+			storeType = profiles.PROFILE_DRIVER_FILE_SYSTEM
+		case string(profiles.PROFILE_DRIVER_KEYRING):
+			storeType = profiles.PROFILE_DRIVER_KEYRING
+		default:
+			cli.ExitWithError("", fmt.Errorf("unrecognized store type %s", store))
+		}
 
-		//profiler := newFileStoreProfiler()
-		//
-		platform, err := osplatform.NewPlatform(config.ServicePublisher, config.AppName, runtime.GOOS)
+		c.Printf("Creating profile %s...", profileName)
+		_, err := profiles.NewOtdfctlProfileStore(storeType, profileName, endpoint, tlsNoVerify, setDefault)
 		if err != nil {
-			cli.ExitWithError(errCreatingPlatform.Error(), err)
-		}
-
-		profiler := newProfiler(c)
-
-		profile := &profiles.ProfileConfig{
-			Name:        profileName,
-			Endpoint:    endpoint,
-			TlsNoVerify: tlsNoVerify,
-		}
-
-		c.Printf("Creating profile %s at location, %s...", profileName, platform.UserAppConfigDirectory())
-		if err := profiler.AddProfile(profile, setDefault); err != nil {
 			c.Println("failed")
 			c.ExitWithError("Failed to create profile", err)
 		}
@@ -139,6 +136,7 @@ var profileGetCmd = &cobra.Command{
 
 		profiler := newProfiler(c)
 
+		// TODO: Change this with load.
 		store, err := osprofiles.GetProfile[*profiles.ProfileConfig](profiler, profileName)
 		if err != nil {
 			c.ExitWithError("Failed to load profile", err)
@@ -249,8 +247,51 @@ var profileSetEndpointCmd = &cobra.Command{
 	},
 }
 
-// TODO: Profiles clear - Delete the global file first, and then attempt to delete the other profiles.
-// ! Add force and confirmation UI.
+func migrateKeyringProfilesToFilesystem(c *cli.Cli) {
+	keyringProfiler, err := osprofiles.New(config.AppName, osprofiles.WithKeyringStore())
+	if err != nil {
+		c.ExitWithError("Failed to initialize keyring profile store", err)
+	}
+
+	filesystemProfiler := newFileStoreProfiler()
+
+	profilesInKeyring := osprofiles.ListProfiles(keyringProfiler)
+	if len(profilesInKeyring) == 0 {
+		c.Println("No profiles found in keyring store to migrate.")
+		return
+	}
+
+	defaultKeyringProfile := osprofiles.GetGlobalConfig(keyringProfiler).GetDefaultProfile()
+
+	c.Printf("Migrating %d profiles from keyring to filesystem...\n", len(profilesInKeyring))
+
+	for _, profileName := range profilesInKeyring {
+		store, err := osprofiles.GetProfile[*profiles.ProfileConfig](keyringProfiler, profileName)
+		if err != nil {
+			c.ExitWithError("Failed to load profile from keyring", err)
+		}
+
+		p, ok := store.Profile.(*profiles.ProfileConfig)
+		if !ok || p == nil {
+			c.ExitWithError("Failed to load profile from keyring", errors.New("invalid profile configuration"))
+		}
+
+		setDefault := profileName == defaultKeyringProfile
+
+		if err := filesystemProfiler.AddProfile(p, setDefault); err != nil {
+			c.ExitWithError("Failed to migrate profile", err)
+		}
+
+		c.Printf("Migrated profile %s, set to default: %t\n", profileName, setDefault)
+	}
+
+	c.Printf("Removing %d profiles from the keyring\n", len(profilesInKeyring))
+	if err = keyringProfiler.Cleanup(false); err != nil {
+		cli.ExitWithError(errCleaningUpKeyring.Error(), err)
+	}
+
+	c.Println("Migration complete.")
+}
 
 var profileMigrateCmd = &cobra.Command{
 	Use:   "migrate",
@@ -258,50 +299,7 @@ var profileMigrateCmd = &cobra.Command{
 	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		c := cli.New(cmd, args)
-
-		keyringProfiler, err := osprofiles.New(config.AppName, osprofiles.WithKeyringStore())
-		if err != nil {
-			c.ExitWithError("Failed to initialize keyring profile store", err)
-		}
-
-		filesystemProfiler := newFileStoreProfiler()
-
-		profilesInKeyring := osprofiles.ListProfiles(keyringProfiler)
-		if len(profilesInKeyring) == 0 {
-			c.Println("No profiles found in keyring store to migrate.")
-			return
-		}
-
-		defaultKeyringProfile := osprofiles.GetGlobalConfig(keyringProfiler).GetDefaultProfile()
-
-		c.Printf("Migrating %d profiles from keyring to filesystem...\n", len(profilesInKeyring))
-
-		for _, profileName := range profilesInKeyring {
-			store, err := osprofiles.GetProfile[*profiles.ProfileConfig](keyringProfiler, profileName)
-			if err != nil {
-				c.ExitWithError("Failed to load profile from keyring", err)
-			}
-
-			p, ok := store.Profile.(*profiles.ProfileConfig)
-			if !ok || p == nil {
-				c.ExitWithError("Failed to load profile from keyring", errors.New("invalid profile configuration"))
-			}
-
-			setDefault := profileName == defaultKeyringProfile
-
-			if err := filesystemProfiler.AddProfile(p, setDefault); err != nil {
-				c.ExitWithError("Failed to migrate profile", err)
-			}
-
-			c.Printf("Migrated profile %s, set to default: %t\n", profileName, setDefault)
-		}
-
-		c.Printf("Removing %d profiles from the keyring\n", len(profilesInKeyring))
-		if err = keyringProfiler.Cleanup(false); err != nil {
-			cli.ExitWithError(errCleaningUpKeyring.Error(), err)
-		}
-
-		c.Println("Migration complete.")
+		migrateKeyringProfilesToFilesystem(c)
 	},
 }
 

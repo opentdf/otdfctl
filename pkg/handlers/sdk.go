@@ -26,7 +26,7 @@ type handlerOpts struct {
 	endpoint    string
 	tlsNoVerify bool
 
-	profile *profiles.ProfileStore
+	profile *profiles.OtdfctlProfileStore
 
 	sdkOpts []sdk.Option
 }
@@ -41,7 +41,7 @@ func WithEndpoint(endpoint string, tlsNoVerify bool) handlerOptsFunc {
 	}
 }
 
-func WithProfile(profile *profiles.ProfileStore) handlerOptsFunc {
+func WithProfile(profile *profiles.OtdfctlProfileStore) handlerOptsFunc {
 	return func(c handlerOpts) handlerOpts {
 		c.profile = profile
 		c.endpoint = profile.GetEndpoint()

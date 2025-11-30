@@ -1,14 +1,28 @@
 package profiles
 
 import (
+	"errors"
+	"runtime"
+
+	osprofiles "github.com/jrschumacher/go-osprofiles"
+	osplatform "github.com/jrschumacher/go-osprofiles/pkg/platform"
 	"github.com/opentdf/otdfctl/pkg/config"
 	"github.com/opentdf/otdfctl/pkg/utils"
 )
 
-type ProfileStore struct {
-	store StoreInterface
+type ProfileDriver string
 
-	config ProfileConfig
+const (
+	PROFILE_DRIVER_KEYRING     ProfileDriver = "keyring"
+	PROFILE_DRIVER_IN_MEMORY   ProfileDriver = "in-memory"
+	PROFILE_DRIVER_FILE_SYSTEM ProfileDriver = "filesystem"
+	PROFILE_DRIVER_DEFAULT                   = PROFILE_DRIVER_FILE_SYSTEM
+)
+
+type OtdfctlProfileStore struct {
+	store    osprofiles.ProfileStore
+	config   *ProfileConfig // Pointer to the store.Profile field. Use for sets/reads.
+	profiler osprofiles.Profiler
 }
 
 type ProfileConfig struct {
@@ -22,80 +36,97 @@ func (pc *ProfileConfig) GetName() string {
 	return pc.Name
 }
 
-func NewProfileStore(newStore NewStoreInterface, profileName string, endpoint string, tlsNoVerify bool) (*ProfileStore, error) {
-	if err := validateProfileName(profileName); err != nil {
+func createProfiler(profileType ProfileDriver) (*osprofiles.Profiler, error) {
+	switch profileType {
+	case PROFILE_DRIVER_IN_MEMORY:
+		return osprofiles.New(config.AppName, osprofiles.WithInMemoryStore())
+	case PROFILE_DRIVER_KEYRING:
+		return osprofiles.New(config.AppName, osprofiles.WithKeyringStore())
+	default:
+		platform, err := osplatform.NewPlatform(config.ServicePublisher, config.AppName, runtime.GOOS)
+		if err != nil {
+			return nil, errors.Join(ErrCreatingPlatform, err)
+		}
+		return osprofiles.New(config.AppName, osprofiles.WithFileStore(platform.UserAppConfigDirectory()))
+	}
+}
+
+func NewOtdfctlProfileStore(profileType ProfileDriver, profileName string, endpoint string, tlsNoVerify, setDefault bool) (*OtdfctlProfileStore, error) {
+	profiler, err := createProfiler(profileType)
+	if err != nil {
 		return nil, err
 	}
+
 	u, err := utils.NormalizeEndpoint(endpoint)
 	if err != nil {
 		return nil, err
 	}
 
-	p := &ProfileStore{
-		store: newStore(config.AppName, getStoreKey(profileName)),
-		config: ProfileConfig{
-			Name:        profileName,
-			Endpoint:    u.String(),
-			TlsNoVerify: tlsNoVerify,
-		},
+	p := &ProfileConfig{
+		Name:        profileName,
+		Endpoint:    u.String(),
+		TlsNoVerify: tlsNoVerify,
 	}
-	return p, nil
-}
-
-func LoadProfileStore(newStore NewStoreInterface, profileName string) (*ProfileStore, error) {
-	if err := validateProfileName(profileName); err != nil {
+	err = profiler.AddProfile(p, setDefault)
+	if err != nil {
 		return nil, err
 	}
 
-	p := &ProfileStore{
-		store: newStore(config.AppName, getStoreKey(profileName)),
+	store, err := osprofiles.GetProfile[*ProfileConfig](profiler, profileName)
+	if err != nil {
+		return nil, err
 	}
-	return p, p.Get()
+
+	// Cast Profile to ProfileConfig
+	pc, ok := store.Profile.(*ProfileConfig)
+	if !ok {
+		return nil, errors.Join(ErrProfileIncorrectType, err)
+	}
+
+	return &OtdfctlProfileStore{
+		store:    *store,
+		config:   pc,
+		profiler: *profiler,
+	}, nil
 }
 
-func (p *ProfileStore) Get() error {
-	return p.store.Get(&p.config)
+func LoadOtdfctlProfileStore(profiler *osprofiles.Profiler, profileName string) (*OtdfctlProfileStore, error) {
+	store, err := osprofiles.GetProfile[*ProfileConfig](profiler, profileName)
+	if err != nil {
+		return nil, err
+	}
+
+	pc, ok := store.Profile.(*ProfileConfig)
+	if !ok {
+		return nil, errors.Join(ErrProfileIncorrectType, err)
+	}
+
+	return &OtdfctlProfileStore{
+		store:    *store,
+		config:   pc,
+		profiler: *profiler,
+	}, nil
 }
 
-func (p *ProfileStore) Save() error {
-	return p.store.Set(p.config)
-}
-
-func (p *ProfileStore) Delete() error {
-	return p.store.Delete()
-}
-
-// Profile Name
-func (p *ProfileStore) GetProfileName() string {
-	return p.config.Name
-}
-
-// Endpoint
-func (p *ProfileStore) GetEndpoint() string {
+func (p *OtdfctlProfileStore) GetEndpoint() string {
 	return p.config.Endpoint
 }
 
-func (p *ProfileStore) SetEndpoint(endpoint string) error {
+func (p *OtdfctlProfileStore) SetEndpoint(endpoint string) error {
 	u, err := utils.NormalizeEndpoint(endpoint)
 	if err != nil {
 		return err
 	}
+
 	p.config.Endpoint = u.String()
-	return p.Save()
+	return p.store.Save()
 }
 
-// TLS No Verify
-func (p *ProfileStore) GetTLSNoVerify() bool {
+func (p *OtdfctlProfileStore) GetTLSNoVerify() bool {
 	return p.config.TlsNoVerify
 }
 
-func (p *ProfileStore) SetTLSNoVerify(tlsNoVerify bool) error {
+func (p *OtdfctlProfileStore) SetTLSNoVerify(tlsNoVerify bool) error {
 	p.config.TlsNoVerify = tlsNoVerify
-	return p.Save()
-}
-
-// utility functions
-
-func getStoreKey(n string) string {
-	return STORE_KEY_PROFILE + "-" + n
+	return p.store.Save()
 }

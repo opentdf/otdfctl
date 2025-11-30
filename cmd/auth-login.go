@@ -10,7 +10,7 @@ import (
 
 func auth_codeLogin(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
-	_, cp := InitProfile(c, false)
+	cp := InitProfile(c)
 
 	c.Print("Initiating login...")
 	clientID := c.FlagHelper.GetRequiredString("client-id")
@@ -39,12 +39,6 @@ func auth_codeLogin(cmd *cobra.Command, args []string) {
 		},
 	}); err != nil {
 		c.ExitWithError("failed to set auth credentials", err)
-	}
-
-	c.Print("Storing credentials to profile in keyring...")
-	if err := cp.Save(); err != nil {
-		c.Println("failed")
-		c.ExitWithError("An error occurred while storing authentication credentials", err)
 	}
 	c.Println("ok")
 }

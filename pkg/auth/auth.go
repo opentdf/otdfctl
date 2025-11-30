@@ -139,7 +139,7 @@ func ParseClaimsJWT(accessToken string) (JWTClaims, error) {
 	return c, nil
 }
 
-func GetSDKAuthOptionFromProfile(profile *profiles.ProfileStore) (sdk.Option, error) {
+func GetSDKAuthOptionFromProfile(profile *profiles.OtdfctlProfileStore) (sdk.Option, error) {
 	c := profile.GetAuthCredentials()
 
 	switch c.AuthType {
@@ -153,8 +153,9 @@ func GetSDKAuthOptionFromProfile(profile *profiles.ProfileStore) (sdk.Option, er
 	}
 }
 
-func ValidateProfileAuthCredentials(ctx context.Context, profile *profiles.ProfileStore) error {
+func ValidateProfileAuthCredentials(ctx context.Context, profile *profiles.OtdfctlProfileStore) error {
 	c := profile.GetAuthCredentials()
+
 	switch c.AuthType {
 	case "":
 		return ErrProfileCredentialsNotFound
@@ -174,8 +175,9 @@ func ValidateProfileAuthCredentials(ctx context.Context, profile *profiles.Profi
 	return nil
 }
 
-func GetTokenWithProfile(ctx context.Context, profile *profiles.ProfileStore) (*oauth2.Token, error) {
+func GetTokenWithProfile(ctx context.Context, profile *profiles.OtdfctlProfileStore) (*oauth2.Token, error) {
 	c := profile.GetAuthCredentials()
+
 	switch c.AuthType {
 	case profiles.PROFILE_AUTH_TYPE_CLIENT_CREDENTIALS:
 		return GetTokenWithClientCreds(ctx, profile.GetEndpoint(), c.ClientId, c.ClientSecret, profile.GetTLSNoVerify())
