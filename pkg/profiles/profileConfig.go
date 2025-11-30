@@ -18,6 +18,10 @@ type ProfileConfig struct {
 	AuthCredentials AuthCredentials `json:"authCredentials"`
 }
 
+func (pc *ProfileConfig) GetName() string {
+	return pc.Name
+}
+
 func NewProfileStore(newStore NewStoreInterface, profileName string, endpoint string, tlsNoVerify bool) (*ProfileStore, error) {
 	if err := validateProfileName(profileName); err != nil {
 		return nil, err

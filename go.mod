@@ -17,6 +17,7 @@ require (
 	github.com/go-jose/go-jose/v3 v3.0.4
 	github.com/golang-jwt/jwt/v5 v5.3.0
 	github.com/google/uuid v1.6.0
+	github.com/jrschumacher/go-osprofiles v0.0.0-20251126183629-e56461f3d850
 	github.com/opentdf/platform/lib/flattening v0.1.3
 	github.com/opentdf/platform/lib/ocrypto v0.7.0
 	github.com/opentdf/platform/protocol/go v0.13.0
