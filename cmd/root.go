@@ -35,8 +35,6 @@ type version struct {
 }
 
 // InitProfile initializes the profile store and loads the profile specified in the flags
-// if onlyNew is set to true, a new profile will be created and returned
-// returns the profile and the current profile store
 func InitProfile(c *cli.Cli) *profiles.OtdfctlProfileStore {
 	var err error
 	profileName := c.FlagHelper.GetOptionalString("profile")

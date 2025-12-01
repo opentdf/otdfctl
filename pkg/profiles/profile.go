@@ -50,6 +50,8 @@ func ToProfileDriver(driverType string) (ProfileDriver, error) {
 		return ProfileDriverKeyring, nil
 	case string(ProfileDriverFileSystem):
 		return ProfileDriverFileSystem, nil
+	case string(ProfileDriverUnknown):
+		fallthrough
 	default:
 		return ProfileDriverUnknown, ErrUnknownProfileDriverType
 	}
@@ -63,6 +65,8 @@ func CreateProfiler(driverType ProfileDriver) (*osprofiles.Profiler, error) {
 		return osprofiles.New(config.AppName, osprofiles.WithKeyringStore())
 	case ProfileDriverFileSystem:
 		return newFileStoreProfiler()
+	case ProfileDriverUnknown:
+		fallthrough
 	default:
 		return nil, ErrUnknownProfileDriverType
 	}
