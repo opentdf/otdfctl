@@ -18,13 +18,12 @@ var (
 
 type Handler struct {
 	sdk              *sdk.SDK
-	OIDC_TOKEN       string
 	platformEndpoint string
 }
 
 type handlerOpts struct {
 	endpoint    string
-	tlsNoVerify bool
+	TLSNoVerify bool
 
 	profile *profiles.OtdfctlProfileStore
 
@@ -36,7 +35,7 @@ type handlerOptsFunc func(handlerOpts) handlerOpts
 func WithEndpoint(endpoint string, tlsNoVerify bool) handlerOptsFunc {
 	return func(c handlerOpts) handlerOpts {
 		c.endpoint = endpoint
-		c.tlsNoVerify = tlsNoVerify
+		c.TLSNoVerify = tlsNoVerify
 		return c
 	}
 }
@@ -45,7 +44,7 @@ func WithProfile(profile *profiles.OtdfctlProfileStore) handlerOptsFunc {
 	return func(c handlerOpts) handlerOpts {
 		c.profile = profile
 		c.endpoint = profile.GetEndpoint()
-		c.tlsNoVerify = profile.GetTLSNoVerify()
+		c.TLSNoVerify = profile.GetTLSNoVerify()
 
 		// get sdk opts
 		opts, err := auth.GetSDKAuthOptionFromProfile(profile)
@@ -77,7 +76,7 @@ func New(opts ...handlerOptsFunc) (Handler, error) {
 		return Handler{}, err
 	}
 
-	if o.tlsNoVerify {
+	if o.TLSNoVerify {
 		o.sdkOpts = append(o.sdkOpts, sdk.WithInsecureSkipVerifyConn())
 	}
 

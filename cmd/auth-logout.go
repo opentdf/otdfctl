@@ -15,7 +15,7 @@ func auth_logout(cmd *cobra.Command, args []string) {
 
 	// we can only revoke access tokens stored for the code login flow, not client credentials
 	creds := cp.GetAuthCredentials()
-	if creds.AuthType == profiles.PROFILE_AUTH_TYPE_ACCESS_TOKEN {
+	if creds.AuthType == profiles.AuthTypeAccessToken {
 		c.Println("Revoking access token...")
 		if err := auth.RevokeAccessToken(
 			cmd.Context(),

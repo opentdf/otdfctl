@@ -8,12 +8,6 @@ import (
 	"github.com/opentdf/platform/protocol/go/policy/resourcemapping"
 )
 
-type ResourceMapping struct {
-	Id          string
-	AttributeId string
-	Terms       []string
-}
-
 // Creates and returns the created resource mapping
 func (h *Handler) CreateResourceMapping(attributeID string, terms []string, grpID string, metadata *common.MetadataMutable) (*policy.ResourceMapping, error) {
 	res, err := h.sdk.ResourceMapping.CreateResourceMapping(context.Background(), &resourcemapping.CreateResourceMappingRequest{
