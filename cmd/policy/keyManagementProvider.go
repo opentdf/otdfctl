@@ -279,5 +279,5 @@ func initKeyManagementProviderCommands() {
 	doc := man.Docs.GetCommand("policy/key-management/provider",
 		man.WithSubcommands(createDoc, getDoc, updateDoc, listDoc, deleteDoc))
 
-	keyMngmtCmd.AddCommand(&doc.Command)
+	KeyManagementCmd.AddCommand(&doc.Command)
 }

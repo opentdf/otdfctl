@@ -17,7 +17,7 @@ var (
 	attributeValues            []string
 	attributeValuesOrder       []string
 
-	attrsCmd = man.Docs.GetCommand("policy/attributes")
+	AttributesCmd = man.Docs.GetCommand("policy/attributes")
 )
 
 func createAttribute(cmd *cobra.Command, args []string) {
@@ -528,6 +528,6 @@ func initAttributesCommands() {
 
 	keyCmd.AddSubcommands(assignKasKeyCmd, removeKasKeyCmd)
 	unsafeCmd.AddSubcommands(reactivateCmd, deleteCmd, unsafeUpdateCmd)
-	attrsCmd.AddSubcommands(createDoc, getDoc, listDoc, updateDoc, deactivateDoc, unsafeCmd, keyCmd)
-	Cmd.AddCommand(&attrsCmd.Command)
+	AttributesCmd.AddSubcommands(createDoc, getDoc, listDoc, updateDoc, deactivateDoc, unsafeCmd, keyCmd)
+	Cmd.AddCommand(&AttributesCmd.Command)
 }

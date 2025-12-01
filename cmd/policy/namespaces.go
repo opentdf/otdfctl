@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	namespacesCmd = man.Docs.GetCommand("policy/attributes/namespaces")
+	NamespacesCmd = man.Docs.GetCommand("policy/attributes/namespaces")
 
 	forceUnsafe bool
 )
@@ -460,6 +460,6 @@ func initNamespacesCommands() {
 	keyCmd.AddSubcommands(assignKasKeyCmd, removeKasKeyCmd)
 	unsafeCmd.AddSubcommands(deleteCmd, reactivateCmd, unsafeUpdateCmd)
 
-	namespacesCmd.AddSubcommands(getCmd, listCmd, createDoc, updateCmd, deactivateCmd, unsafeCmd, keyCmd)
-	attrsCmd.AddCommand(&namespacesCmd.Command)
+	NamespacesCmd.AddSubcommands(getCmd, listCmd, createDoc, updateCmd, deactivateCmd, unsafeCmd, keyCmd)
+	AttributesCmd.AddCommand(&NamespacesCmd.Command)
 }

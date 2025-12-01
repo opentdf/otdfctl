@@ -1108,5 +1108,5 @@ func initKASKeysCommands() {
 
 	unsafeCmd.AddSubcommands(unsafeDeleteDoc)
 	policyKasRegistryKeysCmd.AddSubcommands(createDoc, getDoc, updateDoc, listDoc, rotateDoc, importDoc, mappingsDoc, unsafeCmd)
-	policyKasRegCmd.AddCommand(&policyKasRegistryKeysCmd.Command)
+	KasRegistryCmd.AddCommand(&policyKasRegistryKeysCmd.Command)
 }

@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	policyKasRegCmd = man.Docs.GetCommand("policy/kas-registry")
+	KasRegistryCmd = man.Docs.GetCommand("policy/kas-registry")
 )
 
 func getKeyAccessRegistry(cmd *cobra.Command, args []string) {
@@ -308,6 +308,6 @@ func initKASRegistryCommands() {
 		deleteDoc.GetDocFlag("force").Description,
 	)
 
-	policyKasRegCmd.AddSubcommands(createDoc, getDoc, listDoc, updateDoc, deleteDoc)
-	Cmd.AddCommand(&policyKasRegCmd.Command)
+	KasRegistryCmd.AddSubcommands(createDoc, getDoc, listDoc, updateDoc, deleteDoc)
+	Cmd.AddCommand(&KasRegistryCmd.Command)
 }

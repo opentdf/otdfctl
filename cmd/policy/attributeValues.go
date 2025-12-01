@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var attrValuesCmd *cobra.Command
+var AttributeValuesCmd *cobra.Command
 
 func createAttributeValue(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
@@ -426,8 +426,8 @@ func initAttributeValuesCommands() {
 	doc := man.Docs.GetCommand("policy/attributes/values",
 		man.WithSubcommands(createCmd, getCmd, listCmd, updateCmd, deactivateCmd, unsafeCmd, keyCmd),
 	)
-	attrValuesCmd = &doc.Command
-	attrsCmd.AddCommand(attrValuesCmd)
+	AttributeValuesCmd = &doc.Command
+	AttributesCmd.AddCommand(AttributeValuesCmd)
 }
 
 func handleValueSuccess(cmd *cobra.Command, v *policy.Value) {

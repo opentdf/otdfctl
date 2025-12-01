@@ -5,9 +5,9 @@ import (
 )
 
 // KeyCmd is the command for managing keys
-var keyMngmtCmd = man.Docs.GetCommand("policy/key-management")
+var KeyManagementCmd = man.Docs.GetCommand("policy/key-management")
 
 // initKeyManagementCommands sets up the key-management command.
 func initKeyManagementCommands() {
-	Cmd.AddCommand(&keyMngmtCmd.Command)
+	Cmd.AddCommand(&KeyManagementCmd.Command)
 }
