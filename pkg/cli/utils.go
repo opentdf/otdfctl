@@ -15,13 +15,13 @@ func CommaSeparated(values []string) string {
 
 var defaultWidth = 80
 
-// Returns the terminal width (overridden by the TEST_TERMINAL_WIDTH env var for testing)
+// Returns the terminal width (overridden by env var for testing)
 func TermWidth() int {
 	var (
 		w   int
 		err error
 	)
-	testSize := os.Getenv(config.TEST_TERMINAL_WIDTH)
+	testSize := os.Getenv(config.TestTerminalWidth)
 	if testSize == "" {
 		w, _, err = term.GetSize(0)
 		if err != nil {

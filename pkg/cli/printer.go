@@ -28,7 +28,7 @@ func newPrinter(cli *Cli) *Printer {
 			ExitWithError("failed to get json flag", err)
 			return nil
 		}
-		p.setJson(json)
+		p.setJSON(json)
 	}
 
 	// if debug output is enabled, enable debug output
@@ -44,7 +44,7 @@ func newPrinter(cli *Cli) *Printer {
 	return p
 }
 
-func (p *Printer) setJson(json bool) {
+func (p *Printer) setJSON(json bool) {
 	p.json = json
 	p.enabled = !json
 }
@@ -76,9 +76,9 @@ func (c *Cli) Debugln(args ...interface{}) {
 	}
 }
 
-// PrintJson prints the given value as json
+// PrintJSON prints the given value as json
 // ignores the printer enabled flag
-func (c *Cli) PrintJson(v interface{}) {
+func (c *Cli) PrintJSON(v interface{}) {
 	b, err := json.MarshalIndent(v, "", "  ")
 	if err != nil {
 		ExitWithError("failed to marshal json", err)
@@ -88,7 +88,7 @@ func (c *Cli) PrintJson(v interface{}) {
 
 func (c *Cli) PrintIfJSON(v interface{}) {
 	if c.printer.json {
-		c.PrintJson(v)
+		c.PrintJSON(v)
 	}
 }
 

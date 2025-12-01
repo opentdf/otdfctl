@@ -105,7 +105,7 @@ func policyCreateSubjectMapping(cmd *cobra.Command, args []string) {
 	h := NewHandler(c)
 	defer h.Close()
 
-	attrValueId := c.Flags.GetRequiredID("attribute-value-id")
+	attrValueID := c.Flags.GetRequiredID("attribute-value-id")
 	actionFlagValues = c.Flags.GetStringSlice("action", actionFlagValues, cli.FlagsStringSliceOptions{Min: 0})
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 	existingSCSId := c.Flags.GetOptionalID("subject-condition-set-id")
@@ -143,7 +143,7 @@ func policyCreateSubjectMapping(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	mapping, err := h.CreateNewSubjectMapping(cmd.Context(), attrValueId, actions, existingSCSId, scs, getMetadataMutable(metadataLabels))
+	mapping, err := h.CreateNewSubjectMapping(cmd.Context(), attrValueID, actions, existingSCSId, scs, getMetadataMutable(metadataLabels))
 	if err != nil {
 		cli.ExitWithError("Failed to create subject mapping", err)
 	}
@@ -212,7 +212,7 @@ func policyUpdateSubjectMapping(cmd *cobra.Command, args []string) {
 
 	id := c.Flags.GetRequiredID("id")
 	actionFlagValues = c.Flags.GetStringSlice("action", actionFlagValues, cli.FlagsStringSliceOptions{Min: 0})
-	scsId := c.Flags.GetOptionalID("subject-condition-set-id")
+	scsID := c.Flags.GetOptionalID("subject-condition-set-id")
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
 	var actions []*policy.Action
@@ -232,7 +232,7 @@ func policyUpdateSubjectMapping(cmd *cobra.Command, args []string) {
 	updated, err := h.UpdateSubjectMapping(
 		cmd.Context(),
 		id,
-		scsId,
+		scsID,
 		actions,
 		getMetadataMutable(metadataLabels),
 		getMetadataUpdateBehavior(),

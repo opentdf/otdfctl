@@ -1,13 +1,13 @@
 package profiles
 
 const (
-	PROFILE_AUTH_TYPE_CLIENT_CREDENTIALS = "client-credentials"
-	PROFILE_AUTH_TYPE_ACCESS_TOKEN       = "access-token"
+	AuthTypeClientCredentials = "client-credentials"
+	AuthTypeAccessToken       = "access-token"
 )
 
 type AuthCredentials struct {
 	AuthType string `json:"authType"`
-	ClientId string `json:"clientId"`
+	ClientID string `json:"clientId"`
 	// Used for client credentials
 	ClientSecret string                     `json:"clientSecret,omitempty"`
 	AccessToken  AuthCredentialsAccessToken `json:"accessToken,omitempty"`

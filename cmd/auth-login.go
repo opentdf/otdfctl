@@ -30,7 +30,7 @@ func auth_codeLogin(cmd *cobra.Command, args []string) {
 
 	// Set the auth credentials to profile
 	if err := cp.SetAuthCredentials(profiles.AuthCredentials{
-		AuthType: profiles.PROFILE_AUTH_TYPE_ACCESS_TOKEN,
+		AuthType: profiles.AuthTypeAccessToken,
 		AccessToken: profiles.AuthCredentialsAccessToken{
 			ClientID:     clientID,
 			AccessToken:  tok.AccessToken,
