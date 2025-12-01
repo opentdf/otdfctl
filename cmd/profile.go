@@ -174,7 +174,7 @@ var profileDeleteAllCmd = &cobra.Command{
 			return
 		}
 
-		cli.ConfirmAction(cli.ActionDelete, fmt.Sprintf("all profiles from %s", driverType), string(config.AppName), force)
+		cli.ConfirmAction(cli.ActionDelete, fmt.Sprintf("all profiles from %s", driverType), config.AppName, force)
 
 		c.Printf("Deleting %d profiles from %s...", len(profilesList), driverType)
 		if err := profiler.DeleteAllProfiles(); err != nil {

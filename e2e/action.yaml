@@ -34,6 +34,11 @@ runs:
       shell: bash
       run: make build-test
       working-directory: otdfctl
+    - name: Install keyring dependencies
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gnome-keyring
     - name: Set up the CLI config
       shell: bash
       run: cp otdfctl-example.yaml otdfctl.yaml
@@ -44,6 +49,8 @@ runs:
       shell: bash
       working-directory: otdfctl
       run: |
+        # Unlock keyring with dummy pass
+        echo 'somecredstorepass' | gnome-keyring-daemon --unlock
         if command -v parallel >/dev/null 2>&1; then
           echo "GNU parallel found, running tests in parallel"
           bats --tap e2e --jobs 4 --no-parallelize-within-files --no-tempdir-cleanup | tee e2e/bats-results.tap

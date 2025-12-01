@@ -15,13 +15,15 @@ setup() {
   load "${BATS_LIB_PATH}/bats-assert/load.bash"
 
   run_otdfctl() {
-    run sh -c "./otdfctl $*"
+    run bash -c "$OTDFCTL_BIN $*"
   }
 }
 
 teardown() {
   run_otdfctl profile delete-all --force
 }
+
+# TODO: Use old otdfctl test bin to create keyring instances. Add tests for list/get/delete keyring as well as migrate
 
 @test "profile create" {
   profile="${PROFILE_TEST_PREFIX}-create"
@@ -149,3 +151,5 @@ teardown() {
   refute_output --partial "$profile1"
   refute_output --partial "$profile2"
 }
+
+# TODO: Add cleanup test
