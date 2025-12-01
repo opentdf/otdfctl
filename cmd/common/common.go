@@ -1,6 +1,7 @@
 package common
 
 import (
+	"crypto/tls"
 	"errors"
 	"fmt"
 
@@ -169,6 +170,10 @@ func NewHandler(c *cli.Cli) handlers.Handler {
 	}
 
 	if err := auth.ValidateProfileAuthCredentials(c.Context(), cp); err != nil {
+		var certErr *tls.CertificateVerificationError
+		if errors.As(err, &certErr) {
+			cli.ExitWithError(fmt.Sprintf("Failed to validate TLS certificates served at '%s'. Caution: if host is correct and insecure certificates should be dangerously trusted, use '--tls-no-verify'", cp.GetEndpoint()), nil)
+		}
 		if errors.Is(err, sdk.ErrPlatformUnreachable) {
 			cli.ExitWithError(fmt.Sprintf("Failed to connect to the platform. Is the platform accepting connections at '%s'?", cp.GetEndpoint()), nil)
 		}
