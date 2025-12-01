@@ -2,27 +2,15 @@ package profiles
 
 import (
 	"errors"
-	"runtime"
 
 	osprofiles "github.com/jrschumacher/go-osprofiles"
-	osplatform "github.com/jrschumacher/go-osprofiles/pkg/platform"
-	"github.com/opentdf/otdfctl/pkg/config"
 	"github.com/opentdf/otdfctl/pkg/utils"
-)
-
-type ProfileDriver string
-
-const (
-	PROFILE_DRIVER_KEYRING     ProfileDriver = "keyring"
-	PROFILE_DRIVER_IN_MEMORY   ProfileDriver = "in-memory"
-	PROFILE_DRIVER_FILE_SYSTEM ProfileDriver = "filesystem"
-	PROFILE_DRIVER_DEFAULT                   = PROFILE_DRIVER_FILE_SYSTEM
 )
 
 type OtdfctlProfileStore struct {
 	store    osprofiles.ProfileStore
-	config   *ProfileConfig // Pointer to the store.Profile field. Use for sets/reads.
-	profiler osprofiles.Profiler
+	config   *ProfileConfig // Pointer to the store.Profile field
+	profiler *osprofiles.Profiler
 }
 
 type ProfileConfig struct {
@@ -36,23 +24,8 @@ func (pc *ProfileConfig) GetName() string {
 	return pc.Name
 }
 
-func createProfiler(profileType ProfileDriver) (*osprofiles.Profiler, error) {
-	switch profileType {
-	case PROFILE_DRIVER_IN_MEMORY:
-		return osprofiles.New(config.AppName, osprofiles.WithInMemoryStore())
-	case PROFILE_DRIVER_KEYRING:
-		return osprofiles.New(config.AppName, osprofiles.WithKeyringStore())
-	default:
-		platform, err := osplatform.NewPlatform(config.ServicePublisher, config.AppName, runtime.GOOS)
-		if err != nil {
-			return nil, errors.Join(ErrCreatingPlatform, err)
-		}
-		return osprofiles.New(config.AppName, osprofiles.WithFileStore(platform.UserAppConfigDirectory()))
-	}
-}
-
-func NewOtdfctlProfileStore(profileType ProfileDriver, profileName string, endpoint string, tlsNoVerify, setDefault bool) (*OtdfctlProfileStore, error) {
-	profiler, err := createProfiler(profileType)
+func NewOtdfctlProfileStore(storeType ProfileDriver, profileName string, endpoint string, tlsNoVerify, setDefault bool) (*OtdfctlProfileStore, error) {
+	profiler, err := CreateProfiler(storeType)
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +45,7 @@ func NewOtdfctlProfileStore(profileType ProfileDriver, profileName string, endpo
 		return nil, err
 	}
 
-	store, err := osprofiles.GetProfile[*ProfileConfig](profiler, profileName)
+	store, err := osprofiles.UseProfile[*ProfileConfig](profiler, profileName)
 	if err != nil {
 		return nil, err
 	}
@@ -86,11 +59,16 @@ func NewOtdfctlProfileStore(profileType ProfileDriver, profileName string, endpo
 	return &OtdfctlProfileStore{
 		store:    *store,
 		config:   pc,
-		profiler: *profiler,
+		profiler: profiler,
 	}, nil
 }
 
-func LoadOtdfctlProfileStore(profiler *osprofiles.Profiler, profileName string) (*OtdfctlProfileStore, error) {
+func LoadOtdfctlProfileStore(storeType ProfileDriver, profileName string) (*OtdfctlProfileStore, error) {
+	profiler, err := CreateProfiler(storeType)
+	if err != nil {
+		return nil, err
+	}
+
 	store, err := osprofiles.GetProfile[*ProfileConfig](profiler, profileName)
 	if err != nil {
 		return nil, err
@@ -104,7 +82,7 @@ func LoadOtdfctlProfileStore(profiler *osprofiles.Profiler, profileName string) 
 	return &OtdfctlProfileStore{
 		store:    *store,
 		config:   pc,
-		profiler: *profiler,
+		profiler: profiler,
 	}, nil
 }
 
@@ -129,4 +107,12 @@ func (p *OtdfctlProfileStore) GetTLSNoVerify() bool {
 func (p *OtdfctlProfileStore) SetTLSNoVerify(tlsNoVerify bool) error {
 	p.config.TlsNoVerify = tlsNoVerify
 	return p.store.Save()
+}
+
+func (p *OtdfctlProfileStore) Name() string {
+	return p.config.Name
+}
+
+func (p *OtdfctlProfileStore) IsDefault() bool {
+	return p.Name() == osprofiles.GetGlobalConfig(p.profiler).GetDefaultProfile()
 }

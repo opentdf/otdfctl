@@ -50,7 +50,10 @@ func InitProfile(c *cli.Cli) *profiles.OtdfctlProfileStore {
 		migrateKeyringProfilesToFilesystem(c)
 	}
 
-	profiler := newFileStoreProfiler()
+	profiler, err := profiles.CreateProfiler(profiles.PROFILE_DRIVER_FILE_SYSTEM)
+	if err != nil {
+		cli.ExitWithError("Error creating profiler", err)
+	}
 
 	defaultProfileName := osprofiles.GetGlobalConfig(profiler).GetDefaultProfile()
 	if len(defaultProfileName) == 0 {
@@ -64,7 +67,7 @@ func InitProfile(c *cli.Cli) *profiles.OtdfctlProfileStore {
 	c.Printf("Using profile [%s]\n", profileName)
 
 	// load profile
-	store, err := profiles.LoadOtdfctlProfileStore(profiler, profileName)
+	store, err := profiles.LoadOtdfctlProfileStore(profiles.PROFILE_DRIVER_FILE_SYSTEM, profileName)
 	if err != nil {
 		c.ExitWithError(fmt.Sprintf("Failed to load profile: %s", profileName), err)
 	}

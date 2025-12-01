@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	osprofiles "github.com/jrschumacher/go-osprofiles"
-	osplatform "github.com/jrschumacher/go-osprofiles/pkg/platform"
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/config"
 	"github.com/opentdf/otdfctl/pkg/profiles"
@@ -15,52 +14,35 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const (
-	filesystemStore = "filesystem"
-	keyringStore    = "keyring"
-)
-
 var (
-	runningInLinux        = runtime.GOOS == "linux"
-	runningInTestMode     = config.TestMode == "true"
-	errCreatingNewProfile = errors.New("error creating profile")
-	errCleaningUpKeyring  = errors.New("error occurred when cleaning up keyring")
+	runningInLinux       = runtime.GOOS == "linux"
+	runningInTestMode    = config.TestMode == "true"
+	errCleaningUpKeyring = errors.New("error occurred when cleaning up keyring")
 )
 
-func newFileStoreProfiler() *osprofiles.Profiler {
-	platform, err := osplatform.NewPlatform(config.ServicePublisher, config.AppName, runtime.GOOS)
+func newProfilerFromCLI(c *cli.Cli) *osprofiles.Profiler {
+	driverType := getDriverTypeFromUser(c)
+	profiler, err := profiles.NewProfiler(string(driverType))
 	if err != nil {
-		cli.ExitWithError(profiles.ErrCreatingPlatform.Error(), err)
+		cli.ExitWithError("Error creating profiler", err)
 	}
-	profiler, err := osprofiles.New(config.AppName, osprofiles.WithFileStore(platform.UserAppConfigDirectory()))
-	if err != nil {
-		cli.ExitWithError(errCreatingNewProfile.Error(), err)
-	}
+
 	return profiler
 }
 
-func newProfiler(c *cli.Cli) *osprofiles.Profiler {
-	store := getUserSelectedStore(c)
-
-	// Default to filesystem unless explicitly set to keyring
-	if store == keyringStore {
-		profiler, err := osprofiles.New(config.AppName, osprofiles.WithKeyringStore())
-		if err != nil {
-			c.ExitWithError(errCreatingNewProfile.Error(), err)
-		}
-		return profiler
+func getDriverTypeFromUser(c *cli.Cli) profiles.ProfileDriver {
+	driverTypeStr := string(profiles.PROFILE_DRIVER_DEFAULT)
+	store := c.FlagHelper.GetOptionalString("store")
+	if len(store) > 0 {
+		driverTypeStr = store
 	}
 
-	return newFileStoreProfiler()
-}
-
-func getUserSelectedStore(c *cli.Cli) string {
-	normalizedStore := strings.ToLower(strings.TrimSpace(c.FlagHelper.GetOptionalString("store")))
-	if len(normalizedStore) == 0 {
-		return filesystemStore
+	driverType, err := profiles.ToProfileDriver(driverTypeStr)
+	if err != nil {
+		cli.ExitWithError("Error converting store type", err)
 	}
 
-	return normalizedStore
+	return driverType
 }
 
 var profileCmd = &cobra.Command{
@@ -77,26 +59,16 @@ var profileCreateCmd = &cobra.Command{
 	//nolint:mnd // two args
 	Args: cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
-		var storeType profiles.ProfileDriver
-
 		c := cli.New(cmd, args)
 		profileName := args[0]
 		endpoint := args[1]
 
 		setDefault := c.FlagHelper.GetOptionalBool("set-default")
 		tlsNoVerify := c.FlagHelper.GetOptionalBool("tls-no-verify")
-		store := c.FlagHelper.GetOptionalString("store")
-		switch store {
-		case string(profiles.PROFILE_DRIVER_FILE_SYSTEM):
-			storeType = profiles.PROFILE_DRIVER_FILE_SYSTEM
-		case string(profiles.PROFILE_DRIVER_KEYRING):
-			storeType = profiles.PROFILE_DRIVER_KEYRING
-		default:
-			cli.ExitWithError("", fmt.Errorf("unrecognized store type %s", store))
-		}
+		driverType := getDriverTypeFromUser(c)
 
 		c.Printf("Creating profile %s...", profileName)
-		_, err := profiles.NewOtdfctlProfileStore(storeType, profileName, endpoint, tlsNoVerify, setDefault)
+		_, err := profiles.NewOtdfctlProfileStore(driverType, profileName, endpoint, tlsNoVerify, setDefault)
 		if err != nil {
 			c.Println("failed")
 			c.ExitWithError("Failed to create profile", err)
@@ -110,12 +82,13 @@ var profileListCmd = &cobra.Command{
 	Short: "List profiles",
 	Run: func(cmd *cobra.Command, args []string) {
 		c := cli.New(cmd, args)
-		profiler := newProfiler(c)
+		driverType := getDriverTypeFromUser(c)
+		profiler := newProfilerFromCLI(c)
 
 		globalCfg := osprofiles.GetGlobalConfig(profiler)
 		defaultProfile := globalCfg.GetDefaultProfile()
 
-		c.Printf("Listing profiles from %s\n", getUserSelectedStore(c))
+		c.Printf("Listing profiles from %s\n", string(driverType))
 		for _, p := range osprofiles.ListProfiles(profiler) {
 			if p == defaultProfile {
 				c.Printf("* %s\n", p)
@@ -134,34 +107,27 @@ var profileGetCmd = &cobra.Command{
 		c := cli.New(cmd, args)
 		profileName := args[0]
 
-		profiler := newProfiler(c)
-
-		// TODO: Change this with load.
-		store, err := osprofiles.GetProfile[*profiles.ProfileConfig](profiler, profileName)
+		driverType := getDriverTypeFromUser(c)
+		profileStore, err := profiles.LoadOtdfctlProfileStore(driverType, profileName)
 		if err != nil {
-			c.ExitWithError("Failed to load profile", err)
-		}
-
-		p, ok := store.Profile.(*profiles.ProfileConfig)
-		if !ok || p == nil {
-			c.ExitWithError("Failed to load profile", errors.New("invalid profile configuration"))
+			cli.ExitWithError(fmt.Sprintf("Error loading profile store for profile %s", profileName), err)
 		}
 
 		isDefault := "false"
-		if p.Name == osprofiles.GetGlobalConfig(profiler).GetDefaultProfile() {
+		if profileStore.IsDefault() {
 			isDefault = "true"
 		}
 
 		var auth string
-		ac := p.AuthCredentials
+		ac := profileStore.GetAuthCredentials()
 		if ac.AuthType == profiles.PROFILE_AUTH_TYPE_CLIENT_CREDENTIALS {
 			maskedSecret := "********"
 			auth = "client-credentials (" + ac.ClientId + ", " + maskedSecret + ")"
 		}
 
 		t := cli.NewTabular(
-			[]string{"Profile", p.Name},
-			[]string{"Endpoint", p.Endpoint},
+			[]string{"Profile", profileStore.Name()},
+			[]string{"Endpoint", profileStore.GetEndpoint()},
 			[]string{"Is default", isDefault},
 			[]string{"Auth type", auth},
 		)
@@ -178,9 +144,10 @@ var profileDeleteCmd = &cobra.Command{
 		profileName := args[0]
 
 		// TODO: suggest delete-all command to delete all profiles including default
-		profiler := newProfiler(c)
+		driverType := getDriverTypeFromUser(c)
+		profiler := newProfilerFromCLI(c)
 
-		c.Printf("Deleting profile %s, from %s...", profileName, getUserSelectedStore(c))
+		c.Printf("Deleting profile %s, from %s...", profileName, driverType)
 		if err := osprofiles.DeleteProfile[*profiles.ProfileConfig](profiler, profileName); err != nil {
 			if strings.Contains(err.Error(), "cannot delete the default profile") {
 				c.ExitWithWarning("Profile is set as default. Please set another profile as default before deleting.")
@@ -200,8 +167,7 @@ var profileSetDefaultCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		c := cli.New(cmd, args)
 		profileName := args[0]
-
-		profiler := newFileStoreProfiler()
+		profiler := newProfilerFromCLI(c)
 
 		c.Printf("Setting profile %s as default...", profileName)
 		if err := osprofiles.SetDefaultProfile(profiler, profileName); err != nil {
@@ -220,8 +186,7 @@ var profileSetEndpointCmd = &cobra.Command{
 		c := cli.New(cmd, args)
 		profileName := args[0]
 		endpoint := args[1]
-
-		profiler := newFileStoreProfiler()
+		profiler := newProfilerFromCLI(c)
 
 		store, err := osprofiles.GetProfile[*profiles.ProfileConfig](profiler, profileName)
 		if err != nil {
@@ -248,12 +213,12 @@ var profileSetEndpointCmd = &cobra.Command{
 }
 
 func migrateKeyringProfilesToFilesystem(c *cli.Cli) {
-	keyringProfiler, err := osprofiles.New(config.AppName, osprofiles.WithKeyringStore())
+	keyringProfiler, err := profiles.NewProfiler(string(profiles.PROFILE_DRIVER_KEYRING))
 	if err != nil {
 		c.ExitWithError("Failed to initialize keyring profile store", err)
 	}
 
-	filesystemProfiler := newFileStoreProfiler()
+	filesystemProfiler := newProfilerFromCLI(c)
 
 	profilesInKeyring := osprofiles.ListProfiles(keyringProfiler)
 	if len(profilesInKeyring) == 0 {
