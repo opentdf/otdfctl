@@ -157,7 +157,32 @@ var profileDeleteCmd = &cobra.Command{
 	},
 }
 
-// TODO add delete-all command
+var profileDeleteAllCmd = &cobra.Command{
+	Use:   "delete-all",
+	Short: "Delete all profiles",
+	Args:  cobra.NoArgs,
+	Run: func(cmd *cobra.Command, args []string) {
+		c := cli.New(cmd, args)
+
+		force := c.Flags.GetOptionalBool("force")
+		driverType := getDriverTypeFromUser(c)
+		profiler := newProfilerFromCLI(c)
+
+		profilesList := osprofiles.ListProfiles(profiler)
+		if len(profilesList) == 0 {
+			c.Println("No profiles found to delete.")
+			return
+		}
+
+		cli.ConfirmAction(cli.ActionDelete, fmt.Sprintf("all profiles from %s", driverType), string(config.AppName), force)
+
+		c.Printf("Deleting %d profiles from %s...", len(profilesList), driverType)
+		if err := profiler.DeleteAllProfiles(); err != nil {
+			c.ExitWithError("Failed to delete all profiles", err)
+		}
+		c.Println("ok")
+	},
+}
 
 var profileSetDefaultCmd = &cobra.Command{
 	Use:   "set-default <profile>",
@@ -298,6 +323,8 @@ func init() {
 	profileListCmd.Flags().String("store", "filesystem", "Profile store to use: filesystem or keyring")
 	profileGetCmd.Flags().String("store", "filesystem", "Profile store to use: filesystem or keyring")
 	profileDeleteCmd.Flags().String("store", "filesystem", "Profile store to use: filesystem or keyring")
+	profileDeleteAllCmd.Flags().String("store", "filesystem", "Profile store to use: filesystem or keyring")
+	profileDeleteAllCmd.Flags().Bool("force", false, "Skip confirmation prompt")
 
 	profileSetEndpointCmd.Flags().Bool("tls-no-verify", false, "Disable TLS verification")
 
@@ -307,6 +334,7 @@ func init() {
 	profileCmd.AddCommand(profileListCmd)
 	profileCmd.AddCommand(profileGetCmd)
 	profileCmd.AddCommand(profileDeleteCmd)
+	profileCmd.AddCommand(profileDeleteAllCmd)
 	profileCmd.AddCommand(profileSetDefaultCmd)
 	profileCmd.AddCommand(profileSetEndpointCmd)
 	profileCmd.AddCommand(profileMigrateCmd)
