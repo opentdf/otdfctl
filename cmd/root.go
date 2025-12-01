@@ -50,7 +50,7 @@ func InitProfile(c *cli.Cli) *profiles.OtdfctlProfileStore {
 		migrateKeyringProfilesToFilesystem(c)
 	}
 
-	profiler, err := profiles.CreateProfiler(profiles.PROFILE_DRIVER_FILE_SYSTEM)
+	profiler, err := profiles.CreateProfiler(profiles.ProfileDriverFileSystem)
 	if err != nil {
 		cli.ExitWithError("Error creating profiler", err)
 	}
@@ -67,7 +67,7 @@ func InitProfile(c *cli.Cli) *profiles.OtdfctlProfileStore {
 	c.Printf("Using profile [%s]\n", profileName)
 
 	// load profile
-	store, err := profiles.LoadOtdfctlProfileStore(profiles.PROFILE_DRIVER_FILE_SYSTEM, profileName)
+	store, err := profiles.LoadOtdfctlProfileStore(profiles.ProfileDriverFileSystem, profileName)
 	if err != nil {
 		c.ExitWithError(fmt.Sprintf("Failed to load profile: %s", profileName), err)
 	}
@@ -121,7 +121,7 @@ func NewHandler(c *cli.Cli) handlers.Handler {
 		}
 
 		inMemoryProfile = true
-		cp, err = profiles.NewOtdfctlProfileStore(profiles.PROFILE_DRIVER_IN_MEMORY, "temp", host, tlsNoVerify, true)
+		cp, err = profiles.NewOtdfctlProfileStore(profiles.ProfileDriverMemory, "temp", host, tlsNoVerify, true)
 		if err != nil {
 			cli.ExitWithError("Failed to initialize in-memory profile", err)
 		}

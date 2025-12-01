@@ -13,11 +13,11 @@ import (
 type ProfileDriver string
 
 const (
-	PROFILE_DRIVER_KEYRING     ProfileDriver = "keyring"
-	PROFILE_DRIVER_IN_MEMORY   ProfileDriver = "in-memory"
-	PROFILE_DRIVER_FILE_SYSTEM ProfileDriver = "filesystem"
-	PROFILE_DRIVER_UNKNOWN     ProfileDriver = "unknown"
-	PROFILE_DRIVER_DEFAULT                   = PROFILE_DRIVER_FILE_SYSTEM
+	ProfileDriverKeyring    ProfileDriver = "keyring"
+	ProfileDriverMemory     ProfileDriver = "in-memory"
+	ProfileDriverFileSystem ProfileDriver = "filesystem"
+	ProfileDriverUnknown    ProfileDriver = "unknown"
+	ProfileDriverDefault                  = ProfileDriverFileSystem
 )
 
 func newFileStoreProfiler() (*osprofiles.Profiler, error) {
@@ -44,24 +44,24 @@ func NewProfiler(store string) (*osprofiles.Profiler, error) {
 func ToProfileDriver(driverType string) (ProfileDriver, error) {
 	normalizedType := strings.ToLower(strings.TrimSpace(driverType))
 	switch normalizedType {
-	case string(PROFILE_DRIVER_IN_MEMORY):
-		return PROFILE_DRIVER_IN_MEMORY, nil
-	case string(PROFILE_DRIVER_KEYRING):
-		return PROFILE_DRIVER_KEYRING, nil
-	case string(PROFILE_DRIVER_FILE_SYSTEM):
-		return PROFILE_DRIVER_FILE_SYSTEM, nil
+	case string(ProfileDriverMemory):
+		return ProfileDriverMemory, nil
+	case string(ProfileDriverKeyring):
+		return ProfileDriverKeyring, nil
+	case string(ProfileDriverFileSystem):
+		return ProfileDriverFileSystem, nil
 	default:
-		return PROFILE_DRIVER_UNKNOWN, ErrUnknownProfileDriverType
+		return ProfileDriverUnknown, ErrUnknownProfileDriverType
 	}
 }
 
 func CreateProfiler(driverType ProfileDriver) (*osprofiles.Profiler, error) {
 	switch driverType {
-	case PROFILE_DRIVER_IN_MEMORY:
+	case ProfileDriverMemory:
 		return osprofiles.New(config.AppName, osprofiles.WithInMemoryStore())
-	case PROFILE_DRIVER_KEYRING:
+	case ProfileDriverKeyring:
 		return osprofiles.New(config.AppName, osprofiles.WithKeyringStore())
-	case PROFILE_DRIVER_FILE_SYSTEM:
+	case ProfileDriverFileSystem:
 		return newFileStoreProfiler()
 	default:
 		return nil, ErrUnknownProfileDriverType

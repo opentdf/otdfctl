@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"runtime"
-	"strings"
 
 	osprofiles "github.com/jrschumacher/go-osprofiles"
 	"github.com/opentdf/otdfctl/pkg/cli"
@@ -31,7 +30,7 @@ func newProfilerFromCLI(c *cli.Cli) *osprofiles.Profiler {
 }
 
 func getDriverTypeFromUser(c *cli.Cli) profiles.ProfileDriver {
-	driverTypeStr := string(profiles.PROFILE_DRIVER_DEFAULT)
+	driverTypeStr := string(profiles.ProfileDriverDefault)
 	store := c.FlagHelper.GetOptionalString("store")
 	if len(store) > 0 {
 		driverTypeStr = store
@@ -149,7 +148,7 @@ var profileDeleteCmd = &cobra.Command{
 
 		c.Printf("Deleting profile %s, from %s...", profileName, driverType)
 		if err := osprofiles.DeleteProfile[*profiles.ProfileConfig](profiler, profileName); err != nil {
-			if strings.Contains(err.Error(), "cannot delete the default profile") {
+			if errors.Is(err, osprofiles.ErrCannotDeleteDefaultProfile) {
 				c.ExitWithWarning("Profile is set as default. Please set another profile as default before deleting.")
 			}
 			c.ExitWithError("Failed to delete profile", err)
@@ -213,7 +212,7 @@ var profileSetEndpointCmd = &cobra.Command{
 }
 
 func migrateKeyringProfilesToFilesystem(c *cli.Cli) {
-	keyringProfiler, err := profiles.NewProfiler(string(profiles.PROFILE_DRIVER_KEYRING))
+	keyringProfiler, err := profiles.NewProfiler(string(profiles.ProfileDriverKeyring))
 	if err != nil {
 		c.ExitWithError("Failed to initialize keyring profile store", err)
 	}
