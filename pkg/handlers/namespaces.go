@@ -31,19 +31,14 @@ func (h Handler) GetNamespace(ctx context.Context, identifier string) (*policy.N
 	return resp.GetNamespace(), nil
 }
 
-func (h Handler) ListNamespaces(ctx context.Context, state common.ActiveStateEnum, limit, offset int32) ([]*policy.Namespace, *policy.PageResponse, error) {
-	resp, err := h.sdk.Namespaces.ListNamespaces(ctx, &namespaces.ListNamespacesRequest{
+func (h Handler) ListNamespaces(ctx context.Context, state common.ActiveStateEnum, limit, offset int32) (*namespaces.ListNamespacesResponse, error) {
+	return h.sdk.Namespaces.ListNamespaces(ctx, &namespaces.ListNamespacesRequest{
 		State: state,
 		Pagination: &policy.PageRequest{
 			Limit:  limit,
 			Offset: offset,
 		},
 	})
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return resp.GetNamespaces(), resp.GetPagination(), nil
 }
 
 // Creates and returns the created n

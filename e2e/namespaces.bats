@@ -35,8 +35,8 @@ setup() {
 teardown_file() {
   ./otdfctl $HOST $WITH_CREDS policy attributes namespace unsafe delete --id "$NS_ID" --force
 
-  delete_all_keys_in_kas "$KAS_REGISTRY_ID"
-  delete_kas_registry "$KAS_REGISTRY_ID"
+  delete_all_keys_in_kas "$KAS_REG_ID"
+  delete_kas_registry "$KAS_REG_ID"
   
   # clear out all test env vars
   unset HOST WITH_CREDS NS_NAME NS_FQN NS_ID NS_ID_FLAG KAS_REG_ID KAS_KEY_ID KAS_URI PEM_B64 PEM KAS_KEY_SYSTEM_ID
@@ -103,16 +103,17 @@ teardown_file() {
 
 @test "List namespaces - when active" {
   run_otdfctl_ns list --json
-  echo $output | jq --arg id "$NS_ID" '.[] | select(.[]? | type == "object" and .id == $id)'
+  echo $output | jq --arg id "$NS_ID" '.namespaces[] | select(.id == $id)'
+  assert_not_equal $(echo $output | jq '.pagination') "null"
 
   run_otdfctl_ns list --state inactive --json
   refute_output --partial "$NS_ID"
+  assert_not_equal $(echo $output | jq '.pagination') "null"
 
   run_otdfctl_ns list --state active
   assert_output --partial "$NS_ID"
   assert_output --partial "Total"
   assert_line --regexp "Current Offset.*0"
-
 }
 
 @test "Update namespace - Safe" {
@@ -222,14 +223,17 @@ teardown_file() {
 
 @test "List namespaces - when inactive" {
   run_otdfctl_ns list --json
-  echo $output | jq --arg id "$NS_ID" '.[] | select(.[]? | type == "object" and .id == $id)'
+  echo $output | jq --arg id "$NS_ID" '.namespaces[] | select(.id == $id)'
+  assert_not_equal $(echo $output | jq '.pagination') "null"
 
   # json
   run_otdfctl_ns list --state inactive --json
   echo $output | assert_output --partial "$NS_ID"
+  assert_not_equal $(echo $output | jq '.pagination') "null"
 
   run_otdfctl_ns list --state active --json
   echo $output | refute_output --partial "$NS_ID"
+  assert_not_equal $(echo $output | jq '.pagination') "null"
   # table
   run_otdfctl_ns list --state inactive
   echo $output | assert_output --partial "$NS_ID"
@@ -246,10 +250,12 @@ teardown_file() {
 
 @test "List namespaces - when reactivated" {
   run_otdfctl_ns list --json
-  echo $output | jq --arg id "$NS_ID" '.[] | select(.[]? | type == "object" and .id == $id)'
+  echo $output | jq --arg id "$NS_ID" '.namespaces[] | select(.id == $id)'
+  assert_not_equal $(echo $output | jq '.pagination') "null"
 
   run_otdfctl_ns list --state inactive --json
   echo $output | refute_output --partial "$NS_ID"
+  assert_not_equal $(echo $output | jq '.pagination') "null"
 
   run_otdfctl_ns list --state active
   echo $output | assert_output --partial "$NS_ID"
@@ -265,9 +271,11 @@ teardown_file() {
 @test "List namespaces - when deleted" {
   run_otdfctl_ns list --json
   echo $output | refute_output --partial "$NS_ID"
+  assert_not_equal $(echo $output | jq '.pagination') "null"
 
   run_otdfctl_ns list --state inactive --json
   echo $output | refute_output --partial "$NS_ID"
+  assert_not_equal $(echo $output | jq '.pagination') "null"
 
   run_otdfctl_ns list --state active
   echo $output | refute_output --partial "$NS_ID"

@@ -150,6 +150,13 @@ teardown_file() {
   assert_line --regexp "Current Offset.*0"
   assert_line --regexp "Next Offset.*2"
 
+  run_otdfctl_attr list  --limit 2 --json
+  assert_success
+  assert_equal $(echo "$output" | jq -r '.attributes | length') 2
+  [[ $(echo "$output" | jq -r '.pagination.total') -ge 10 ]]
+  assert_equal $(echo "$output" | jq -r '.pagination.next_offset') 2
+  assert_equal $(echo "$output" | jq -r '.pagination.current_offset') "null"
+
   run_otdfctl_attr list --limit 5 --offset 2
   assert_success
   assert_line --regexp "Current Offset.*2"
@@ -375,4 +382,78 @@ teardown_file() {
   run_otdfctl_attr values key assign --value "00000000-0000-0000-0000-000000000000"
   assert_failure
   assert_output --partial "Flag '--key-id' is required"
+}
+
+@test "List attribute values - Good" {
+  # Create an attribute with multiple values for testing
+  run_otdfctl_attr create --name attr-with-values-list --namespace "$NS_ID" --rule HIERARCHY -v vala -v valb -v valc --json
+  assert_success
+  ATTR_WITH_VALUES_ID=$(echo "$output" | jq -r '.id')
+  VALUE1_ID=$(echo "$output" | jq -r '.values[0].id')
+  VALUE2_ID=$(echo "$output" | jq -r '.values[1].id')
+  VALUE3_ID=$(echo "$output" | jq -r '.values[2].id')
+
+  # Test with JSON output
+  run_otdfctl_attr values list --attribute-id "$ATTR_WITH_VALUES_ID" --json
+  assert_success
+  assert_equal "$(echo "$output" | jq -r '.values | length')" 3
+  assert_output --partial "vala"
+  assert_output --partial "valb"
+  assert_output --partial "valc"
+  assert_equal "$(echo "$output" | jq -r '.pagination.total')" 3
+  assert_equal "$(echo "$output" | jq -r '.pagination.current_offset')" "null"
+  assert_equal "$(echo "$output" | jq -r '.pagination.next_offset')" "null"
+
+  # Test state filtering - all values should be active by default
+  run_otdfctl_attr values list --attribute-id "$ATTR_WITH_VALUES_ID" --state active
+  assert_success
+  assert_output --partial "$VALUE1_ID"
+  assert_output --partial "$VALUE2_ID"
+  assert_output --partial "$VALUE3_ID"
+
+  # Test state filtering - inactive (should be empty since all values are active)
+  run_otdfctl_attr values list --attribute-id "$ATTR_WITH_VALUES_ID" --state inactive
+  assert_success
+  refute_output --partial "$VALUE1_ID"
+  refute_output --partial "$VALUE2_ID"
+  refute_output --partial "$VALUE3_ID"
+
+  # Test pagination with limit and JQ verification
+  run_otdfctl_attr values list --attribute-id "$ATTR_WITH_VALUES_ID" --limit 2 --json
+  assert_success
+  assert_equal "$(echo "$output" | jq -r '.values | length')" "2"
+  assert_equal "$(echo "$output" | jq -r '.pagination.total')" "3"
+  assert_equal "$(echo "$output" | jq -r '.pagination.current_offset')" "null"
+  assert_equal "$(echo "$output" | jq -r '.pagination.next_offset')" "2"
+
+  # Test pagination with offset and JQ verification
+  run_otdfctl_attr values list --attribute-id "$ATTR_WITH_VALUES_ID" --limit 2 --offset 1 --json
+  assert_success
+  assert_equal "$(echo "$output" | jq -r '.values | length')" "2"
+  assert_equal "$(echo "$output" | jq -r '.pagination.total')" "3"
+  assert_equal "$(echo "$output" | jq -r '.pagination.current_offset')" "1"
+  assert_equal "$(echo "$output" | jq -r '.pagination.next_offset')" "null"
+
+  # Test pagination at the end (no next offset)
+  run_otdfctl_attr values list --attribute-id "$ATTR_WITH_VALUES_ID" --limit 1 --offset 2 --json
+  assert_success
+  assert_equal "$(echo "$output" | jq -r '.values | length')" "1"
+  assert_equal "$(echo "$output" | jq -r '.pagination.total')" "3"
+  assert_equal "$(echo "$output" | jq -r '.pagination.current_offset')" "2"
+  assert_equal "$(echo "$output" | jq -r '.pagination.next_offset')" "null"
+
+  # Cleanup
+  ./otdfctl $HOST $WITH_CREDS policy attributes unsafe delete --force --id "$ATTR_WITH_VALUES_ID"
+}
+
+@test "List attribute values - Bad" {
+  # Test with missing required flag
+  run_otdfctl_attr values list
+  assert_failure
+  assert_output --partial "Flag '--attribute-id' is required"
+
+  # Test with invalid attribute ID format
+  run_otdfctl_attr values list --attribute-id "invalid-id"
+  assert_failure
+  assert_output --partial "must be a valid UUID"
 }

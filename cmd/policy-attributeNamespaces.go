@@ -49,7 +49,7 @@ func policy_listAttributeNamespaces(cmd *cobra.Command, args []string) {
 	limit := c.Flags.GetRequiredInt32("limit")
 	offset := c.Flags.GetRequiredInt32("offset")
 
-	list, page, err := h.ListNamespaces(cmd.Context(), state, limit, offset)
+	resp, err := h.ListNamespaces(cmd.Context(), state, limit, offset)
 	if err != nil {
 		cli.ExitWithError("Failed to list namespaces", err)
 	}
@@ -62,7 +62,7 @@ func policy_listAttributeNamespaces(cmd *cobra.Command, args []string) {
 		table.NewFlexColumn("updated_at", "Updated At", cli.FlexColumnWidthOne),
 	)
 	rows := []table.Row{}
-	for _, ns := range list {
+	for _, ns := range resp.GetNamespaces() {
 		metadata := cli.ConstructMetadata(ns.GetMetadata())
 		rows = append(rows,
 			table.NewRow(table.RowData{
@@ -76,8 +76,8 @@ func policy_listAttributeNamespaces(cmd *cobra.Command, args []string) {
 		)
 	}
 	t = t.WithRows(rows)
-	t = cli.WithListPaginationFooter(t, page)
-	HandleSuccess(cmd, "", t, list)
+	t = cli.WithListPaginationFooter(t, resp.GetPagination())
+	HandleSuccess(cmd, "", t, resp)
 }
 
 func policy_createAttributeNamespace(cmd *cobra.Command, args []string) {

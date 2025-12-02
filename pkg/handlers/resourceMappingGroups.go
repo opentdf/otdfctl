@@ -33,18 +33,13 @@ func (h *Handler) GetResourceMappingGroup(ctx context.Context, id string) (*poli
 	return res.GetResourceMappingGroup(), nil
 }
 
-func (h *Handler) ListResourceMappingGroups(ctx context.Context, limit, offset int32) ([]*policy.ResourceMappingGroup, *policy.PageResponse, error) {
-	res, err := h.sdk.ResourceMapping.ListResourceMappingGroups(ctx, &resourcemapping.ListResourceMappingGroupsRequest{
+func (h *Handler) ListResourceMappingGroups(ctx context.Context, limit, offset int32) (*resourcemapping.ListResourceMappingGroupsResponse, error) {
+	return h.sdk.ResourceMapping.ListResourceMappingGroups(ctx, &resourcemapping.ListResourceMappingGroupsRequest{
 		Pagination: &policy.PageRequest{
 			Limit:  limit,
 			Offset: offset,
 		},
 	})
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return res.GetResourceMappingGroups(), res.GetPagination(), nil
 }
 
 // TODO: verify updation behavior

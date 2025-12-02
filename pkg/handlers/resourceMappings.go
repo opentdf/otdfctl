@@ -8,12 +8,6 @@ import (
 	"github.com/opentdf/platform/protocol/go/policy/resourcemapping"
 )
 
-type ResourceMapping struct {
-	Id          string
-	AttributeId string
-	Terms       []string
-}
-
 // Creates and returns the created resource mapping
 func (h *Handler) CreateResourceMapping(attributeID string, terms []string, grpID string, metadata *common.MetadataMutable) (*policy.ResourceMapping, error) {
 	res, err := h.sdk.ResourceMapping.CreateResourceMapping(context.Background(), &resourcemapping.CreateResourceMappingRequest{
@@ -40,18 +34,13 @@ func (h *Handler) GetResourceMapping(id string) (*policy.ResourceMapping, error)
 	return res.GetResourceMapping(), nil
 }
 
-func (h *Handler) ListResourceMappings(ctx context.Context, limit, offset int32) ([]*policy.ResourceMapping, *policy.PageResponse, error) {
-	res, err := h.sdk.ResourceMapping.ListResourceMappings(ctx, &resourcemapping.ListResourceMappingsRequest{
+func (h *Handler) ListResourceMappings(ctx context.Context, limit, offset int32) (*resourcemapping.ListResourceMappingsResponse, error) {
+	return h.sdk.ResourceMapping.ListResourceMappings(ctx, &resourcemapping.ListResourceMappingsRequest{
 		Pagination: &policy.PageRequest{
 			Limit:  limit,
 			Offset: offset,
 		},
 	})
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return res.GetResourceMappings(), res.GetPagination(), nil
 }
 
 // TODO: verify updation behavior

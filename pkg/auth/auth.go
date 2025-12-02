@@ -28,7 +28,7 @@ import (
 const authCallbackPath = "/callback"
 
 type ClientCredentials struct {
-	ClientId     string `json:"clientId"`
+	ClientID     string `json:"clientId"`
 	ClientSecret string `json:"clientSecret"`
 }
 
@@ -143,9 +143,9 @@ func GetSDKAuthOptionFromProfile(profile *profiles.ProfileStore) (sdk.Option, er
 	c := profile.GetAuthCredentials()
 
 	switch c.AuthType {
-	case profiles.PROFILE_AUTH_TYPE_CLIENT_CREDENTIALS:
-		return sdk.WithClientCredentials(c.ClientId, c.ClientSecret, nil), nil
-	case profiles.PROFILE_AUTH_TYPE_ACCESS_TOKEN:
+	case profiles.AuthTypeClientCredentials:
+		return sdk.WithClientCredentials(c.ClientID, c.ClientSecret, nil), nil
+	case profiles.AuthTypeAccessToken:
 		tokenSource := oauth2.StaticTokenSource(buildToken(&c))
 		return sdk.WithOAuthAccessTokenSource(tokenSource), nil
 	default:
@@ -158,13 +158,13 @@ func ValidateProfileAuthCredentials(ctx context.Context, profile *profiles.Profi
 	switch c.AuthType {
 	case "":
 		return ErrProfileCredentialsNotFound
-	case profiles.PROFILE_AUTH_TYPE_CLIENT_CREDENTIALS:
-		_, err := GetTokenWithClientCreds(ctx, profile.GetEndpoint(), c.ClientId, c.ClientSecret, profile.GetTLSNoVerify())
+	case profiles.AuthTypeClientCredentials:
+		_, err := GetTokenWithClientCreds(ctx, profile.GetEndpoint(), c.ClientID, c.ClientSecret, profile.GetTLSNoVerify())
 		if err != nil {
 			return err
 		}
 		return nil
-	case profiles.PROFILE_AUTH_TYPE_ACCESS_TOKEN:
+	case profiles.AuthTypeAccessToken:
 		if !buildToken(&c).Valid() {
 			return ErrAccessTokenExpired
 		}
@@ -177,9 +177,9 @@ func ValidateProfileAuthCredentials(ctx context.Context, profile *profiles.Profi
 func GetTokenWithProfile(ctx context.Context, profile *profiles.ProfileStore) (*oauth2.Token, error) {
 	c := profile.GetAuthCredentials()
 	switch c.AuthType {
-	case profiles.PROFILE_AUTH_TYPE_CLIENT_CREDENTIALS:
-		return GetTokenWithClientCreds(ctx, profile.GetEndpoint(), c.ClientId, c.ClientSecret, profile.GetTLSNoVerify())
-	case profiles.PROFILE_AUTH_TYPE_ACCESS_TOKEN:
+	case profiles.AuthTypeClientCredentials:
+		return GetTokenWithClientCreds(ctx, profile.GetEndpoint(), c.ClientID, c.ClientSecret, profile.GetTLSNoVerify())
+	case profiles.AuthTypeAccessToken:
 		return buildToken(&c), nil
 	default:
 		return nil, ErrInvalidAuthType
@@ -187,9 +187,9 @@ func GetTokenWithProfile(ctx context.Context, profile *profiles.ProfileStore) (*
 }
 
 // Uses the OAuth2 client credentials flow to obtain a token.
-func GetTokenWithClientCreds(ctx context.Context, endpoint string, clientId string, clientSecret string, tlsNoVerify bool) (*oauth2.Token, error) {
+func GetTokenWithClientCreds(ctx context.Context, endpoint string, clientID string, clientSecret string, tlsNoVerify bool) (*oauth2.Token, error) {
 	rp, err := newOidcRelyingParty(ctx, endpoint, tlsNoVerify, oidcClientCredentials{
-		clientID:     clientId,
+		clientID:     clientID,
 		clientSecret: clientSecret,
 	})
 	if err != nil {
@@ -279,10 +279,10 @@ func Login(ctx context.Context, platformEndpoint, tokenURL, authURL, publicClien
 	}
 	tok := oidcCLI.CodeFlow[*oidc.IDTokenClaims](ctx, relyingParty, authCallbackPath, authCodeFlowPort, stateProvider)
 	return &oauth2.Token{
-		AccessToken:  tok.Token.AccessToken,
-		TokenType:    tok.Token.TokenType,
-		RefreshToken: tok.Token.RefreshToken,
-		Expiry:       tok.Token.Expiry,
+		AccessToken:  tok.AccessToken,
+		TokenType:    tok.TokenType,
+		RefreshToken: tok.RefreshToken,
+		Expiry:       tok.Expiry,
 	}, nil
 }
 
@@ -336,6 +336,6 @@ func newOidcRelyingParty(ctx context.Context, endpoint string, tlsNoVerify bool,
 		clientCreds.clientSecret,
 		"",
 		nil,
-		oidcrp.WithHTTPClient(utils.NewHttpClient(tlsNoVerify)),
+		oidcrp.WithHTTPClient(utils.NewHTTPClient(tlsNoVerify)),
 	)
 }

@@ -9,8 +9,8 @@ import (
 // - add a migration path
 
 const (
-	STORE_KEY_PROFILE = "profile"
-	STORE_KEY_GLOBAL  = "global"
+	StoreKeyProfile = "profile"
+	StoreKeyGlobal  = "global"
 )
 
 type profileConfig struct {
@@ -30,9 +30,9 @@ type CurrentProfileStore struct {
 }
 
 const (
-	PROFILE_DRIVER_KEYRING   ProfileDriver = "keyring"
-	PROFILE_DRIVER_IN_MEMORY ProfileDriver = "in-memory"
-	PROFILE_DRIVER_DEFAULT                 = PROFILE_DRIVER_KEYRING
+	DriverKeyring  ProfileDriver = "keyring"
+	DriverInMemory ProfileDriver = "in-memory"
+	DriverDefault                = DriverKeyring
 )
 
 type (
@@ -42,23 +42,23 @@ type (
 
 func WithInMemoryStore() profileConfigVariadicFunc {
 	return func(c profileConfig) profileConfig {
-		c.driver = PROFILE_DRIVER_IN_MEMORY
+		c.driver = DriverInMemory
 		return c
 	}
 }
 
 func WithKeyringStore() profileConfigVariadicFunc {
 	return func(c profileConfig) profileConfig {
-		c.driver = PROFILE_DRIVER_KEYRING
+		c.driver = DriverKeyring
 		return c
 	}
 }
 
 func newStoreFactory(driver ProfileDriver) NewStoreInterface {
 	switch driver {
-	case PROFILE_DRIVER_KEYRING:
+	case DriverKeyring:
 		return NewKeyringStore
-	case PROFILE_DRIVER_IN_MEMORY:
+	case DriverInMemory:
 		return NewMemoryStore
 	default:
 		return nil
@@ -75,7 +75,7 @@ func New(opts ...profileConfigVariadicFunc) (*Profile, error) {
 	}
 
 	config := profileConfig{
-		driver: PROFILE_DRIVER_DEFAULT,
+		driver: DriverDefault,
 	}
 	for _, opt := range opts {
 		config = opt(config)

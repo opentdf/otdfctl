@@ -13,6 +13,7 @@ import (
 	"log/slog"
 	"strings"
 
+	"github.com/opentdf/otdfctl/pkg/tdf"
 	"github.com/opentdf/otdfctl/pkg/utils"
 	"github.com/opentdf/platform/lib/ocrypto"
 	"github.com/opentdf/platform/sdk"
@@ -28,10 +29,7 @@ var (
 )
 
 const (
-	TDF_TYPE_ZTDF            = "ztdf"
-	TDF_TYPE_TDF3            = "tdf3" // alias for TDF
-	TDF_TYPE_NANO            = "nano"
-	MAX_ASSERTIONS_FILE_SIZE = int64(5 * 1024 * 1024) // 5MB
+	MaxAssertionsFileSize = int64(5 * 1024 * 1024) // 5MB
 )
 
 type TDFInspect struct {
@@ -46,7 +44,7 @@ func (h Handler) EncryptBytes(
 	unencrypted []byte,
 	attrValues []string,
 	mimeType string,
-	kasUrlPath string,
+	kasURLPath string,
 	ecdsaBinding bool,
 	assertions string,
 	wrappingKeyAlgorithm ocrypto.KeyType,
@@ -58,7 +56,7 @@ func (h Handler) EncryptBytes(
 
 	switch tdfType {
 	// Encrypt the data as a ZTDF
-	case "", TDF_TYPE_TDF3, TDF_TYPE_ZTDF:
+	case "", tdf.TypeTDF3, tdf.TypeZTDF:
 		if ecdsaBinding {
 			return nil, errors.New("ECDSA policy binding is not supported for ZTDF")
 		}
@@ -69,7 +67,7 @@ func (h Handler) EncryptBytes(
 		opts := []sdk.TDFOption{
 			sdk.WithDataAttributes(attrValues...),
 			sdk.WithKasInformation(sdk.KASInfo{
-				URL: h.platformEndpoint + kasUrlPath,
+				URL: h.platformEndpoint + kasURLPath,
 			}),
 			sdk.WithMimeType(mimeType),
 			sdk.WithWrappingKeyAlg(wrappingKeyAlgorithm),
@@ -81,7 +79,7 @@ func (h Handler) EncryptBytes(
 			err := json.Unmarshal([]byte(assertions), &assertionConfigs)
 			if err != nil {
 				// if unable to marshal to json, interpret as file string and try to read from file
-				assertionBytes, err := utils.ReadBytesFromFile(assertions, MAX_ASSERTIONS_FILE_SIZE)
+				assertionBytes, err := utils.ReadBytesFromFile(assertions, MaxAssertionsFileSize)
 				if err != nil {
 					return nil, fmt.Errorf("unable to read assertions file: %w", err)
 				}
@@ -110,13 +108,13 @@ func (h Handler) EncryptBytes(
 		return enc, err
 
 	// Encrypt the data as a Nano TDF
-	case TDF_TYPE_NANO:
+	case tdf.TypeNanoTDF:
 		nanoTDFConfig, err := h.sdk.NewNanoTDFConfig()
 		if err != nil {
 			return nil, err
 		}
 		// set the KAS URL
-		if err = nanoTDFConfig.SetKasURL(h.platformEndpoint + kasUrlPath); err != nil {
+		if err = nanoTDFConfig.SetKasURL(h.platformEndpoint + kasURLPath); err != nil {
 			return nil, err
 		}
 		// set the attributes
@@ -192,7 +190,7 @@ func (h Handler) DecryptBytes(
 		var assertionVerificationKeys sdk.AssertionVerificationKeys
 		if assertionVerificationKeysFile != "" {
 			// read the file
-			assertionVerificationBytes, err := utils.ReadBytesFromFile(assertionVerificationKeysFile, MAX_ASSERTIONS_FILE_SIZE)
+			assertionVerificationBytes, err := utils.ReadBytesFromFile(assertionVerificationKeysFile, MaxAssertionsFileSize)
 			if err != nil {
 				return nil, fmt.Errorf("unable to read assertions verification keys file: %w", err)
 			}
@@ -284,7 +282,7 @@ func correctKeyType(assertionKey sdk.AssertionKey, public bool) (interface{}, er
 	if !ok {
 		return nil, errors.New("unable to convert assertion key to string")
 	}
-	//nolint:nestif // nested its within switch mainly for error catching
+
 	switch assertionKey.Alg {
 	case sdk.AssertionKeyAlgHS256:
 		// convert the hs256 key to []byte

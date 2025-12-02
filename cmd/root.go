@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"crypto/tls"
 	"errors"
 	"fmt"
 
@@ -141,7 +142,7 @@ func NewHandler(c *cli.Cli) handlers.Handler {
 			}
 
 			if err := cp.SetAuthCredentials(profiles.AuthCredentials{
-				AuthType: profiles.PROFILE_AUTH_TYPE_ACCESS_TOKEN,
+				AuthType: profiles.AuthTypeAccessToken,
 				AccessToken: profiles.AuthCredentialsAccessToken{
 					AccessToken: withAccessToken,
 					Expiration:  claims.Expiration,
@@ -162,8 +163,8 @@ func NewHandler(c *cli.Cli) handlers.Handler {
 
 			// add credentials to the temporary profile
 			if err := cp.SetAuthCredentials(profiles.AuthCredentials{
-				AuthType:     profiles.PROFILE_AUTH_TYPE_CLIENT_CREDENTIALS,
-				ClientId:     cc.ClientId,
+				AuthType:     profiles.AuthTypeClientCredentials,
+				ClientID:     cc.ClientID,
 				ClientSecret: cc.ClientSecret,
 			}); err != nil {
 				cli.ExitWithError("Failed to set client credentials", err)
@@ -177,6 +178,10 @@ func NewHandler(c *cli.Cli) handlers.Handler {
 	}
 
 	if err := auth.ValidateProfileAuthCredentials(c.Context(), cp); err != nil {
+		var certErr *tls.CertificateVerificationError
+		if errors.As(err, &certErr) {
+			cli.ExitWithError(fmt.Sprintf("Failed to validate TLS certificates served at '%s'. Caution: if host is correct and insecure certificates should be dangerously trusted, use '--tls-no-verify'", cp.GetEndpoint()), nil)
+		}
 		if errors.Is(err, sdk.ErrPlatformUnreachable) {
 			cli.ExitWithError(fmt.Sprintf("Failed to connect to the platform. Is the platform accepting connections at '%s'?", cp.GetEndpoint()), nil)
 		}

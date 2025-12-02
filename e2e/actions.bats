@@ -88,6 +88,16 @@ teardown_file() {
     assert_output --partial "delete"
     assert_output --partial "Total"
     assert_line --regexp "Current Offset.*0"
+  
+  run_otdfctl_action list --json
+  assert_success
+  assert_not_equal $(echo "$output" | jq -r 'pagination') "null"
+  assert_output --partial "create"
+  assert_output --partial "read"
+  assert_output --partial "update"
+  assert_output --partial "delete"
+  total=$(echo "$output" | jq -r '.pagination.total')
+  [[ "$total" -ge 1 ]]
 }
 
 @test "Update action" {

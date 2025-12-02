@@ -54,7 +54,7 @@ func policy_createAttribute(cmd *cobra.Command, args []string) {
 
 	t := cli.NewTabular(rows...)
 
-	HandleSuccess(cmd, a.Id, t, attr)
+	HandleSuccess(cmd, a.ID, t, attr)
 }
 
 func policy_getAttribute(cmd *cobra.Command, args []string) {
@@ -72,7 +72,7 @@ func policy_getAttribute(cmd *cobra.Command, args []string) {
 
 	a := cli.GetSimpleAttribute(attr)
 	rows := [][]string{
-		{"Id", a.Id},
+		{"Id", a.ID},
 		{"Name", a.Name},
 		{"Rule", a.Rule},
 		{"Values", cli.CommaSeparated(a.Values)},
@@ -82,7 +82,7 @@ func policy_getAttribute(cmd *cobra.Command, args []string) {
 		rows = append(rows, mdRows...)
 	}
 	t := cli.NewTabular(rows...)
-	HandleSuccess(cmd, a.Id, t, attr)
+	HandleSuccess(cmd, a.ID, t, attr)
 }
 
 func policy_listAttributes(cmd *cobra.Command, args []string) {
@@ -94,7 +94,7 @@ func policy_listAttributes(cmd *cobra.Command, args []string) {
 	limit := c.Flags.GetRequiredInt32("limit")
 	offset := c.Flags.GetRequiredInt32("offset")
 
-	attrs, page, err := h.ListAttributes(cmd.Context(), state, limit, offset)
+	resp, err := h.ListAttributes(cmd.Context(), state, limit, offset)
 	if err != nil {
 		cli.ExitWithError("Failed to list attributes", err)
 	}
@@ -111,10 +111,10 @@ func policy_listAttributes(cmd *cobra.Command, args []string) {
 		table.NewFlexColumn("updated_at", "Updated At", cli.FlexColumnWidthOne),
 	)
 	rows := []table.Row{}
-	for _, attr := range attrs {
+	for _, attr := range resp.GetAttributes() {
 		a := cli.GetSimpleAttribute(attr)
 		rows = append(rows, table.NewRow(table.RowData{
-			"id":         a.Id,
+			"id":         a.ID,
 			"namespace":  a.Namespace,
 			"name":       a.Name,
 			"rule":       a.Rule,
@@ -126,8 +126,8 @@ func policy_listAttributes(cmd *cobra.Command, args []string) {
 		}))
 	}
 	t = t.WithRows(rows)
-	t = cli.WithListPaginationFooter(t, page)
-	HandleSuccess(cmd, "", t, attrs)
+	t = cli.WithListPaginationFooter(t, resp.GetPagination())
+	HandleSuccess(cmd, "", t, resp)
 }
 
 func policy_deactivateAttribute(cmd *cobra.Command, args []string) {
@@ -164,7 +164,7 @@ func policy_deactivateAttribute(cmd *cobra.Command, args []string) {
 		rows = append(rows, mdRows...)
 	}
 	t := cli.NewTabular(rows...)
-	HandleSuccess(cmd, a.Id, t, a)
+	HandleSuccess(cmd, a.ID, t, a)
 }
 
 func policy_updateAttribute(cmd *cobra.Command, args []string) {
