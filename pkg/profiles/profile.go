@@ -2,6 +2,7 @@ package profiles
 
 import (
 	"errors"
+	"fmt"
 	"log/slog"
 	"runtime"
 	"strings"
@@ -113,9 +114,9 @@ func Migrate(to ProfileDriver, from ProfileDriver) error {
 		slog.Debug("Migrated profile", "profile", profileName, "setDefault", setDefault)
 	}
 
-	slog.Debug("Removing profiles from the keyring", slog.Any("count", len(profilesToMigrate)))
+	slog.Debug(fmt.Sprintf("Removing profiles from %s", string(from)), slog.Any("count", len(profilesToMigrate)))
 	if err = fromProfiler.Cleanup(false); err != nil {
-		return errors.Join(ErrCleaningUpKeyring, err)
+		return errors.Join(ErrCleaningUpProfiles, err)
 	}
 
 	slog.Debug("Migration complete.")

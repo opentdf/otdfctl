@@ -264,7 +264,7 @@ var profileKeyringCleanupCmd = &cobra.Command{
 		}
 
 		c.Println("Cleaning up keyring profile store...")
-		if err := keyringProfiler.Cleanup(false); err != nil {
+		if err := keyringProfiler.Cleanup(force); err != nil {
 			cli.ExitWithError(profiles.ErrCleaningUpKeyring.Error(), err)
 		}
 		c.Println("Keyring profile store cleanup complete.")
