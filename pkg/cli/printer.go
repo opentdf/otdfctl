@@ -22,24 +22,11 @@ func newPrinter(cli *Cli) *Printer {
 	}
 
 	// if json output is enabled, disable the printer
-	if cli.cmd.Flag("json") != nil {
-		json, err := cli.cmd.Flags().GetBool("json")
-		if err != nil {
-			ExitWithError("failed to get json flag", err)
-			return nil
-		}
-		p.setJSON(json)
-	}
+	printJSON := cli.Flags.GetOptionalBool("json")
+	p.setJSON(printJSON)
 
-	// if debug output is enabled, enable debug output
-	if cli.cmd.Flag("debug") != nil {
-		debug, err := cli.cmd.Flags().GetBool("debug")
-		if err != nil {
-			ExitWithError("failed to get debug flag", err)
-			return nil
-		}
-		p.setDebug(debug)
-	}
+	isDebug := cli.Flags.GetOptionalBool("debug")
+	p.setDebug(isDebug)
 
 	return p
 }
