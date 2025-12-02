@@ -315,7 +315,7 @@ var profileKeyringCleanupCmd = &cobra.Command{
 	},
 }
 
-func init() {
+func InitProfileCommands() {
 	profileCreateCmd.Flags().Bool("set-default", false, "Set the profile as default")
 	profileCreateCmd.Flags().Bool("tls-no-verify", false, "Disable TLS verification")
 	profileCreateCmd.Flags().String("store", "filesystem", "Profile store to use: filesystem or keyring")
