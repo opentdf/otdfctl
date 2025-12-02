@@ -45,12 +45,15 @@ runs:
       working-directory: otdfctl
     - name: Setup Bats and bats libs
       uses: bats-core/bats-action@2.0.0
+    - name: Unlock keyring
+      shell: bash
+      run: |
+        # Unlock keyring with dummy pass
+        echo 'somecredstorepass' | gnome-keyring-daemon --unlock   
     - name: Run Bats tests
       shell: bash
       working-directory: otdfctl
       run: |
-        # Unlock keyring with dummy pass
-        echo 'somecredstorepass' | gnome-keyring-daemon --unlock
         if command -v parallel >/dev/null 2>&1; then
           echo "GNU parallel found, running tests in parallel"
           bats --tap e2e --jobs 4 --no-parallelize-within-files --no-tempdir-cleanup | tee e2e/bats-results.tap
