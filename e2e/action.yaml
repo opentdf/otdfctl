@@ -34,6 +34,15 @@ runs:
       shell: bash
       run: make build-test
       working-directory: otdfctl
+    - name: Build v0.26.2 CLI for keyring profiles
+      shell: bash
+      working-directory: otdfctl
+      run: |
+        git fetch --tags origin v0.26.2
+        git worktree add ../otdfctl_v0.26.2 v0.26.2
+        cd ../otdfctl_v0.26.2
+        go build -o ../otdfctl/otdfctl_v0.26.2 .
+        echo "LEGACY_OTDFCTL_BIN=./otdfctl_v0.26.2" >> $GITHUB_ENV
     - name: Install keyring dependencies
       shell: bash
       run: |
