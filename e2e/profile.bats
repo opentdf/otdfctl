@@ -220,3 +220,69 @@ teardown() {
   refute_output --partial "$profile1_keyring"
   refute_output --partial "$profile2_keyring"
 }
+
+@test "profile migrate moves keyring profiles to filesystem" {
+  base="${PROFILE_TEST_PREFIX}-migrate"
+  profile1="${base}-1"
+  profile2="${base}-2"
+
+  run_otdfctl_profile_keyring create --set-default "$profile1" http://localhost:8080
+  assert_success
+
+  run_otdfctl_profile_keyring create "$profile2" http://localhost:8081
+  assert_success
+
+  run_otdfctl list --store keyring
+  assert_success
+  assert_output --partial "$profile1"
+  assert_output --partial "$profile2"
+
+  run_otdfctl list
+  assert_success
+  refute_output --partial "$profile1"
+  refute_output --partial "$profile2"
+
+  run_otdfctl migrate
+  assert_success
+  assert_output --partial "from keyring to filesystem"
+  assert_output --partial "Migration complete."
+
+  run_otdfctl list
+  assert_success
+  assert_output --partial "Listing profiles from filesystem"
+  assert_output --partial "* ${profile1}"
+  assert_output --partial "  ${profile2}"
+
+  run_otdfctl list --store keyring
+  assert_success
+  assert_output --partial "Listing profiles from keyring"
+  refute_output --partial "$profile1"
+  refute_output --partial "$profile2"
+}
+
+@test "profile keyring cleanup removes all keyring profiles" {
+  base="${PROFILE_TEST_PREFIX}-cleanup"
+  profile1="${base}-1"
+  profile2="${base}-2"
+
+  run_otdfctl_profile_keyring create "$profile1" http://localhost:8080
+  assert_success
+
+  run_otdfctl_profile_keyring create "$profile2" http://localhost:8081
+  assert_success
+
+  run_otdfctl list --store keyring
+  assert_success
+  assert_output --partial "$profile1"
+  assert_output --partial "$profile2"
+
+  run_otdfctl cleanup --force
+  assert_success
+  assert_output --partial "Cleaning up keyring profile store..."
+  assert_output --partial "Keyring profile store cleanup complete."
+
+  run_otdfctl list --store keyring
+  assert_success
+  refute_output --partial "$profile1"
+  refute_output --partial "$profile2"
+}
