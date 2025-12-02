@@ -57,6 +57,8 @@ runs:
     - name: Unlock Gnome keyring
       shell: bash
       run: |
+        # This is a fake dummy password, that is not used
+        # anywhere else in the CI, but for bats testing
         echo "somecredstorepass" | gnome-keyring-daemon --unlock
     - name: Run Bats tests
       shell: bash
