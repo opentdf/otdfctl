@@ -2,7 +2,7 @@ module github.com/opentdf/otdfctl
 
 go 1.24.0
 
-toolchain go1.24.2
+toolchain go1.24.11
 
 require (
 	github.com/adrg/frontmatter v0.2.0
