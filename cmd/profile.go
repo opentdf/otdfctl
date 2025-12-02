@@ -14,9 +14,8 @@ import (
 )
 
 var (
-	runningInLinux       = runtime.GOOS == "linux"
-	runningInTestMode    = config.TestMode == "true"
-	errCleaningUpKeyring = errors.New("error occurred when cleaning up keyring")
+	runningInLinux    = runtime.GOOS == "linux"
+	runningInTestMode = config.TestMode == "true"
 )
 
 func newProfilerFromCLI(c *cli.Cli) *osprofiles.Profiler {
@@ -236,59 +235,17 @@ var profileSetEndpointCmd = &cobra.Command{
 	},
 }
 
-func migrateKeyringProfilesToFilesystem(c *cli.Cli) {
-	keyringProfiler, err := profiles.NewProfiler(string(profiles.ProfileDriverKeyring))
-	if err != nil {
-		c.ExitWithError("Failed to initialize keyring profile store", err)
-	}
-
-	filesystemProfiler := newProfilerFromCLI(c)
-
-	profilesInKeyring := osprofiles.ListProfiles(keyringProfiler)
-	if len(profilesInKeyring) == 0 {
-		c.Println("No profiles found in keyring store to migrate.")
-		return
-	}
-
-	defaultKeyringProfile := osprofiles.GetGlobalConfig(keyringProfiler).GetDefaultProfile()
-
-	c.Printf("Migrating %d profiles from keyring to filesystem...\n", len(profilesInKeyring))
-
-	for _, profileName := range profilesInKeyring {
-		store, err := osprofiles.GetProfile[*profiles.ProfileConfig](keyringProfiler, profileName)
-		if err != nil {
-			c.ExitWithError("Failed to load profile from keyring", err)
-		}
-
-		p, ok := store.Profile.(*profiles.ProfileConfig)
-		if !ok || p == nil {
-			c.ExitWithError("Failed to load profile from keyring", errors.New("invalid profile configuration"))
-		}
-
-		setDefault := profileName == defaultKeyringProfile
-
-		if err := filesystemProfiler.AddProfile(p, setDefault); err != nil {
-			c.ExitWithError("Failed to migrate profile", err)
-		}
-
-		c.Printf("Migrated profile %s, set to default: %t\n", profileName, setDefault)
-	}
-
-	c.Printf("Removing %d profiles from the keyring\n", len(profilesInKeyring))
-	if err = keyringProfiler.Cleanup(false); err != nil {
-		cli.ExitWithError(errCleaningUpKeyring.Error(), err)
-	}
-
-	c.Println("Migration complete.")
-}
-
 var profileMigrateCmd = &cobra.Command{
 	Use:   "migrate",
 	Short: "Migrate all profiles from keyring to filesystem",
 	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		c := cli.New(cmd, args)
-		migrateKeyringProfilesToFilesystem(c)
+		err := profiles.Migrate(profiles.ProfileDriverFileSystem, profiles.ProfileDriverKeyring)
+		if err != nil {
+			c.ExitWithError("Failed to migrate", err)
+		}
+		c.Printf("Migration has completed successfully.")
 	},
 }
 
@@ -309,7 +266,7 @@ var profileKeyringCleanupCmd = &cobra.Command{
 
 		c.Println("Cleaning up keyring profile store...")
 		if err := keyringProfiler.Cleanup(false); err != nil {
-			cli.ExitWithError(errCleaningUpKeyring.Error(), err)
+			cli.ExitWithError(profiles.ErrCleaningUpKeyring.Error(), err)
 		}
 		c.Println("Keyring profile store cleanup complete.")
 	},

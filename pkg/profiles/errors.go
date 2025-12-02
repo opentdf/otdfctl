@@ -9,4 +9,5 @@ var (
 	ErrCreatingPlatform         = errors.New("error when creating platform")
 	ErrCreatingNewProfile       = errors.New("error creating profile")
 	ErrUnknownProfileDriverType = errors.New("error unknown profile driver type")
+	ErrCleaningUpKeyring        = errors.New("error occurred when cleaning up keyring")
 )

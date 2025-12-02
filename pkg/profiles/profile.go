@@ -2,6 +2,7 @@ package profiles
 
 import (
 	"errors"
+	"log/slog"
 	"runtime"
 	"strings"
 
@@ -70,4 +71,53 @@ func CreateProfiler(driverType ProfileDriver) (*osprofiles.Profiler, error) {
 	default:
 		return nil, ErrUnknownProfileDriverType
 	}
+}
+
+func Migrate(to ProfileDriver, from ProfileDriver) error {
+	fromProfiler, err := CreateProfiler(from)
+	if err != nil {
+		return err
+	}
+
+	toProfiler, err := CreateProfiler(to)
+	if err != nil {
+		return err
+	}
+
+	profilesToMigrate := osprofiles.ListProfiles(fromProfiler)
+	if len(profilesToMigrate) == 0 {
+		return nil
+	}
+
+	defaultProfileBeingMigrated := osprofiles.GetGlobalConfig(fromProfiler).GetDefaultProfile()
+
+	slog.Debug("Migrating profiles", slog.Any("count", len(profilesToMigrate)), slog.Any("from", string(from)), slog.Any("to", string(to)))
+
+	for _, profileName := range profilesToMigrate {
+		store, err := osprofiles.GetProfile[*ProfileConfig](fromProfiler, profileName)
+		if err != nil {
+			return err
+		}
+
+		p, ok := store.Profile.(*ProfileConfig)
+		if !ok || p == nil {
+			return ErrProfileIncorrectType
+		}
+
+		setDefault := profileName == defaultProfileBeingMigrated
+
+		if err := toProfiler.AddProfile(p, setDefault); err != nil {
+			return err
+		}
+
+		slog.Debug("Migrated profile", "profile", profileName, "setDefault", setDefault)
+	}
+
+	slog.Debug("Removing profiles from the keyring", slog.Any("count", len(profilesToMigrate)))
+	if err = fromProfiler.Cleanup(false); err != nil {
+		return errors.Join(ErrCleaningUpKeyring, err)
+	}
+
+	slog.Debug("Migration complete.")
+	return nil
 }

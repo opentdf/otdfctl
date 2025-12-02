@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/evertras/bubble-table/table"
+	osprofiles "github.com/jrschumacher/go-osprofiles"
 	"github.com/opentdf/otdfctl/pkg/auth"
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/config"
@@ -15,11 +16,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	Profile *profiles.Profile
-
-	OtdfctlCfg config.Config
-)
+var OtdfctlCfg config.Config
 
 // InitProfile initializes the profile store and loads the profile specified in the flags
 // if onlyNew is set to true, a new profile will be created and returned
@@ -34,7 +31,7 @@ func InitProfile(c *cli.Cli) *profiles.OtdfctlProfileStore {
 	}
 	if hasKeyringStore {
 		c.Println("Keyring store still active, migrating profiles to filesystem.")
-		migrateKeyringProfilesToFilesystem(c)
+		profiles.Migrate(profiles.ProfileDriverFileSystem, profiles.ProfileDriverKeyring)
 	}
 
 	profiler, err := profiles.CreateProfiler(profiles.ProfileDriverFileSystem)
