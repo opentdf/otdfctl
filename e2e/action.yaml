@@ -66,10 +66,10 @@ runs:
       run: |
         if command -v parallel >/dev/null 2>&1; then
           echo "GNU parallel found, running tests in parallel"
-          bats --tap e2e/profile.bats --jobs 4 --no-parallelize-within-files --no-tempdir-cleanup | tee e2e/bats-results.tap
+          bats --tap e2e --jobs 4 --no-parallelize-within-files --no-tempdir-cleanup | tee e2e/bats-results.tap
         else
           echo "GNU parallel not found, running tests sequentially"
-          bats --tap e2e/profile.bats | tee e2e/bats-results.tap
+          bats --tap e2e | tee e2e/bats-results.tap
         fi
       env:
         # Define 'bats' install location in ubuntu
