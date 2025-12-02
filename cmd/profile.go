@@ -63,10 +63,9 @@ var profileCreateCmd = &cobra.Command{
 
 		setDefault := c.FlagHelper.GetOptionalBool("set-default")
 		tlsNoVerify := c.FlagHelper.GetOptionalBool("tls-no-verify")
-		driverType := getDriverTypeFromUser(c)
 
 		c.Printf("Creating profile %s...", profileName)
-		_, err := profiles.NewOtdfctlProfileStore(driverType, profileName, endpoint, tlsNoVerify, setDefault)
+		_, err := profiles.NewOtdfctlProfileStore(profiles.ProfileDriverFileSystem, profileName, endpoint, tlsNoVerify, setDefault)
 		if err != nil {
 			c.Println("failed")
 			c.ExitWithError("Failed to create profile", err)
@@ -275,7 +274,6 @@ var profileKeyringCleanupCmd = &cobra.Command{
 func InitProfileCommands() {
 	profileCreateCmd.Flags().Bool("set-default", false, "Set the profile as default")
 	profileCreateCmd.Flags().Bool("tls-no-verify", false, "Disable TLS verification")
-	profileCreateCmd.Flags().String("store", "filesystem", "Profile store to use: filesystem or keyring")
 
 	profileListCmd.Flags().String("store", "filesystem", "Profile store to use: filesystem or keyring")
 	profileGetCmd.Flags().String("store", "filesystem", "Profile store to use: filesystem or keyring")
