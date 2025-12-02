@@ -31,7 +31,10 @@ func InitProfile(c *cli.Cli) *profiles.OtdfctlProfileStore {
 	}
 	if hasKeyringStore {
 		c.Println("Keyring store still active, migrating profiles to filesystem.")
-		profiles.Migrate(profiles.ProfileDriverFileSystem, profiles.ProfileDriverKeyring)
+		err := profiles.Migrate(profiles.ProfileDriverFileSystem, profiles.ProfileDriverKeyring)
+		if err != nil {
+			cli.ExitWithError(fmt.Sprintf("Error during profile migration from %s, to %s", profiles.ProfileDriverKeyring, profiles.ProfileDriverFileSystem), err)
+		}
 	}
 
 	profiler, err := profiles.CreateProfiler(profiles.ProfileDriverFileSystem)
