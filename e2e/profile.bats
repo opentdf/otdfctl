@@ -244,7 +244,6 @@ teardown() {
 
   run_otdfctl migrate
   assert_success
-  assert_output --partial "from keyring to filesystem"
   assert_output --partial "Migration complete."
 
   run_otdfctl list

@@ -245,7 +245,7 @@ var profileMigrateCmd = &cobra.Command{
 		if err != nil {
 			c.ExitWithError("Failed to migrate", err)
 		}
-		c.Printf("Migration has completed successfully.")
+		c.Printf("Migration complete.")
 	},
 }
 
