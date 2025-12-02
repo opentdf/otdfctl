@@ -34,12 +34,32 @@ runs:
       shell: bash
       run: make build-test
       working-directory: otdfctl
+    - name: Build v0.26.2 CLI for keyring profiles
+      shell: bash
+      working-directory: otdfctl
+      run: |
+        git fetch --tags origin v0.26.2
+        git worktree add ../otdfctl_v0.26.2 v0.26.2
+        cd ../otdfctl_v0.26.2
+        go build -o ../otdfctl/otdfctl_v0.26.2 .
+        echo "LEGACY_OTDFCTL_BIN=./otdfctl_v0.26.2" >> $GITHUB_ENV
+    - name: Install keyring dependencies
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gnome-keyring
     - name: Set up the CLI config
       shell: bash
       run: cp otdfctl-example.yaml otdfctl.yaml
       working-directory: otdfctl
     - name: Setup Bats and bats libs
       uses: bats-core/bats-action@2.0.0
+    - name: Unlock Gnome keyring
+      shell: bash
+      run: |
+        # This is a fake dummy password, that is not used
+        # anywhere else in the CI, but for bats testing
+        echo "somecredstorepass" | gnome-keyring-daemon --unlock
     - name: Run Bats tests
       shell: bash
       working-directory: otdfctl
