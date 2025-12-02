@@ -15,15 +15,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// captures all CLI flags that will override pre-specified config values
-type ConfigFlagOverrides struct {
-	OutputFormatJSON bool
-}
-
 var (
 	Profile *profiles.Profile
-
-	configFlagOverrides = ConfigFlagOverrides{}
 
 	OtdfctlCfg config.Config
 )
@@ -207,7 +200,7 @@ func NewHandler(c *cli.Cli) handlers.Handler {
 func HandleSuccess(command *cobra.Command, id string, t table.Model, policyObject interface{}) {
 	c := cli.New(command, []string{})
 	jsonFlag := c.Flags.GetOptionalBool("json")
-	if OtdfctlCfg.Output.Format == config.OutputJSON || configFlagOverrides.OutputFormatJSON || jsonFlag {
+	if OtdfctlCfg.Output.Format == config.OutputJSON || jsonFlag {
 		c.ExitWithJSON(policyObject)
 	}
 	cli.PrintSuccessTable(command, id, t)

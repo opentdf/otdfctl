@@ -1,9 +1,8 @@
-package cmd
+package config
 
 import (
 	"fmt"
 
-	"github.com/opentdf/otdfctl/cmd/common"
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/config"
 	"github.com/opentdf/otdfctl/pkg/man"
@@ -14,8 +13,6 @@ var cfgKey string
 
 func updateOutput(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
-	h := common.NewHandler(c)
-	defer h.Close()
 
 	format := c.Flags.GetRequiredString("format")
 
