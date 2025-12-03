@@ -18,6 +18,13 @@ var (
 	runningInTestMode = config.TestMode == "true"
 )
 
+const (
+	profileMigrationLongDesc = "Migrate all profiles from keyring to filesystem. " +
+		"If you get stuck during your migration due to name collisions across the filesystem/keyring, please" +
+		" delete the specific profile from either the filesystem or keyring and run the migration again." +
+		" If that still doesn't work, you can remove all profiles from the filesystem via the `delete-all` command."
+)
+
 func newProfilerFromCLI(c *cli.Cli) *osprofiles.Profiler {
 	driverType := getDriverTypeFromUser(c)
 	profiler, err := profiles.NewProfiler(string(driverType))
@@ -65,7 +72,12 @@ var profileCreateCmd = &cobra.Command{
 		tlsNoVerify := c.FlagHelper.GetOptionalBool("tls-no-verify")
 
 		c.Printf("Creating profile %s...", profileName)
-		_, err := profiles.NewOtdfctlProfileStore(profiles.ProfileDriverFileSystem, profileName, endpoint, tlsNoVerify, setDefault)
+		profileConfig := profiles.ProfileConfig{
+			Name:        profileName,
+			Endpoint:    endpoint,
+			TLSNoVerify: tlsNoVerify,
+		}
+		_, err := profiles.NewOtdfctlProfileStore(profiles.ProfileDriverFileSystem, &profileConfig, setDefault)
 		if err != nil {
 			c.Println("failed")
 			c.ExitWithError("Failed to create profile", err)
@@ -236,7 +248,8 @@ var profileSetEndpointCmd = &cobra.Command{
 
 var profileMigrateCmd = &cobra.Command{
 	Use:   "migrate",
-	Short: "Migrate all profiles from keyring to filesystem",
+	Short: "Migrate all profiles from keyring to filesystem.",
+	Long:  profileMigrationLongDesc,
 	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		c := cli.New(cmd, args)

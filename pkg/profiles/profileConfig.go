@@ -24,28 +24,28 @@ func (pc *ProfileConfig) GetName() string {
 	return pc.Name
 }
 
-func NewOtdfctlProfileStore(storeType ProfileDriver, profileName string, endpoint string, tlsNoVerify, setDefault bool) (*OtdfctlProfileStore, error) {
+func NewOtdfctlProfileStore(storeType ProfileDriver, config *ProfileConfig, setDefault bool) (*OtdfctlProfileStore, error) {
 	profiler, err := CreateProfiler(storeType)
 	if err != nil {
 		return nil, err
 	}
 
-	u, err := utils.NormalizeEndpoint(endpoint)
+	u, err := utils.NormalizeEndpoint(config.Endpoint)
 	if err != nil {
 		return nil, err
 	}
 
 	p := &ProfileConfig{
-		Name:        profileName,
+		Name:        config.Name,
 		Endpoint:    u.String(),
-		TLSNoVerify: tlsNoVerify,
+		TLSNoVerify: config.TLSNoVerify,
 	}
 	err = profiler.AddProfile(p, setDefault)
 	if err != nil {
 		return nil, err
 	}
 
-	store, err := osprofiles.UseProfile[*ProfileConfig](profiler, profileName)
+	store, err := osprofiles.UseProfile[*ProfileConfig](profiler, config.Name)
 	if err != nil {
 		return nil, err
 	}

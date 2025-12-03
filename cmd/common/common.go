@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
+	"log/slog"
 
 	"github.com/evertras/bubble-table/table"
 	osprofiles "github.com/jrschumacher/go-osprofiles"
@@ -27,13 +28,13 @@ func InitProfile(c *cli.Cli) *profiles.OtdfctlProfileStore {
 
 	hasKeyringStore, err := osprofiles.HasGlobalStore(config.AppName, osprofiles.WithKeyringStore())
 	if err != nil {
-		cli.ExitWithError("Failed to check keyring profile store", err)
+		slog.Warn("Could not determine whether any profiles were stored on the keyring, defaulting to filesystem.", "error", err)
 	}
 	if hasKeyringStore {
-		c.Println("Keyring store still active, migrating profiles to filesystem.")
+		slog.Debug("Keyring store still active, migrating profiles to filesystem.")
 		err := profiles.Migrate(profiles.ProfileDriverFileSystem, profiles.ProfileDriverKeyring)
 		if err != nil {
-			cli.ExitWithError(fmt.Sprintf("Error during profile migration from %s, to %s", profiles.ProfileDriverKeyring, profiles.ProfileDriverFileSystem), err)
+			cli.ExitWithError(fmt.Sprintf("Error during profile migration from %s, to %s. Otdfctl cannot continue with profiles being stored within %s, please use the `profile migrate` command to manually migrate profiles", profiles.ProfileDriverKeyring, profiles.ProfileDriverFileSystem, profiles.ProfileDriverKeyring), err)
 		}
 	}
 
@@ -108,7 +109,12 @@ func NewHandler(c *cli.Cli) handlers.Handler {
 		}
 
 		inMemoryProfile = true
-		cp, err = profiles.NewOtdfctlProfileStore(profiles.ProfileDriverMemory, "temp", host, tlsNoVerify, true)
+		config := profiles.ProfileConfig{
+			Name:        "temp",
+			Endpoint:    host,
+			TLSNoVerify: tlsNoVerify,
+		}
+		cp, err = profiles.NewOtdfctlProfileStore(profiles.ProfileDriverMemory, &config, true)
 		if err != nil {
 			cli.ExitWithError("Failed to initialize in-memory profile", err)
 		}
