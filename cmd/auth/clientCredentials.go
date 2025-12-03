@@ -11,7 +11,7 @@ import (
 
 func clientCredentialsRun(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
-	_, cp := common.InitProfile(c, false)
+	cp := common.InitProfile(c)
 
 	var clientID string
 	var clientSecret string
@@ -45,14 +45,6 @@ func clientCredentialsRun(cmd *cobra.Command, args []string) {
 	if err := auth.ValidateProfileAuthCredentials(cmd.Context(), cp); err != nil {
 		c.Println("failed")
 		c.ExitWithError("An error occurred during login. Please check your credentials and try again", err)
-	}
-	c.Println("ok")
-
-	// Save the client credentials
-	c.Print("Storing client ID and secret in keyring... ")
-	if err := cp.Save(); err != nil {
-		c.Println("failed")
-		c.ExitWithError("An error occurred while storing client credentials", err)
 	}
 	c.Println("ok")
 }

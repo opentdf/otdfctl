@@ -2,211 +2,123 @@ package profiles
 
 import (
 	"errors"
+	"fmt"
+	"log/slog"
+	"runtime"
+	"strings"
+
+	osprofiles "github.com/jrschumacher/go-osprofiles"
+	osplatform "github.com/jrschumacher/go-osprofiles/pkg/platform"
+	"github.com/opentdf/otdfctl/pkg/config"
 )
 
-// TODO:
-// - add a version
-// - add a migration path
+type ProfileDriver string
 
 const (
-	StoreKeyProfile = "profile"
-	StoreKeyGlobal  = "global"
+	ProfileDriverKeyring    ProfileDriver = "keyring"
+	ProfileDriverMemory     ProfileDriver = "in-memory"
+	ProfileDriverFileSystem ProfileDriver = "filesystem"
+	ProfileDriverUnknown    ProfileDriver = "unknown"
+	ProfileDriverDefault                  = ProfileDriverFileSystem
 )
 
-type profileConfig struct {
-	driver ProfileDriver
+func newFileStoreProfiler() (*osprofiles.Profiler, error) {
+	platform, err := osplatform.NewPlatform(config.ServicePublisher, config.AppName, runtime.GOOS)
+	if err != nil {
+		return nil, errors.Join(ErrCreatingPlatform, err)
+	}
+	profiler, err := osprofiles.New(config.AppName, osprofiles.WithFileStore(platform.UserAppConfigDirectory()))
+	if err != nil {
+		return nil, errors.Join(ErrCreatingNewProfile, err)
+	}
+	return profiler, nil
 }
 
-type Profile struct {
-	config profileConfig
-
-	globalStore         *GlobalStore
-	currentProfileStore *ProfileStore
-}
-
-type CurrentProfileStore struct {
-	StoreInterface
-	ProfileConfig
-}
-
-const (
-	DriverKeyring  ProfileDriver = "keyring"
-	DriverInMemory ProfileDriver = "in-memory"
-	DriverDefault                = DriverKeyring
-)
-
-type (
-	profileConfigVariadicFunc func(profileConfig) profileConfig
-	ProfileDriver             string
-)
-
-func WithInMemoryStore() profileConfigVariadicFunc {
-	return func(c profileConfig) profileConfig {
-		c.driver = DriverInMemory
-		return c
-	}
-}
-
-func WithKeyringStore() profileConfigVariadicFunc {
-	return func(c profileConfig) profileConfig {
-		c.driver = DriverKeyring
-		return c
-	}
-}
-
-func newStoreFactory(driver ProfileDriver) NewStoreInterface {
-	switch driver {
-	case DriverKeyring:
-		return NewKeyringStore
-	case DriverInMemory:
-		return NewMemoryStore
-	default:
-		return nil
-	}
-}
-
-// create a new profile and load global config
-func New(opts ...profileConfigVariadicFunc) (*Profile, error) {
-	var err error
-
-	newStoreFactory("hello")
-	if testProfile != nil {
-		return testProfile, nil
-	}
-
-	config := profileConfig{
-		driver: DriverDefault,
-	}
-	for _, opt := range opts {
-		config = opt(config)
-	}
-
-	// check if the store driver is valid
-	newStore := newStoreFactory(config.driver)
-	if newStore == nil {
-		return nil, errors.New("invalid store driver")
-	}
-
-	p := &Profile{
-		config: config,
-	}
-
-	// load global config
-	p.globalStore, err = LoadGlobalConfig(newStore)
+func NewProfiler(store string) (*osprofiles.Profiler, error) {
+	driverType, err := ToProfileDriver(store)
 	if err != nil {
 		return nil, err
 	}
 
-	return p, nil
+	return CreateProfiler(driverType)
 }
 
-func (p *Profile) GetGlobalConfig() *GlobalStore {
-	return p.globalStore
-}
-
-func (p *Profile) AddProfile(profileName string, endpoint string, tlsNoVerify bool, setDefault bool) error {
-	var err error
-
-	// check if profile already exists
-	if p.globalStore.ProfileExists(profileName) {
-		return errors.New("profile already exists")
+func ToProfileDriver(driverType string) (ProfileDriver, error) {
+	normalizedType := strings.ToLower(strings.TrimSpace(driverType))
+	switch normalizedType {
+	case string(ProfileDriverMemory):
+		return ProfileDriverMemory, nil
+	case string(ProfileDriverKeyring):
+		return ProfileDriverKeyring, nil
+	case string(ProfileDriverFileSystem):
+		return ProfileDriverFileSystem, nil
+	case string(ProfileDriverUnknown):
+		fallthrough
+	default:
+		return ProfileDriverUnknown, ErrUnknownProfileDriverType
 	}
+}
 
-	// Create profile store and save
-	p.currentProfileStore, err = NewProfileStore(newStoreFactory(p.config.driver), profileName, endpoint, tlsNoVerify)
+func CreateProfiler(driverType ProfileDriver) (*osprofiles.Profiler, error) {
+	switch driverType {
+	case ProfileDriverMemory:
+		return osprofiles.New(config.AppName, osprofiles.WithInMemoryStore())
+	case ProfileDriverKeyring:
+		return osprofiles.New(config.AppName, osprofiles.WithKeyringStore())
+	case ProfileDriverFileSystem:
+		return newFileStoreProfiler()
+	case ProfileDriverUnknown:
+		fallthrough
+	default:
+		return nil, ErrUnknownProfileDriverType
+	}
+}
+
+func Migrate(to ProfileDriver, from ProfileDriver) error {
+	fromProfiler, err := CreateProfiler(from)
 	if err != nil {
 		return err
 	}
-	if err := p.currentProfileStore.Save(); err != nil {
+
+	toProfiler, err := CreateProfiler(to)
+	if err != nil {
 		return err
 	}
 
-	// add profile to global config
-	if err := p.globalStore.AddProfile(profileName); err != nil {
-		return err
+	profilesToMigrate := osprofiles.ListProfiles(fromProfiler)
+	if len(profilesToMigrate) == 0 {
+		return nil
 	}
 
-	if setDefault || p.globalStore.GetDefaultProfile() == "" {
-		return p.globalStore.SetDefaultProfile(profileName)
-	}
+	defaultProfileBeingMigrated := osprofiles.GetGlobalConfig(fromProfiler).GetDefaultProfile()
 
-	return nil
-}
+	slog.Debug("Migrating profiles", slog.Any("count", len(profilesToMigrate)), slog.Any("from", string(from)), slog.Any("to", string(to)))
 
-func (p *Profile) GetCurrentProfile() (*ProfileStore, error) {
-	if p.currentProfileStore == nil {
-		return nil, errors.New("no current profile set")
-	}
-
-	return p.currentProfileStore, nil
-}
-
-func (p *Profile) GetProfile(profileName string) (*ProfileStore, error) {
-	if !p.globalStore.ProfileExists(profileName) {
-		return nil, errors.New("profile does not exist")
-	}
-
-	return LoadProfileStore(newStoreFactory(p.config.driver), profileName)
-}
-
-func (p *Profile) ListProfiles() []string {
-	return p.globalStore.ListProfiles()
-}
-
-func (p *Profile) UseProfile(profileName string) (*ProfileStore, error) {
-	var err error
-
-	// check if current profile is already set
-	if p.currentProfileStore != nil {
-		if p.currentProfileStore.config.Name == profileName {
-			return p.currentProfileStore, nil
+	for _, profileName := range profilesToMigrate {
+		store, err := osprofiles.GetProfile[*ProfileConfig](fromProfiler, profileName)
+		if err != nil {
+			return err
 		}
+
+		p, ok := store.Profile.(*ProfileConfig)
+		if !ok || p == nil {
+			return ErrProfileIncorrectType
+		}
+
+		setDefault := profileName == defaultProfileBeingMigrated
+
+		if err := toProfiler.AddProfile(p, setDefault); err != nil {
+			return err
+		}
+
+		slog.Debug("Migrated profile", "profile", profileName, "setDefault", setDefault)
 	}
 
-	// set current profile
-	p.currentProfileStore, err = p.GetProfile(profileName)
-	return p.currentProfileStore, err
-}
-
-func (p *Profile) UseDefaultProfile() (*ProfileStore, error) {
-	defaultProfile := p.globalStore.GetDefaultProfile()
-	if defaultProfile == "" {
-		return nil, errors.New("no default profile set")
+	slog.Debug(fmt.Sprintf("Removing profiles from %s", string(from)), slog.Any("count", len(profilesToMigrate)))
+	if err = fromProfiler.Cleanup(false); err != nil {
+		return errors.Join(ErrCleaningUpProfiles, err)
 	}
 
-	return p.UseProfile(defaultProfile)
-}
-
-func (p *Profile) SetDefaultProfile(profileName string) error {
-	if !p.globalStore.ProfileExists(profileName) {
-		return errors.New("profile does not exist")
-	}
-
-	return p.globalStore.SetDefaultProfile(profileName)
-}
-
-func (p *Profile) DeleteProfile(profileName string) error {
-	// check if profile exists
-	if !p.globalStore.ProfileExists(profileName) {
-		return errors.New("profile does not exist")
-	}
-
-	// get profile
-	profile, err := LoadProfileStore(newStoreFactory(p.config.driver), profileName)
-	if err != nil {
-		return err
-	}
-
-	// remove profile from global config (will error if profile is default)
-	if err := p.globalStore.RemoveProfile(profileName); err != nil {
-		return err
-	}
-
-	// delete profile config
-	err = profile.Delete()
-	if err != nil {
-		return err
-	}
-
+	slog.Debug("Migration complete.")
 	return nil
 }

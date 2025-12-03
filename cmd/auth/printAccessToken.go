@@ -11,7 +11,7 @@ import (
 
 func printAccessTokenRun(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
-	_, cp := common.InitProfile(c, false)
+	cp := common.InitProfile(c)
 
 	ac := cp.GetAuthCredentials()
 	switch ac.AuthType {

@@ -4,8 +4,10 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
+	"log/slog"
 
 	"github.com/evertras/bubble-table/table"
+	osprofiles "github.com/jrschumacher/go-osprofiles"
 	"github.com/opentdf/otdfctl/pkg/auth"
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/config"
@@ -15,47 +17,50 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	Profile *profiles.Profile
-
-	OtdfctlCfg config.Config
-)
+var OtdfctlCfg config.Config
 
 // InitProfile initializes the profile store and loads the profile specified in the flags
 // if onlyNew is set to true, a new profile will be created and returned
 // returns the profile and the current profile store
-func InitProfile(c *cli.Cli, onlyNew bool) (*profiles.Profile, *profiles.ProfileStore) {
+func InitProfile(c *cli.Cli) *profiles.OtdfctlProfileStore {
 	var err error
 	profileName := c.FlagHelper.GetOptionalString("profile")
 
-	Profile, err = profiles.New()
-	if err != nil || Profile == nil {
-		c.ExitWithError("Failed to initialize profile store", err)
+	hasKeyringStore, err := osprofiles.HasGlobalStore(config.AppName, osprofiles.WithKeyringStore())
+	if err != nil {
+		slog.Warn("Could not determine whether any profiles were stored on the keyring, defaulting to filesystem.", "error", err)
+	}
+	if hasKeyringStore {
+		slog.Debug("Keyring store still active, migrating profiles to filesystem.")
+		err := profiles.Migrate(profiles.ProfileDriverFileSystem, profiles.ProfileDriverKeyring)
+		if err != nil {
+			cli.ExitWithError(fmt.Sprintf("Error during profile migration from %s, to %s. %s cannot continue with profiles being stored within %s, please use the `profile migrate` command to manually migrate profiles", profiles.ProfileDriverKeyring, profiles.ProfileDriverFileSystem, config.AppName, profiles.ProfileDriverKeyring), err)
+		}
 	}
 
-	// short circuit if onlyNew is set to enable creating a new profile
-	if onlyNew && profileName == "" {
-		return Profile, nil
+	profiler, err := profiles.CreateProfiler(profiles.ProfileDriverFileSystem)
+	if err != nil {
+		cli.ExitWithError("Error creating profiler", err)
 	}
 
-	// check if there exists a default profile and warn if not with steps to create one
-	if Profile.GetGlobalConfig().GetDefaultProfile() == "" {
+	defaultProfileName := osprofiles.GetGlobalConfig(profiler).GetDefaultProfile()
+	if len(defaultProfileName) == 0 {
 		c.ExitWithWarning(fmt.Sprintf("No default profile set. Use `%s profile create <profile> <endpoint>` to create a default profile.", config.AppName))
 	}
 
 	if profileName == "" {
-		profileName = Profile.GetGlobalConfig().GetDefaultProfile()
+		profileName = defaultProfileName
 	}
 
 	c.Printf("Using profile [%s]\n", profileName)
 
 	// load profile
-	cp, err := Profile.UseProfile(profileName)
+	store, err := profiles.LoadOtdfctlProfileStore(profiles.ProfileDriverFileSystem, profileName)
 	if err != nil {
 		c.ExitWithError(fmt.Sprintf("Failed to load profile: %s", profileName), err)
 	}
 
-	return Profile, cp
+	return store
 }
 
 // instantiates a new handler with authentication via client credentials
@@ -64,7 +69,7 @@ func InitProfile(c *cli.Cli, onlyNew bool) (*profiles.Profile, *profiles.Profile
 //nolint:nestif // separate refactor [https://github.com/opentdf/otdfctl/issues/383]
 func NewHandler(c *cli.Cli) handlers.Handler {
 	// if global flags are set then validate and create a temporary profile in memory
-	var cp *profiles.ProfileStore
+	var cp *profiles.OtdfctlProfileStore
 
 	// Non-profile flags
 	host := c.FlagHelper.GetOptionalString("host")
@@ -104,19 +109,14 @@ func NewHandler(c *cli.Cli) handlers.Handler {
 		}
 
 		inMemoryProfile = true
-		Profile, err = profiles.New(profiles.WithInMemoryStore())
-		if err != nil || Profile == nil {
-			cli.ExitWithError("Failed to initialize in-memory profile", err)
+		config := profiles.ProfileConfig{
+			Name:        "temp",
+			Endpoint:    host,
+			TLSNoVerify: tlsNoVerify,
 		}
-
-		if err := Profile.AddProfile("temp", host, tlsNoVerify, true); err != nil {
-			cli.ExitWithError("Failed to create in-memory profile", err)
-		}
-
-		// add credentials to the temporary profile
-		cp, err = Profile.UseProfile("temp")
+		cp, err = profiles.NewOtdfctlProfileStore(profiles.ProfileDriverMemory, &config, true)
 		if err != nil {
-			cli.ExitWithError("Failed to load in-memory profile", err)
+			cli.ExitWithError("Failed to initialize in-memory profile", err)
 		}
 
 		// get credentials from flags
@@ -155,23 +155,21 @@ func NewHandler(c *cli.Cli) handlers.Handler {
 				cli.ExitWithError("Failed to set client credentials", err)
 			}
 		}
-		if err := cp.Save(); err != nil {
-			cli.ExitWithError("Failed to save profile", err)
-		}
 	} else {
-		Profile, cp = InitProfile(c, false)
+		cp = InitProfile(c)
 	}
 
 	if err := auth.ValidateProfileAuthCredentials(c.Context(), cp); err != nil {
+		endpoint := cp.GetEndpoint()
 		var certErr *tls.CertificateVerificationError
 		if errors.As(err, &certErr) {
-			cli.ExitWithError(fmt.Sprintf("Failed to validate TLS certificates served at '%s'. Caution: if host is correct and insecure certificates should be dangerously trusted, use '--tls-no-verify'", cp.GetEndpoint()), nil)
+			cli.ExitWithError(fmt.Sprintf("Failed to validate TLS certificates served at '%s'. Caution: if host is correct and insecure certificates should be dangerously trusted, use '--tls-no-verify'", endpoint), nil)
 		}
 		if errors.Is(err, sdk.ErrPlatformUnreachable) {
-			cli.ExitWithError(fmt.Sprintf("Failed to connect to the platform. Is the platform accepting connections at '%s'?", cp.GetEndpoint()), nil)
+			cli.ExitWithError(fmt.Sprintf("Failed to connect to the platform. Is the platform accepting connections at '%s'?", endpoint), nil)
 		}
 		if errors.Is(err, sdk.ErrPlatformConfigFailed) {
-			cli.ExitWithError(fmt.Sprintf("Failed to get the platform configuration. Is the platform serving a well-known configuration at '%s'?", cp.GetEndpoint()), nil)
+			cli.ExitWithError(fmt.Sprintf("Failed to get the platform configuration. Is the platform serving a well-known configuration at '%s'?", endpoint), nil)
 		}
 		if inMemoryProfile {
 			cli.ExitWithError("Failed to authenticate with flag-provided client credentials.", err)

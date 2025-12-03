@@ -12,6 +12,8 @@ import (
 )
 
 var (
+	// Name of the publisher (PascalCase for when it is used in the UI and file system directory names)
+	ServicePublisher = "VirtruCorporation"
 	// AppName is the name of the application
 	// Note: use caution when renaming as it is used in various places within the CLI including for
 	// config file naming and in the profile store

@@ -20,11 +20,11 @@ type AuthCredentialsAccessToken struct {
 	Expiration   int64  `json:"expiration"`
 }
 
-func (p *ProfileStore) GetAuthCredentials() AuthCredentials {
+func (p *OtdfctlProfileStore) GetAuthCredentials() AuthCredentials {
 	return p.config.AuthCredentials
 }
 
-func (p *ProfileStore) SetAuthCredentials(authCredentials AuthCredentials) error {
+func (p *OtdfctlProfileStore) SetAuthCredentials(authCredentials AuthCredentials) error {
 	p.config.AuthCredentials = authCredentials
-	return p.Save()
+	return p.store.Save()
 }

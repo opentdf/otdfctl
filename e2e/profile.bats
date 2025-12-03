@@ -1,125 +1,287 @@
 #!/usr/bin/env bats
 
-setup() {  
-  OTDFCTL_BIN=./otdfctl_testbuild
+setup_file() {
+  # Prefix for all profiles created in this file to avoid clashing
+  PROFILE_TEST_PREFIX="bats-profile-$(date +%s)"
+  export PROFILE_TEST_PREFIX
+}
 
+setup() {
   load "${BATS_LIB_PATH}/bats-support/load.bash"
   load "${BATS_LIB_PATH}/bats-assert/load.bash"
 
-  set_test_profile() {
-    auth=""
-    # if 3rd argument is empty, then don't include it
-    if [ -n "$3" ]; then
-      auth=",\"auth\":$3"
-    fi
-    echo "{\"profile\":\"$1\",\"endpoint\":\"$2\"$auth}"
-  }
-
-  set_test_profile_auth() {
-    authType=$1
-    clientId=$2
-    clientSecret=$3
-    accessToken=$4
-    echo "{\"authType\":\"$authType\",\"clientId\":\"$clientId\",\"clientSecret\":\"$clientSecret\",\"accessToken\":\"$accessToken\"}"
-  }
-
-  set_test_profile_auth_access_token() {
-    clientId=$1
-    accessToken=$2
-    refreshToken=$3
-    expiration=$4
-    echo "{\"clientId\":\"$clientId\",\"accessToken\":\"$accessToken\",\"refreshToken\":\"$refreshToken\",\"expiration\":\"$expiration\"}"
-  }
-
-  set_test_config() {
-    defaultProfile=$1
-    shift 1
-    profiles=""
-    for i in "$@"; do
-      # if first profile just set it
-      if [ -z "$profiles" ]; then
-        profiles="$i"
-      else
-        profiles="$profiles,$i"
-      fi
-    done
-    export OTDFCTL_TEST_PROFILE="{\"defaultProfile\":\"$defaultProfile\",\"profiles\":[$profiles]}"
-  }
-
   run_otdfctl() {
-    run sh -c "./$OTDFCTL_BIN $*"
+    run bash -c "./otdfctl profile $*"
   }
 
-  assert_no_profile_set() {
-    assert_output --partial "No default profile set"
+  run_otdfctl_profile_keyring() {
+    # LEGACY_OTDFCTL_BIN gets set in the action.yaml
+    # It is v0.26.2 of otdfctl
+    run bash -c "$LEGACY_OTDFCTL_BIN profile $*"
   }
-
-  # Set the keyring provider to in-memory
-  export OTDFCTL_KEYRING_PROVIDER="in-memory"
 }
 
 teardown() {
-  unset OTDFCTL_KEYRING_PROVIDER
+  run_otdfctl profile delete-all --force
+  run_otdfctl profile delete-all --store keyring --force
 }
 
 @test "profile create" {
-  run_otdfctl profile create test http://localhost:8080
-  assert_line --regexp "Creating profile .* ok"
+  profile="${PROFILE_TEST_PREFIX}-create"
+  run_otdfctl create "$profile" http://localhost:8080
+  assert_success
+  assert_output --partial "Creating profile ${profile}..."
+  assert_output --partial "ok"
 
-  run_otdfctl profile create test localhost:8080
-  assert_line --regexp "Failed .* invalid scheme"
-
-  # TODO figure out how to test the case where the profile already exists
+  # Invalid endpoint should fail with a helpful message
+  run_otdfctl create "$profile" localhost:8080
+  assert_failure
+  assert_output --partial "Failed to create profile"
+  assert_output --partial "invalid scheme"
 }
 
-@test "profile list" {
+@test "profile list shows profiles and default" {
+  profile1="${PROFILE_TEST_PREFIX}-list-1"
+  profile2="${PROFILE_TEST_PREFIX}-list-2"
+
+  run_otdfctl create "$profile1" http://localhost:8080
+  assert_success
+
+  run_otdfctl create "$profile2" http://localhost:8080 --set-default
+  assert_success
+
+  run_otdfctl list
+  assert_success
+  assert_output --partial "Listing profiles from filesystem"
+  assert_output --partial "  ${profile1}"
+  assert_output --partial "* ${profile2}"
+
+  profile1_keyring="${PROFILE_TEST_PREFIX}-list-keyring-1"
+  profile2_keyring="${PROFILE_TEST_PREFIX}-list-keyring-2"
+
+  run_otdfctl_profile_keyring create "$profile1_keyring" http://localhost:8080
+  assert_success
+
+  run_otdfctl_profile_keyring create --set-default "$profile2_keyring" http://localhost:8080
+  assert_success
+
+  run_otdfctl list --store keyring
+  assert_success
+  assert_output --partial "Listing profiles from keyring"
+  assert_output --partial "  ${profile1_keyring}"
+  assert_output --partial "* ${profile2_keyring}"
+}
+
+@test "profile get shows profile details" {
+  profile="${PROFILE_TEST_PREFIX}-get"
+
+  run_otdfctl create "$profile" http://localhost:8080 --set-default
+  assert_success
+
+  run_otdfctl get "$profile"
+  assert_success
+  assert_output --partial "Profile"
+  assert_output --partial "$profile"
+  assert_output --partial "Endpoint"
+  assert_output --partial "http://localhost:8080"
+  assert_output --partial "Is default"
+  assert_output --partial "true"
+
+  profile_keyring="${PROFILE_TEST_PREFIX}-get-keyring"
+
+  run_otdfctl_profile_keyring create --set-default "$profile_keyring" http://localhost:8080
+  assert_success
+
+  run_otdfctl get "$profile_keyring" --store keyring
+  assert_success
+  assert_output --partial "Profile"
+  assert_output --partial "$profile_keyring"
+  assert_output --partial "Endpoint"
+  assert_output --partial "http://localhost:8080"
+  assert_output --partial "Is default"
+  assert_output --partial "true"
+}
+
+@test "profile delete removes profile" {
+  base="${PROFILE_TEST_PREFIX}-delete"
+  default_profile="${base}-default"
+  target_profile="${base}-target"
+
+  run_otdfctl create "$default_profile" http://localhost:8080 --set-default
+  assert_success
+
+  run_otdfctl create "$target_profile" http://localhost:8080
+  assert_success
+
+  run_otdfctl delete "$target_profile"
+  assert_success
+  assert_output --partial "Deleting profile ${target_profile}, from filesystem..."
+  assert_output --partial "ok"
+
   run_otdfctl profile list
-  assert_no_profile_set
+  assert_success
+  refute_output --partial "$target_profile"
 
-  # export OTDFCTL_TEST_CONFIG='{"defaultProfile":"test","profiles":[{"profile": "test","endpoint":"http://localhost:8080"}]}'
-  set_test_config "test2" $(set_test_profile "test" "http://localhost:8080") $(set_test_profile "test2" "http://localhost:8081")
-  run_otdfctl profile list
-  assert_line --index 5 --regexp "test$"
-  assert_line --index 6 --regexp "\* test2$"
+  base_keyring="${PROFILE_TEST_PREFIX}-delete-keyring"
+  default_profile_keyring="${base_keyring}-default"
+  target_profile_keyring="${base_keyring}-target"
+
+  run_otdfctl_profile_keyring create --set-default "$default_profile_keyring" http://localhost:8080
+  assert_success
+
+  run_otdfctl_profile_keyring create "$target_profile_keyring" http://localhost:8080
+  assert_success
+
+  run_otdfctl delete "$target_profile_keyring" --store keyring
+  assert_success
+  assert_output --partial "Deleting profile ${target_profile_keyring}, from keyring..."
+  assert_output --partial "ok"
+
+  run_otdfctl list --store keyring
+  assert_success
+  refute_output --partial "$target_profile_keyring"
 }
 
-@test "profile get" {
-  run_otdfctl profile get test
-  assert_no_profile_set
+@test "profile set-default updates default profile" {
+  base="${PROFILE_TEST_PREFIX}-set-default"
+  profile1="${base}-1"
+  profile2="${base}-2"
 
-  set_test_config "test2" $(set_test_profile "test" "http://localhost:8080") $(set_test_profile "test2" "http://localhost:8081")
-  run_otdfctl profile get test
-  assert_line --index 8 --regexp "Profile\s+|\s*test\s*"
-  assert_line --regexp "Endpoint\s+|\s*http://localhost:8080"
-  assert_line --regexp "default\s+|\s*false"
-  # TODO check auth
+  run_otdfctl create "$profile1" http://localhost:8080 --set-default
+  assert_success
+
+  run_otdfctl create "$profile2" http://localhost:8081
+  assert_success
+
+  run_otdfctl set-default "$profile2"
+  assert_success
+  assert_output --partial "Setting profile ${profile2} as default..."
+  assert_output --partial "ok"
+
+  run_otdfctl list
+  assert_success
+  assert_output --partial "* ${profile2}"
 }
 
-@test "profile delete" {
-  run_otdfctl profile delete test
-  assert_no_profile_set
+@test "profile set-endpoint updates endpoint" {
+  profile="${PROFILE_TEST_PREFIX}-set-endpoint"
 
-  # TODO test deleting the default profile
+  run_otdfctl create "$profile" http://localhost:8080
+  assert_success
 
-  set_test_config "test2" $(set_test_profile "test" "http://localhost:8080") $(set_test_profile "test2" "http://localhost:8081")
-  run_otdfctl profile delete test
-  assert_output --partial "Deleting profile test... ok"
+  run_otdfctl set-endpoint "$profile" http://localhost:8081
+  assert_success
+  assert_output --partial "Setting endpoint for profile ${profile}... "
+  assert_output --partial "ok"
+
+  run_otdfctl get "$profile"
+  assert_success
+  assert_output --partial "http://localhost:8081"
 }
 
-@test "profile set-default" {
-  run_otdfctl profile set-default test
-  assert_no_profile_set
+@test "profile delete-all deletes all profiles" {
+  base="${PROFILE_TEST_PREFIX}-delete-all"
+  profile1="${base}-1"
+  profile2="${base}-2"
 
-  set_test_config "test2" $(set_test_profile "test" "http://localhost:8080") $(set_test_profile "test2" "http://localhost:8081")
-  run_otdfctl profile set-default test
-  assert_output --partial "Setting profile test as default... ok"
+  run_otdfctl create "$profile1" http://localhost:8080 --set-default
+  assert_success
+
+  run_otdfctl create "$profile2" http://localhost:8081
+  assert_success
+
+  run_otdfctl delete-all --force
+  assert_success
+  assert_output --partial "profiles from filesystem..."
+  assert_output --partial "ok"
+
+  run_otdfctl list
+  assert_success
+  refute_output --partial "$profile1"
+  refute_output --partial "$profile2"
+
+  base_keyring="${PROFILE_TEST_PREFIX}-delete-all-keyring"
+  profile1_keyring="${base_keyring}-1"
+  profile2_keyring="${base_keyring}-2"
+
+  run_otdfctl_profile_keyring create --set-default "$profile1_keyring" http://localhost:8080
+  assert_success
+
+  run_otdfctl_profile_keyring create "$profile2_keyring" http://localhost:8081
+  assert_success
+
+  run_otdfctl delete-all --store keyring --force
+  assert_success
+  assert_output --partial "profiles from keyring..."
+  assert_output --partial "ok"
+
+  run_otdfctl list --store keyring
+  assert_success
+  refute_output --partial "$profile1_keyring"
+  refute_output --partial "$profile2_keyring"
 }
 
-@test "profile set-endpoint" {
-  run_otdfctl profile set-endpoint test http://localhost:8081
-  assert_no_profile_set
+@test "profile migrate moves keyring profiles to filesystem" {
+  base="${PROFILE_TEST_PREFIX}-migrate"
+  profile1="${base}-1"
+  profile2="${base}-2"
 
-  set_test_config "test2" $(set_test_profile "test" "http://localhost:8080") $(set_test_profile "test2" "http://localhost:8081")
-  run_otdfctl profile set-endpoint test http://localhost:8081
-  assert_output --partial "Setting endpoint for profile test... ok"
+  run_otdfctl_profile_keyring create --set-default "$profile1" http://localhost:8080
+  assert_success
+
+  run_otdfctl_profile_keyring create "$profile2" http://localhost:8081
+  assert_success
+
+  run_otdfctl list --store keyring
+  assert_success
+  assert_output --partial "$profile1"
+  assert_output --partial "$profile2"
+
+  run_otdfctl list
+  assert_success
+  refute_output --partial "$profile1"
+  refute_output --partial "$profile2"
+
+  run_otdfctl migrate
+  assert_success
+  assert_output --partial "Migration complete."
+
+  run_otdfctl list
+  assert_success
+  assert_output --partial "Listing profiles from filesystem"
+  assert_output --partial "* ${profile1}"
+  assert_output --partial "  ${profile2}"
+
+  run_otdfctl list --store keyring
+  assert_success
+  assert_output --partial "Listing profiles from keyring"
+  refute_output --partial "$profile1"
+  refute_output --partial "$profile2"
+}
+
+@test "profile keyring cleanup removes all keyring profiles" {
+  base="${PROFILE_TEST_PREFIX}-cleanup"
+  profile1="${base}-1"
+  profile2="${base}-2"
+
+  run_otdfctl_profile_keyring create "$profile1" http://localhost:8080
+  assert_success
+
+  run_otdfctl_profile_keyring create "$profile2" http://localhost:8081
+  assert_success
+
+  run_otdfctl list --store keyring
+  assert_success
+  assert_output --partial "$profile1"
+  assert_output --partial "$profile2"
+
+  run_otdfctl cleanup --force
+  assert_success
+  assert_output --partial "Cleaning up keyring profile store..."
+  assert_output --partial "Keyring profile store cleanup complete."
+
+  run_otdfctl list --store keyring
+  assert_success
+  refute_output --partial "$profile1"
+  refute_output --partial "$profile2"
 }
