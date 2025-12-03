@@ -1,5 +1,32 @@
 # Changelog
 
+## [0.27.0](https://github.com/opentdf/otdfctl/compare/v0.26.0...v0.27.0) (2025-12-03)
+
+
+### ⚠ BREAKING CHANGES
+
+* **core:** Return pagination in responses. ([#684](https://github.com/opentdf/otdfctl/issues/684))
+
+### Features
+
+* **core:** Filesystem as profile store ([#705](https://github.com/opentdf/otdfctl/issues/705)) ([47df5da](https://github.com/opentdf/otdfctl/commit/47df5dac8a0b3474f6ab145288886d0bd7031053))
+
+
+### Bug Fixes
+
+* **core:** Ensure IDs are displayed for keys. ([#681](https://github.com/opentdf/otdfctl/issues/681)) ([c5c9989](https://github.com/opentdf/otdfctl/commit/c5c9989f2a7ae9e8865e03ae761df830a4c54b15))
+* **core:** first set of manual lint fixes ([#700](https://github.com/opentdf/otdfctl/issues/700)) ([1f89120](https://github.com/opentdf/otdfctl/commit/1f89120a5590ac5b6aa5c64d51f3947cd3f29bb1))
+* **core:** Fix obligation smoke test ([#687](https://github.com/opentdf/otdfctl/issues/687)) ([c8e9b20](https://github.com/opentdf/otdfctl/commit/c8e9b2004f21ac87a0a0d4bce9c546796928ba2d))
+* **core:** improve TLS error handling UX when connecting to platform ([#708](https://github.com/opentdf/otdfctl/issues/708)) ([373df89](https://github.com/opentdf/otdfctl/commit/373df89875235f6f3acfc0bf9680ac7b057e04e0))
+* **core:** lint fixes that can be automatically resolved ([#699](https://github.com/opentdf/otdfctl/issues/699)) ([a2aedcb](https://github.com/opentdf/otdfctl/commit/a2aedcbc3fd3d1b31aed15de63bffb86e9b4c597))
+* **core:** many manually resolved lint fixes ([#701](https://github.com/opentdf/otdfctl/issues/701)) ([bb998cf](https://github.com/opentdf/otdfctl/commit/bb998cfd20cf1123c66daf6a237a648f4bf144e8))
+* **core:** restructure cmd package to resolve remaining lint issues ([#702](https://github.com/opentdf/otdfctl/issues/702)) ([5d677e1](https://github.com/opentdf/otdfctl/commit/5d677e1bda9abdf1c88b21c19a1b7b423368fb32))
+* **core:** Return pagination in responses. ([#684](https://github.com/opentdf/otdfctl/issues/684)) ([666ac2f](https://github.com/opentdf/otdfctl/commit/666ac2f57b532000cc715d04f1312800dd560049))
+* **main:** Add SCS creation in setup_file ([#693](https://github.com/opentdf/otdfctl/issues/693)) ([33ae971](https://github.com/opentdf/otdfctl/commit/33ae9712944e5175a047c8e1eba2cbe08a021955))
+* **main:** Subject mapping tests ([#691](https://github.com/opentdf/otdfctl/issues/691)) ([6c137c0](https://github.com/opentdf/otdfctl/commit/6c137c04b8c407cd9117c0828657eb9e5c3c2819))
+* **main:** Update flaky subject mapping tests ([#694](https://github.com/opentdf/otdfctl/issues/694)) ([b3cd4df](https://github.com/opentdf/otdfctl/commit/b3cd4df40b5e7e315ff4109f34b8d5d8ffd36c0f))
+* **main:** Use assertion helpers ([#692](https://github.com/opentdf/otdfctl/issues/692)) ([2956244](https://github.com/opentdf/otdfctl/commit/2956244d6d9947e7d09b20070f31dd0cff7f1d5b))
+
 ## [0.26.0](https://github.com/opentdf/otdfctl/compare/v0.25.0...v0.26.0) (2025-10-22)
 
 
