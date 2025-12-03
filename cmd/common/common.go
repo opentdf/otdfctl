@@ -34,7 +34,7 @@ func InitProfile(c *cli.Cli) *profiles.OtdfctlProfileStore {
 		slog.Debug("Keyring store still active, migrating profiles to filesystem.")
 		err := profiles.Migrate(profiles.ProfileDriverFileSystem, profiles.ProfileDriverKeyring)
 		if err != nil {
-			cli.ExitWithError(fmt.Sprintf("Error during profile migration from %s, to %s. Otdfctl cannot continue with profiles being stored within %s, please use the `profile migrate` command to manually migrate profiles", profiles.ProfileDriverKeyring, profiles.ProfileDriverFileSystem, profiles.ProfileDriverKeyring), err)
+			cli.ExitWithError(fmt.Sprintf("Error during profile migration from %s, to %s. %s cannot continue with profiles being stored within %s, please use the `profile migrate` command to manually migrate profiles", profiles.ProfileDriverKeyring, profiles.ProfileDriverFileSystem, config.AppName, profiles.ProfileDriverKeyring), err)
 		}
 	}
 
