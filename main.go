@@ -17,8 +17,7 @@ func main() {
 
 	l := new(slog.LevelVar)
 	l.Set(slog.LevelInfo)
-	// ignore unmarshaling error, will just use default level
-	l.UnmarshalText([]byte(os.Getenv("LOG_LEVEL")))
+	l.UnmarshalText([]byte(os.Getenv("LOG_LEVEL"))) //nolint:errcheck // ignore error, just use default level
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 		Level: l,
 	}))
