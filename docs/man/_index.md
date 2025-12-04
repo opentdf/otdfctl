@@ -17,15 +17,12 @@ command:
       description: disable verification of the server's TLS certificate
       default: false
     - name: log-level
-      description: log level
+      description: log level, default level is INFO
       enum:
         - debug
         - info
         - warn
         - error
-        - fatal
-        - panic
-      default: info
     - name: with-access-token
       description: access token for authentication via bearer token
     - name: with-client-creds-file
