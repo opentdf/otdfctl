@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.28.0](https://github.com/opentdf/otdfctl/compare/v0.27.0...v0.28.0) (2025-12-05)
+
+
+### Bug Fixes
+
+* **core:** Fix log-level flag ([#714](https://github.com/opentdf/otdfctl/issues/714)) ([84f191b](https://github.com/opentdf/otdfctl/commit/84f191b8c64ca06b692f855f0144ac9bcd2f56b9))
+
 ## [0.27.0](https://github.com/opentdf/otdfctl/compare/v0.26.0...v0.27.0) (2025-12-03)
 
 
