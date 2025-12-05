@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"fmt"
+	"log/slog"
+	"os"
 
 	"github.com/opentdf/otdfctl/cmd/auth"
 	configCmd "github.com/opentdf/otdfctl/cmd/config"
@@ -55,6 +57,25 @@ func init() {
 	}))
 
 	RootCmd = &rootCmd.Command
+
+	// Run logger setup for all commands
+	RootCmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
+		c := cli.New(cmd, args)
+
+		// log-level from flag will take precedence over env var
+		if logLevelStr := c.Flags.GetOptionalString("log-level"); logLevelStr != "" {
+			l := new(slog.LevelVar)
+			if err := l.UnmarshalText([]byte(logLevelStr)); err != nil {
+				return fmt.Errorf("invalid log level: %s", logLevelStr)
+			}
+			logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+				Level: l,
+			}))
+
+			slog.SetDefault(logger)
+		}
+		return nil
+	}
 
 	RootCmd.AddCommand(
 		// config
