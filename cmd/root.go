@@ -99,12 +99,6 @@ func init() {
 	)
 
 	RootCmd.PersistentFlags().Bool(
-		rootCmd.GetDocFlag("debug").Name,
-		rootCmd.GetDocFlag("debug").DefaultAsBool(),
-		rootCmd.GetDocFlag("debug").Description,
-	)
-
-	RootCmd.PersistentFlags().Bool(
 		rootCmd.GetDocFlag("json").Name,
 		rootCmd.GetDocFlag("json").DefaultAsBool(),
 		rootCmd.GetDocFlag("json").Description,

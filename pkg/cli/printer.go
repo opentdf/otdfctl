@@ -26,39 +26,12 @@ func newPrinter(cli *Cli) *Printer {
 	printJSON := cli.Flags.GetOptionalBool("json")
 	p.setJSON(printJSON)
 
-	isDebug := cli.Flags.GetOptionalBool("debug")
-	p.setDebug(isDebug)
-
 	return p
 }
 
 func (p *Printer) setJSON(json bool) {
 	p.json = json
 	p.enabled = !json
-}
-
-func (p *Printer) setDebug(debug bool) {
-	p.debug = debug
-}
-
-const debugPrefix = "DEBUG: "
-
-func (c *Cli) Debug(args ...interface{}) {
-	if c.printer.debug {
-		args = append([]interface{}{debugPrefix}, args...)
-	}
-}
-
-func (c *Cli) Debugf(format string, args ...interface{}) {
-	format = "DEBUG: " + format
-	if c.printer.debug {
-	}
-}
-
-func (c *Cli) Debugln(args ...interface{}) {
-	if c.printer.debug {
-		args = append([]interface{}{"DEBUG: "}, args...)
-	}
 }
 
 // PrintJSON prints the given value as json

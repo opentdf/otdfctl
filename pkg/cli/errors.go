@@ -52,7 +52,7 @@ func (c *Cli) ExitWithSuccess(msg string) {
 
 func (c *Cli) ExitWithStyled(msg string) {
 	if c.printer.enabled {
-		c.printJSON(msg)
+		c.println(msg)
 		os.Exit(0)
 	}
 }
