@@ -86,7 +86,7 @@ func inspectRun(cmd *cobra.Command, args []string) {
 			Attributes: result.Attributes,
 		}
 
-		c.PrintJSON(m)
+		c.ExitWithJSON(m)
 	} else if result.NanoHeader != nil {
 		kas, err := result.NanoHeader.GetKasURL().GetURL()
 		if err != nil {
@@ -111,7 +111,7 @@ func inspectRun(cmd *cobra.Command, args []string) {
 			Cipher:       cipherName,
 		}
 
-		c.PrintJSON(n)
+		c.ExitWithJSON(n)
 	} else {
 		c.ExitWithError("failed to inspect TDF", nil)
 	}

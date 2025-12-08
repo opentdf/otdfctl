@@ -47,7 +47,7 @@ func init() {
 				SchemaVersion: sdk.TDFSpecVersion,
 			}
 
-			c.Println(fmt.Sprintf("%s version %s (%s) %s", config.AppName, config.Version, config.BuildTime, config.CommitSha))
+			c.ExitWithStyled(fmt.Sprintf("%s version %s (%s) %s", config.AppName, config.Version, config.BuildTime, config.CommitSha))
 			c.ExitWithJSON(v)
 			return
 		}
@@ -68,7 +68,7 @@ func init() {
 			if err := l.UnmarshalText([]byte(logLevelStr)); err != nil {
 				return fmt.Errorf("invalid log level: %s", logLevelStr)
 			}
-			logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+			logger := slog.New(slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{
 				Level: l,
 			}))
 

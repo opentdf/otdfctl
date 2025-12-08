@@ -1,6 +1,8 @@
 package auth
 
 import (
+	"fmt"
+
 	"github.com/opentdf/otdfctl/cmd/common"
 	"github.com/opentdf/otdfctl/pkg/auth"
 	"github.com/opentdf/otdfctl/pkg/cli"
@@ -12,12 +14,10 @@ import (
 func logout(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	cp := common.InitProfile(c)
-	c.Println("Initiating logout...")
 
 	// we can only revoke access tokens stored for the code login flow, not client credentials
 	creds := cp.GetAuthCredentials()
 	if creds.AuthType == profiles.AuthTypeAccessToken {
-		c.Println("Revoking access token...")
 		if err := auth.RevokeAccessToken(
 			cmd.Context(),
 			cp.GetEndpoint(),
@@ -25,16 +25,14 @@ func logout(cmd *cobra.Command, args []string) {
 			creds.AccessToken.RefreshToken,
 			c.FlagHelper.GetOptionalBool("tls-no-verify"),
 		); err != nil {
-			c.Println("failed")
 			c.ExitWithError("An error occurred while revoking the access token", err)
 		}
 	}
 
 	if err := cp.SetAuthCredentials(profiles.AuthCredentials{}); err != nil {
-		c.Println("failed")
 		c.ExitWithError("An error occurred while logging out", err)
 	}
-	c.Println("ok")
+	c.ExitWithMessage(fmt.Sprintf("Profile: [%s], logged out", cp.Name()), 0)
 }
 
 // newLogoutCmd creates and configures the logout command.

@@ -25,22 +25,20 @@ func ExitWithWarning(warnMsg string) {
 // ExitWithError prints an error message and exits with a non-zero status code.
 func (c *Cli) ExitWithError(errMsg string, err error) {
 	c.ExitWithNotFoundError(errMsg, err)
-	c.Println(ErrorMessage(errMsg, err))
-	os.Exit(1)
+	c.ExitWithMessage(ErrorMessage(errMsg, err), 1)
 }
 
 // ExitWithNotFoundError prints an error message and exits with a non-zero status code if the error is a NotFound error.
 func (c *Cli) ExitWithNotFoundError(errMsg string, err error) {
 	if err != nil {
 		if e, ok := status.FromError(err); ok && e.Code() == codes.NotFound {
-			c.Println(ErrorMessage(errMsg+": not found", nil))
-			os.Exit(1)
+			c.ExitWithMessage(ErrorMessage(errMsg+": not found", nil), 1)
 		}
 	}
 }
 
 func (c *Cli) ExitWithMessage(msg string, code int) {
-	c.Println(msg)
+	c.println(msg)
 	os.Exit(code)
 }
 
@@ -52,9 +50,16 @@ func (c *Cli) ExitWithSuccess(msg string) {
 	c.ExitWithMessage(SuccessMessage(msg), 0)
 }
 
+func (c *Cli) ExitWithStyled(msg string) {
+	if c.printer.enabled {
+		c.printJSON(msg)
+		os.Exit(0)
+	}
+}
+
 func (c *Cli) ExitWithJSON(v interface{}) {
 	if c.printer.json {
-		c.PrintJSON(v)
+		c.printJSON(v)
 		os.Exit(0)
 	}
 }
