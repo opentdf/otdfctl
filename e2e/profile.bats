@@ -30,8 +30,7 @@ teardown() {
   profile="${PROFILE_TEST_PREFIX}-create"
   run_otdfctl create "$profile" http://localhost:8080
   assert_success
-  assert_output --partial "Creating profile ${profile}..."
-  assert_output --partial "ok"
+  assert_output --partial "Profile ${profile} created"
 
   # Invalid endpoint should fail with a helpful message
   run_otdfctl create "$profile" localhost:8080
@@ -115,8 +114,7 @@ teardown() {
 
   run_otdfctl delete "$target_profile"
   assert_success
-  assert_output --partial "Deleting profile ${target_profile}, from filesystem..."
-  assert_output --partial "ok"
+  assert_output --partial "Deleted profile ${target_profile} from filesystem"
 
   run_otdfctl profile list
   assert_success
@@ -134,8 +132,7 @@ teardown() {
 
   run_otdfctl delete "$target_profile_keyring" --store keyring
   assert_success
-  assert_output --partial "Deleting profile ${target_profile_keyring}, from keyring..."
-  assert_output --partial "ok"
+  assert_output --partial "Deleted profile ${target_profile_keyring} from keyring"
 
   run_otdfctl list --store keyring
   assert_success
@@ -155,8 +152,7 @@ teardown() {
 
   run_otdfctl set-default "$profile2"
   assert_success
-  assert_output --partial "Setting profile ${profile2} as default..."
-  assert_output --partial "ok"
+  assert_output --partial "Set profile ${profile2} as default"
 
   run_otdfctl list
   assert_success
@@ -171,8 +167,7 @@ teardown() {
 
   run_otdfctl set-endpoint "$profile" http://localhost:8081
   assert_success
-  assert_output --partial "Setting endpoint for profile ${profile}... "
-  assert_output --partial "ok"
+  assert_output --partial "Set endpoint http://localhost:8081 for profile ${profile}"
 
   run_otdfctl get "$profile"
   assert_success
@@ -192,8 +187,7 @@ teardown() {
 
   run_otdfctl delete-all --force
   assert_success
-  assert_output --partial "profiles from filesystem..."
-  assert_output --partial "ok"
+  assert_output --partial "Deleted 2 profiles from filesystem"
 
   run_otdfctl list
   assert_success
@@ -212,8 +206,7 @@ teardown() {
 
   run_otdfctl delete-all --store keyring --force
   assert_success
-  assert_output --partial "profiles from keyring..."
-  assert_output --partial "ok"
+  assert_output --partial "Deleted 2 profiles from keyring"
 
   run_otdfctl list --store keyring
   assert_success
@@ -277,8 +270,7 @@ teardown() {
 
   run_otdfctl cleanup --force
   assert_success
-  assert_output --partial "Cleaning up keyring profile store..."
-  assert_output --partial "Keyring profile store cleanup complete."
+  assert_output --partial "Keyring profile store cleanup complete"
 
   run_otdfctl list --store keyring
   assert_success

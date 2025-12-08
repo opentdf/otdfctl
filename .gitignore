@@ -26,3 +26,6 @@ output/
 
 # Ignore any TDF files created by the CLI
 *.tdf
+
+# Ignore go.cache
+.gocache

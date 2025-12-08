@@ -47,7 +47,9 @@ func init() {
 				SchemaVersion: sdk.TDFSpecVersion,
 			}
 
-			c.ExitWithStyled(fmt.Sprintf("%s version %s (%s) %s", config.AppName, config.Version, config.BuildTime, config.CommitSha))
+			version := fmt.Sprintf("%s version %s (%s) %s", config.AppName, config.Version, config.BuildTime, config.CommitSha)
+			slog.Debug(version)
+			c.ExitWithStyled(version)
 			c.ExitWithJSON(v)
 			return
 		}
