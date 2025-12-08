@@ -206,7 +206,7 @@ teardown() {
 
   run_otdfctl delete-all --store keyring --force
   assert_success
-  assert_output --regexp '^Deleted [0-9]+ profiles from filesystem$'
+  assert_output --regexp '^Deleted [0-9]+ profiles from keyring$'
 
   run_otdfctl list --store keyring
   assert_success
