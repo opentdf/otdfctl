@@ -47,7 +47,9 @@ func init() {
 				SchemaVersion: sdk.TDFSpecVersion,
 			}
 
-			c.Println(fmt.Sprintf("%s version %s (%s) %s", config.AppName, config.Version, config.BuildTime, config.CommitSha))
+			version := fmt.Sprintf("%s version %s (%s) %s", config.AppName, config.Version, config.BuildTime, config.CommitSha)
+			slog.Debug(version)
+			c.ExitWithStyled(version)
 			c.ExitWithJSON(v)
 			return
 		}
@@ -61,14 +63,19 @@ func init() {
 	// Run logger setup for all commands
 	RootCmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
 		c := cli.New(cmd, args)
+		isDebug := c.Flags.GetOptionalBool("debug")
+		logLevel := c.Flags.GetOptionalString("log-level")
+		if isDebug {
+			logLevel = "DEBUG"
+		}
 
 		// log-level from flag will take precedence over env var
-		if logLevelStr := c.Flags.GetOptionalString("log-level"); logLevelStr != "" {
+		if logLevel != "" {
 			l := new(slog.LevelVar)
-			if err := l.UnmarshalText([]byte(logLevelStr)); err != nil {
-				return fmt.Errorf("invalid log level: %s", logLevelStr)
+			if err := l.UnmarshalText([]byte(logLevel)); err != nil {
+				return fmt.Errorf("invalid log level: %s", logLevel)
 			}
-			logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+			logger := slog.New(slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{
 				Level: l,
 			}))
 
@@ -99,12 +106,6 @@ func init() {
 	)
 
 	RootCmd.PersistentFlags().Bool(
-		rootCmd.GetDocFlag("debug").Name,
-		rootCmd.GetDocFlag("debug").DefaultAsBool(),
-		rootCmd.GetDocFlag("debug").Description,
-	)
-
-	RootCmd.PersistentFlags().Bool(
 		rootCmd.GetDocFlag("json").Name,
 		rootCmd.GetDocFlag("json").DefaultAsBool(),
 		rootCmd.GetDocFlag("json").Description,
@@ -131,6 +132,14 @@ func init() {
 		rootCmd.GetDocFlag("log-level").Default,
 		rootCmd.GetDocFlag("log-level").Description,
 	)
+	RootCmd.PersistentFlags().Bool(
+		rootCmd.GetDocFlag("debug").Name,
+		rootCmd.GetDocFlag("debug").DefaultAsBool(),
+		rootCmd.GetDocFlag("debug").Description,
+	)
+	if err := RootCmd.PersistentFlags().MarkDeprecated(rootCmd.GetDocFlag("debug").Name, "use --log-level"); err != nil {
+		panic(fmt.Sprintf("failed to mark debug flag deprecated: %v", err))
+	}
 	RootCmd.PersistentFlags().StringVar(
 		&clientCredsFile,
 		rootCmd.GetDocFlag("with-client-creds-file").Name,

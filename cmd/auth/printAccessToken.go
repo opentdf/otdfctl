@@ -1,6 +1,8 @@
 package auth
 
 import (
+	"fmt"
+
 	"github.com/opentdf/otdfctl/cmd/common"
 	"github.com/opentdf/otdfctl/pkg/auth"
 	"github.com/opentdf/otdfctl/pkg/cli"
@@ -16,21 +18,17 @@ func printAccessTokenRun(cmd *cobra.Command, args []string) {
 	ac := cp.GetAuthCredentials()
 	switch ac.AuthType {
 	case profiles.AuthTypeClientCredentials:
-		c.Printf("Getting access token for %s... ", ac.ClientID)
 	case profiles.AuthTypeAccessToken:
-		c.Printf("Getting profile's stored access token... ")
 	default:
 		c.ExitWithError("Invalid auth type", nil)
 	}
 	tok, err := auth.GetTokenWithProfile(cmd.Context(), cp)
 	if err != nil {
-		c.Println("failed")
 		cli.ExitWithError("Failed to get token", err)
 	}
-	c.Println("ok")
-	c.Printf("Access Token: %s\n", tok.AccessToken)
 
-	c.PrintIfJSON(tok)
+	c.ExitWithStyled(fmt.Sprintf("Access Token: %s\n", tok.AccessToken))
+	c.ExitWithJSON(tok)
 }
 
 // newPrintAccessTokenCmd creates and configures the print-access-token command.

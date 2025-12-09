@@ -21,7 +21,7 @@ func updateOutput(cmd *cobra.Command, args []string) {
 		c.ExitWithError("Failed to update output format", err)
 	}
 
-	c.Println(cli.SuccessMessage(fmt.Sprintf("Output format updated to %s", format)))
+	c.ExitWithSuccess(fmt.Sprintf("Output format updated to %s", format))
 }
 
 var (

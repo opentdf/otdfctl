@@ -52,7 +52,7 @@ func InitProfile(c *cli.Cli) *profiles.OtdfctlProfileStore {
 		profileName = defaultProfileName
 	}
 
-	c.Printf("Using profile [%s]\n", profileName)
+	slog.Debug("Using profile", "profile", profileName)
 
 	// load profile
 	store, err := profiles.LoadOtdfctlProfileStore(profiles.ProfileDriverFileSystem, profileName)

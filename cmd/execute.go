@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/opentdf/otdfctl/cmd/common"
+	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/config"
 	"github.com/spf13/cobra"
 )
@@ -55,12 +56,12 @@ func Execute(opts ...ExecuteOptFunc) {
 	if c.mountTo != nil {
 		err := MountRoot(c.mountTo, c.renameCmd)
 		if err != nil {
-			os.Exit(1)
+			os.Exit(cli.ExitCodeError)
 		}
 	} else {
 		err := RootCmd.Execute()
 		if err != nil {
-			os.Exit(1)
+			os.Exit(cli.ExitCodeError)
 		}
 	}
 }
