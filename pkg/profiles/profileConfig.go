@@ -33,7 +33,7 @@ func (pc *ProfileConfig) GetName() string {
 
 func NewOtdfctlProfileStore(storeType ProfileDriver, cfg *ProfileConfig, setDefault bool) (*OtdfctlProfileStore, error) {
 	if cfg == nil {
-		return nil, ErrProviderConfigEmpty
+		return nil, ErrProfileConfigEmpty
 	}
 
 	profiler, err := CreateProfiler(storeType)
