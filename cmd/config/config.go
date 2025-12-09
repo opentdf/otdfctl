@@ -18,7 +18,7 @@ const (
 func InitCommands() {
 	// Mark the entire config command as deprecated so users migrate to profiles.
 	Cmd.Deprecated = cfgDeprecationNotice
-	outputDoc.Command.Deprecated = cfgOutputDeprecationMsg
+	outputDoc.Deprecated = cfgOutputDeprecationMsg
 
 	outputDoc.Flags().String(
 		outputDoc.GetDocFlag("format").Name,

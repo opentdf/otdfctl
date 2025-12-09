@@ -254,7 +254,7 @@ var profileSetEndpointCmd = &cobra.Command{
 var profileSetOutputFormatCmd = &cobra.Command{
 	Use:   "set-output-format <profile> <format>",
 	Short: "Set the preferred output format for a profile",
-	Args:  cobra.ExactArgs(2),
+	Args:  cobra.ExactArgs(2), //nolint:mnd // ignore argument as magic number, self-explanatory
 	Run: func(cmd *cobra.Command, args []string) {
 		c := cli.New(cmd, args)
 		profileName := args[0]

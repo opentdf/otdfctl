@@ -171,12 +171,12 @@ func NewHandler(c *cli.Cli) handlers.Handler {
 			}); err != nil {
 				cli.ExitWithError("Failed to set client credentials", err)
 			}
+
+			applyOutputFormatPreference(c, cp)
 		}
 	} else {
 		cp = InitProfile(c)
 	}
-
-	applyOutputFormatPreference(c, cp)
 
 	if err := auth.ValidateProfileAuthCredentials(c.Context(), cp); err != nil {
 		endpoint := cp.GetEndpoint()
