@@ -48,9 +48,6 @@ runs:
       run: |
         sudo apt-get update
         sudo apt-get install -y gnome-keyring
-    - name: Set up the CLI config
-      shell: bash
-      run: cp otdfctl-example.yaml otdfctl.yaml
       working-directory: otdfctl
     - name: Setup Bats and bats libs
       uses: bats-core/bats-action@2.0.0
