@@ -34,7 +34,7 @@ command:
       description: output in JSON format
       default: false
     - name: debug
-      description: enable debug output
+      description: DEPRECATED Use log-level. Setting this will enable debug logs
       default: false
 ---
 

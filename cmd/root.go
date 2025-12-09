@@ -137,6 +137,9 @@ func init() {
 		rootCmd.GetDocFlag("debug").DefaultAsBool(),
 		rootCmd.GetDocFlag("debug").Description,
 	)
+	if err := RootCmd.PersistentFlags().MarkDeprecated(rootCmd.GetDocFlag("debug").Name, "use --log-level"); err != nil {
+		panic(fmt.Sprintf("failed to mark debug flag deprecated: %v", err))
+	}
 	RootCmd.PersistentFlags().StringVar(
 		&clientCredsFile,
 		rootCmd.GetDocFlag("with-client-creds-file").Name,
