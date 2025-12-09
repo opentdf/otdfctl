@@ -48,6 +48,7 @@ runs:
       run: |
         sudo apt-get update
         sudo apt-get install -y gnome-keyring
+      working-directory: otdfctl
     - name: Setup Bats and bats libs
       uses: bats-core/bats-action@2.0.0
     - name: Unlock Gnome keyring
