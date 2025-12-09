@@ -6,7 +6,6 @@ import (
 	"os"
 
 	"github.com/opentdf/otdfctl/cmd/auth"
-	configCmd "github.com/opentdf/otdfctl/cmd/config"
 	"github.com/opentdf/otdfctl/cmd/dev"
 	"github.com/opentdf/otdfctl/cmd/policy"
 	"github.com/opentdf/otdfctl/cmd/tdf"
@@ -85,8 +84,6 @@ func init() {
 	}
 
 	RootCmd.AddCommand(
-		// config
-		configCmd.Cmd,
 		// tdf
 		tdf.EncryptCmd,
 		tdf.DecryptCmd,
@@ -161,7 +158,6 @@ func init() {
 
 	// Initialize all subcommands that have been refactored to use explicit initialization
 	auth.InitCommands()
-	configCmd.InitCommands()
 	policy.InitCommands()
 	dev.InitCommands()
 	tdf.InitEncryptCommand()

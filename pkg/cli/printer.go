@@ -49,3 +49,10 @@ func (c *Cli) println(args ...interface{}) {
 		fmt.Fprintln(os.Stdout, args...)
 	}
 }
+
+func (c *Cli) SetJSONOutput(enabled bool) {
+	if c.printer == nil {
+		return
+	}
+	c.printer.setJSON(enabled)
+}

@@ -2,9 +2,15 @@ package profiles
 
 import (
 	"errors"
+	"strings"
 
 	osprofiles "github.com/jrschumacher/go-osprofiles"
 	"github.com/opentdf/otdfctl/pkg/utils"
+)
+
+const (
+	OutputJSON   = "json"
+	OutputStyled = "styled"
 )
 
 type OtdfctlProfileStore struct {
@@ -17,6 +23,7 @@ type ProfileConfig struct {
 	Name            string          `json:"profile"`
 	Endpoint        string          `json:"endpoint"`
 	TLSNoVerify     bool            `json:"tlsNoVerify"`
+	OutputFormat    string          `json:"outputFormat,omitempty"`
 	AuthCredentials AuthCredentials `json:"authCredentials"`
 }
 
@@ -24,28 +31,33 @@ func (pc *ProfileConfig) GetName() string {
 	return pc.Name
 }
 
-func NewOtdfctlProfileStore(storeType ProfileDriver, config *ProfileConfig, setDefault bool) (*OtdfctlProfileStore, error) {
+func NewOtdfctlProfileStore(storeType ProfileDriver, cfg *ProfileConfig, setDefault bool) (*OtdfctlProfileStore, error) {
+	if cfg == nil {
+		return nil, ErrProviderConfigEmpty
+	}
+
 	profiler, err := CreateProfiler(storeType)
 	if err != nil {
 		return nil, err
 	}
 
-	u, err := utils.NormalizeEndpoint(config.Endpoint)
+	u, err := utils.NormalizeEndpoint(cfg.Endpoint)
 	if err != nil {
 		return nil, err
 	}
 
 	p := &ProfileConfig{
-		Name:        config.Name,
-		Endpoint:    u.String(),
-		TLSNoVerify: config.TLSNoVerify,
+		Name:         cfg.Name,
+		Endpoint:     u.String(),
+		TLSNoVerify:  cfg.TLSNoVerify,
+		OutputFormat: NormalizeOutputFormat(cfg.OutputFormat),
 	}
 	err = profiler.AddProfile(p, setDefault)
 	if err != nil {
 		return nil, err
 	}
 
-	store, err := osprofiles.UseProfile[*ProfileConfig](profiler, config.Name)
+	store, err := osprofiles.UseProfile[*ProfileConfig](profiler, cfg.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -56,11 +68,7 @@ func NewOtdfctlProfileStore(storeType ProfileDriver, config *ProfileConfig, setD
 		return nil, errors.Join(ErrProfileIncorrectType, err)
 	}
 
-	return &OtdfctlProfileStore{
-		store:    *store,
-		config:   pc,
-		profiler: profiler,
-	}, nil
+	return newProfileStore(profiler, store, pc), nil
 }
 
 func LoadOtdfctlProfileStore(storeType ProfileDriver, profileName string) (*OtdfctlProfileStore, error) {
@@ -79,11 +87,23 @@ func LoadOtdfctlProfileStore(storeType ProfileDriver, profileName string) (*Otdf
 		return nil, errors.Join(ErrProfileIncorrectType, err)
 	}
 
+	return newProfileStore(profiler, store, pc), nil
+}
+
+func newProfileStore(profiler *osprofiles.Profiler, store *osprofiles.ProfileStore, pc *ProfileConfig) *OtdfctlProfileStore {
+	ensureProfileDefaults(pc)
 	return &OtdfctlProfileStore{
 		store:    *store,
 		config:   pc,
 		profiler: profiler,
-	}, nil
+	}
+}
+
+func ensureProfileDefaults(pc *ProfileConfig) {
+	if pc == nil {
+		return
+	}
+	pc.OutputFormat = NormalizeOutputFormat(pc.OutputFormat)
 }
 
 func (p *OtdfctlProfileStore) GetEndpoint() string {
@@ -109,10 +129,39 @@ func (p *OtdfctlProfileStore) SetTLSNoVerify(tlsNoVerify bool) error {
 	return p.store.Save()
 }
 
+func (p *OtdfctlProfileStore) GetOutputFormat() string {
+	return NormalizeOutputFormat(p.config.OutputFormat)
+}
+
+func (p *OtdfctlProfileStore) SetOutputFormat(format string) error {
+	p.config.OutputFormat = NormalizeOutputFormat(format)
+	return p.store.Save()
+}
+
 func (p *OtdfctlProfileStore) Name() string {
 	return p.config.Name
 }
 
 func (p *OtdfctlProfileStore) IsDefault() bool {
 	return p.Name() == osprofiles.GetGlobalConfig(p.profiler).GetDefaultProfile()
+}
+
+// NormalizeOutputFormat returns a supported output format. Any unknown value defaults to styled output.
+func NormalizeOutputFormat(format string) string {
+	switch strings.ToLower(strings.TrimSpace(format)) {
+	case OutputJSON:
+		return OutputJSON
+	default:
+		return OutputStyled
+	}
+}
+
+// IsValidOutputFormat reports whether the provided format string is supported.
+func IsValidOutputFormat(format string) bool {
+	switch strings.ToLower(strings.TrimSpace(format)) {
+	case OutputJSON, OutputStyled:
+		return true
+	default:
+		return false
+	}
 }

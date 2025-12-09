@@ -17,7 +17,22 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var OtdfctlCfg config.Config
+var profileOutputFormat = profiles.OutputStyled
+
+func shouldUseProfileJSONOutput() bool {
+	return profileOutputFormat == profiles.OutputJSON
+}
+
+func applyOutputFormatPreference(c *cli.Cli, store *profiles.OtdfctlProfileStore) {
+	if store == nil {
+		return
+	}
+
+	profileOutputFormat = profiles.NormalizeOutputFormat(store.GetOutputFormat())
+	if shouldUseProfileJSONOutput() {
+		c.SetJSONOutput(true)
+	}
+}
 
 // InitProfile initializes the profile store and loads the profile specified in the flags
 // if onlyNew is set to true, a new profile will be created and returned
@@ -59,6 +74,8 @@ func InitProfile(c *cli.Cli) *profiles.OtdfctlProfileStore {
 	if err != nil {
 		c.ExitWithError(fmt.Sprintf("Failed to load profile: %s", profileName), err)
 	}
+
+	applyOutputFormatPreference(c, store)
 
 	return store
 }
@@ -159,6 +176,8 @@ func NewHandler(c *cli.Cli) handlers.Handler {
 		cp = InitProfile(c)
 	}
 
+	applyOutputFormatPreference(c, cp)
+
 	if err := auth.ValidateProfileAuthCredentials(c.Context(), cp); err != nil {
 		endpoint := cp.GetEndpoint()
 		var certErr *tls.CertificateVerificationError
@@ -198,7 +217,8 @@ func NewHandler(c *cli.Cli) handlers.Handler {
 func HandleSuccess(command *cobra.Command, id string, t table.Model, policyObject interface{}) {
 	c := cli.New(command, []string{})
 	jsonFlag := c.Flags.GetOptionalBool("json")
-	if OtdfctlCfg.Output.Format == config.OutputJSON || jsonFlag {
+	if jsonFlag || shouldUseProfileJSONOutput() {
+		c.SetJSONOutput(true)
 		c.ExitWithJSON(policyObject)
 	}
 	cli.PrintSuccessTable(command, id, t)
