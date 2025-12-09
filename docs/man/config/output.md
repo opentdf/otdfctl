@@ -10,5 +10,6 @@ command:
       required: false
 ---
 
-Define the configured output format for the 'otdfctl' command line tool. The only supported outputs at
-this time are 'json' and styled CLI output, which is the default when unspecified.
+## DEPRECATED
+
+**Please use `profile set-output-format` instead**

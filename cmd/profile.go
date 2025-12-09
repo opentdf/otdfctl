@@ -71,10 +71,16 @@ var profileCreateCmd = &cobra.Command{
 
 		setDefault := c.FlagHelper.GetOptionalBool("set-default")
 		tlsNoVerify := c.FlagHelper.GetOptionalBool("tls-no-verify")
+		outputFormat := c.FlagHelper.GetOptionalString("output-format")
+		if !profiles.IsValidOutputFormat(outputFormat) {
+			c.ExitWithError("Output format must be either 'styled' or 'json'", nil)
+		}
+
 		profileConfig := profiles.ProfileConfig{
-			Name:        profileName,
-			Endpoint:    endpoint,
-			TLSNoVerify: tlsNoVerify,
+			Name:         profileName,
+			Endpoint:     endpoint,
+			TLSNoVerify:  tlsNoVerify,
+			OutputFormat: profiles.NormalizeOutputFormat(outputFormat),
 		}
 		_, err := profiles.NewOtdfctlProfileStore(profiles.ProfileDriverFileSystem, &profileConfig, setDefault)
 		if err != nil {
@@ -140,6 +146,7 @@ var profileGetCmd = &cobra.Command{
 			[]string{"Profile", profileStore.Name()},
 			[]string{"Endpoint", profileStore.GetEndpoint()},
 			[]string{"Is default", isDefault},
+			[]string{"Output format", profileStore.GetOutputFormat()},
 			[]string{"Auth type", auth},
 		)
 
@@ -244,6 +251,31 @@ var profileSetEndpointCmd = &cobra.Command{
 	},
 }
 
+var profileSetOutputFormatCmd = &cobra.Command{
+	Use:   "set-output-format <profile> <format>",
+	Short: "Set the preferred output format for a profile",
+	Args:  cobra.ExactArgs(2), //nolint:mnd // ignore argument as magic number, self-explanatory
+	Run: func(cmd *cobra.Command, args []string) {
+		c := cli.New(cmd, args)
+		profileName := args[0]
+		format := args[1]
+
+		if !profiles.IsValidOutputFormat(format) {
+			c.ExitWithError("Output format must be either 'styled' or 'json'", nil)
+		}
+
+		store, err := profiles.LoadOtdfctlProfileStore(profiles.ProfileDriverFileSystem, profileName)
+		if err != nil {
+			cli.ExitWithError("Failed to load profile", err)
+		}
+
+		if err := store.SetOutputFormat(format); err != nil {
+			c.ExitWithError("Failed to set output format", err)
+		}
+		c.ExitWithSuccess(fmt.Sprintf("Set output format to %s for profile %s", format, profileName))
+	},
+}
+
 var profileMigrateCmd = &cobra.Command{
 	Use:   "migrate",
 	Short: "Migrate all profiles from keyring to filesystem.",
@@ -284,6 +316,7 @@ var profileKeyringCleanupCmd = &cobra.Command{
 func InitProfileCommands() {
 	profileCreateCmd.Flags().Bool("set-default", false, "Set the profile as default")
 	profileCreateCmd.Flags().Bool("tls-no-verify", false, "Disable TLS verification")
+	profileCreateCmd.Flags().String("output-format", profiles.OutputStyled, "Preferred output format: styled or json")
 
 	profileListCmd.Flags().String("store", "filesystem", "Profile store to use: filesystem or keyring")
 	profileGetCmd.Flags().String("store", "filesystem", "Profile store to use: filesystem or keyring")
@@ -302,6 +335,7 @@ func InitProfileCommands() {
 	profileCmd.AddCommand(profileDeleteAllCmd)
 	profileCmd.AddCommand(profileSetDefaultCmd)
 	profileCmd.AddCommand(profileSetEndpointCmd)
+	profileCmd.AddCommand(profileSetOutputFormatCmd)
 	profileCmd.AddCommand(profileMigrateCmd)
 	profileCmd.AddCommand(profileKeyringCleanupCmd)
 

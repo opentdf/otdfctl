@@ -4,18 +4,14 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/opentdf/otdfctl/cmd/common"
 	"github.com/opentdf/otdfctl/pkg/cli"
-	"github.com/opentdf/otdfctl/pkg/config"
 	"github.com/spf13/cobra"
 )
 
 type ExecuteConfig struct {
-	configFile string
-	configKey  string
-	mountTo    *cobra.Command
-	renameCmd  *cobra.Command
-	cmdName    string
+	mountTo   *cobra.Command
+	renameCmd *cobra.Command
+	cmdName   string
 }
 type ExecuteOptFunc func(c ExecuteConfig) ExecuteConfig
 
@@ -28,7 +24,6 @@ func WithMountTo(cmd *cobra.Command, renameCmd *cobra.Command) ExecuteOptFunc {
 		c.cmdName = cmd.Use
 		if renameCmd.Use != "" {
 			c.cmdName = renameCmd.Use
-			c.configFile = renameCmd.Use
 		}
 		c.mountTo = cmd
 		c.renameCmd = renameCmd
@@ -40,17 +35,6 @@ func Execute(opts ...ExecuteOptFunc) {
 	c := ExecuteConfig{}
 	for _, opt := range opts {
 		c = opt(c)
-	}
-
-	cfg, _ := config.LoadConfig(c.configFile, c.configKey)
-	// Suppress error for now since config file should be optional
-	// if err != nil {
-	// 	fmt.Println("Error loading config:", err)
-	// 	os.Exit(1)
-	// }
-	// TODO remove this when we force creation of the config
-	if cfg != nil {
-		common.OtdfctlCfg = *cfg
 	}
 
 	if c.mountTo != nil {
