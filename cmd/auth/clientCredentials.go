@@ -47,7 +47,7 @@ func clientCredentialsRun(cmd *cobra.Command, args []string) {
 		c.ExitWithError("An error occurred during login. Please check your credentials and try again", err)
 	}
 
-	c.ExitWithMessage(fmt.Sprintf("Client credentials set for profile [%s]", cp.Name()), 0)
+	c.ExitWithMessage(fmt.Sprintf("Client credentials set for profile [%s]", cp.Name()), cli.ExitCodeSuccess)
 }
 
 // newClientCredentialsCmd creates and configures the client-credentials command.

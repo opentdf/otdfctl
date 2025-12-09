@@ -32,7 +32,7 @@ func logout(cmd *cobra.Command, args []string) {
 	if err := cp.SetAuthCredentials(profiles.AuthCredentials{}); err != nil {
 		c.ExitWithError("An error occurred while logging out", err)
 	}
-	c.ExitWithMessage(fmt.Sprintf("Profile: [%s], logged out", cp.Name()), 0)
+	c.ExitWithMessage(fmt.Sprintf("Profile: [%s], logged out", cp.Name()), cli.ExitCodeSuccess)
 }
 
 // newLogoutCmd creates and configures the logout command.

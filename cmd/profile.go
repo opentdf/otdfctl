@@ -106,7 +106,7 @@ var profileListCmd = &cobra.Command{
 			sb.WriteString(fmt.Sprintf("  %s\n", p))
 		}
 
-		c.ExitWithMessage(sb.String(), 0)
+		c.ExitWithMessage(sb.String(), cli.ExitCodeSuccess)
 	},
 }
 
@@ -143,7 +143,7 @@ var profileGetCmd = &cobra.Command{
 			[]string{"Auth type", auth},
 		)
 
-		c.ExitWithMessage(t.View(), 0)
+		c.ExitWithMessage(t.View(), cli.ExitCodeSuccess)
 	},
 }
 
@@ -164,7 +164,7 @@ var profileDeleteCmd = &cobra.Command{
 			}
 			c.ExitWithError("Failed to delete profile", err)
 		}
-		c.ExitWithMessage(fmt.Sprintf("Deleted profile %s from %s", profileName, driverType), 0)
+		c.ExitWithMessage(fmt.Sprintf("Deleted profile %s from %s", profileName, driverType), cli.ExitCodeSuccess)
 	},
 }
 
@@ -181,7 +181,7 @@ var profileDeleteAllCmd = &cobra.Command{
 
 		profilesList := osprofiles.ListProfiles(profiler)
 		if len(profilesList) == 0 {
-			c.ExitWithMessage("No profiles found to delete", 0)
+			c.ExitWithMessage("No profiles found to delete", cli.ExitCodeSuccess)
 			return
 		}
 
@@ -190,7 +190,7 @@ var profileDeleteAllCmd = &cobra.Command{
 		if err := profiler.DeleteAllProfiles(); err != nil {
 			c.ExitWithError("Failed to delete all profiles", err)
 		}
-		c.ExitWithMessage(fmt.Sprintf("Deleted %d profiles from %s", len(profilesList), driverType), 0)
+		c.ExitWithMessage(fmt.Sprintf("Deleted %d profiles from %s", len(profilesList), driverType), cli.ExitCodeSuccess)
 	},
 }
 
@@ -206,7 +206,7 @@ var profileSetDefaultCmd = &cobra.Command{
 		if err := osprofiles.SetDefaultProfile(profiler, profileName); err != nil {
 			c.ExitWithError("Failed to set default profile", err)
 		}
-		c.ExitWithMessage(fmt.Sprintf("Set profile %s as default", profileName), 0)
+		c.ExitWithMessage(fmt.Sprintf("Set profile %s as default", profileName), cli.ExitCodeSuccess)
 	},
 }
 
@@ -240,7 +240,7 @@ var profileSetEndpointCmd = &cobra.Command{
 		if err := store.Save(); err != nil {
 			c.ExitWithError("Failed to set endpoint", err)
 		}
-		c.ExitWithMessage(fmt.Sprintf("Set endpoint %s for profile %s ", endpoint, profileName), 0)
+		c.ExitWithMessage(fmt.Sprintf("Set endpoint %s for profile %s ", endpoint, profileName), cli.ExitCodeSuccess)
 	},
 }
 
@@ -255,7 +255,7 @@ var profileMigrateCmd = &cobra.Command{
 		if err != nil {
 			c.ExitWithError("Failed to migrate", err)
 		}
-		c.ExitWithMessage("Migration complete.", 0)
+		c.ExitWithMessage("Migration complete.", cli.ExitCodeSuccess)
 	},
 }
 
@@ -277,7 +277,7 @@ var profileKeyringCleanupCmd = &cobra.Command{
 		if err := keyringProfiler.Cleanup(force); err != nil {
 			cli.ExitWithError(profiles.ErrCleaningUpProfiles.Error(), err)
 		}
-		c.ExitWithMessage("Keyring profile store cleanup complete", 0)
+		c.ExitWithMessage("Keyring profile store cleanup complete", cli.ExitCodeSuccess)
 	},
 }
 
