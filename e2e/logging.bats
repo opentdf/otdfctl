@@ -13,3 +13,12 @@ setup() {
     [[ "$stderr" == *"otdfctl version"* ]]
     [[ "$stderr" == *"\"level\":\"DEBUG\""* ]]
 }
+
+@test "version is logged to stderr when debug enabled" {
+    run --separate-stderr -- ./otdfctl --version --debug
+
+    assert_success
+    assert_output --partial "otdfctl version"
+    [[ "$stderr" == *"otdfctl version"* ]]
+    [[ "$stderr" == *"\"level\":\"DEBUG\""* ]]
+}
