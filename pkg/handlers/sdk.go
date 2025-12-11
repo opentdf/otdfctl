@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"errors"
+	"log/slog"
 
 	"github.com/opentdf/otdfctl/pkg/auth"
 	"github.com/opentdf/otdfctl/pkg/profiles"
@@ -85,7 +86,11 @@ func New(opts ...handlerOptsFunc) (Handler, error) {
 	if err != nil {
 		return Handler{}, err
 	}
-	o.sdkOpts = append(o.sdkOpts, authSDKOpt, sdk.WithConnectionValidation())
+	o.sdkOpts = append(o.sdkOpts,
+		authSDKOpt,
+		sdk.WithConnectionValidation(),
+		sdk.WithLogger(slog.Default()),
+	)
 
 	if u.Scheme == "http" {
 		o.sdkOpts = append(o.sdkOpts, sdk.WithInsecurePlaintextConn())
