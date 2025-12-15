@@ -41,7 +41,7 @@ func (c *Cli) printJSON(v interface{}, w io.Writer) {
 	encoder.SetIndent("", "  ")
 	encoder.SetEscapeHTML(false)
 	if err := encoder.Encode(v); err != nil {
-		ExitWithError("failed to marshal json", err)
+		ExitWithError("failed to encode json", err)
 	}
 }
 
