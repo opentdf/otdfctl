@@ -8,7 +8,7 @@ func SuccessMessage(msg string) string {
 	return lipgloss.JoinHorizontal(lipgloss.Left, styleSuccessStatusBar.Render("SUCCESS"), msg)
 }
 
-func SuccessJSON(msg string) map[string]interface{} {
+func SuccessJSON(msg string) interface{} {
 	return MessageJSON("SUCCESS", msg)
 }
 
@@ -30,7 +30,7 @@ func DebugMessage(msg string) string {
 	return lipgloss.JoinHorizontal(lipgloss.Left, styleDebugStatusBar.Render("DEBUG"), msg)
 }
 
-func DebugJSON(msg string) map[string]interface{} {
+func DebugJSON(msg string) interface{} {
 	return MessageJSON("DEBUG", msg)
 }
 
@@ -41,7 +41,7 @@ func ErrorMessage(msg string, err error) string {
 	return lipgloss.JoinHorizontal(lipgloss.Left, styleErrorStatusBar.Render("ERROR"), msg)
 }
 
-func ErrorJSON(msg string, err error) map[string]interface{} {
+func ErrorJSON(msg string, err error) interface{} {
 	if err != nil {
 		msg += ": " + err.Error()
 	}
@@ -52,11 +52,11 @@ func WarningMessage(msg string) string {
 	return lipgloss.JoinHorizontal(lipgloss.Left, styleWarningStatusBar.Render("WARNING"), msg)
 }
 
-func WarningJSON(msg string) map[string]interface{} {
+func WarningJSON(msg string) interface{} {
 	return MessageJSON("WARNING", msg)
 }
 
-func MessageJSON(status string, msg string) map[string]interface{} {
+func MessageJSON(status string, msg string) interface{} {
 	return map[string]interface{}{
 		"status":  status,
 		"message": msg,
