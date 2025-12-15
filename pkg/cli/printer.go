@@ -37,11 +37,12 @@ func (p *Printer) setJSON(json bool) {
 // PrintJSON prints the given value as json
 // ignores the printer enabled flag
 func (c *Cli) printJSON(v interface{}) {
-	b, err := json.MarshalIndent(v, "", "  ")
-	if err != nil {
+	encoder := json.NewEncoder(os.Stdout)
+	encoder.SetIndent("", "  ")
+	encoder.SetEscapeHTML(false)
+	if err := encoder.Encode(v); err != nil {
 		ExitWithError("failed to marshal json", err)
 	}
-	fmt.Fprintln(os.Stdout, string(b))
 }
 
 func (c *Cli) println(args ...interface{}) {

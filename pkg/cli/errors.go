@@ -30,6 +30,7 @@ func ExitWithWarning(warnMsg string) {
 // ExitWithError prints an error message and exits with a non-zero status code.
 func (c *Cli) ExitWithError(errMsg string, err error) {
 	c.ExitWithNotFoundError(errMsg, err)
+	c.ExitWithJSON(ErrorJSON(errMsg, err), ExitCodeError) // only exits if json mode is enabled
 	c.ExitWithMessage(ErrorMessage(errMsg, err), ExitCodeError)
 }
 
@@ -37,6 +38,7 @@ func (c *Cli) ExitWithError(errMsg string, err error) {
 func (c *Cli) ExitWithNotFoundError(errMsg string, err error) {
 	if err != nil {
 		if e, ok := status.FromError(err); ok && e.Code() == codes.NotFound {
+			c.ExitWithJSON(MessageJSON("ERROR", errMsg+": not found"), ExitCodeError)
 			c.ExitWithMessage(ErrorMessage(errMsg+": not found", nil), ExitCodeError)
 		}
 	}
@@ -48,23 +50,25 @@ func (c *Cli) ExitWithMessage(msg string, code int) {
 }
 
 func (c *Cli) ExitWithWarning(warnMsg string) {
+	c.ExitWithJSON(WarningJSON(warnMsg), ExitCodeError)
 	c.ExitWithMessage(WarningMessage(warnMsg), ExitCodeError)
 }
 
 func (c *Cli) ExitWithSuccess(msg string) {
+	c.ExitWithJSON(SuccessJSON(msg), ExitCodeSuccess)
 	c.ExitWithMessage(SuccessMessage(msg), ExitCodeSuccess)
 }
 
-func (c *Cli) ExitWithStyled(msg string) {
+func (c *Cli) ExitWithStyled(msg string, code int) {
 	if c.printer.enabled {
 		c.println(msg)
-		os.Exit(ExitCodeSuccess)
+		os.Exit(code)
 	}
 }
 
-func (c *Cli) ExitWithJSON(v interface{}) {
+func (c *Cli) ExitWithJSON(v interface{}, code int) {
 	if c.printer.json {
 		c.printJSON(v)
-		os.Exit(ExitCodeSuccess)
+		os.Exit(code)
 	}
 }
