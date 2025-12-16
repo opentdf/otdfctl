@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.28.0](https://github.com/opentdf/otdfctl/compare/v0.27.0...v0.28.0) (2025-12-16)
+
+
+### ⚠ BREAKING CHANGES
+
+* **core:** Store output format to profile. ([#719](https://github.com/opentdf/otdfctl/issues/719))
+
+### Features
+
+* **core:** Output to stdout, log to stderr. ([#716](https://github.com/opentdf/otdfctl/issues/716)) ([4f6e1e4](https://github.com/opentdf/otdfctl/commit/4f6e1e4883c2e1d5215835cd8893e51b01e6c358))
+* **core:** pass default slogger into SDK init ([#721](https://github.com/opentdf/otdfctl/issues/721)) ([c6bc084](https://github.com/opentdf/otdfctl/commit/c6bc084bf9856075a50f70168b88dd2c188488cc))
+* **core:** Store output format to profile. ([#719](https://github.com/opentdf/otdfctl/issues/719)) ([400ecec](https://github.com/opentdf/otdfctl/commit/400ecec5af8f9b96c716310b76bb493d3124748f))
+
+
+### Bug Fixes
+
+* **core:** Fix log-level flag ([#714](https://github.com/opentdf/otdfctl/issues/714)) ([84f191b](https://github.com/opentdf/otdfctl/commit/84f191b8c64ca06b692f855f0144ac9bcd2f56b9))
+* **core:** Print errors and messages with JSON if enabled in printer ([#724](https://github.com/opentdf/otdfctl/issues/724)) ([ce0256b](https://github.com/opentdf/otdfctl/commit/ce0256bf888745cb25e09e1a608b620824f73139))
+
 ## [0.27.0](https://github.com/opentdf/otdfctl/compare/v0.26.0...v0.27.0) (2025-12-03)
 
 
