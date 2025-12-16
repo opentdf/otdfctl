@@ -2,6 +2,7 @@ package auth
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/opentdf/otdfctl/cmd/common"
 	"github.com/opentdf/otdfctl/pkg/auth"
@@ -27,8 +28,7 @@ func printAccessTokenRun(cmd *cobra.Command, args []string) {
 		cli.ExitWithError("Failed to get token", err)
 	}
 
-	c.ExitWithStyled(fmt.Sprintf("Access Token: %s\n", tok.AccessToken))
-	c.ExitWithJSON(tok)
+	c.ExitWith(fmt.Sprintf("Access Token: %s\n", tok.AccessToken), tok, cli.ExitCodeSuccess, os.Stdout)
 }
 
 // newPrintAccessTokenCmd creates and configures the print-access-token command.

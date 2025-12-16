@@ -219,7 +219,7 @@ func HandleSuccess(command *cobra.Command, id string, t table.Model, policyObjec
 	jsonFlag := c.Flags.GetOptionalBool("json")
 	if jsonFlag || shouldUseProfileJSONOutput() {
 		c.SetJSONOutput(true)
-		c.ExitWithJSON(policyObject)
+		c.ExitWithJSON(policyObject, cli.ExitCodeSuccess)
 	}
 	cli.PrintSuccessTable(command, id, t)
 }

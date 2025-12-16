@@ -4,7 +4,7 @@ package cli
 import (
 	"encoding/json"
 	"fmt"
-	"os"
+	"io"
 )
 
 var ErrPrinterExpectsCommand = fmt.Errorf("printer expects a command")
@@ -36,17 +36,18 @@ func (p *Printer) setJSON(json bool) {
 
 // PrintJSON prints the given value as json
 // ignores the printer enabled flag
-func (c *Cli) printJSON(v interface{}) {
-	b, err := json.MarshalIndent(v, "", "  ")
-	if err != nil {
-		ExitWithError("failed to marshal json", err)
+func (c *Cli) printJSON(v interface{}, w io.Writer) {
+	encoder := json.NewEncoder(w)
+	encoder.SetIndent("", "  ")
+	encoder.SetEscapeHTML(false)
+	if err := encoder.Encode(v); err != nil {
+		ExitWithError("failed to encode json", err)
 	}
-	fmt.Fprintln(os.Stdout, string(b))
 }
 
-func (c *Cli) println(args ...interface{}) {
+func (c *Cli) println(w io.Writer, args ...interface{}) {
 	if c.printer.enabled {
-		fmt.Fprintln(os.Stdout, args...)
+		fmt.Fprintln(w, args...)
 	}
 }
 
