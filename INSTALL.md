@@ -243,7 +243,7 @@ sudo xattr -d com.apple.quarantine /usr/local/bin/otdfctl
 Now that otdfctl is installed, you can:
 - Run `otdfctl --help` to see available commands
 - Visit the [documentation](https://github.com/opentdf/otdfctl) for usage examples
-- Configure your first profile with `otdfctl auth login`
+- Configure your first profile with `otdfctl profile create <name> <endpoint>`
 
 ---
 
