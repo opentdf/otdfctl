@@ -1,0 +1,248 @@
+package tui
+
+import (
+	"fmt"
+	"log"
+	"os/exec"
+	"strings"
+
+	"github.com/charmbracelet/bubbles/textinput"
+	ea "github.com/charmbracelet/bubbletea"
+)
+
+const (
+	helpText = "Type 'help' for a list of commands."
+)
+
+type Shell struct {
+	textInput textinput.Model
+	output    string
+	"context"   string
+}
+
+func NewShell() Shell {
+
+ti := textinput.New()
+
+ti.Placeholder = "..."
+	ti.Focus()
+	ti.CharLimit = 156
+	ti.Width = 50
+
+	return Shell{
+		textInput: ti,
+		output:    helpText,
+		context:   "/",
+	}
+}
+
+func (s Shell) Init() tea.Cmd {
+	return textinput.Blink
+}
+
+func (s Shell) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var cmd tea.Cmd
+
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.Type {
+		case tea.KeyEnter:
+			input := s.textInput.Value()
+			s.textInput.SetValue("")
+			parts := strings.Fields(input)
+			if len(parts) == 0 {
+				return s, nil
+			}
+			command := parts[0]
+			args := parts[1:]
+
+			switch command {
+			case "help":
+				if s.context == "/" {
+					s.output = "Available commands: help, ls, cd, exit"
+				} else if strings.HasPrefix(s.context, "/namespaces/") {
+					s.output = "Available commands: help, ls, cd, create, update, delete, exit"
+				} else {
+					s.output = "Available commands: help, exit"
+				}
+			case "ls":
+				if s.context == "/" {
+					s.output = "namespaces\nregistered-resources"
+				} else if s.context == "/namespaces/" {
+					cmd := exec.Command("otdfctl", "policy", "attributes", "namespaces", "list")
+					out, err := cmd.Output()
+					if err != nil {
+						s.output = fmt.Sprintf("Error: %s", err)
+					} else {
+						s.output = string(out)
+					}
+				} else if s.context == "/registered-resources/" {
+					cmd := exec.Command("otdfctl", "policy", "registered-resources", "list")
+					out, err := cmd.Output()
+					if err != nil {
+						s.output = fmt.Sprintf("Error: %s", err)
+					} else {
+						s.output = string(out)
+					}
+				} else {
+					s.output = ""
+				}
+			case "cd":
+				if len(args) == 0 {
+					s.context = "/"
+				} else {
+					newContext := args[0]
+					if s.context == "/" && (newContext == "namespaces" || newContext == "registered-resources") {
+						s.context = s.context + newContext + "/"
+					} else if s.context == "/namespaces/" {
+						cmd := exec.Command("otdfctl", "policy", "attributes", "namespaces", "list")
+						out, err := cmd.Output()
+						if err != nil {
+							s.output = fmt.Sprintf("Error: %s", err)
+						} else {
+							lines := strings.Split(string(out), "\n")
+							found := false
+							for _, line := range lines {
+								if strings.Contains(line, newContext) {
+									s.context = s.context + newContext + "/"
+									found = true
+									break
+								}
+							}
+							if !found {
+								s.output = fmt.Sprintf("Directory not found: %s", newContext)
+							}
+						}
+					} else if s.context == "/registered-resources/" {
+						cmd := exec.Command("otdfctl", "policy", "registered-resources", "list")
+						out, err := cmd.Output()
+						if err != nil {
+							s.output = fmt.Sprintf("Error: %s", err)
+						} else {
+							lines := strings.Split(string(out), "\n")
+							found := false
+							for _, line := range lines {
+								if strings.Contains(line, newContext) {
+									s.context = s.context + newContext + "/"
+									found = true
+									break
+								}
+							}
+							if !found {
+								s.output = fmt.Sprintf("Directory not found: %s", newContext)
+							}
+						}
+					} else {
+						s.output = fmt.Sprintf("Directory not found: %s", newContext)
+					}
+				}
+			case "create":
+				if s.context == "/namespaces/" {
+					if len(args) == 0 {
+						s.output = "Usage: create <namespace-name>"
+					} else {
+						cmd := exec.Command("otdfctl", "policy", "attributes", "namespaces", "create", "--name", args[0])
+						out, err := cmd.Output()
+						if err != nil {
+							s.output = fmt.Sprintf("Error: %s", err)
+						} else {
+							s.output = string(out)
+						}
+					}
+				} else if s.context == "/registered-resources/" {
+					if len(args) == 0 {
+						s.output = "Usage: create <resource-name>"
+					} else {
+						cmd := exec.Command("otdfctl", "policy", "registered-resources", "create", "--name", args[0])
+						out, err := cmd.Output()
+						if err != nil {
+							s.output = fmt.Sprintf("Error: %s", err)
+						} else {
+							s.output = string(out)
+						}
+					}
+				}
+			case "update":
+				if s.context == "/namespaces/" {
+					if len(args) < 2 {
+						s.output = "Usage: update <namespace-name> <new-namespace-name>"
+					} else {
+						cmd := exec.Command("otdfctl", "policy", "attributes", "namespaces", "unsafe", "update", "--name", args[0], "--new-name", args[1])
+						out, err := cmd.Output()
+						if err != nil {
+							s.output = fmt.Sprintf("Error: %s", err)
+						} else {
+							s.output = string(out)
+						}
+					}
+				} else if s.context == "/registered-resources/" {
+					if len(args) < 2 {
+						s.output = "Usage: update <resource-name> <new-resource-name>"
+					} else {
+						cmd := exec.Command("otdfctl", "policy", "registered-resources", "update", "--name", args[0], "--new-name", args[1])
+						out, err := cmd.Output()
+						if err != nil {
+							s.output = fmt.Sprintf("Error: %s", err)
+						} else {
+							s.output = string(out)
+						}
+					}
+				}
+			case "delete":
+				if s.context == "/namespaces/" {
+					if len(args) == 0 {
+						s.output = "Usage: delete <namespace-name>"
+					} else {
+						cmd := exec.Command("otdfctl", "policy", "attributes", "namespaces", "unsafe", "delete", "--name", args[0])
+						out, err := cmd.Output()
+						if err != nil {
+							s.output = fmt.Sprintf("Error: %s", err)
+						} else {
+							s.output = string(out)
+						}
+					}
+				} else if s.context == "/registered-resources/" {
+					if len(args) == 0 {
+						s.output = "Usage: delete <resource-name>"
+					} else {
+						cmd := exec.Command("otdfctl", "policy", "registered-resources", "delete", "--name", args[0])
+						out, err := cmd.Output()
+						if err != nil {
+							s.output = fmt.Sprintf("Error: %s", err)
+						} else {
+							s.output = string(out)
+						}
+					}
+				}
+			case "exit":
+				return s, tea.Quit
+			default:
+				s.output = fmt.Sprintf("Command not found: %s", command)
+			}
+
+			return s, nil
+
+		case tea.KeyCtrlC:
+			return s, tea.Quit
+		}
+	}
+
+	s.textInput, cmd = s.textInput.Update(msg)
+	return s, cmd
+}
+
+func (s Shell) View() string {
+	return fmt.Sprintf(
+		"%s\n%s%s\n",
+		s.output,
+		"platform:"+s.context+"> ",
+		s.textInput.View(),
+	) + "\n" + helpText
+}
+
+func StartShell() {
+	p := tea.NewProgram(NewShell())
+	if err := p.Start(); err != nil {
+		log.Fatal(err)
+	}
+}
