@@ -17,6 +17,8 @@ The main goals are to:
 
 ## Usage
 
+See [INSTALL.md](INSTALL.md) for installation instructions.
+
 The CLI is configured via profiles. Use `otdfctl profile create <name> <endpoint>` (and optionally `--set-default`) to define how the CLI should connect to your platform instance.
 
 Load up the platform (see its [README](https://github.com/opentdf/platform?tab=readme-ov-file#run) for instructions).
