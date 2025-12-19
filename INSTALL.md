@@ -10,7 +10,8 @@ This guide will help you install **otdfctl** on your computer. Follow the steps 
 
 ## 📥 Installation Instructions
 
-### For macOS Users
+<details>
+<summary><h3>For macOS Users</h3></summary>
 
 #### Step 1: Download the Right Version
 
@@ -71,9 +72,12 @@ rm otdfctl-0.28.0-darwin-amd64.tar.gz
 
 > **Note:** You'll be asked for your password when using `sudo`. This is normal and required to install the tool.
 
+</details>
+
 ---
 
-### For Linux Users
+<details>
+<summary><h3>For Linux Users</h3></summary>
 
 #### Step 1: Download the Right Version
 
@@ -151,9 +155,12 @@ sudo chmod +x /usr/local/bin/otdfctl
 rm otdfctl-0.28.0-linux-arm.tar.gz
 ```
 
+</details>
+
 ---
 
-### For Windows Users
+<details>
+<summary><h3>For Windows Users</h3></summary>
 
 #### Step 1: Download the Right Version
 
@@ -179,6 +186,8 @@ Most Windows computers use `amd64`. ARM versions are for Surface Pro X or other 
    - Click "OK" on all windows
 
 4. **Restart your command prompt or PowerShell** for the changes to take effect.
+
+</details>
 
 ---
 
