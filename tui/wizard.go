@@ -1065,3 +1065,297 @@ func (d *DeleteWizard) GetResult() string {
 func (d *DeleteWizard) GetError() string {
 	return d.error
 }
+
+// ============================================================================
+// Key Assignment Wizard
+// ============================================================================
+
+// KeyAssignWizard is the wizard for assigning keys to resources
+type KeyAssignWizard struct {
+	resourceType string // "namespace", "attribute", "value"
+	resourceName string
+	resourceID   string
+	step         KeyAssignStep
+	handler      handlers.Handler
+	ctx          context.Context
+	selectIndex  int
+	keys         []KeyOption
+	error        string
+	result       string
+	cancelled    bool
+}
+
+type KeyAssignStep int
+
+const (
+	KeyAssignStepLoading KeyAssignStep = iota
+	KeyAssignStepSelect
+	KeyAssignStepConfirm
+	KeyAssignStepExecuting
+	KeyAssignStepComplete
+	KeyAssignStepError
+)
+
+// KeyOption represents a key available for assignment
+type KeyOption struct {
+	ID        string // System ID of the key
+	KeyID     string // User-facing key identifier
+	KasURI    string
+	Algorithm string
+	Status    string
+}
+
+// NewKeyAssignWizard creates a new key assignment wizard
+func NewKeyAssignWizard(h handlers.Handler, resourceType, resourceName, resourceID string) *KeyAssignWizard {
+	return &KeyAssignWizard{
+		resourceType: resourceType,
+		resourceName: resourceName,
+		resourceID:   resourceID,
+		step:         KeyAssignStepLoading,
+		handler:      h,
+		ctx:          context.Background(),
+		selectIndex:  0,
+		keys:         []KeyOption{},
+	}
+}
+
+// keyAssignLoadedMsg is sent when keys are loaded
+type keyAssignLoadedMsg struct {
+	keys []KeyOption
+}
+
+// keyAssignErrorMsg is sent on error
+type keyAssignErrorMsg struct {
+	err error
+}
+
+// keyAssignResultMsg is sent when assignment completes
+type keyAssignResultMsg struct {
+	message string
+	err     error
+}
+
+// Init initializes the key assignment wizard
+func (k *KeyAssignWizard) Init() tea.Cmd {
+	return k.loadKeysCmd()
+}
+
+// loadKeysCmd loads available keys from the API
+func (k *KeyAssignWizard) loadKeysCmd() tea.Cmd {
+	return func() tea.Msg {
+		resp, err := k.handler.ListKasKeys(k.ctx, 100, 0, 0, handlers.KasIdentifier{}, nil)
+		if err != nil {
+			return keyAssignErrorMsg{err: fmt.Errorf("failed to load keys: %w", err)}
+		}
+
+		kasKeys := resp.GetKasKeys()
+		if len(kasKeys) == 0 {
+			return keyAssignErrorMsg{err: fmt.Errorf("no keys found in the system - create a key first")}
+		}
+
+		keys := make([]KeyOption, 0, len(kasKeys))
+		for _, kasKey := range kasKeys {
+			key := kasKey.GetKey()
+			// Only show active keys
+			if key.GetKeyStatus().String() == "KEY_STATUS_ACTIVE" {
+				keys = append(keys, KeyOption{
+					ID:        key.GetId(),
+					KeyID:     key.GetKeyId(),
+					KasURI:    kasKey.GetKasUri(),
+					Algorithm: key.GetKeyAlgorithm().String(),
+					Status:    "active",
+				})
+			}
+		}
+
+		if len(keys) == 0 {
+			return keyAssignErrorMsg{err: fmt.Errorf("no active keys found in the system")}
+		}
+
+		return keyAssignLoadedMsg{keys: keys}
+	}
+}
+
+// Update handles messages for the key assignment wizard
+func (k *KeyAssignWizard) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case keyAssignLoadedMsg:
+		k.keys = msg.keys
+		k.step = KeyAssignStepSelect
+		return k, nil
+
+	case keyAssignErrorMsg:
+		k.step = KeyAssignStepError
+		k.error = msg.err.Error()
+		return k, nil
+
+	case keyAssignResultMsg:
+		if msg.err != nil {
+			k.step = KeyAssignStepError
+			k.error = msg.err.Error()
+		} else {
+			k.step = KeyAssignStepComplete
+			k.result = msg.message
+		}
+		return k, nil
+
+	case tea.KeyMsg:
+		return k.handleKeyMsg(msg)
+	}
+
+	return k, nil
+}
+
+// handleKeyMsg handles key messages
+func (k *KeyAssignWizard) handleKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+	switch msg.Type {
+	case tea.KeyEscape:
+		k.cancelled = true
+		k.step = KeyAssignStepComplete
+		return k, nil
+
+	case tea.KeyUp:
+		if k.step == KeyAssignStepSelect && k.selectIndex > 0 {
+			k.selectIndex--
+		}
+		return k, nil
+
+	case tea.KeyDown:
+		if k.step == KeyAssignStepSelect && k.selectIndex < len(k.keys)-1 {
+			k.selectIndex++
+		}
+		return k, nil
+
+	case tea.KeyEnter:
+		return k.handleEnter()
+	}
+
+	return k, nil
+}
+
+// handleEnter handles enter key press
+func (k *KeyAssignWizard) handleEnter() (tea.Model, tea.Cmd) {
+	switch k.step {
+	case KeyAssignStepSelect:
+		k.step = KeyAssignStepConfirm
+		return k, nil
+
+	case KeyAssignStepConfirm:
+		k.step = KeyAssignStepExecuting
+		return k, k.executeAssignment()
+
+	case KeyAssignStepComplete, KeyAssignStepError:
+		return k, nil
+	}
+
+	return k, nil
+}
+
+// executeAssignment performs the key assignment
+func (k *KeyAssignWizard) executeAssignment() tea.Cmd {
+	return func() tea.Msg {
+		if k.selectIndex >= len(k.keys) {
+			return keyAssignResultMsg{err: fmt.Errorf("invalid key selection")}
+		}
+
+		selectedKey := k.keys[k.selectIndex]
+
+		var err error
+		switch k.resourceType {
+		case "namespace":
+			_, err = k.handler.AssignKeyToAttributeNamespace(k.ctx, k.resourceID, selectedKey.ID)
+		case "attribute":
+			_, err = k.handler.AssignKeyToAttribute(k.ctx, k.resourceID, selectedKey.ID)
+		case "value":
+			_, err = k.handler.AssignKeyToAttributeValue(k.ctx, k.resourceID, selectedKey.ID)
+		default:
+			return keyAssignResultMsg{err: fmt.Errorf("unknown resource type: %s", k.resourceType)}
+		}
+
+		if err != nil {
+			return keyAssignResultMsg{err: fmt.Errorf("failed to assign key: %w", err)}
+		}
+
+		return keyAssignResultMsg{
+			message: fmt.Sprintf("Assigned key '%s' to %s '%s'", selectedKey.KeyID, k.resourceType, k.resourceName),
+		}
+	}
+}
+
+// View renders the key assignment wizard
+func (k *KeyAssignWizard) View() string {
+	var sb strings.Builder
+
+	sb.WriteString(wizardTitleStyle.Render("Assign Key") + "\n")
+	sb.WriteString(wizardDescStyle.Render(fmt.Sprintf("To %s: %s", k.resourceType, k.resourceName)) + "\n\n")
+
+	switch k.step {
+	case KeyAssignStepLoading:
+		sb.WriteString(wizardDescStyle.Render("Loading available keys...") + "\n")
+
+	case KeyAssignStepSelect:
+		sb.WriteString(wizardLabelStyle.Render("Select a key to assign:") + "\n\n")
+		for i, key := range k.keys {
+			cursor := "  "
+			style := wizardUnselectedStyle
+			if i == k.selectIndex {
+				cursor = "▸ "
+				style = wizardSelectedStyle
+			}
+			sb.WriteString(cursor)
+			sb.WriteString(style.Render(fmt.Sprintf("%s (%s) - %s", key.KeyID, key.Algorithm, key.KasURI)))
+			sb.WriteString("\n")
+		}
+		sb.WriteString("\n")
+		sb.WriteString(wizardHintStyle.Render("↑/↓ to navigate, Enter to select, Esc to cancel"))
+
+	case KeyAssignStepConfirm:
+		selectedKey := k.keys[k.selectIndex]
+		sb.WriteString(wizardLabelStyle.Render("Confirm Assignment") + "\n\n")
+		sb.WriteString(fmt.Sprintf("Key: %s\n", wizardSelectedStyle.Render(selectedKey.KeyID)))
+		sb.WriteString(fmt.Sprintf("KAS: %s\n", wizardDescStyle.Render(selectedKey.KasURI)))
+		sb.WriteString(fmt.Sprintf("Algorithm: %s\n", wizardDescStyle.Render(selectedKey.Algorithm)))
+		sb.WriteString("\n")
+		sb.WriteString(wizardDescStyle.Render(fmt.Sprintf("Assign to %s '%s'?", k.resourceType, k.resourceName)) + "\n\n")
+		sb.WriteString(wizardHintStyle.Render("Press Enter to confirm, Esc to cancel"))
+
+	case KeyAssignStepExecuting:
+		sb.WriteString(wizardDescStyle.Render("Assigning key...") + "\n")
+
+	case KeyAssignStepComplete:
+		if k.cancelled {
+			sb.WriteString(wizardErrorStyle.Render("Cancelled") + "\n")
+		} else {
+			sb.WriteString(wizardSuccessStyle.Render("✓ "+k.result) + "\n")
+		}
+
+	case KeyAssignStepError:
+		sb.WriteString(wizardErrorStyle.Render("Error: "+k.error) + "\n")
+		sb.WriteString(wizardHintStyle.Render("Press Esc to go back") + "\n")
+	}
+
+	return sb.String()
+}
+
+// IsComplete returns true if the wizard has finished
+func (k *KeyAssignWizard) IsComplete() bool {
+	return k.step == KeyAssignStepComplete || k.step == KeyAssignStepError
+}
+
+// WasCancelled returns true if the wizard was cancelled
+func (k *KeyAssignWizard) WasCancelled() bool {
+	return k.cancelled
+}
+
+// GetResult returns the result message
+func (k *KeyAssignWizard) GetResult() string {
+	if k.step == KeyAssignStepError {
+		return k.error
+	}
+	return k.result
+}
+
+// GetError returns the error message if any
+func (k *KeyAssignWizard) GetError() string {
+	return k.error
+}

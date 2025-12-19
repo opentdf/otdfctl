@@ -90,6 +90,10 @@ type Shell struct {
 	// Delete wizard mode
 	deleteWizard       *DeleteWizard
 	deleteWizardActive bool
+
+	// Key assignment wizard mode
+	keyAssignWizard       *KeyAssignWizard
+	keyAssignWizardActive bool
 }
 
 // NewShell creates a new Shell model
@@ -208,6 +212,39 @@ func (s Shell) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return s, deleteCmd
 	}
 
+	// If key assign wizard is active, delegate to it
+	if s.keyAssignWizardActive && s.keyAssignWizard != nil {
+		keyAssignModel, keyAssignCmd := s.keyAssignWizard.Update(msg)
+		s.keyAssignWizard = keyAssignModel.(*KeyAssignWizard)
+
+		// Check if key assign wizard completed
+		if s.keyAssignWizard.IsComplete() {
+			s.keyAssignWizardActive = false
+
+			// Add result to history
+			result := s.keyAssignWizard.GetResult()
+			isError := s.keyAssignWizard.GetError() != ""
+			if s.keyAssignWizard.WasCancelled() {
+				result = "Cancelled"
+			}
+
+			if result != "" {
+				s.history = append(s.history, HistoryEntry{
+					Prompt:  "",
+					Command: "",
+					Output:  result,
+					IsError: isError,
+				})
+			}
+
+			s.keyAssignWizard = nil
+			s.textInput.Focus()
+			return s, textinput.Blink
+		}
+
+		return s, keyAssignCmd
+	}
+
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		s.width = msg.Width
@@ -275,6 +312,21 @@ func (s Shell) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						IsError: false,
 					})
 					return s, deleteCmd
+				}
+			}
+
+			// Check if this is a "key assign" command that should launch key assign wizard
+			if command == "key" && len(args) > 0 && args[0] == "assign" {
+				keyAssignCmd := s.startKeyAssignWizard()
+				if keyAssignCmd != nil {
+					// Add command to history
+					s.history = append(s.history, HistoryEntry{
+						Prompt:  currentPrompt,
+						Command: input,
+						Output:  "",
+						IsError: false,
+					})
+					return s, keyAssignCmd
 				}
 			}
 
@@ -512,6 +564,68 @@ func (s *Shell) startDeleteWizard() tea.Cmd {
 	return s.deleteWizard.Init()
 }
 
+// startKeyAssignWizard starts the key assignment wizard for the current resource
+func (s *Shell) startKeyAssignWizard() tea.Cmd {
+	currentType := s.getCurrentType()
+
+	var resourceType, resourceName, resourceID string
+
+	switch currentType {
+	case "namespace":
+		resourceType = "namespace"
+		resourceID = s.getNamespaceID()
+		for _, seg := range s.context.Path {
+			if seg.Type == "namespace" {
+				resourceName = seg.Name
+				break
+			}
+		}
+
+	case "attribute":
+		resourceType = "attribute"
+		resourceID = s.getAttributeID()
+		for _, seg := range s.context.Path {
+			if seg.Type == "attribute" {
+				resourceName = seg.Name
+				break
+			}
+		}
+
+	case "value":
+		resourceType = "value"
+		resourceID = s.getValueID()
+		for _, seg := range s.context.Path {
+			if seg.Type == "value" {
+				resourceName = seg.Name
+				break
+			}
+		}
+
+	default:
+		s.history = append(s.history, HistoryEntry{
+			Prompt:  "",
+			Command: "",
+			Output:  errorStyle.Render("Error: Navigate to a specific resource (namespace, attribute, or value) to assign a key"),
+			IsError: true,
+		})
+		return nil
+	}
+
+	if resourceID == "" {
+		s.history = append(s.history, HistoryEntry{
+			Prompt:  "",
+			Command: "",
+			Output:  errorStyle.Render("Error: Could not determine resource ID"),
+			IsError: true,
+		})
+		return nil
+	}
+
+	s.keyAssignWizard = NewKeyAssignWizard(s.handler, resourceType, resourceName, resourceID)
+	s.keyAssignWizardActive = true
+	return s.keyAssignWizard.Init()
+}
+
 // View renders the shell interface
 func (s Shell) View() string {
 	var sb strings.Builder
@@ -549,6 +663,12 @@ func (s Shell) View() string {
 	// If delete wizard is active, render it instead of the normal prompt
 	if s.deleteWizardActive && s.deleteWizard != nil {
 		sb.WriteString(s.deleteWizard.View())
+		return sb.String()
+	}
+
+	// If key assign wizard is active, render it instead of the normal prompt
+	if s.keyAssignWizardActive && s.keyAssignWizard != nil {
+		sb.WriteString(s.keyAssignWizard.View())
 		return sb.String()
 	}
 
@@ -652,6 +772,12 @@ func (s *Shell) cmdHelp() string {
 	sb.WriteString("Resource Deletion:\n")
 	sb.WriteString("  rm, delete      Delete current resource (with confirmation)\n")
 	sb.WriteString("                  Offers deactivate (safe) or permanent delete\n\n")
+
+	sb.WriteString("Key Management:\n")
+	sb.WriteString("  keys            Show keys assigned to current resource\n")
+	sb.WriteString("  key list        List all available keys in the system\n")
+	sb.WriteString("  key assign      Assign a key to current resource (wizard)\n")
+	sb.WriteString("  key remove <id> Remove key assignment from current resource\n\n")
 
 	sb.WriteString("Shell:\n")
 	sb.WriteString("  exit, quit      Exit shell (or use Ctrl+C)\n")
@@ -896,6 +1022,276 @@ func (s *Shell) getValue() string {
 // getResource displays detailed information about a registered resource (placeholder)
 func (s *Shell) getResource() string {
 	return shellHelpStyle.Render("Resource details not yet implemented")
+}
+
+// cmdKeys displays key assignments for the current resource
+func (s *Shell) cmdKeys() string {
+	currentType := s.getCurrentType()
+
+	switch currentType {
+	case "root":
+		return s.showBaseKey()
+	case "namespace":
+		return s.showNamespaceKeys()
+	case "attribute":
+		return s.showAttributeKeys()
+	case "value":
+		return s.showValueKeys()
+	default:
+		return errorStyle.Render("Error: Keys can only be viewed for namespaces, attributes, or values\nNavigate to a specific resource first")
+	}
+}
+
+// showBaseKey displays the platform base key
+func (s *Shell) showBaseKey() string {
+	baseKey, err := s.handler.GetBaseKey(s.ctx)
+	if err != nil {
+		return errorStyle.Render(fmt.Sprintf("Error fetching base key: %v", err))
+	}
+
+	if baseKey == nil || baseKey.GetPublicKey() == nil {
+		return shellHelpStyle.Render("No base key configured")
+	}
+
+	var sb strings.Builder
+	sb.WriteString(titleStyle.Render("Platform Base Key") + "\n\n")
+	sb.WriteString(fmt.Sprintf("%s: %s\n", outputStyle.Render("KAS URI"), successStyle.Render(baseKey.GetKasUri())))
+	sb.WriteString(fmt.Sprintf("%s: %s\n", outputStyle.Render("Key ID"), outputStyle.Render(baseKey.GetPublicKey().GetKid())))
+	sb.WriteString(fmt.Sprintf("%s: %s\n", outputStyle.Render("Algorithm"), outputStyle.Render(baseKey.GetPublicKey().GetAlgorithm().String())))
+
+	return sb.String()
+}
+
+// showNamespaceKeys displays keys assigned to the current namespace by looking at key mappings
+func (s *Shell) showNamespaceKeys() string {
+	namespaceID := s.getNamespaceID()
+	if namespaceID == "" {
+		return errorStyle.Render("Error: Could not determine namespace ID")
+	}
+
+	ns, err := s.handler.GetNamespace(s.ctx, namespaceID)
+	if err != nil {
+		return errorStyle.Render(fmt.Sprintf("Error fetching namespace: %v", err))
+	}
+
+	// Get key mappings to find keys assigned to this namespace
+	resp, err := s.handler.ListKeyMappings(s.ctx, 100, 0, "", nil)
+	if err != nil {
+		return errorStyle.Render(fmt.Sprintf("Error fetching key mappings: %v", err))
+	}
+
+	var sb strings.Builder
+	sb.WriteString(titleStyle.Render(fmt.Sprintf("Keys for namespace '%s'", ns.GetName())) + "\n\n")
+
+	found := false
+	for _, mapping := range resp.GetKeyMappings() {
+		for _, nsMapped := range mapping.GetNamespaceMappings() {
+			if nsMapped.GetId() == namespaceID || nsMapped.GetFqn() == ns.GetFqn() {
+				found = true
+				sb.WriteString(fmt.Sprintf("%s: %s\n", outputStyle.Render("KAS URI"), successStyle.Render(mapping.GetKasUri())))
+				sb.WriteString(fmt.Sprintf("%s: %s\n", outputStyle.Render("Key ID"), outputStyle.Render(mapping.GetKid())))
+				sb.WriteString("\n")
+			}
+		}
+	}
+
+	if !found {
+		return shellHelpStyle.Render(fmt.Sprintf("No keys assigned to namespace '%s'\nUse 'key assign' to assign a key", ns.GetName()))
+	}
+
+	return sb.String()
+}
+
+// showAttributeKeys displays keys assigned to the current attribute by looking at key mappings
+func (s *Shell) showAttributeKeys() string {
+	attributeID := s.getAttributeID()
+	if attributeID == "" {
+		return errorStyle.Render("Error: Could not determine attribute ID")
+	}
+
+	attr, err := s.handler.GetAttribute(s.ctx, attributeID)
+	if err != nil {
+		return errorStyle.Render(fmt.Sprintf("Error fetching attribute: %v", err))
+	}
+
+	// Get key mappings to find keys assigned to this attribute
+	resp, err := s.handler.ListKeyMappings(s.ctx, 100, 0, "", nil)
+	if err != nil {
+		return errorStyle.Render(fmt.Sprintf("Error fetching key mappings: %v", err))
+	}
+
+	var sb strings.Builder
+	sb.WriteString(titleStyle.Render(fmt.Sprintf("Keys for attribute '%s'", attr.GetName())) + "\n\n")
+
+	found := false
+	for _, mapping := range resp.GetKeyMappings() {
+		for _, attrMapped := range mapping.GetAttributeMappings() {
+			if attrMapped.GetId() == attributeID || attrMapped.GetFqn() == attr.GetFqn() {
+				found = true
+				sb.WriteString(fmt.Sprintf("%s: %s\n", outputStyle.Render("KAS URI"), successStyle.Render(mapping.GetKasUri())))
+				sb.WriteString(fmt.Sprintf("%s: %s\n", outputStyle.Render("Key ID"), outputStyle.Render(mapping.GetKid())))
+				sb.WriteString("\n")
+			}
+		}
+	}
+
+	if !found {
+		return shellHelpStyle.Render(fmt.Sprintf("No keys assigned to attribute '%s'\nUse 'key assign' to assign a key", attr.GetName()))
+	}
+
+	return sb.String()
+}
+
+// showValueKeys displays keys assigned to the current value by looking at key mappings
+func (s *Shell) showValueKeys() string {
+	valueID := s.getValueID()
+	if valueID == "" {
+		return errorStyle.Render("Error: Could not determine value ID")
+	}
+
+	val, err := s.handler.GetAttributeValue(s.ctx, valueID)
+	if err != nil {
+		return errorStyle.Render(fmt.Sprintf("Error fetching value: %v", err))
+	}
+
+	// Get key mappings to find keys assigned to this value
+	resp, err := s.handler.ListKeyMappings(s.ctx, 100, 0, "", nil)
+	if err != nil {
+		return errorStyle.Render(fmt.Sprintf("Error fetching key mappings: %v", err))
+	}
+
+	var sb strings.Builder
+	sb.WriteString(titleStyle.Render(fmt.Sprintf("Keys for value '%s'", val.GetValue())) + "\n\n")
+
+	found := false
+	for _, mapping := range resp.GetKeyMappings() {
+		for _, valMapped := range mapping.GetValueMappings() {
+			if valMapped.GetId() == valueID || valMapped.GetFqn() == val.GetFqn() {
+				found = true
+				sb.WriteString(fmt.Sprintf("%s: %s\n", outputStyle.Render("KAS URI"), successStyle.Render(mapping.GetKasUri())))
+				sb.WriteString(fmt.Sprintf("%s: %s\n", outputStyle.Render("Key ID"), outputStyle.Render(mapping.GetKid())))
+				sb.WriteString("\n")
+			}
+		}
+	}
+
+	if !found {
+		return shellHelpStyle.Render(fmt.Sprintf("No keys assigned to value '%s'\nUse 'key assign' to assign a key", val.GetValue()))
+	}
+
+	return sb.String()
+}
+
+// cmdKey handles key subcommands (assign, remove, list)
+func (s *Shell) cmdKey(args []string) string {
+	if len(args) == 0 {
+		return s.keyHelp()
+	}
+
+	subcommand := args[0]
+	subArgs := args[1:]
+
+	switch subcommand {
+	case "help", "?":
+		return s.keyHelp()
+	case "list", "ls":
+		return s.listAvailableKeys()
+	case "assign":
+		// This is handled by the wizard launcher in Update, but if we reach here
+		// it means the wizard couldn't be started
+		return errorStyle.Render("Error: Navigate to a specific resource (namespace, attribute, or value) to assign a key")
+	case "remove", "rm":
+		return s.removeKeyAssignment(subArgs)
+	default:
+		return errorStyle.Render(fmt.Sprintf("Unknown key subcommand: %s\n", subcommand)) + s.keyHelp()
+	}
+}
+
+// keyHelp displays help for key commands
+func (s *Shell) keyHelp() string {
+	var sb strings.Builder
+	sb.WriteString(titleStyle.Render("Key Commands") + "\n\n")
+	sb.WriteString(outputStyle.Render("  keys              ") + shellHelpStyle.Render("Show keys assigned to current resource") + "\n")
+	sb.WriteString(outputStyle.Render("  key list          ") + shellHelpStyle.Render("List all available keys in the system") + "\n")
+	sb.WriteString(outputStyle.Render("  key assign        ") + shellHelpStyle.Render("Assign a key to current resource (wizard)") + "\n")
+	sb.WriteString(outputStyle.Render("  key remove <id>   ") + shellHelpStyle.Render("Remove key assignment from current resource") + "\n")
+	return sb.String()
+}
+
+// listAvailableKeys lists all available keys in the system
+func (s *Shell) listAvailableKeys() string {
+	resp, err := s.handler.ListKasKeys(s.ctx, 100, 0, 0, handlers.KasIdentifier{}, nil)
+	if err != nil {
+		return errorStyle.Render(fmt.Sprintf("Error listing keys: %v", err))
+	}
+
+	keys := resp.GetKasKeys()
+	if len(keys) == 0 {
+		return shellHelpStyle.Render("No keys found in the system")
+	}
+
+	var sb strings.Builder
+	sb.WriteString(titleStyle.Render("Available Keys") + "\n\n")
+
+	for _, kasKey := range keys {
+		key := kasKey.GetKey()
+		status := key.GetKeyStatus().String()
+		if status == "KEY_STATUS_ACTIVE" {
+			status = successStyle.Render("active")
+		} else {
+			status = shellHelpStyle.Render(status)
+		}
+
+		sb.WriteString(fmt.Sprintf("%s: %s\n", outputStyle.Render("ID"), shellHelpStyle.Render(key.GetId())))
+		sb.WriteString(fmt.Sprintf("  %s: %s\n", outputStyle.Render("Key ID"), successStyle.Render(key.GetKeyId())))
+		sb.WriteString(fmt.Sprintf("  %s: %s\n", outputStyle.Render("KAS"), outputStyle.Render(kasKey.GetKasUri())))
+		sb.WriteString(fmt.Sprintf("  %s: %s\n", outputStyle.Render("Algorithm"), outputStyle.Render(key.GetKeyAlgorithm().String())))
+		sb.WriteString(fmt.Sprintf("  %s: %s\n", outputStyle.Render("Status"), status))
+		sb.WriteString("\n")
+	}
+
+	return sb.String()
+}
+
+// removeKeyAssignment removes a key assignment from the current resource
+func (s *Shell) removeKeyAssignment(args []string) string {
+	if len(args) == 0 {
+		return errorStyle.Render("Error: Key ID required\nUsage: key remove <key-id>")
+	}
+
+	keyID := args[0]
+	currentType := s.getCurrentType()
+
+	switch currentType {
+	case "namespace":
+		namespaceID := s.getNamespaceID()
+		if namespaceID == "" {
+			return errorStyle.Render("Error: Could not determine namespace ID")
+		}
+		err := s.handler.RemoveKeyFromAttributeNamespace(s.ctx, namespaceID, keyID)
+		if err != nil {
+			return errorStyle.Render(fmt.Sprintf("Error removing key: %v", err))
+		}
+		return successStyle.Render(fmt.Sprintf("✓ Removed key '%s' from namespace", keyID))
+
+	case "attribute":
+		attributeID := s.getAttributeID()
+		if attributeID == "" {
+			return errorStyle.Render("Error: Could not determine attribute ID")
+		}
+		err := s.handler.RemoveKeyFromAttribute(s.ctx, attributeID, keyID)
+		if err != nil {
+			return errorStyle.Render(fmt.Sprintf("Error removing key: %v", err))
+		}
+		return successStyle.Render(fmt.Sprintf("✓ Removed key '%s' from attribute", keyID))
+
+	case "value":
+		// Note: Value key removal would need a handler method
+		return errorStyle.Render("Error: Value key removal not yet implemented")
+
+	default:
+		return errorStyle.Render("Error: Navigate to a namespace, attribute, or value to remove a key assignment")
+	}
 }
 
 // cmdLs lists items at the current location
@@ -1470,6 +1866,12 @@ func (s *Shell) completeArgument(command string, prefix string, parts []string) 
 			resourceTypes := []string{"namespace", "attribute", "value"}
 			matches = findCompletions(prefix, resourceTypes)
 		}
+	case "key":
+		// Complete key subcommands
+		if len(parts) == 2 {
+			subcommands := []string{"list", "assign", "remove"}
+			matches = findCompletions(prefix, subcommands)
+		}
 	default:
 		return
 	}
@@ -1510,7 +1912,7 @@ func (s *Shell) completeArgument(command string, prefix string, parts []string) 
 // getAvailableCommands returns list of available commands based on context
 func (s *Shell) getAvailableCommands() []string {
 	// Base commands available everywhere
-	commands := []string{"help", "ls", "cd", "pwd", "clear", "profile", "create", "exit", "quit"}
+	commands := []string{"help", "ls", "cd", "pwd", "clear", "profile", "create", "exit", "quit", "keys", "key"}
 
 	// Add get/show and rm/delete commands when on a specific resource
 	currentType := s.getCurrentType()
