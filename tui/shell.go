@@ -82,6 +82,14 @@ type Shell struct {
 	profileName     string
 	width           int
 	height          int
+
+	// Wizard mode
+	wizard       *Wizard
+	wizardActive bool
+
+	// Delete wizard mode
+	deleteWizard       *DeleteWizard
+	deleteWizardActive bool
 }
 
 // NewShell creates a new Shell model
@@ -126,6 +134,80 @@ func (s Shell) Init() tea.Cmd {
 func (s Shell) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
+	// If wizard is active, delegate to it
+	if s.wizardActive && s.wizard != nil {
+		wizardModel, wizardCmd := s.wizard.Update(msg)
+		s.wizard = wizardModel.(*Wizard)
+
+		// Check if wizard completed
+		if s.wizard.IsComplete() {
+			s.wizardActive = false
+
+			// Add result to history
+			result := s.wizard.GetResult()
+			isError := s.wizard.GetError() != ""
+			if s.wizard.WasCancelled() {
+				result = "Cancelled"
+			}
+
+			if result != "" {
+				s.history = append(s.history, HistoryEntry{
+					Prompt:  "",
+					Command: "",
+					Output:  result,
+					IsError: isError,
+				})
+			}
+
+			s.wizard = nil
+			s.textInput.Focus()
+			return s, textinput.Blink
+		}
+
+		return s, wizardCmd
+	}
+
+	// If delete wizard is active, delegate to it
+	if s.deleteWizardActive && s.deleteWizard != nil {
+		deleteModel, deleteCmd := s.deleteWizard.Update(msg)
+		s.deleteWizard = deleteModel.(*DeleteWizard)
+
+		// Check if delete wizard completed
+		if s.deleteWizard.IsComplete() {
+			s.deleteWizardActive = false
+
+			// Add result to history
+			result := s.deleteWizard.GetResult()
+			isError := s.deleteWizard.GetError() != ""
+			if s.deleteWizard.WasCancelled() {
+				result = "Cancelled"
+			}
+
+			if result != "" {
+				s.history = append(s.history, HistoryEntry{
+					Prompt:  "",
+					Command: "",
+					Output:  result,
+					IsError: isError,
+				})
+			}
+
+			// If deletion was successful and we deleted current resource, navigate up
+			if !s.deleteWizard.WasCancelled() && s.deleteWizard.GetError() == "" {
+				// Go up one level after successful deletion
+				if len(s.context.Path) > 1 {
+					s.context.Path = s.context.Path[:len(s.context.Path)-1]
+				}
+			}
+
+			s.deleteWizard = nil
+			s.textInput.Focus()
+			return s, textinput.Blink
+		}
+
+		return s, deleteCmd
+	}
+
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		s.width = msg.Width
@@ -165,6 +247,36 @@ func (s Shell) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			parts := strings.Fields(input)
 			command := parts[0]
 			args := parts[1:]
+
+			// Check if this is a create command that should launch a wizard
+			if command == "create" {
+				wizardCmd := s.startCreateWizard(args)
+				if wizardCmd != nil {
+					// Add command to history
+					s.history = append(s.history, HistoryEntry{
+						Prompt:  currentPrompt,
+						Command: input,
+						Output:  "",
+						IsError: false,
+					})
+					return s, wizardCmd
+				}
+			}
+
+			// Check if this is a delete/rm command that should launch delete wizard
+			if command == "rm" || command == "delete" {
+				deleteCmd := s.startDeleteWizard()
+				if deleteCmd != nil {
+					// Add command to history
+					s.history = append(s.history, HistoryEntry{
+						Prompt:  currentPrompt,
+						Command: input,
+						Output:  "",
+						IsError: false,
+					})
+					return s, deleteCmd
+				}
+			}
 
 			// Execute command
 			output := s.executeCommand(command, args)
@@ -235,6 +347,171 @@ func (s Shell) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return s, cmd
 }
 
+// startCreateWizard starts the appropriate wizard based on context and args
+func (s *Shell) startCreateWizard(args []string) tea.Cmd {
+	currentType := s.getCurrentType()
+
+	// Determine what to create based on args or context
+	var resourceType string
+	if len(args) > 0 {
+		resourceType = args[0]
+	} else {
+		// Infer from context
+		switch currentType {
+		case "root", "namespaces":
+			resourceType = "namespace"
+		case "namespace", "attribute-definitions":
+			resourceType = "attribute"
+		case "attribute", "attribute-values":
+			resourceType = "value"
+		default:
+			return nil
+		}
+	}
+
+	switch resourceType {
+	case "namespace", "ns":
+		s.wizard = NewNamespaceWizard(s.handler)
+		s.wizardActive = true
+		return s.wizard.Init()
+
+	case "attribute", "attr":
+		// Use namespace from context if available
+		namespaceID := s.getNamespaceID()
+		namespaceName := ""
+		for _, seg := range s.context.Path {
+			if seg.Type == "namespace" {
+				namespaceName = seg.Name
+				break
+			}
+		}
+		s.wizard = NewAttributeWizard(s.handler, namespaceID, namespaceName)
+		s.wizardActive = true
+		return s.wizard.Init()
+
+	case "value", "val":
+		// Must be in an attribute context
+		attributeID := s.getAttributeID()
+		if attributeID == "" {
+			s.history = append(s.history, HistoryEntry{
+				Prompt:  "",
+				Command: "",
+				Output:  errorStyle.Render("Error: Navigate to an attribute first, or use 'create value' from within an attribute"),
+				IsError: true,
+			})
+			return nil
+		}
+
+		attributeName := ""
+		namespaceName := ""
+		for _, seg := range s.context.Path {
+			if seg.Type == "attribute" {
+				attributeName = seg.Name
+			}
+			if seg.Type == "namespace" {
+				namespaceName = seg.Name
+			}
+		}
+
+		s.wizard = NewAttributeValueWizard(s.handler, attributeID, attributeName, namespaceName)
+		s.wizardActive = true
+		return s.wizard.Init()
+
+	default:
+		s.history = append(s.history, HistoryEntry{
+			Prompt:  "",
+			Command: "",
+			Output:  errorStyle.Render(fmt.Sprintf("Unknown resource type: %s\nAvailable: namespace, attribute, value", resourceType)),
+			IsError: true,
+		})
+		return nil
+	}
+}
+
+// startDeleteWizard starts the delete wizard for the current resource
+func (s *Shell) startDeleteWizard() tea.Cmd {
+	currentType := s.getCurrentType()
+
+	var resourceType, resourceName, resourceID, resourceFQN string
+	var childCount int
+
+	switch currentType {
+	case "namespace":
+		resourceType = "namespace"
+		resourceID = s.getNamespaceID()
+		for _, seg := range s.context.Path {
+			if seg.Type == "namespace" {
+				resourceName = seg.Name
+				break
+			}
+		}
+		// Get namespace to find FQN and count attributes
+		if ns, err := s.handler.GetNamespace(s.ctx, resourceID); err == nil {
+			resourceFQN = ns.GetFqn()
+			// Count child attributes
+			if attrs, err := s.handler.ListAttributes(s.ctx, 0, 1000, 0); err == nil {
+				for _, attr := range attrs.GetAttributes() {
+					if attr.GetNamespace().GetId() == resourceID {
+						childCount++
+					}
+				}
+			}
+		}
+
+	case "attribute":
+		resourceType = "attribute"
+		resourceID = s.getAttributeID()
+		for _, seg := range s.context.Path {
+			if seg.Type == "attribute" {
+				resourceName = seg.Name
+				break
+			}
+		}
+		// Get attribute to find FQN and count values
+		if attr, err := s.handler.GetAttribute(s.ctx, resourceID); err == nil {
+			resourceFQN = attr.GetFqn()
+			childCount = len(attr.GetValues())
+		}
+
+	case "value":
+		resourceType = "value"
+		resourceID = s.getValueID()
+		for _, seg := range s.context.Path {
+			if seg.Type == "value" {
+				resourceName = seg.Name
+				break
+			}
+		}
+		// Get value to find FQN
+		if val, err := s.handler.GetAttributeValue(s.ctx, resourceID); err == nil {
+			resourceFQN = val.GetFqn()
+		}
+
+	default:
+		s.history = append(s.history, HistoryEntry{
+			Prompt:  "",
+			Command: "",
+			Output:  errorStyle.Render("Error: Navigate to a specific resource (namespace, attribute, or value) to delete it"),
+			IsError: true,
+		})
+		return nil
+	}
+
+	if resourceID == "" {
+		s.history = append(s.history, HistoryEntry{
+			Prompt:  "",
+			Command: "",
+			Output:  errorStyle.Render("Error: Could not determine resource ID"),
+			IsError: true,
+		})
+		return nil
+	}
+
+	s.deleteWizard = NewDeleteWizard(s.handler, resourceType, resourceName, resourceID, resourceFQN, childCount)
+	s.deleteWizardActive = true
+	return s.deleteWizard.Init()
+}
+
 // View renders the shell interface
 func (s Shell) View() string {
 	var sb strings.Builder
@@ -261,6 +538,18 @@ func (s Shell) View() string {
 		}
 
 		sb.WriteString("\n") // Extra spacing between commands
+	}
+
+	// If wizard is active, render it instead of the normal prompt
+	if s.wizardActive && s.wizard != nil {
+		sb.WriteString(s.wizard.View())
+		return sb.String()
+	}
+
+	// If delete wizard is active, render it instead of the normal prompt
+	if s.deleteWizardActive && s.deleteWizard != nil {
+		sb.WriteString(s.deleteWizard.View())
+		return sb.String()
 	}
 
 	// Current prompt and input
@@ -314,6 +603,10 @@ func (s *Shell) executeCommand(command string, args []string) string {
 		return s.cmdGet()
 	case "profile":
 		return s.cmdProfile(args)
+	case "keys":
+		return s.cmdKeys()
+	case "key":
+		return s.cmdKey(args)
 	case "clear", "cls":
 		// Clear history
 		s.history = []HistoryEntry{}
@@ -350,17 +643,34 @@ func (s *Shell) cmdHelp() string {
 	sb.WriteString("Resource Details:\n")
 	sb.WriteString("  get, show       Show detailed information about current resource\n\n")
 
+	sb.WriteString("Resource Creation:\n")
+	sb.WriteString("  create          Start creation wizard (context-aware)\n")
+	sb.WriteString("  create namespace    Create a new namespace\n")
+	sb.WriteString("  create attribute    Create a new attribute\n")
+	sb.WriteString("  create value        Create a new attribute value\n\n")
+
+	sb.WriteString("Resource Deletion:\n")
+	sb.WriteString("  rm, delete      Delete current resource (with confirmation)\n")
+	sb.WriteString("                  Offers deactivate (safe) or permanent delete\n\n")
+
 	sb.WriteString("Shell:\n")
 	sb.WriteString("  exit, quit      Exit shell (or use Ctrl+C)\n")
 
-	// Context-specific commands
+	// Context-specific hints
 	currentType := s.getCurrentType()
-	if currentType != "root" && currentType != "namespaces" && currentType != "attribute-definitions" &&
-		currentType != "attribute-values" && currentType != "registered-resources" {
-		sb.WriteString("\nContext commands (coming soon):\n")
-		sb.WriteString("  create          Create new resource\n")
-		sb.WriteString("  update          Update current resource\n")
-		sb.WriteString("  delete          Delete current resource\n")
+	switch currentType {
+	case "root", "namespaces":
+		sb.WriteString("\nHint: Use 'create' to start a namespace creation wizard\n")
+	case "namespace":
+		sb.WriteString("\nHint: Use 'create' for attributes, 'rm' to delete this namespace\n")
+	case "attribute-definitions":
+		sb.WriteString("\nHint: Use 'create' to start an attribute creation wizard\n")
+	case "attribute":
+		sb.WriteString("\nHint: Use 'create' for values, 'rm' to delete this attribute\n")
+	case "attribute-values":
+		sb.WriteString("\nHint: Use 'create' to start a value creation wizard\n")
+	case "value":
+		sb.WriteString("\nHint: Use 'rm' to delete this value\n")
 	}
 
 	return sb.String()
@@ -1154,6 +1464,12 @@ func (s *Shell) completeArgument(command string, prefix string, parts []string) 
 				matches = findCompletions(prefix, profileNames)
 			}
 		}
+	case "create":
+		// Complete resource types
+		if len(parts) == 2 {
+			resourceTypes := []string{"namespace", "attribute", "value"}
+			matches = findCompletions(prefix, resourceTypes)
+		}
 	default:
 		return
 	}
@@ -1194,15 +1510,13 @@ func (s *Shell) completeArgument(command string, prefix string, parts []string) 
 // getAvailableCommands returns list of available commands based on context
 func (s *Shell) getAvailableCommands() []string {
 	// Base commands available everywhere
-	commands := []string{"help", "ls", "cd", "pwd", "clear", "profile", "exit", "quit"}
+	commands := []string{"help", "ls", "cd", "pwd", "clear", "profile", "create", "exit", "quit"}
 
-	// Add get/show commands when not at root or collection level
+	// Add get/show and rm/delete commands when on a specific resource
 	currentType := s.getCurrentType()
 	if currentType != "root" && currentType != "namespaces" && currentType != "attribute-definitions" &&
 		currentType != "attribute-values" && currentType != "registered-resources" {
-		commands = append(commands, "get", "show")
-		// Add resource management commands (coming soon)
-		commands = append(commands, "create", "update", "delete")
+		commands = append(commands, "get", "show", "rm", "delete")
 	}
 
 	return commands
