@@ -168,14 +168,14 @@ Most Windows computers use `amd64`. ARM versions are for Surface Pro X or other 
 2. **Extract the ZIP file:**
    - Right-click the downloaded file
    - Select "Extract All..."
-   - Choose a location (e.g., `C:\Program Files\otdfctl`)
+   - Choose a location and create a folder: `%USERPROFILE%\otdfctl`
+   - The executable will be in this folder (you may need to navigate into a subfolder)
 
 3. **Add to PATH:**
    - Press `Windows key` and search for "Environment Variables"
-   - Click "Edit the system environment variables"
-   - Click "Environment Variables..." button
-   - Under "System variables", find and select "Path", then click "Edit..."
-   - Click "New" and add the folder where you extracted `otdfctl.exe` (e.g., `C:\Program Files\otdfctl`)
+   - Click "Edit environment variables for your account"
+   - In the "User variables" section at the top, find and select "Path", then click "Edit...". (If "Path" doesn't exist, click "New..." to create it).
+   - Click "New" and add the folder path where you extracted `otdfctl.exe` (e.g., `%USERPROFILE%\otdfctl`)
    - Click "OK" on all windows
 
 4. **Restart your command prompt or PowerShell** for the changes to take effect.
