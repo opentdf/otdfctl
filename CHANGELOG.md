@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.29.0](https://github.com/opentdf/otdfctl/compare/v0.28.0...v0.29.0) (2025-12-22)
+
+
+### Bug Fixes
+
+* **core:** obligations commands id and fqn flag exclusivity ([#731](https://github.com/opentdf/otdfctl/issues/731)) ([77ebbb4](https://github.com/opentdf/otdfctl/commit/77ebbb49d26b0b96abd254e9e177187504f7abb5)), closes [#728](https://github.com/opentdf/otdfctl/issues/728)
+
 ## [0.28.0](https://github.com/opentdf/otdfctl/compare/v0.27.0...v0.28.0) (2025-12-16)
 
 
