@@ -67,9 +67,6 @@ func policyGetObligation(cmd *cobra.Command, args []string) {
 	id := c.Flags.GetOptionalID("id")
 	fqn := c.Flags.GetOptionalString("fqn")
 
-	cmd.MarkFlagsOneRequired("id", "fqn")
-	cmd.MarkFlagsMutuallyExclusive("id", "fqn")
-
 	obl, err := h.GetObligation(cmd.Context(), id, fqn)
 	if err != nil {
 		identifier := fmt.Sprintf("id: %s", id)
@@ -168,9 +165,6 @@ func policyDeleteObligation(cmd *cobra.Command, args []string) {
 	id := c.Flags.GetOptionalID("id")
 	fqn := c.Flags.GetOptionalString("fqn")
 
-	cmd.MarkFlagsOneRequired("id", "fqn")
-	cmd.MarkFlagsMutuallyExclusive("id", "fqn")
-
 	force := c.Flags.GetRequiredBool("force")
 	ctx := cmd.Context()
 
@@ -252,9 +246,6 @@ func policyGetObligationValue(cmd *cobra.Command, args []string) {
 	id := c.Flags.GetOptionalID("id")
 	fqn := c.Flags.GetOptionalString("fqn")
 
-	cmd.MarkFlagsOneRequired("id", "fqn")
-	cmd.MarkFlagsMutuallyExclusive("id", "fqn")
-
 	value, err := h.GetObligationValue(cmd.Context(), id, fqn)
 	if err != nil {
 		identifier := fmt.Sprintf("id: %s", id)
@@ -328,9 +319,6 @@ func policyDeleteObligationValue(cmd *cobra.Command, args []string) {
 
 	id := c.Flags.GetOptionalID("id")
 	fqn := c.Flags.GetOptionalString("fqn")
-
-	cmd.MarkFlagsOneRequired("id", "fqn")
-	cmd.MarkFlagsMutuallyExclusive("id", "fqn")
 
 	force := c.Flags.GetOptionalBool("force")
 	ctx := cmd.Context()
@@ -525,6 +513,8 @@ func initObligationsCommands() {
 		getDoc.GetDocFlag("fqn").Default,
 		getDoc.GetDocFlag("fqn").Description,
 	)
+	getDoc.MarkFlagsMutuallyExclusive("id", "fqn")
+	getDoc.MarkFlagsOneRequired("id", "fqn")
 
 	listDoc := man.Docs.GetCommand("policy/obligations/list",
 		man.WithRun(policyListObligations),
@@ -598,6 +588,8 @@ func initObligationsCommands() {
 		false,
 		deleteDoc.GetDocFlag("force").Description,
 	)
+	deleteDoc.MarkFlagsMutuallyExclusive("id", "fqn")
+	deleteDoc.MarkFlagsOneRequired("id", "fqn")
 
 	// Obligation Values commands
 
@@ -616,6 +608,8 @@ func initObligationsCommands() {
 		getValueDoc.GetDocFlag("fqn").Default,
 		getValueDoc.GetDocFlag("fqn").Description,
 	)
+	getValueDoc.MarkFlagsMutuallyExclusive("id", "fqn")
+	getValueDoc.MarkFlagsOneRequired("id", "fqn")
 
 	createValueDoc := man.Docs.GetCommand("policy/obligations/values/create",
 		man.WithRun(policyCreateObligationValue),
@@ -682,6 +676,8 @@ func initObligationsCommands() {
 		false,
 		deleteValueDoc.GetDocFlag("force").Description,
 	)
+	deleteValueDoc.MarkFlagsMutuallyExclusive("id", "fqn")
+	deleteValueDoc.MarkFlagsOneRequired("id", "fqn")
 
 	// Obligation Triggers commands
 	createTriggerDoc := man.Docs.GetCommand("policy/obligations/triggers/create",
