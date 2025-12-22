@@ -375,7 +375,9 @@ teardown_file() {
 @test "Get an obligation - Bad" {
   run_otdfctl_obl get
     assert_failure
-    assert_output --partial "one of id, fqn must be set [message.oneof]"
+    assert_output --partial "Error: at least one of the flags in the group"
+    assert_output --partial "id"
+    assert_output --partial "fqn"
 
   run_otdfctl_obl get --id 'not_a_uuid'
     assert_failure
@@ -384,6 +386,8 @@ teardown_file() {
   run_otdfctl_obl get --id '08db7417-bd97-4455-b308-7d9e94e43440' --fqn 'https://example.com/obl/example'
     assert_failure
     assert_output --partial "Error: if any flags in the group"
+    assert_output --partial "id"
+    assert_output --partial "fqn"
 }
 
 @test "List obligations" {
@@ -451,7 +455,9 @@ teardown_file() {
   # no id
   run_otdfctl_obl delete
     assert_failure
-    assert_output --partial "one of id, fqn must be set [message.oneof]"
+    assert_output --partial "Error: at least one of the flags in the group"
+    assert_output --partial "id"
+    assert_output --partial "fqn"
 
   # invalid id
   run_otdfctl_obl delete --id 'not_a_uuid'
@@ -462,6 +468,8 @@ teardown_file() {
   run_otdfctl_obl delete --id '08db7417-bd97-4455-b308-7d9e94e43440' --fqn 'https://example.com/obl/example'
     assert_failure
     assert_output --partial "Error: if any flags in the group"
+    assert_output --partial "id"
+    assert_output --partial "fqn"
 }
 
 # Tests for obligation values
@@ -665,7 +673,9 @@ EOF
 @test "Get an obligation value - Bad" {
   run_otdfctl_obl_values get
     assert_failure
-    assert_output --partial "one of id, fqn must be set [message.oneof]"
+    assert_output --partial "Error: at least one of the flags in the group"
+    assert_output --partial "id"
+    assert_output --partial "fqn"
 
   # invalid id
   run_otdfctl_obl_values get --id 'not_a_uuid'
@@ -681,6 +691,8 @@ EOF
   run_otdfctl_obl_values get --id '08db7417-bd97-4455-b308-7d9e94e43440' --fqn 'https://example.com/obl/example/value/value1'
     assert_failure
     assert_output --partial "Error: if any flags in the group"
+    assert_output --partial "id"
+    assert_output --partial "fqn"
 }
 
 @test "Update obligation values" {
@@ -798,7 +810,9 @@ EOF
   # no id
   run_otdfctl_obl_values delete
     assert_failure
-    assert_output --partial "one of id, fqn must be set [message.oneof]"
+    assert_output --partial "Error: at least one of the flags in the group"
+    assert_output --partial "id"
+    assert_output --partial "fqn"
 
   # invalid id
   run_otdfctl_obl_values delete --id 'not_a_uuid'
@@ -809,6 +823,8 @@ EOF
   run_otdfctl_obl_values delete --id '08db7417-bd97-4455-b308-7d9e94e43440' --fqn 'https://example.com/obl/example/value/value1'
     assert_failure
     assert_output --partial "Error: if any flags in the group"
+    assert_output --partial "id"
+    assert_output --partial "fqn"
 }
 
 # Tests for obligation triggers
