@@ -678,7 +678,7 @@ EOF
     assert_output --partial "must be a valid URI"
 
   # id and fqn exclusive
-  run_otdfctl_obl_values get --id '08db7417-bd97-4455-b308-7d9e94e43440' --fqn 'https://example.com/obl/example'
+  run_otdfctl_obl_values get --id '08db7417-bd97-4455-b308-7d9e94e43440' --fqn 'https://example.com/obl/example/value/value1'
     assert_failure
     assert_output --partial "Error: if any flags in the group"
 }
@@ -806,7 +806,7 @@ EOF
     assert_output --partial "must be a valid UUID"
 
   # id and fqn exclusive
-  run_otdfctl_obl_values delete --id '08db7417-bd97-4455-b308-7d9e94e43440' --fqn 'https://example.com/obl/example'
+  run_otdfctl_obl_values delete --id '08db7417-bd97-4455-b308-7d9e94e43440' --fqn 'https://example.com/obl/example/value/value1'
     assert_failure
     assert_output --partial "Error: if any flags in the group"
 }
