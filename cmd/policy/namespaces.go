@@ -22,11 +22,15 @@ func getAttributeNamespace(cmd *cobra.Command, args []string) {
 	h := common.NewHandler(c)
 	defer h.Close()
 
-	id := c.Flags.GetRequiredID("id")
+	// Load from the mutually exclusive flags
+	identifier := c.FlagHelper.GetOptionalString("id")
+	if identifier == "" {
+		identifier = c.FlagHelper.GetOptionalString("fqn")
+	}
 
-	ns, err := h.GetNamespace(cmd.Context(), id)
+	ns, err := h.GetNamespace(cmd.Context(), identifier)
 	if err != nil {
-		errMsg := fmt.Sprintf("Failed to get namespace (%s)", id)
+		errMsg := fmt.Sprintf("Failed to get namespace (%s)", identifier)
 		cli.ExitWithError(errMsg, err)
 	}
 
@@ -324,12 +328,21 @@ func initNamespacesCommands() {
 	getCmd := man.Docs.GetCommand("policy/attributes/namespaces/get",
 		man.WithRun(getAttributeNamespace),
 	)
+	flags := []string{"fqn", "id"}
 	getCmd.Flags().StringP(
 		getCmd.GetDocFlag("id").Name,
 		getCmd.GetDocFlag("id").Shorthand,
 		getCmd.GetDocFlag("id").Default,
 		getCmd.GetDocFlag("id").Description,
 	)
+	getCmd.Flags().StringP(
+		getCmd.GetDocFlag("fqn").Name,
+		getCmd.GetDocFlag("fqn").Shorthand,
+		getCmd.GetDocFlag("fqn").Default,
+		getCmd.GetDocFlag("fqn").Description,
+	)
+	getCmd.MarkFlagsMutuallyExclusive(flags...)
+	getCmd.MarkFlagsOneRequired(flags...)
 
 	listCmd := man.Docs.GetCommand("policy/attributes/namespaces/list",
 		man.WithRun(listAttributeNamespaces),
