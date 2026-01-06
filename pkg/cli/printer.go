@@ -1,4 +1,3 @@
-//nolint:forbidigo // print statements require flexibility
 package cli
 
 import (

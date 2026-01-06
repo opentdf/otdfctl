@@ -43,7 +43,6 @@ func encryptRun(cmd *cobra.Command, args []string) {
 	tdfType := c.Flags.GetOptionalString("tdf-type")
 	kasURLPath := c.Flags.GetOptionalString("kas-url-path")
 	wrappingKeyAlgStr := c.Flags.GetOptionalString("wrapping-key-algorithm")
-	policyMode := c.Flags.GetOptionalString("policy-mode")
 	targetMode := c.Flags.GetOptionalString("target-mode")
 	var wrappingKeyAlgorithm ocrypto.KeyType
 	switch wrappingKeyAlgStr {
@@ -115,10 +114,8 @@ func encryptRun(cmd *cobra.Command, args []string) {
 		attrValues,
 		fileMimeType,
 		kasURLPath,
-		c.Flags.GetOptionalBool("ecdsa-binding"),
 		assertions,
 		wrappingKeyAlgorithm,
-		policyMode,
 		targetMode,
 	)
 	if err != nil {
@@ -185,20 +182,10 @@ func InitEncryptCommand() {
 		encryptDoc.GetDocFlag("wrapping-key-algorithm").Default,
 		encryptDoc.GetDocFlag("wrapping-key-algorithm").Description,
 	)
-	encryptDoc.Flags().Bool(
-		encryptDoc.GetDocFlag("ecdsa-binding").Name,
-		false,
-		encryptDoc.GetDocFlag("ecdsa-binding").Description,
-	)
 	encryptDoc.Flags().String(
 		encryptDoc.GetDocFlag("kas-url-path").Name,
 		encryptDoc.GetDocFlag("kas-url-path").Default,
 		encryptDoc.GetDocFlag("kas-url-path").Description,
-	)
-	encryptDoc.Flags().String(
-		encryptDoc.GetDocFlag("policy-mode").Name,
-		encryptDoc.GetDocFlag("policy-mode").Default,
-		encryptDoc.GetDocFlag("policy-mode").Description,
 	)
 	encryptDoc.Flags().String(
 		encryptDoc.GetDocFlag("target-mode").Name,
