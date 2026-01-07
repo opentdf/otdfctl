@@ -41,21 +41,13 @@
     "roundtrip TDF3, assertions, stdin": "C797127",
     "roundtrip TDF3, assertions with HS256 keys and verification, file": "C797128",
     "roundtrip TDF3, assertions with RS256 keys and verification, file": "C797129",
-    "roundtrip NANO, no attributes, file": "C793426",
-    "roundtrip NANO, no attributes, file, ecdsa binding": "C793427",
-    "roundtrip NANO, one attribute, stdin": "C793428",
-    "roundtrip NANO, one attribute, stdin, plaintext policy mode": "C874680",
-    "roundtrip NANO, one attribute, mixed case FQN, stdin": "C793429",
     "roundtrip TDF3, with target version < 4.3.0": "C871544",
     "roundtrip TDF3, with target version >= 4.3.0": "C871545",
     "roundtrip TDF3, with allowlist containing platform kas": "C871546",
     "roundtrip TDF3, with allowlist containing non existent kas (should fail)": "C871547",
     "roundtrip TDF3, ignoring allowlist": "C871548",
-    "roundtrip NANO, with allowlist containing platform kas": "C871549",
-    "roundtrip NANO, with allowlist containing non existent kas (should fail)": "C871550",
-    "roundtrip NANO, ignoring allowlist": "C871551",
-    "roundtrip TDF3/Nano, not entitled to data, no required obligations returned": "C875374",
-    "roundtrip TDF3/Nano, entitled to data, required obligations returned": "C875375"
+    "roundtrip TDF3, not entitled to data, no required obligations returned": "C875374",
+    "roundtrip TDF3, entitled to data, required obligations returned": "C875375"
   },
   "KAS Grants": {
     "Unassign rejects more than one type of grant at once": "C793434",

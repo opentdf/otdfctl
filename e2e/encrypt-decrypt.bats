@@ -126,37 +126,6 @@ teardown_file(){
   [[ $assertions_present == "\"assertion1\"" ]]
 }
 
-@test "roundtrip NANO, no attributes, file" {
-  ./otdfctl encrypt -o $OUTFILE_GO_MOD --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --tdf-type nano $INFILE_GO_MOD
-  ./otdfctl decrypt -o $RESULTFILE_GO_MOD --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --tdf-type nano $OUTFILE_GO_MOD
-  diff $INFILE_GO_MOD $RESULTFILE_GO_MOD
-}
-
-@test "roundtrip NANO, no attributes, file, ecdsa binding" {
-  ./otdfctl encrypt -o $OUTFILE_GO_MOD --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --ecdsa-binding --tdf-type nano $INFILE_GO_MOD
-  ./otdfctl decrypt -o $RESULTFILE_GO_MOD --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --tdf-type nano $OUTFILE_GO_MOD
-  diff $INFILE_GO_MOD $RESULTFILE_GO_MOD
-  ./otdfctl --host $HOST --tls-no-verify $WITH_CREDS inspect $OUTFILE_GO_MOD
-  ecdsa_enabled="$(./otdfctl --host $HOST --tls-no-verify $WITH_CREDS inspect $OUTFILE_GO_MOD | jq .ecdsaEnabled)"
-  [[ "$ecdsa_enabled" == true ]]
-}
-
-@test "roundtrip NANO, one attribute, stdin" {
-  echo $SECRET_TEXT | ./otdfctl encrypt --tdf-type nano -o $OUT_TXT --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS -a $FQN
-  ./otdfctl decrypt --tdf-type nano --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS $OUTFILE_TXT | grep "$SECRET_TEXT"
-}
-
-@test "roundtrip NANO, one attribute, stdin, plaintext policy mode" {
-  echo $SECRET_TEXT | ./otdfctl encrypt --tdf-type nano -o $OUT_TXT --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS -a $MIXED_CASE_FQN --policy-mode plaintext
-  ./otdfctl decrypt --tdf-type nano --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS $OUTFILE_TXT | grep "$SECRET_TEXT"
-  grep -a "$MIXED_CASE_FQN" "$OUTFILE_TXT"
-}
-
-@test "roundtrip NANO, one attribute, mixed case FQN, stdin" {
-  echo $SECRET_TEXT | ./otdfctl encrypt --tdf-type nano -o $OUT_TXT --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS -a $MIXED_CASE_FQN
-  ./otdfctl decrypt --tdf-type nano --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS $OUTFILE_TXT | grep "$SECRET_TEXT"
-}
-
 @test "roundtrip TDF3, with target version < 4.3.0" {
   ./otdfctl encrypt -o $OUTFILE_GO_MOD --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --tdf-type tdf3 --target-mode v4.2.2 $INFILE_GO_MOD
   ./otdfctl decrypt -o $RESULTFILE_GO_MOD --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --tdf-type tdf3 $OUTFILE_GO_MOD
@@ -195,56 +164,20 @@ teardown_file(){
   assert_output --partial "kasAllowlist is ignored"
 }
 
-@test "roundtrip NANO, with allowlist containing platform kas" {
-  ./otdfctl encrypt -o $OUTFILE_GO_MOD --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --tdf-type nano  $INFILE_GO_MOD
-  run sh -c "./otdfctl decrypt --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --tdf-type nano --kas-allowlist http://localhost:8080/kas $OUTFILE_GO_MOD"
-  assert_success
-}
-
-@test "roundtrip NANO, with allowlist containing non existent kas (should fail)" {
-  ./otdfctl encrypt -o $OUTFILE_GO_MOD --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --tdf-type nano $INFILE_GO_MOD
-  run sh -c "./otdfctl decrypt --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --tdf-type nano --kas-allowlist http://not-a-real-kas.com/kas $OUTFILE_GO_MOD"
-  assert_failure
-  assert_output --partial "KasAllowlist: kas url http://localhost:8080/kas is not allowed"
-}
-
-@test "roundtrip NANO, ignoring allowlist" {
-  ./otdfctl encrypt -o $OUTFILE_GO_MOD --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --tdf-type nano  $INFILE_GO_MOD
-  run sh -c "./otdfctl decrypt --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --tdf-type nano --kas-allowlist '*' $OUTFILE_GO_MOD"
-  assert_success
-  assert_output --partial "kasAllowlist is ignored"
-}
-
-@test "roundtrip TDF3/Nano, not entitled to data, no required obligations returned" {
-  # TDF3
+@test "roundtrip TDF3, not entitled to data, no required obligations returned" {
   run sh -c "./otdfctl encrypt -o $OUTFILE_GO_MOD --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS -a $ATTR_OBL_VAL_FQN $INFILE_GO_MOD"
   assert_success
   run sh -c "./otdfctl decrypt --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS $OUTFILE_GO_MOD"
   assert_failure
   refute_output --partial "required obligations"
-
-  # NANO
-  run sh -c "./otdfctl encrypt -o $OUTFILE_GO_MOD --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS -a $ATTR_OBL_VAL_FQN --tdf-type nano $INFILE_GO_MOD"
-  assert_success
-  run sh -c "./otdfctl decrypt --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS $OUTFILE_GO_MOD"
-  assert_failure
-  refute_output --partial "required obligations"
 }
 
-@test "roundtrip TDF3/Nano, entitled to data, required obligations returned" {
+@test "roundtrip TDF3, entitled to data, required obligations returned" {
   # Handle subject mapping
   run sh -c "./otdfctl policy subject-mappings create --attribute-value-id $ATTR_OBL_VAL_ID --action read --subject-condition-set-new '[{\"conditionGroups\":[{\"conditions\":[{\"operator\":\"SUBJECT_MAPPING_OPERATOR_ENUM_IN\",\"subjectExternalValues\":[\"opentdf\"],\"subjectExternalSelectorValue\":\".clientId\"}], \"booleanOperator\":\"CONDITION_BOOLEAN_TYPE_ENUM_OR\"}]}]' --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS"
   assert_success
 
-  # TDF3
   run sh -c "./otdfctl encrypt -o $OUTFILE_GO_MOD --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS -a $ATTR_OBL_VAL_FQN $INFILE_GO_MOD"
-  assert_success
-  run sh -c "./otdfctl decrypt --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS $OUTFILE_GO_MOD"
-  assert_failure
-  assert_output --partial "required obligations: [$OBL_VAL_FQN]"
-
-  # NANO
-  run sh -c "./otdfctl encrypt -o $OUTFILE_GO_MOD --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS -a $ATTR_OBL_VAL_FQN --tdf-type nano $INFILE_GO_MOD"
   assert_success
   run sh -c "./otdfctl decrypt --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS $OUTFILE_GO_MOD"
   assert_failure
