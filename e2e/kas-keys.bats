@@ -803,6 +803,16 @@ format_kas_name_as_uri() {
   delete_kas_registry "$KAS_ID_LIST"
 }
 
+@test "kas-keys: list keys (kas not registered)" {
+  MISSING_KAS_NAME=$(generate_kas_name)
+  MISSING_KAS_URI=$(format_kas_name_as_uri "${MISSING_KAS_NAME}")
+
+  run_otdfctl_key list --kas "${MISSING_KAS_URI}"
+  assert_failure
+  assert_output --partial "is not registered"
+  assert_output --partial "policy kas-registry create"
+}
+
 
 @test "kas-keys: list legacy keys" {
   KAS_NAME_LIST=$(generate_kas_name)

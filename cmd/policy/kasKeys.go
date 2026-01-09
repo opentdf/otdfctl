@@ -18,6 +18,8 @@ import (
 	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/opentdf/platform/protocol/go/policy/kasregistry"
 	"github.com/spf13/cobra"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 const (
@@ -419,6 +421,16 @@ func policyListKasKeys(cmd *cobra.Command, args []string) {
 		cli.ExitWithError("Invalid kas identifier", err)
 	}
 
+	if kasIdentifier != "" {
+		_, err := h.GetKasRegistryEntry(c.Context(), kasLookup)
+		if err != nil {
+			if status.Code(err) == codes.NotFound {
+				cli.ExitWithError(kasRegistryMissingErrorMessage(kasIdentifier), nil)
+			}
+			cli.ExitWithError("Failed to resolve KAS registry entry", err)
+		}
+	}
+
 	// Get the list of keys.
 	resp, err := h.ListKasKeys(c.Context(), limit, offset, alg, kasLookup, legacy)
 	if err != nil {
@@ -464,6 +476,10 @@ func policyListKasKeys(cmd *cobra.Command, args []string) {
 	t = t.WithRows(rows)
 	t = cli.WithListPaginationFooter(t, resp.GetPagination())
 	common.HandleSuccess(cmd, "", t, resp)
+}
+
+func kasRegistryMissingErrorMessage(kas string) string {
+	return fmt.Sprintf("KAS %q is not registered; create one with `policy kas-registry create`", kas)
 }
 
 func policyListKeyMappings(cmd *cobra.Command, args []string) {
