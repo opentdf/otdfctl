@@ -426,8 +426,9 @@ func policyListKasKeys(cmd *cobra.Command, args []string) {
 		if err != nil {
 			if status.Code(err) == codes.NotFound {
 				cli.ExitWithError(kasRegistryMissingErrorMessage(kasIdentifier), nil)
+			} else {
+				cli.ExitWithError("Failed to resolve KAS registry entry", err)
 			}
-			cli.ExitWithError("Failed to resolve KAS registry entry", err)
 		}
 	}
 
