@@ -815,7 +815,7 @@ generate_uuid() {
 
   run_otdfctl_key list --kas "${MISSING_KAS_URI}"
   assert_failure
-  assert_output --partial "is not registered"
+  assert_output --partial "isn't registered"
   assert_output --partial "policy kas-registry create"
 }
 
@@ -824,7 +824,7 @@ generate_uuid() {
 
   run_otdfctl_key list --kas "${MISSING_KAS_NAME}"
   assert_failure
-  assert_output --partial "is not registered"
+  assert_output --partial "isn't registered"
   assert_output --partial "policy kas-registry create"
 }
 
@@ -833,7 +833,7 @@ generate_uuid() {
 
   run_otdfctl_key list --kas "${MISSING_KAS_ID}"
   assert_failure
-  assert_output --partial "is not registered"
+  assert_output --partial "isn't registered"
   assert_output --partial "policy kas-registry create"
 }
 
