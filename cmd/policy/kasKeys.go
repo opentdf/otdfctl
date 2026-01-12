@@ -482,7 +482,7 @@ func policyListKasKeys(cmd *cobra.Command, args []string) {
 
 func kasRegistryMissingErrorMessage(kas string) string {
 	return fmt.Sprintf(
-		"KAS %q isn't registered. Create it with `otdfctl policy kas-registry create --name <name> --uri <uri>`",
+		"KAS %q isn't registered.\n\nCreate it:\n  otdfctl policy kas-registry create --name <name> --uri <uri>\n\nOr list registered KAS entries:\n  otdfctl policy kas-registry list",
 		kas,
 	)
 }
