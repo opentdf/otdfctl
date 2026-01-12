@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"connectrpc.com/connect"
 	"github.com/evertras/bubble-table/table"
 	"github.com/opentdf/otdfctl/cmd/common"
 	"github.com/opentdf/otdfctl/pkg/cli"
@@ -424,7 +425,7 @@ func policyListKasKeys(cmd *cobra.Command, args []string) {
 	if kasIdentifier != "" {
 		_, err := h.GetKasRegistryEntry(c.Context(), kasLookup)
 		if err != nil {
-			if status.Code(err) == codes.NotFound {
+			if isNotFound(err) {
 				cli.ExitWithError(kasRegistryMissingErrorMessage(kasIdentifier), nil)
 			} else {
 				cli.ExitWithError("Failed to resolve KAS registry entry", err)
@@ -480,7 +481,27 @@ func policyListKasKeys(cmd *cobra.Command, args []string) {
 }
 
 func kasRegistryMissingErrorMessage(kas string) string {
-	return fmt.Sprintf("KAS %q is not registered; create one with `policy kas-registry create`", kas)
+	return fmt.Sprintf(
+		"KAS %q isn't registered. Create it with `otdfctl policy kas-registry create --name <name> --uri <uri>`",
+		kas,
+	)
+}
+
+func isNotFound(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	type grpcStatus interface {
+		GRPCStatus() *status.Status
+	}
+	var gs grpcStatus
+	if errors.As(err, &gs) && gs.GRPCStatus().Code() == codes.NotFound {
+		return true
+	}
+
+	var ce *connect.Error
+	return errors.As(err, &ce) && ce.Code() == connect.CodeNotFound
 }
 
 func policyListKeyMappings(cmd *cobra.Command, args []string) {
