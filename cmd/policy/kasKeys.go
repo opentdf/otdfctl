@@ -12,7 +12,6 @@ import (
 	"github.com/evertras/bubble-table/table"
 	"github.com/opentdf/otdfctl/cmd/common"
 	"github.com/opentdf/otdfctl/pkg/cli"
-	"github.com/opentdf/otdfctl/pkg/config"
 	"github.com/opentdf/otdfctl/pkg/handlers"
 	"github.com/opentdf/otdfctl/pkg/man"
 	"github.com/opentdf/otdfctl/pkg/utils"
@@ -482,12 +481,9 @@ func policyListKasKeys(cmd *cobra.Command, args []string) {
 }
 
 func kasRegistryMissingErrorMessage(kas string) string {
-	bin := config.CLIName()
 	return fmt.Sprintf(
-		"KAS %q isn't registered.\n\nCreate it:\n  %s policy kas-registry create --name <name> --uri <uri>\n\nOr list registered KAS entries:\n  %s policy kas-registry list",
+		"KAS %q isn't registered.\n\nCreate it:\n  otdfctl policy kas-registry create --name <name> --uri <uri>\n\nOr list registered KAS entries:\n  otdfctl policy kas-registry list",
 		kas,
-		bin,
-		bin,
 	)
 }
 
