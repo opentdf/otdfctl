@@ -55,6 +55,7 @@ teardown_file() {
   assert_success
   [ "$(echo "$output" | jq -r '.values[0].value')" = "val1" ]
   [ "$(echo "$output" | jq -r '.values[1].value')" = "val2" ]
+  [ "$(echo "$output" | jq -r '.allow_traversal.value')" = false ]
 }
 
 @test "Create an attribute - Allow Traversal" {
