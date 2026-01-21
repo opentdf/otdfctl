@@ -101,12 +101,9 @@ func listAttributes(cmd *cobra.Command, args []string) {
 		table.NewFlexColumn("namespace", "Namespace", cli.FlexColumnWidthFour),
 		table.NewFlexColumn("name", "Name", cli.FlexColumnWidthThree),
 		table.NewFlexColumn("rule", "Rule", cli.FlexColumnWidthTwo),
-		table.NewFlexColumn("allow_traversal", "Allow Traversal", cli.FlexColumnWidthTwo),
+		table.NewFlexColumn("allow_traversal", "Allow Traversal", cli.FlexColumnWidthOne),
 		table.NewFlexColumn("values", "Values", cli.FlexColumnWidthTwo),
 		table.NewFlexColumn("active", "Active", cli.FlexColumnWidthTwo),
-		table.NewFlexColumn("labels", "Labels", cli.FlexColumnWidthOne),
-		table.NewFlexColumn("created_at", "Created At", cli.FlexColumnWidthOne),
-		table.NewFlexColumn("updated_at", "Updated At", cli.FlexColumnWidthOne),
 	)
 	rows := []table.Row{}
 	for _, attr := range resp.GetAttributes() {
@@ -119,9 +116,6 @@ func listAttributes(cmd *cobra.Command, args []string) {
 			"allow_traversal": a.AllowTraversal,
 			"values":          cli.CommaSeparated(a.Values),
 			"active":          a.Active,
-			"labels":          a.Metadata["Labels"],
-			"created_at":      a.Metadata["Created At"],
-			"updated_at":      a.Metadata["Updated At"],
 		}))
 	}
 	t = t.WithRows(rows)
