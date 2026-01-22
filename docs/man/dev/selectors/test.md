@@ -16,7 +16,7 @@ Test a subject Entity Representation as a JWT or JSON object, such as that provi
 an Identity Provider (idP), LDAP, or OIDC Access Token JWT, against provided selectors employing [flattening syntax](#flattening-syntax) to
 validate their resolution to field values on the subject's entity representation.
 
-# Flattening-syntax
+# Flattening Syntax
 
 The platform maintains a very simple flattening library such that the below structure flattens into the key/value pairs beneath.
 
