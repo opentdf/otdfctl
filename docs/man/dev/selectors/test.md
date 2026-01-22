@@ -13,7 +13,7 @@ command:
 ---
 
 Test a subject Entity Representation as a JWT or JSON object, such as that provided by
-an Identity Provider (idP), LDAP, or OIDC Access Token JWT, against provided selectors employing [flattening syntax](./#flattening-syntax) to
+an Identity Provider (idP), LDAP, or OIDC Access Token JWT, against provided selectors employing [flattening syntax](#flattening-syntax) to
 validate their resolution to field values on the subject's entity representation.
 
 # Flattening-syntax
