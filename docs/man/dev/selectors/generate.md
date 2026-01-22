@@ -17,7 +17,7 @@ sample selectors employing [flattening syntax](#flattening-syntax) to utilize wi
 within Subject Condition Sets that resolve an external Subject Context into mapped Attribute
 Values.
 
-# Flattening-syntax
+# Flattening Syntax
 
 The platform maintains a very simple flattening library such that the below structure flattens into the key/value pairs beneath.
 
