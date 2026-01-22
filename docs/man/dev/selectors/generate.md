@@ -13,7 +13,7 @@ command:
 
 Take in an Entity Representation as a JWT or JSON object, such as that provided by
 an Identity Provider (idP), LDAP, or OIDC Access Token JWT, and generate
-sample selectors employing [flattening syntax](../#flattening-syntax) to utilize within
+sample selectors employing [flattening syntax](./#flattening-syntax) to utilize within
 within Subject Condition Sets that resolve an external Subject Context into mapped Attribute
 Values.
 
