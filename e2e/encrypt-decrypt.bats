@@ -100,6 +100,52 @@ teardown_file(){
   ./otdfctl decrypt --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS $OUTFILE_TXT | grep "$SECRET_TEXT"
 }
 
+@test "allow traversal with mapped key uses definition when value missing" {
+  local attr_name="attr-allow-traversal-${RANDOM}"
+  local kas_name="kas-allow-traversal-${RANDOM}"
+  local kas_uri="https://kas-allow-traversal-${RANDOM}.example.com"
+  local key_id="allow-traversal-key-${RANDOM}"
+  local ns_id="$NS_ID"
+
+  if [[ -z "$ns_id" ]]; then
+    ns_id=$(./otdfctl --host $HOST $WITH_CREDS $DEBUG_LEVEL policy attributes namespaces list --json | jq -r '.namespaces[] | select(.name=="testing-enc-dec.io") | .id' | head -n 1)
+  fi
+  if [[ -z "$ns_id" ]]; then
+    echo "Failed to resolve namespace id for testing-enc-dec.io"
+    return 1
+  fi
+
+  attr_output=$(./otdfctl --host $HOST $WITH_CREDS $DEBUG_LEVEL policy attributes create --namespace "$ns_id" -n "$attr_name" -r HIERARCHY --allow-traversal --json)
+  attr_id=$(echo "$attr_output" | jq -r '.id')
+  attr_fqn=$(echo "$attr_output" | jq -r '.fqn')
+  missing_value_fqn="${attr_fqn}/value/missing"
+
+  kas_output=$(./otdfctl --host $HOST $WITH_CREDS $DEBUG_LEVEL policy kas-registry create --uri "$kas_uri" -n "$kas_name" --json)
+  kas_id=$(echo "$kas_output" | jq -r '.id')
+
+  pem_b64=$(openssl genrsa 2048 2>/dev/null | openssl rsa -pubout 2>/dev/null | base64 | tr -d '\n')
+  key_output=$(./otdfctl --host $HOST $WITH_CREDS $DEBUG_LEVEL policy kas-registry key create --kas "$kas_id" --key-id "$key_id" --algorithm "rsa:2048" --mode "public_key" --public-key-pem "$pem_b64" --json)
+  key_system_id=$(echo "$key_output" | jq -r '.key.id')
+
+  run sh -c "./otdfctl --host $HOST $WITH_CREDS $DEBUG_LEVEL policy attributes key assign --attribute $attr_id --key-id $key_system_id --json"
+  assert_success
+
+  echo $SECRET_TEXT | ./otdfctl encrypt -o $OUT_TXT --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS -a "$missing_value_fqn"
+
+  inspect_output=$(./otdfctl --host $HOST --tls-no-verify $WITH_CREDS inspect $OUTFILE_TXT)
+  assert_equal "$(echo "$inspect_output" | jq -r '.manifest.encryptionInformation.keyAccess[0].kid')" "$key_id"
+  assert_equal "$(echo "$inspect_output" | jq -r '.manifest.encryptionInformation.keyAccess[0].url')" "$kas_uri"
+
+  run sh -c "./otdfctl --host $HOST $WITH_CREDS policy attributes key remove --attribute $attr_id --key-id $key_system_id"
+  assert_success
+  run sh -c "./otdfctl --host $HOST $WITH_CREDS policy attributes unsafe delete --id $attr_id --force"
+  assert_success
+  run sh -c  "./otdfctl --host $HOST $WITH_CREDS policy kas-registry key unsafe delete --id $key_system_id --key-id $key_id --kas-uri $kas_uri --force"
+  assert_success
+  run sh -c "./otdfctl --host $HOST $WITH_CREDS policy kas-registry delete --id $kas_id --force"
+  assert_success
+}
+
 @test "roundtrip TDF3, assertions, stdin" {
   echo $SECRET_TEXT | ./otdfctl encrypt -o $OUT_TXT --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS -a $FQN --with-assertions "$ASSERTIONS"
   ./otdfctl decrypt --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS $OUTFILE_TXT | grep "$SECRET_TEXT"

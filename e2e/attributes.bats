@@ -55,7 +55,7 @@ teardown_file() {
   assert_success
   [ "$(echo "$output" | jq -r '.values[0].value')" = "val1" ]
   [ "$(echo "$output" | jq -r '.values[1].value')" = "val2" ]
-  [ "$(echo "$output" | jq -c '.allow_traversal')" = "{}" ]
+  [ "$(echo "$output" | jq -r '.allow_traversal')" = {} ]
 }
 
 @test "Create an attribute - Allow Traversal" {
@@ -249,6 +249,20 @@ teardown_file() {
   run_otdfctl_attr get --id "$CREATED_ID" --json
   assert_success
   [ "$(echo "$output" | jq -r '.allow_traversal.value')" = true ]
+
+  ./otdfctl $HOST $WITH_CREDS policy attributes unsafe delete --force --id "$CREATED_ID"
+}
+
+@test "Unsafe Update can disallow traversal" {
+  run_otdfctl_attr create --name attr-disallow-traversal-update --namespace "$NS_ID" --rule HIERARCHY --allow-traversal --json
+  assert_success
+  CREATED_ID=$(echo "$output" | jq -r '.id')
+
+  run_otdfctl_attr unsafe update --id "$CREATED_ID" --allow-traversal=false --json --force
+  assert_success
+  run_otdfctl_attr get --id "$CREATED_ID" --json
+  assert_success
+  [ "$(echo "$output" | jq -r '.allow_traversal')" = {} ]
 
   ./otdfctl $HOST $WITH_CREDS policy attributes unsafe delete --force --id "$CREATED_ID"
 }
