@@ -60,6 +60,12 @@ to each hierarchically lower value, and so on.
 
 For more general information about attributes, see the `attributes` subcommand.
 
+### Allow Traversal
+
+Setting the `allow_traversal` flag on an attribute definition allows a TDF to be created with a missing attribute value.
+During encryption while `autoconfigure` is true, if the attribute value is missing and the definition has `allow_traversal`
+set our system will encrypt using the attribute definitions key, if a key has been mapped to the definition.
+
 ## Example
 
 ```shell
