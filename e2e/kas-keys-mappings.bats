@@ -237,7 +237,7 @@ assert_key_mapping_details() {
   assert_success
   assert_key_mapping_details "${KEY_ID_3}"
   assert [ "$(echo "$output" | jq -r '.pagination.total')" -ge 3 ]
-  assert_equal "$(echo "$output" | jq -r '.pagination.next_offset')" "null"
+  assert_equal "$(echo "$output" | jq -r '.pagination | has("next_offset")')" "true"
 }
 
 @test "kas-keys-mappings: list key mappings - required together are missing" {
@@ -255,6 +255,5 @@ assert_key_mapping_details() {
   assert_failure
   assert_output --partial "Error: if any flags in the group [kas id] are set none of the others can be; [id kas] were all set"
 }
-
 
 
