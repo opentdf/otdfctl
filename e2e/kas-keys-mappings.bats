@@ -237,7 +237,11 @@ assert_key_mapping_details() {
   assert_success
   assert_key_mapping_details "${KEY_ID_3}"
   assert [ "$(echo "$output" | jq -r '.pagination.total')" -ge 3 ]
-  assert_equal "$(echo "$output" | jq -r '.pagination | has("next_offset")')" "true"
+  if [ "$(echo "$output" | jq -r '.pagination.total')" -ge 4 ]; then
+    assert_equal "$(echo "$output" | jq -r '.pagination | has("next_offset")')" "true"
+  else
+    assert_equal "$(echo "$output" | jq -r '.pagination | has("next_offset")')" "false"
+  fi
 }
 
 @test "kas-keys-mappings: list key mappings - required together are missing" {
