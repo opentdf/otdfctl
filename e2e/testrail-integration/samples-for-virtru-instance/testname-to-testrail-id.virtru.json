@@ -43,9 +43,9 @@
     "roundtrip TDF3, no attributes, ec-wrapping, file": "C797126",
     "roundtrip TDF3, one attribute, stdin": "C793424",
     "roundtrip TDF3, one attribute, mixed case FQN, stdin": "C793425",
-    "allow traversal with mapped key uses definition when value missing": "875793",
-    "allow traversal uses attribute value mapping when value present": "875794",
-    "allow traversal with inactive attribute value fails": "875795",
+    "allow traversal with mapped key uses definition when value missing": "C875793",
+    "allow traversal uses attribute value mapping when value present": "C875794",
+    "allow traversal with inactive attribute value fails": "C875795",
     "roundtrip TDF3, assertions, stdin": "C797127",
     "roundtrip TDF3, assertions with HS256 keys and verification, file": "C797128",
     "roundtrip TDF3, assertions with RS256 keys and verification, file": "C797129",
@@ -173,8 +173,8 @@
     "base-key: set (using non-existent kasId)": "C874524"
   },
   "Logging": {
-    "version is logged to stderr when debug logging enabled ": "C875686",
-    "version is logged to stderr when debug enabled ": "C875687"
+    "version is logged to stderr when debug logging enabled": "C875686",
+    "version is logged to stderr when debug enabled": "C875687"
   },
   "Namespaces": {
     "Create a namespace - Good": "C793440",
@@ -226,7 +226,7 @@
     "List obligation triggers - Filter by Namespace FQN": "C875381"
   },
   "Profile": {
-    "Profile create": "C793453",
+    "profile create": "C793453",
     "profile list shows profiles and default": "C793454",
     "profile get shows profile details": "C793455",
     "profile delete removes profile": "C793456",
