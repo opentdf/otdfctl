@@ -114,114 +114,6 @@ teardown_file(){
   diff $INFILE_GO_MOD $RESULTFILE_GO_MOD
 }
 
-# bats test_tags=ec_km_kas
-@test "roundtrip TDF3, no attributes, ec-wrapping P-384, file" {
-  if [[ "${EC_KM_TESTS}" != "true" ]]; then
-    skip "EC_KM_TESTS is not enabled"
-  fi
-
-  local kas_name="km-ec-kas-1"
-  local kas_uri="${EC_KM_KAS_URI_OVERRIDE:-http://localhost:8585}"
-  local key_id="p384-key-${RANDOM}"
-  local wrapping_key="${EC_KM_ROOT_KEY:-}"
-  if [[ -z "$wrapping_key" ]]; then
-    skip "EC_KM_ROOT_KEY is not set"
-  fi
-
-  P384_TEST_ORIG_KID=""
-  P384_TEST_ORIG_KAS=""
-  run sh -c "./otdfctl --host $HOST $WITH_CREDS policy kas-registry key base get --json"
-  if [ "$status" -eq 0 ]; then
-    P384_TEST_ORIG_KID=$(echo "$output" | jq -r '.public_key.kid')
-    P384_TEST_ORIG_KAS=$(echo "$output" | jq -r '.kas_uri')
-  fi
-
-  run sh -c "./otdfctl --host $HOST $WITH_CREDS $DEBUG_LEVEL policy kas-registry list --json"
-  assert_success
-  P384_TEST_KAS_ID=$(echo "$output" | jq -r --arg uri "$kas_uri" '.key_access_servers[] | select(.uri==$uri) | .id' | head -n 1)
-  if [[ -z "$P384_TEST_KAS_ID" ]]; then
-    run sh -c "./otdfctl --host $HOST $WITH_CREDS $DEBUG_LEVEL policy kas-registry create --uri \"$kas_uri\" -n \"$kas_name\" --json"
-    assert_success
-    P384_TEST_KAS_ID=$(echo "$output" | jq -r '.id')
-    P384_TEST_KAS_CREATED="true"
-  fi
-  P384_TEST_KAS_URI="$kas_uri"
-  echo "EC_KM KAS entry:"
-  run sh -c "./otdfctl --host $HOST $WITH_CREDS $DEBUG_LEVEL policy kas-registry get --id \"$P384_TEST_KAS_ID\" --json"
-  echo "$output"
-
-  run sh -c "./otdfctl --host $HOST $WITH_CREDS $DEBUG_LEVEL policy kas-registry key create --kas \"$P384_TEST_KAS_ID\" --key-id \"$key_id\" --algorithm \"ec:secp384r1\" --mode local --wrapping-key-id \"ec-km-root\" --wrapping-key \"$wrapping_key\" --json"
-  assert_success
-  P384_TEST_KEY_SYSTEM_ID=$(echo "$output" | jq -r '.key.id')
-  P384_TEST_KEY_ID="$key_id"
-  echo "EC_KM KAS key create result:"
-  echo "$output"
-
-  run sh -c "./otdfctl --host $HOST $WITH_CREDS $DEBUG_LEVEL policy kas-registry key base set --key \"$P384_TEST_KEY_ID\" --kas \"$P384_TEST_KAS_ID\" --json"
-  assert_success
-
-  ./otdfctl encrypt -o $OUTFILE_GO_MOD --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --tdf-type tdf3 --wrapping-key-algorithm ec:secp384r1 $INFILE_GO_MOD
-  ./otdfctl decrypt -o $RESULTFILE_GO_MOD --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --tdf-type tdf3 --session-key-algorithm ec:secp384r1 $OUTFILE_GO_MOD
-  diff $INFILE_GO_MOD $RESULTFILE_GO_MOD
-}
-
-# bats test_tags=ec_km_kas
-@test "roundtrip TDF3, no attributes, rsa-wrapping (km1 kas), file" {
-  if [[ "${EC_KM_TESTS}" != "true" ]]; then
-    skip "EC_KM_TESTS is not enabled"
-  fi
-
-  local kas_name="km-ec-kas-1"
-  local kas_uri="${EC_KM_KAS_URI_OVERRIDE:-http://localhost:8585}"
-  local key_id="rsa-key-${RANDOM}"
-  local wrapping_key="${EC_KM_ROOT_KEY:-}"
-  if [[ -z "$wrapping_key" ]]; then
-    skip "EC_KM_ROOT_KEY is not set"
-  fi
-
-  RSA_TEST_ORIG_KID=""
-  RSA_TEST_ORIG_KAS=""
-  run sh -c "./otdfctl --host $HOST $WITH_CREDS policy kas-registry key base get --json"
-  if [ "$status" -eq 0 ]; then
-    RSA_TEST_ORIG_KID=$(echo "$output" | jq -r '.public_key.kid')
-    RSA_TEST_ORIG_KAS=$(echo "$output" | jq -r '.kas_uri')
-  fi
-
-  run sh -c "./otdfctl --host $HOST $WITH_CREDS $DEBUG_LEVEL policy kas-registry list --json"
-  assert_success
-  local kas_list_json="$output"
-  RSA_TEST_KAS_ID=$(echo "$kas_list_json" | jq -r --arg uri "$kas_uri" '.key_access_servers[] | select(.uri==$uri) | .id' | head -n 1)
-  if [[ -z "$RSA_TEST_KAS_ID" ]]; then
-    run sh -c "./otdfctl --host $HOST $WITH_CREDS $DEBUG_LEVEL policy kas-registry create --uri \"$kas_uri\" -n \"$kas_name\" --json"
-    assert_success
-    RSA_TEST_KAS_ID=$(echo "$output" | jq -r '.id')
-    RSA_TEST_KAS_CREATED="true"
-    run sh -c "./otdfctl --host $HOST $WITH_CREDS $DEBUG_LEVEL policy kas-registry list --json"
-    assert_success
-    kas_list_json="$output"
-  fi
-  RSA_TEST_KAS_URI="$kas_uri"
-  assert_not_equal "$RSA_TEST_KAS_ID" ""
-  assert_equal "$(echo "$kas_list_json" | jq -r --arg id "$RSA_TEST_KAS_ID" '.key_access_servers[] | select(.id==$id) | .uri' | head -n 1)" "$kas_uri"
-  echo "EC_KM KAS entry:"
-  run sh -c "./otdfctl --host $HOST $WITH_CREDS $DEBUG_LEVEL policy kas-registry get --id \"$RSA_TEST_KAS_ID\" --json"
-  echo "$output"
-
-  run sh -c "./otdfctl --host $HOST $WITH_CREDS $DEBUG_LEVEL policy kas-registry key create --kas \"$RSA_TEST_KAS_ID\" --key-id \"$key_id\" --algorithm \"rsa:2048\" --mode local --wrapping-key-id \"ec-km-root\" --wrapping-key \"$wrapping_key\" --json"
-  assert_success
-  RSA_TEST_KEY_SYSTEM_ID=$(echo "$output" | jq -r '.key.id')
-  RSA_TEST_KEY_ID="$key_id"
-  echo "EC_KM KAS key create result:"
-  echo "$output"
-
-  run sh -c "./otdfctl --host $HOST $WITH_CREDS $DEBUG_LEVEL policy kas-registry key base set --key \"$RSA_TEST_KEY_ID\" --kas \"$RSA_TEST_KAS_ID\" --json"
-  assert_success
-
-  ./otdfctl encrypt -o $OUTFILE_GO_MOD --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --tdf-type tdf3 --wrapping-key-algorithm rsa:2048 $INFILE_GO_MOD
-  ./otdfctl decrypt -o $RESULTFILE_GO_MOD --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --tdf-type tdf3 --session-key-algorithm rsa:2048 $OUTFILE_GO_MOD
-  diff $INFILE_GO_MOD $RESULTFILE_GO_MOD
-}
-
 @test "roundtrip TDF3, one attribute, stdin" {
   echo $SECRET_TEXT | ./otdfctl encrypt -o $OUT_TXT --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS -a $FQN
   ./otdfctl decrypt --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS $OUTFILE_TXT | grep "$SECRET_TEXT"
@@ -452,4 +344,100 @@ teardown_file(){
   run sh -c "./otdfctl decrypt --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS $OUTFILE_GO_MOD"
   assert_failure
   assert_output --partial "required obligations: [$OBL_VAL_FQN]"
+}
+
+# bats test_tags=ec_km_kas
+@test "roundtrip TDF3, no attributes, ec-wrapping P-384, file" {
+  if [[ "${EC_KM_TESTS}" != "true" ]]; then
+    skip "EC_KM_TESTS is not enabled"
+  fi
+
+  local kas_name="km-ec-kas-1"
+  local kas_uri="${EC_KM_KAS_URI_OVERRIDE:-http://localhost:8585}"
+  local key_id="p384-key-${RANDOM}"
+  local wrapping_key="${EC_KM_ROOT_KEY:-}"
+  if [[ -z "$wrapping_key" ]]; then
+    skip "EC_KM_ROOT_KEY is not set"
+  fi
+
+  P384_TEST_ORIG_KID=""
+  P384_TEST_ORIG_KAS=""
+  run sh -c "./otdfctl --host $HOST $WITH_CREDS policy kas-registry key base get --json"
+  if [ "$status" -eq 0 ]; then
+    P384_TEST_ORIG_KID=$(echo "$output" | jq -r '.public_key.kid')
+    P384_TEST_ORIG_KAS=$(echo "$output" | jq -r '.kas_uri')
+  fi
+
+  run sh -c "./otdfctl --host $HOST $WITH_CREDS $DEBUG_LEVEL policy kas-registry list --json"
+  assert_success
+  P384_TEST_KAS_ID=$(echo "$output" | jq -r --arg uri "$kas_uri" '.key_access_servers[] | select(.uri==$uri) | .id' | head -n 1)
+  if [[ -z "$P384_TEST_KAS_ID" ]]; then
+    run sh -c "./otdfctl --host $HOST $WITH_CREDS $DEBUG_LEVEL policy kas-registry create --uri \"$kas_uri\" -n \"$kas_name\" --json"
+    assert_success
+    P384_TEST_KAS_ID=$(echo "$output" | jq -r '.id')
+    P384_TEST_KAS_CREATED="true"
+  fi
+  P384_TEST_KAS_URI="$kas_uri"
+  run sh -c "./otdfctl --host $HOST $WITH_CREDS $DEBUG_LEVEL policy kas-registry key create --kas \"$P384_TEST_KAS_ID\" --key-id \"$key_id\" --algorithm \"ec:secp384r1\" --mode local --wrapping-key-id \"ec-km-root\" --wrapping-key \"$wrapping_key\" --json"
+  assert_success
+  P384_TEST_KEY_SYSTEM_ID=$(echo "$output" | jq -r '.key.id')
+  P384_TEST_KEY_ID="$key_id"
+
+  run sh -c "./otdfctl --host $HOST $WITH_CREDS $DEBUG_LEVEL policy kas-registry key base set --key \"$P384_TEST_KEY_ID\" --kas \"$P384_TEST_KAS_ID\" --json"
+  assert_success
+
+  ./otdfctl encrypt -o $OUTFILE_GO_MOD --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --tdf-type tdf3 --wrapping-key-algorithm ec:secp384r1 $INFILE_GO_MOD
+  ./otdfctl decrypt -o $RESULTFILE_GO_MOD --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --tdf-type tdf3 --session-key-algorithm ec:secp384r1 $OUTFILE_GO_MOD
+  diff $INFILE_GO_MOD $RESULTFILE_GO_MOD
+}
+
+# bats test_tags=ec_km_kas
+@test "roundtrip TDF3, no attributes, rsa-wrapping (km1 kas), file" {
+  if [[ "${EC_KM_TESTS}" != "true" ]]; then
+    skip "EC_KM_TESTS is not enabled"
+  fi
+
+  local kas_name="km-ec-kas-1"
+  local kas_uri="${EC_KM_KAS_URI_OVERRIDE:-http://localhost:8585}"
+  local key_id="rsa-key-${RANDOM}"
+  local wrapping_key="${EC_KM_ROOT_KEY:-}"
+  if [[ -z "$wrapping_key" ]]; then
+    skip "EC_KM_ROOT_KEY is not set"
+  fi
+
+  RSA_TEST_ORIG_KID=""
+  RSA_TEST_ORIG_KAS=""
+  run sh -c "./otdfctl --host $HOST $WITH_CREDS policy kas-registry key base get --json"
+  if [ "$status" -eq 0 ]; then
+    RSA_TEST_ORIG_KID=$(echo "$output" | jq -r '.public_key.kid')
+    RSA_TEST_ORIG_KAS=$(echo "$output" | jq -r '.kas_uri')
+  fi
+
+  run sh -c "./otdfctl --host $HOST $WITH_CREDS $DEBUG_LEVEL policy kas-registry list --json"
+  assert_success
+  local kas_list_json="$output"
+  RSA_TEST_KAS_ID=$(echo "$kas_list_json" | jq -r --arg uri "$kas_uri" '.key_access_servers[] | select(.uri==$uri) | .id' | head -n 1)
+  if [[ -z "$RSA_TEST_KAS_ID" ]]; then
+    run sh -c "./otdfctl --host $HOST $WITH_CREDS $DEBUG_LEVEL policy kas-registry create --uri \"$kas_uri\" -n \"$kas_name\" --json"
+    assert_success
+    RSA_TEST_KAS_ID=$(echo "$output" | jq -r '.id')
+    RSA_TEST_KAS_CREATED="true"
+    run sh -c "./otdfctl --host $HOST $WITH_CREDS $DEBUG_LEVEL policy kas-registry list --json"
+    assert_success
+    kas_list_json="$output"
+  fi
+  RSA_TEST_KAS_URI="$kas_uri"
+  assert_not_equal "$RSA_TEST_KAS_ID" ""
+  assert_equal "$(echo "$kas_list_json" | jq -r --arg id "$RSA_TEST_KAS_ID" '.key_access_servers[] | select(.id==$id) | .uri' | head -n 1)" "$kas_uri"
+  run sh -c "./otdfctl --host $HOST $WITH_CREDS $DEBUG_LEVEL policy kas-registry key create --kas \"$RSA_TEST_KAS_ID\" --key-id \"$key_id\" --algorithm \"rsa:2048\" --mode local --wrapping-key-id \"ec-km-root\" --wrapping-key \"$wrapping_key\" --json"
+  assert_success
+  RSA_TEST_KEY_SYSTEM_ID=$(echo "$output" | jq -r '.key.id')
+  RSA_TEST_KEY_ID="$key_id"
+
+  run sh -c "./otdfctl --host $HOST $WITH_CREDS $DEBUG_LEVEL policy kas-registry key base set --key \"$RSA_TEST_KEY_ID\" --kas \"$RSA_TEST_KAS_ID\" --json"
+  assert_success
+
+  ./otdfctl encrypt -o $OUTFILE_GO_MOD --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --tdf-type tdf3 --wrapping-key-algorithm rsa:2048 $INFILE_GO_MOD
+  ./otdfctl decrypt -o $RESULTFILE_GO_MOD --host $HOST --tls-no-verify $DEBUG_LEVEL $WITH_CREDS --tdf-type tdf3 --session-key-algorithm rsa:2048 $OUTFILE_GO_MOD
+  diff $INFILE_GO_MOD $RESULTFILE_GO_MOD
 }
