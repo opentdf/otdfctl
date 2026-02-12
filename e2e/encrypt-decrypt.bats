@@ -114,7 +114,12 @@ teardown_file(){
   diff $INFILE_GO_MOD $RESULTFILE_GO_MOD
 }
 
+# bats test_tags=ec_km_kas
 @test "roundtrip TDF3, no attributes, ec-wrapping P-384, file" {
+  if [[ "${EC_KM_TESTS}" != "true" ]]; then
+    skip "EC_KM_TESTS is not enabled"
+  fi
+
   local kas_name="kas-ec-p384-${RANDOM}"
   local kas_uri="${P384_TEST_KAS_URI_OVERRIDE:-http://localhost:8585/kas}"
   local key_id="p384-key-${RANDOM}"
@@ -131,7 +136,7 @@ teardown_file(){
 
   run sh -c "./otdfctl --host $HOST $WITH_CREDS $DEBUG_LEVEL policy kas-registry list --json"
   assert_success
-  P384_TEST_KAS_ID=$(echo "$output" | jq -r --arg uri "$kas_uri" '.kas_registries[] | select(.uri==$uri) | .id' | head -n 1)
+  P384_TEST_KAS_ID=$(echo "$output" | jq -r --arg uri "$kas_uri" '.key_access_servers[] | select(.uri==$uri) | .id' | head -n 1)
   if [[ -z "$P384_TEST_KAS_ID" ]]; then
     run sh -c "./otdfctl --host $HOST $WITH_CREDS $DEBUG_LEVEL policy kas-registry create --uri \"$kas_uri\" -n \"$kas_name\" --json"
     assert_success
@@ -153,7 +158,12 @@ teardown_file(){
   diff $INFILE_GO_MOD $RESULTFILE_GO_MOD
 }
 
+# bats test_tags=ec_km_kas
 @test "roundtrip TDF3, no attributes, rsa-wrapping (km1 kas), file" {
+  if [[ "${EC_KM_TESTS}" != "true" ]]; then
+    skip "EC_KM_TESTS is not enabled"
+  fi
+
   local kas_name="kas-rsa-${RANDOM}"
   local kas_uri="${P384_TEST_KAS_URI_OVERRIDE:-http://localhost:8585/kas}"
   local key_id="rsa-key-${RANDOM}"
@@ -170,7 +180,7 @@ teardown_file(){
 
   run sh -c "./otdfctl --host $HOST $WITH_CREDS $DEBUG_LEVEL policy kas-registry list --json"
   assert_success
-  RSA_TEST_KAS_ID=$(echo "$output" | jq -r --arg uri "$kas_uri" '.kas_registries[] | select(.uri==$uri) | .id' | head -n 1)
+  RSA_TEST_KAS_ID=$(echo "$output" | jq -r --arg uri "$kas_uri" '.key_access_servers[] | select(.uri==$uri) | .id' | head -n 1)
   if [[ -z "$RSA_TEST_KAS_ID" ]]; then
     run sh -c "./otdfctl --host $HOST $WITH_CREDS $DEBUG_LEVEL policy kas-registry create --uri \"$kas_uri\" -n \"$kas_name\" --json"
     assert_success

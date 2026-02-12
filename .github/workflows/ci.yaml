@@ -57,19 +57,28 @@ jobs:
         uses: opentdf/platform/test/start-up-with-containers@main
         with:
           platform-ref: "main"
-      - name: Start additional KM kas (km1)
+      - uses: opentdf/otdfctl/e2e@dspx-2445-higher-ec-curve-tests
+        with:
+          otdfctl-ref: ${{ github.event.pull_request.head.sha }}
+        env:
+          TESTRAIL_USER: ${{ secrets.TESTRAIL_USER }}
+          TESTRAIL_PASS: ${{ secrets.TESTRAIL_PASS }}
+      - name: Start additional KM EC kas (km-ec-kas-1)
         id: kas-km1
         uses: opentdf/platform/test/start-additional-kas@main
         with:
           ec-tdf-enabled: true
           key-management: true
-          kas-name: km1
+          kas-name: km-ec-kas-1
           kas-port: 8585
           root-key: a8c4824daafcfa38ed0d13002e92b08720e6c4fcee67d52e954c1a6e045907d1 # For local development testing only
-      - uses: opentdf/otdfctl/e2e@main
+      - name: Run EC+KM bats tests (km-ec-kas-1)
+        uses: opentdf/otdfctl/e2e@dspx-2445-higher-ec-curve-tests
         with:
           otdfctl-ref: ${{ github.event.pull_request.head.sha }}
+          bats-args: "--filter-tags ec_km_kas e2e"
         env:
+          EC_KM_TESTS: "true"
           TESTRAIL_USER: ${{ secrets.TESTRAIL_USER }}
           TESTRAIL_PASS: ${{ secrets.TESTRAIL_PASS }}
 
