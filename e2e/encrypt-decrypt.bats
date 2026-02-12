@@ -121,7 +121,7 @@ teardown_file(){
   fi
 
   local kas_name="kas-ec-p384-${RANDOM}"
-  local kas_uri="${P384_TEST_KAS_URI_OVERRIDE:-http://localhost:8585/kas}"
+  local kas_uri="${EC_KM_KAS_URI_OVERRIDE:-http://localhost:8585/kas}"
   local key_id="p384-key-${RANDOM}"
   local wrapping_key
   wrapping_key=$(openssl rand -hex 32)
@@ -165,7 +165,7 @@ teardown_file(){
   fi
 
   local kas_name="kas-rsa-${RANDOM}"
-  local kas_uri="${P384_TEST_KAS_URI_OVERRIDE:-http://localhost:8585/kas}"
+  local kas_uri="${EC_KM_KAS_URI_OVERRIDE:-http://localhost:8585/kas}"
   local key_id="rsa-key-${RANDOM}"
   local wrapping_key
   wrapping_key=$(openssl rand -hex 32)
