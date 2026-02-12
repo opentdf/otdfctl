@@ -43,6 +43,9 @@ runs:
       working-directory: otdfctl
       run: |
         git fetch --tags origin v0.26.2
+        if [ -d ../otdfctl_v0.26.2 ]; then
+          git worktree remove --force ../otdfctl_v0.26.2
+        fi
         git worktree add ../otdfctl_v0.26.2 v0.26.2
         cd ../otdfctl_v0.26.2
         go build -o ../otdfctl/otdfctl_v0.26.2 .
