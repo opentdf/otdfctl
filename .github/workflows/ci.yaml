@@ -80,7 +80,6 @@ jobs:
           bats-args: "--filter-tags ec_km_kas e2e"
         env:
           EC_KM_TESTS: "true"
-          EC_KM_KAS_URI_OVERRIDE: "http://localhost:8585"
           TESTRAIL_USER: ${{ secrets.TESTRAIL_USER }}
           TESTRAIL_PASS: ${{ secrets.TESTRAIL_PASS }}
 
