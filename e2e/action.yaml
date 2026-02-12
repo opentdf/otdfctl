@@ -5,6 +5,10 @@ inputs:
     required: false
     description: 'The ref to check out for the otdfctl CLI'
     default: 'main'
+  bats-args:
+    required: false
+    description: 'Additional args passed to bats (do not include --tap)'
+    default: ''
   testrail-run-name-for-cli-test:
     required: false
     description: 'The name to use for the TestRail test run created for the CLI tests'
@@ -39,6 +43,9 @@ runs:
       working-directory: otdfctl
       run: |
         git fetch --tags origin v0.26.2
+        if [ -d ../otdfctl_v0.26.2 ]; then
+          git worktree remove --force ../otdfctl_v0.26.2
+        fi
         git worktree add ../otdfctl_v0.26.2 v0.26.2
         cd ../otdfctl_v0.26.2
         go build -o ../otdfctl/otdfctl_v0.26.2 .
@@ -61,12 +68,13 @@ runs:
       shell: bash
       working-directory: otdfctl
       run: |
+        BATS_ARGS="${{ inputs.bats-args }}"
         if command -v parallel >/dev/null 2>&1; then
           echo "GNU parallel found, running tests in parallel"
-          bats --tap e2e --jobs 4 --no-parallelize-within-files --no-tempdir-cleanup | tee e2e/bats-results.tap
+          bats --tap ${BATS_ARGS:-e2e} --jobs 4 --no-parallelize-within-files --no-tempdir-cleanup | tee e2e/bats-results.tap
         else
           echo "GNU parallel not found, running tests sequentially"
-          bats --tap e2e | tee e2e/bats-results.tap
+          bats --tap ${BATS_ARGS:-e2e} | tee e2e/bats-results.tap
         fi
       env:
         # Define 'bats' install location in ubuntu
