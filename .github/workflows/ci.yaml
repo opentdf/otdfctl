@@ -79,6 +79,7 @@ jobs:
           otdfctl-ref: ${{ github.event.pull_request.head.sha }}
           bats-args: "--filter-tags ec_km_kas e2e"
         env:
+          EC_KM_ROOT_KEY: a8c4824daafcfa38ed0d13002e92b08720e6c4fcee67d52e954c1a6e045907d1 # For local development testing only
           EC_KM_TESTS: "true"
           TESTRAIL_USER: ${{ secrets.TESTRAIL_USER }}
           TESTRAIL_PASS: ${{ secrets.TESTRAIL_PASS }}

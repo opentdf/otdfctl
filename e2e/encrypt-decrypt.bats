@@ -123,8 +123,10 @@ teardown_file(){
   local kas_name="km-ec-kas-1"
   local kas_uri="${EC_KM_KAS_URI_OVERRIDE:-http://localhost:8585}"
   local key_id="p384-key-${RANDOM}"
-  local wrapping_key
-  wrapping_key=$(openssl rand -hex 32)
+  local wrapping_key="${EC_KM_ROOT_KEY:-}"
+  if [[ -z "$wrapping_key" ]]; then
+    skip "EC_KM_ROOT_KEY is not set"
+  fi
 
   P384_TEST_ORIG_KID=""
   P384_TEST_ORIG_KAS=""
@@ -148,7 +150,7 @@ teardown_file(){
   run sh -c "./otdfctl --host $HOST $WITH_CREDS $DEBUG_LEVEL policy kas-registry get --id \"$P384_TEST_KAS_ID\" --json"
   echo "$output"
 
-  run sh -c "./otdfctl --host $HOST $WITH_CREDS $DEBUG_LEVEL policy kas-registry key create --kas \"$P384_TEST_KAS_ID\" --key-id \"$key_id\" --algorithm \"ec:secp384r1\" --mode local --json"
+  run sh -c "./otdfctl --host $HOST $WITH_CREDS $DEBUG_LEVEL policy kas-registry key create --kas \"$P384_TEST_KAS_ID\" --key-id \"$key_id\" --algorithm \"ec:secp384r1\" --mode local --wrapping-key-id \"ec-km-root\" --wrapping-key \"$wrapping_key\" --json"
   assert_success
   P384_TEST_KEY_SYSTEM_ID=$(echo "$output" | jq -r '.key.id')
   P384_TEST_KEY_ID="$key_id"
@@ -172,8 +174,10 @@ teardown_file(){
   local kas_name="km-ec-kas-1"
   local kas_uri="${EC_KM_KAS_URI_OVERRIDE:-http://localhost:8585}"
   local key_id="rsa-key-${RANDOM}"
-  local wrapping_key
-  wrapping_key=$(openssl rand -hex 32)
+  local wrapping_key="${EC_KM_ROOT_KEY:-}"
+  if [[ -z "$wrapping_key" ]]; then
+    skip "EC_KM_ROOT_KEY is not set"
+  fi
 
   RSA_TEST_ORIG_KID=""
   RSA_TEST_ORIG_KAS=""
@@ -203,7 +207,7 @@ teardown_file(){
   run sh -c "./otdfctl --host $HOST $WITH_CREDS $DEBUG_LEVEL policy kas-registry get --id \"$RSA_TEST_KAS_ID\" --json"
   echo "$output"
 
-  run sh -c "./otdfctl --host $HOST $WITH_CREDS $DEBUG_LEVEL policy kas-registry key create --kas \"$RSA_TEST_KAS_ID\" --key-id \"$key_id\" --algorithm \"rsa:2048\" --mode local --json"
+  run sh -c "./otdfctl --host $HOST $WITH_CREDS $DEBUG_LEVEL policy kas-registry key create --kas \"$RSA_TEST_KAS_ID\" --key-id \"$key_id\" --algorithm \"rsa:2048\" --mode local --wrapping-key-id \"ec-km-root\" --wrapping-key \"$wrapping_key\" --json"
   assert_success
   RSA_TEST_KEY_SYSTEM_ID=$(echo "$output" | jq -r '.key.id')
   RSA_TEST_KEY_ID="$key_id"
