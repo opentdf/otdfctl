@@ -148,7 +148,7 @@ teardown_file(){
   run sh -c "./otdfctl --host $HOST $WITH_CREDS $DEBUG_LEVEL policy kas-registry get --id \"$P384_TEST_KAS_ID\" --json"
   echo "$output"
 
-  run sh -c "./otdfctl --host $HOST $WITH_CREDS $DEBUG_LEVEL policy kas-registry key create --kas \"$P384_TEST_KAS_ID\" --key-id \"$key_id\" --algorithm \"ec:secp384r1\" --mode local --wrapping-key-id \"wrapping-key-p384\" --wrapping-key \"$wrapping_key\" --json"
+  run sh -c "./otdfctl --host $HOST $WITH_CREDS $DEBUG_LEVEL policy kas-registry key create --kas \"$P384_TEST_KAS_ID\" --key-id \"$key_id\" --algorithm \"ec:secp384r1\" --mode local --json"
   assert_success
   P384_TEST_KEY_SYSTEM_ID=$(echo "$output" | jq -r '.key.id')
   P384_TEST_KEY_ID="$key_id"
@@ -185,19 +185,25 @@ teardown_file(){
 
   run sh -c "./otdfctl --host $HOST $WITH_CREDS $DEBUG_LEVEL policy kas-registry list --json"
   assert_success
-  RSA_TEST_KAS_ID=$(echo "$output" | jq -r --arg uri "$kas_uri" '.key_access_servers[] | select(.uri==$uri) | .id' | head -n 1)
+  local kas_list_json="$output"
+  RSA_TEST_KAS_ID=$(echo "$kas_list_json" | jq -r --arg uri "$kas_uri" '.key_access_servers[] | select(.uri==$uri) | .id' | head -n 1)
   if [[ -z "$RSA_TEST_KAS_ID" ]]; then
     run sh -c "./otdfctl --host $HOST $WITH_CREDS $DEBUG_LEVEL policy kas-registry create --uri \"$kas_uri\" -n \"$kas_name\" --json"
     assert_success
     RSA_TEST_KAS_ID=$(echo "$output" | jq -r '.id')
     RSA_TEST_KAS_CREATED="true"
+    run sh -c "./otdfctl --host $HOST $WITH_CREDS $DEBUG_LEVEL policy kas-registry list --json"
+    assert_success
+    kas_list_json="$output"
   fi
   RSA_TEST_KAS_URI="$kas_uri"
+  assert_not_equal "$RSA_TEST_KAS_ID" ""
+  assert_equal "$(echo "$kas_list_json" | jq -r --arg id "$RSA_TEST_KAS_ID" '.key_access_servers[] | select(.id==$id) | .uri' | head -n 1)" "$kas_uri"
   echo "EC_KM KAS entry:"
   run sh -c "./otdfctl --host $HOST $WITH_CREDS $DEBUG_LEVEL policy kas-registry get --id \"$RSA_TEST_KAS_ID\" --json"
   echo "$output"
 
-  run sh -c "./otdfctl --host $HOST $WITH_CREDS $DEBUG_LEVEL policy kas-registry key create --kas \"$RSA_TEST_KAS_ID\" --key-id \"$key_id\" --algorithm \"rsa:2048\" --mode local --wrapping-key-id \"wrapping-key-rsa\" --wrapping-key \"$wrapping_key\" --json"
+  run sh -c "./otdfctl --host $HOST $WITH_CREDS $DEBUG_LEVEL policy kas-registry key create --kas \"$RSA_TEST_KAS_ID\" --key-id \"$key_id\" --algorithm \"rsa:2048\" --mode local --json"
   assert_success
   RSA_TEST_KEY_SYSTEM_ID=$(echo "$output" | jq -r '.key.id')
   RSA_TEST_KEY_ID="$key_id"
