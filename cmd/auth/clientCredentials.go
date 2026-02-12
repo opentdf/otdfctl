@@ -2,6 +2,7 @@ package auth
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/opentdf/otdfctl/cmd/common"
 	"github.com/opentdf/otdfctl/pkg/auth"
@@ -10,6 +11,8 @@ import (
 	"github.com/opentdf/otdfctl/pkg/profiles"
 	"github.com/spf13/cobra"
 )
+
+var clientCredScopes []string
 
 func clientCredentialsRun(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
@@ -32,11 +35,25 @@ func clientCredentialsRun(cmd *cobra.Command, args []string) {
 		clientSecret = cli.AskForSecret("Enter client secret: ")
 	}
 
+	// Prompt for scopes if not provided via flag
+	if len(clientCredScopes) == 0 {
+		scopeInput := cli.AskForInput("Enter scopes (comma-separated, or leave empty to skip): ")
+		if scopeInput != "" {
+			for _, s := range strings.Split(scopeInput, ",") {
+				s = strings.TrimSpace(s)
+				if s != "" {
+					clientCredScopes = append(clientCredScopes, s)
+				}
+			}
+		}
+	}
+
 	// Set the client credentials
 	err := cp.SetAuthCredentials(profiles.AuthCredentials{
 		AuthType:     profiles.AuthTypeClientCredentials,
 		ClientID:     clientID,
 		ClientSecret: clientSecret,
+		Scopes:       clientCredScopes,
 	})
 	if err != nil {
 		c.ExitWithError("Failed to set client credentials", err)
@@ -56,5 +73,6 @@ func newClientCredentialsCmd() *cobra.Command {
 		man.WithRun(clientCredentialsRun),
 		man.WithHiddenFlags("with-client-creds", "with-client-creds-file"),
 	)
+	doc.Flags().StringSliceVar(&clientCredScopes, "scopes", []string{}, "Optional scopes to request during authentication (e.g. openid,email)")
 	return &doc.Command
 }

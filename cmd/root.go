@@ -152,6 +152,11 @@ func init() {
 		rootCmd.GetDocFlag("with-client-creds").Description,
 	)
 	RootCmd.PersistentFlags().String(
+		rootCmd.GetDocFlag("with-client-creds-scopes").Name,
+		rootCmd.GetDocFlag("with-client-creds-scopes").Default,
+		rootCmd.GetDocFlag("with-client-creds-scopes").Description,
+	)
+	RootCmd.PersistentFlags().String(
 		rootCmd.GetDocFlag("with-access-token").Name,
 		rootCmd.GetDocFlag("with-access-token").Default,
 		rootCmd.GetDocFlag("with-access-token").Description,

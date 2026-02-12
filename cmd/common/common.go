@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"strings"
 
 	"github.com/evertras/bubble-table/table"
 	osprofiles "github.com/jrschumacher/go-osprofiles"
@@ -93,6 +94,7 @@ func NewHandler(c *cli.Cli) handlers.Handler {
 	tlsNoVerify := c.FlagHelper.GetOptionalBool("tls-no-verify")
 	withClientCreds := c.FlagHelper.GetOptionalString("with-client-creds")
 	withClientCredsFile := c.FlagHelper.GetOptionalString("with-client-creds-file")
+	withClientCredsScopes := c.FlagHelper.GetOptionalString("with-client-creds-scopes")
 	withAccessToken := c.FlagHelper.GetOptionalString("with-access-token")
 	var inMemoryProfile bool
 
@@ -163,11 +165,23 @@ func NewHandler(c *cli.Cli) handlers.Handler {
 				cli.ExitWithError("Failed to get client credentials", err)
 			}
 
+			// parse scopes if provided
+			var scopes []string
+			if withClientCredsScopes != "" {
+				for _, s := range strings.Split(withClientCredsScopes, ",") {
+					s = strings.TrimSpace(s)
+					if s != "" {
+						scopes = append(scopes, s)
+					}
+				}
+			}
+
 			// add credentials to the temporary profile
 			if err := cp.SetAuthCredentials(profiles.AuthCredentials{
 				AuthType:     profiles.AuthTypeClientCredentials,
 				ClientID:     cc.ClientID,
 				ClientSecret: cc.ClientSecret,
+				Scopes:       scopes,
 			}); err != nil {
 				cli.ExitWithError("Failed to set client credentials", err)
 			}

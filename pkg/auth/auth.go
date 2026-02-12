@@ -139,11 +139,36 @@ func ParseClaimsJWT(accessToken string) (JWTClaims, error) {
 	return c, nil
 }
 
+// clientCredsTokenSource implements oauth2.TokenSource using the OIDC relying party library
+// to obtain tokens. This avoids an SDK issue where client credentials are sent in both the
+// Authorization header and POST body, which some IDPs reject.
+type clientCredsTokenSource struct {
+	endpoint    string
+	clientID    string
+	clientSecret string
+	scopes      []string
+	tlsNoVerify bool
+}
+
+func (ts *clientCredsTokenSource) Token() (*oauth2.Token, error) {
+	return GetTokenWithClientCreds(context.Background(), ts.endpoint, ts.clientID, ts.clientSecret, ts.scopes, ts.tlsNoVerify)
+}
+
 func GetSDKAuthOptionFromProfile(profile *profiles.OtdfctlProfileStore) (sdk.Option, error) {
 	c := profile.GetAuthCredentials()
 
 	switch c.AuthType {
 	case profiles.AuthTypeClientCredentials:
+		if len(c.Scopes) > 0 {
+			ts := &clientCredsTokenSource{
+				endpoint:    profile.GetEndpoint(),
+				clientID:    c.ClientID,
+				clientSecret: c.ClientSecret,
+				scopes:      c.Scopes,
+				tlsNoVerify: profile.GetTLSNoVerify(),
+			}
+			return sdk.WithOAuthAccessTokenSource(ts), nil
+		}
 		return sdk.WithClientCredentials(c.ClientID, c.ClientSecret, nil), nil
 	case profiles.AuthTypeAccessToken:
 		tokenSource := oauth2.StaticTokenSource(buildToken(&c))
@@ -160,7 +185,7 @@ func ValidateProfileAuthCredentials(ctx context.Context, profile *profiles.Otdfc
 	case "":
 		return ErrProfileCredentialsNotFound
 	case profiles.AuthTypeClientCredentials:
-		_, err := GetTokenWithClientCreds(ctx, profile.GetEndpoint(), c.ClientID, c.ClientSecret, profile.GetTLSNoVerify())
+		_, err := GetTokenWithClientCreds(ctx, profile.GetEndpoint(), c.ClientID, c.ClientSecret, c.Scopes, profile.GetTLSNoVerify())
 		if err != nil {
 			return err
 		}
@@ -180,7 +205,7 @@ func GetTokenWithProfile(ctx context.Context, profile *profiles.OtdfctlProfileSt
 
 	switch c.AuthType {
 	case profiles.AuthTypeClientCredentials:
-		return GetTokenWithClientCreds(ctx, profile.GetEndpoint(), c.ClientID, c.ClientSecret, profile.GetTLSNoVerify())
+		return GetTokenWithClientCreds(ctx, profile.GetEndpoint(), c.ClientID, c.ClientSecret, c.Scopes, profile.GetTLSNoVerify())
 	case profiles.AuthTypeAccessToken:
 		return buildToken(&c), nil
 	default:
@@ -189,14 +214,15 @@ func GetTokenWithProfile(ctx context.Context, profile *profiles.OtdfctlProfileSt
 }
 
 // Uses the OAuth2 client credentials flow to obtain a token.
-func GetTokenWithClientCreds(ctx context.Context, endpoint string, clientID string, clientSecret string, tlsNoVerify bool) (*oauth2.Token, error) {
+func GetTokenWithClientCreds(ctx context.Context, endpoint string, clientID string, clientSecret string, scopes []string, tlsNoVerify bool) (*oauth2.Token, error) {
 	rp, err := newOidcRelyingParty(ctx, endpoint, tlsNoVerify, oidcClientCredentials{
 		clientID:     clientID,
 		clientSecret: clientSecret,
-	})
+	}, scopes)
 	if err != nil {
 		return nil, err
 	}
+
 	return oidcrp.ClientCredentials(ctx, rp, url.Values{})
 }
 
@@ -309,14 +335,14 @@ func RevokeAccessToken(ctx context.Context, endpoint, clientID, refreshToken str
 	rp, err := newOidcRelyingParty(ctx, endpoint, tlsNoVerify, oidcClientCredentials{
 		clientID: clientID,
 		isPublic: true,
-	})
+	}, nil)
 	if err != nil {
 		return err
 	}
 	return oidcrp.RevokeToken(ctx, rp, refreshToken, "refresh_token")
 }
 
-func newOidcRelyingParty(ctx context.Context, endpoint string, tlsNoVerify bool, clientCreds oidcClientCredentials) (oidcrp.RelyingParty, error) {
+func newOidcRelyingParty(ctx context.Context, endpoint string, tlsNoVerify bool, clientCreds oidcClientCredentials, scopes []string) (oidcrp.RelyingParty, error) {
 	if clientCreds.clientID == "" {
 		return nil, errors.New("client ID is required")
 	}
@@ -338,7 +364,7 @@ func newOidcRelyingParty(ctx context.Context, endpoint string, tlsNoVerify bool,
 		clientCreds.clientID,
 		clientCreds.clientSecret,
 		"",
-		nil,
+		scopes,
 		oidcrp.WithHTTPClient(utils.NewHTTPClient(tlsNoVerify)),
 	)
 }

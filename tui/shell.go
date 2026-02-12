@@ -58,7 +58,7 @@ type HistoryEntry struct {
 
 // PathSegment represents a single level in the navigation hierarchy
 type PathSegment struct {
-	Type  string // "root", "namespaces", "namespace", "attribute-definitions", "attribute", "attribute-values", "value", "registered-resources", "resource"
+	Type  string // "root", "namespaces", "namespace", "attribute-definitions", "attribute", "attribute-values", "value", "registered-resources", "resource", "keys", "key", "key-assignments", "key-assignment", "kas-registry", "kas", "kas-keys", "providers", "provider"
 	Name  string // The name/id of the resource at this level
 	ID    string // The actual ID if different from name
 	Value string // Display value (for ls output)
@@ -94,6 +94,14 @@ type Shell struct {
 	// Key assignment wizard mode
 	keyAssignWizard       *KeyAssignWizard
 	keyAssignWizardActive bool
+
+	// Simple delete wizard mode (for KAS, provider, etc. - no deactivate option)
+	simpleDeleteWizard       *SimpleDeleteWizard
+	simpleDeleteWizardActive bool
+
+	// KAS key wizard mode (multi-step key creation)
+	kasKeyWizard       *KasKeyWizard
+	kasKeyWizardActive bool
 }
 
 // NewShell creates a new Shell model
@@ -243,6 +251,80 @@ func (s Shell) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		return s, keyAssignCmd
+	}
+
+	// If simple delete wizard is active, delegate to it
+	if s.simpleDeleteWizardActive && s.simpleDeleteWizard != nil {
+		simpleDeleteModel, simpleDeleteCmd := s.simpleDeleteWizard.Update(msg)
+		s.simpleDeleteWizard = simpleDeleteModel.(*SimpleDeleteWizard)
+
+		// Check if simple delete wizard completed
+		if s.simpleDeleteWizard.IsComplete() {
+			s.simpleDeleteWizardActive = false
+
+			// Add result to history
+			result := s.simpleDeleteWizard.GetResult()
+			isError := s.simpleDeleteWizard.GetError() != ""
+			if s.simpleDeleteWizard.WasCancelled() {
+				result = "Cancelled"
+			}
+
+			if result != "" {
+				s.history = append(s.history, HistoryEntry{
+					Prompt:  "",
+					Command: "",
+					Output:  result,
+					IsError: isError,
+				})
+			}
+
+			// If deletion was successful, navigate up
+			if !s.simpleDeleteWizard.WasCancelled() && s.simpleDeleteWizard.GetError() == "" {
+				// Go up one level after successful deletion
+				if len(s.context.Path) > 1 {
+					s.context.Path = s.context.Path[:len(s.context.Path)-1]
+				}
+			}
+
+			s.simpleDeleteWizard = nil
+			s.textInput.Focus()
+			return s, textinput.Blink
+		}
+
+		return s, simpleDeleteCmd
+	}
+
+	// If KAS key wizard is active, delegate to it
+	if s.kasKeyWizardActive && s.kasKeyWizard != nil {
+		kasKeyModel, kasKeyCmd := s.kasKeyWizard.Update(msg)
+		s.kasKeyWizard = kasKeyModel.(*KasKeyWizard)
+
+		// Check if KAS key wizard completed
+		if s.kasKeyWizard.IsComplete() {
+			s.kasKeyWizardActive = false
+
+			// Add result to history
+			result := s.kasKeyWizard.GetResult()
+			isError := s.kasKeyWizard.GetError() != ""
+			if s.kasKeyWizard.WasCancelled() {
+				result = "Cancelled"
+			}
+
+			if result != "" {
+				s.history = append(s.history, HistoryEntry{
+					Prompt:  "",
+					Command: "",
+					Output:  result,
+					IsError: isError,
+				})
+			}
+
+			s.kasKeyWizard = nil
+			s.textInput.Focus()
+			return s, textinput.Blink
+		}
+
+		return s, kasKeyCmd
 	}
 
 	switch msg := msg.(type) {
@@ -416,6 +498,14 @@ func (s *Shell) startCreateWizard(args []string) tea.Cmd {
 			resourceType = "attribute"
 		case "attribute", "attribute-values":
 			resourceType = "value"
+		case "key-assignments":
+			resourceType = "key-assignment"
+		case "kas-registry":
+			resourceType = "kas"
+		case "kas", "kas-keys":
+			resourceType = "kas-key"
+		case "providers":
+			resourceType = "provider"
 		default:
 			return nil
 		}
@@ -469,11 +559,81 @@ func (s *Shell) startCreateWizard(args []string) tea.Cmd {
 		s.wizardActive = true
 		return s.wizard.Init()
 
+	case "key-assignment", "key":
+		// Must be in a key-assignments context or at a resource that supports keys
+		parentType, parentID := s.getKeyAssignmentParent()
+		if parentType == "" || parentID == "" {
+			s.history = append(s.history, HistoryEntry{
+				Prompt:  "",
+				Command: "",
+				Output:  errorStyle.Render("Error: Navigate to a namespace, attribute, or value's key-assignments directory first"),
+				IsError: true,
+			})
+			return nil
+		}
+
+		// Get the resource name for display
+		var resourceName string
+		for _, seg := range s.context.Path {
+			if seg.Type == parentType {
+				resourceName = seg.Name
+				break
+			}
+		}
+
+		s.keyAssignWizard = NewKeyAssignWizard(s.handler, parentType, resourceName, parentID)
+		s.keyAssignWizardActive = true
+		return s.keyAssignWizard.Init()
+
+	case "kas":
+		s.wizard = NewKasRegistryWizard(s.handler)
+		s.wizardActive = true
+		return s.wizard.Init()
+
+	case "provider":
+		s.wizard = NewProviderWizard(s.handler)
+		s.wizardActive = true
+		return s.wizard.Init()
+
+	case "kas-key":
+		// Must be in a KAS or kas-keys context
+		kasID := s.getKasID()
+		if kasID == "" {
+			s.history = append(s.history, HistoryEntry{
+				Prompt:  "",
+				Command: "",
+				Output:  errorStyle.Render("Error: Navigate to a KAS or its keys directory first"),
+				IsError: true,
+			})
+			return nil
+		}
+
+		kasName := ""
+		for _, seg := range s.context.Path {
+			if seg.Type == "kas" {
+				kasName = seg.Name
+				break
+			}
+		}
+
+		// Get the actual KAS ID (path stores name)
+		actualKasID := kasID
+		if kas, err := s.handler.GetKasRegistryEntry(s.ctx, handlers.KasIdentifier{Name: kasID}); err == nil {
+			actualKasID = kas.GetId()
+			if kasName == "" {
+				kasName = kas.GetName()
+			}
+		}
+
+		s.kasKeyWizard = NewKasKeyWizard(s.handler, actualKasID, kasName)
+		s.kasKeyWizardActive = true
+		return s.kasKeyWizard.Init()
+
 	default:
 		s.history = append(s.history, HistoryEntry{
 			Prompt:  "",
 			Command: "",
-			Output:  errorStyle.Render(fmt.Sprintf("Unknown resource type: %s\nAvailable: namespace, attribute, value", resourceType)),
+			Output:  errorStyle.Render(fmt.Sprintf("Unknown resource type: %s\nAvailable: namespace, attribute, value, kas, provider", resourceType)),
 			IsError: true,
 		})
 		return nil
@@ -539,11 +699,64 @@ func (s *Shell) startDeleteWizard() tea.Cmd {
 			resourceFQN = val.GetFqn()
 		}
 
+	case "key-assignment":
+		// Handle key assignment removal directly (no wizard needed)
+		return s.removeCurrentKeyAssignment()
+
+	case "kas":
+		// Delete KAS entry - uses simple delete wizard (no deactivate)
+		kasID := s.getKasID()
+		kasName := ""
+		for _, seg := range s.context.Path {
+			if seg.Type == "kas" {
+				kasName = seg.Name
+				break
+			}
+		}
+		// Get the actual KAS ID (path stores name)
+		if kas, err := s.handler.GetKasRegistryEntry(s.ctx, handlers.KasIdentifier{Name: kasID}); err == nil {
+			resourceID = kas.GetId()
+			resourceName = kas.GetName()
+			if resourceName == "" {
+				resourceName = kas.GetUri()
+			}
+		} else {
+			resourceID = kasID
+			resourceName = kasName
+		}
+		resourceType = "kas"
+		s.simpleDeleteWizard = NewSimpleDeleteWizard(s.handler, resourceType, resourceName, resourceID)
+		s.simpleDeleteWizardActive = true
+		return s.simpleDeleteWizard.Init()
+
+	case "provider":
+		// Delete provider config - uses simple delete wizard (no deactivate)
+		providerID := s.getProviderID()
+		providerName := ""
+		for _, seg := range s.context.Path {
+			if seg.Type == "provider" {
+				providerName = seg.Name
+				break
+			}
+		}
+		// Get the actual provider ID (path stores name)
+		if provider, err := s.handler.GetProviderConfig(s.ctx, "", providerID); err == nil {
+			resourceID = provider.GetId()
+			resourceName = provider.GetName()
+		} else {
+			resourceID = providerID
+			resourceName = providerName
+		}
+		resourceType = "provider"
+		s.simpleDeleteWizard = NewSimpleDeleteWizard(s.handler, resourceType, resourceName, resourceID)
+		s.simpleDeleteWizardActive = true
+		return s.simpleDeleteWizard.Init()
+
 	default:
 		s.history = append(s.history, HistoryEntry{
 			Prompt:  "",
 			Command: "",
-			Output:  errorStyle.Render("Error: Navigate to a specific resource (namespace, attribute, or value) to delete it"),
+			Output:  errorStyle.Render("Error: Navigate to a specific resource (namespace, attribute, value, kas, or provider) to delete it"),
 			IsError: true,
 		})
 		return nil
@@ -669,6 +882,18 @@ func (s Shell) View() string {
 	// If key assign wizard is active, render it instead of the normal prompt
 	if s.keyAssignWizardActive && s.keyAssignWizard != nil {
 		sb.WriteString(s.keyAssignWizard.View())
+		return sb.String()
+	}
+
+	// If simple delete wizard is active, render it instead of the normal prompt
+	if s.simpleDeleteWizardActive && s.simpleDeleteWizard != nil {
+		sb.WriteString(s.simpleDeleteWizard.View())
+		return sb.String()
+	}
+
+	// If KAS key wizard is active, render it instead of the normal prompt
+	if s.kasKeyWizardActive && s.kasKeyWizard != nil {
+		sb.WriteString(s.kasKeyWizard.View())
 		return sb.String()
 	}
 
@@ -911,6 +1136,16 @@ func (s *Shell) cmdGet() string {
 		return errorStyle.Render("Error: Navigate into a specific resource first")
 	case "resource":
 		return s.getResource()
+	case "kas-registry":
+		return errorStyle.Render("Error: Navigate into a specific KAS first")
+	case "kas":
+		return s.getKas()
+	case "kas-keys":
+		return errorStyle.Render("Error: Navigate into a specific key first")
+	case "providers":
+		return errorStyle.Render("Error: Navigate into a specific provider first")
+	case "provider":
+		return s.getProvider()
 	default:
 		return errorStyle.Render(fmt.Sprintf("Error: Cannot get details for type: %s", currentType))
 	}
@@ -1022,6 +1257,69 @@ func (s *Shell) getValue() string {
 // getResource displays detailed information about a registered resource (placeholder)
 func (s *Shell) getResource() string {
 	return shellHelpStyle.Render("Resource details not yet implemented")
+}
+
+// getKas displays detailed information about a KAS server
+func (s *Shell) getKas() string {
+	kasID := s.getKasID()
+	if kasID == "" {
+		return errorStyle.Render("Error: Could not determine KAS ID")
+	}
+
+	kas, err := s.handler.GetKasRegistryEntry(s.ctx, handlers.KasIdentifier{Name: kasID})
+	if err != nil {
+		// Try by ID if name lookup failed
+		kas, err = s.handler.GetKasRegistryEntry(s.ctx, handlers.KasIdentifier{ID: kasID})
+		if err != nil {
+			return errorStyle.Render(fmt.Sprintf("Error fetching KAS: %v", err))
+		}
+	}
+
+	var sb strings.Builder
+	sb.WriteString(titleStyle.Render("Key Access Server Details") + "\n\n")
+	sb.WriteString(fmt.Sprintf("%s: %s\n", outputStyle.Render("Name"), successStyle.Render(kas.GetName())))
+	sb.WriteString(fmt.Sprintf("%s: %s\n", outputStyle.Render("ID"), shellHelpStyle.Render(kas.GetId())))
+	sb.WriteString(fmt.Sprintf("%s: %s\n", outputStyle.Render("URI"), outputStyle.Render(kas.GetUri())))
+
+	// Show public key info if available
+	if kas.GetPublicKey() != nil {
+		if kas.GetPublicKey().GetRemote() != "" {
+			sb.WriteString(fmt.Sprintf("%s: %s\n", outputStyle.Render("Public Key (Remote)"), outputStyle.Render(kas.GetPublicKey().GetRemote())))
+		} else if kas.GetPublicKey().GetCached() != nil {
+			sb.WriteString(fmt.Sprintf("%s: %s\n", outputStyle.Render("Public Key"), shellHelpStyle.Render("(cached)")))
+		}
+	}
+
+	return sb.String()
+}
+
+// getProvider displays detailed information about a provider config
+func (s *Shell) getProvider() string {
+	providerID := s.getProviderID()
+	if providerID == "" {
+		return errorStyle.Render("Error: Could not determine provider ID")
+	}
+
+	// Try by name first, then by ID
+	provider, err := s.handler.GetProviderConfig(s.ctx, "", providerID)
+	if err != nil {
+		provider, err = s.handler.GetProviderConfig(s.ctx, providerID, "")
+		if err != nil {
+			return errorStyle.Render(fmt.Sprintf("Error fetching provider config: %v", err))
+		}
+	}
+
+	var sb strings.Builder
+	sb.WriteString(titleStyle.Render("Provider Config Details") + "\n\n")
+	sb.WriteString(fmt.Sprintf("%s: %s\n", outputStyle.Render("Name"), successStyle.Render(provider.GetName())))
+	sb.WriteString(fmt.Sprintf("%s: %s\n", outputStyle.Render("ID"), shellHelpStyle.Render(provider.GetId())))
+	sb.WriteString(fmt.Sprintf("%s: %s\n", outputStyle.Render("Manager"), outputStyle.Render(provider.GetManager())))
+
+	if len(provider.GetConfigJson()) > 0 {
+		sb.WriteString(fmt.Sprintf("%s: %s\n", outputStyle.Render("Config"), outputStyle.Render(string(provider.GetConfigJson()))))
+	}
+
+	return sb.String()
 }
 
 // cmdKeys displays key assignments for the current resource
@@ -1253,6 +1551,133 @@ func (s *Shell) listAvailableKeys() string {
 	return sb.String()
 }
 
+// removeCurrentKeyAssignment removes the current key assignment and navigates up
+func (s *Shell) removeCurrentKeyAssignment() tea.Cmd {
+	// Get the key assignment info from path
+	currentSeg := s.context.Path[len(s.context.Path)-1]
+	keyKid := currentSeg.Name
+
+	parentType, parentID := s.getKeyAssignmentParent()
+	if parentType == "" || parentID == "" {
+		s.history = append(s.history, HistoryEntry{
+			Prompt:  "",
+			Command: "",
+			Output:  errorStyle.Render("Error: Could not determine parent resource"),
+			IsError: true,
+		})
+		return nil
+	}
+
+	// Find the key ID from the key mappings
+	resp, err := s.handler.ListKeyMappings(s.ctx, 100, 0, "", nil)
+	if err != nil {
+		s.history = append(s.history, HistoryEntry{
+			Prompt:  "",
+			Command: "",
+			Output:  errorStyle.Render(fmt.Sprintf("Error listing key mappings: %v", err)),
+			IsError: true,
+		})
+		return nil
+	}
+
+	// Find the actual key ID for this assignment
+	var keyID string
+	for _, mapping := range resp.GetKeyMappings() {
+		if mapping.GetKid() == keyKid {
+			// This is our key, now find if it's assigned to our parent
+			switch parentType {
+			case "namespace":
+				for _, ns := range mapping.GetNamespaceMappings() {
+					if ns.GetId() == parentID {
+						// We need to find the key's internal ID
+						keysResp, err := s.handler.ListKasKeys(s.ctx, 100, 0, 0, handlers.KasIdentifier{}, nil)
+						if err == nil {
+							for _, kasKey := range keysResp.GetKasKeys() {
+								if kasKey.GetKey().GetKeyId() == keyKid {
+									keyID = kasKey.GetKey().GetId()
+									break
+								}
+							}
+						}
+						break
+					}
+				}
+			case "attribute":
+				for _, attr := range mapping.GetAttributeMappings() {
+					if attr.GetId() == parentID {
+						keysResp, err := s.handler.ListKasKeys(s.ctx, 100, 0, 0, handlers.KasIdentifier{}, nil)
+						if err == nil {
+							for _, kasKey := range keysResp.GetKasKeys() {
+								if kasKey.GetKey().GetKeyId() == keyKid {
+									keyID = kasKey.GetKey().GetId()
+									break
+								}
+							}
+						}
+						break
+					}
+				}
+			case "value":
+				for _, val := range mapping.GetValueMappings() {
+					if val.GetId() == parentID {
+						keysResp, err := s.handler.ListKasKeys(s.ctx, 100, 0, 0, handlers.KasIdentifier{}, nil)
+						if err == nil {
+							for _, kasKey := range keysResp.GetKasKeys() {
+								if kasKey.GetKey().GetKeyId() == keyKid {
+									keyID = kasKey.GetKey().GetId()
+									break
+								}
+							}
+						}
+						break
+					}
+				}
+			}
+		}
+	}
+
+	if keyID == "" {
+		// Fallback: try using keyKid directly as the ID
+		keyID = keyKid
+	}
+
+	// Remove the key assignment
+	var removeErr error
+	switch parentType {
+	case "namespace":
+		removeErr = s.handler.RemoveKeyFromAttributeNamespace(s.ctx, parentID, keyID)
+	case "attribute":
+		removeErr = s.handler.RemoveKeyFromAttribute(s.ctx, parentID, keyID)
+	case "value":
+		removeErr = s.handler.RemoveKeyFromAttributeValue(s.ctx, parentID, keyID)
+	}
+
+	if removeErr != nil {
+		s.history = append(s.history, HistoryEntry{
+			Prompt:  "",
+			Command: "",
+			Output:  errorStyle.Render(fmt.Sprintf("Error removing key assignment: %v", removeErr)),
+			IsError: true,
+		})
+		return nil
+	}
+
+	// Success - navigate up
+	s.history = append(s.history, HistoryEntry{
+		Prompt:  "",
+		Command: "",
+		Output:  successStyle.Render(fmt.Sprintf("✓ Removed key '%s' from %s", keyKid, parentType)),
+		IsError: false,
+	})
+
+	// Go up one level
+	if len(s.context.Path) > 1 {
+		s.context.Path = s.context.Path[:len(s.context.Path)-1]
+	}
+
+	return nil
+}
+
 // removeKeyAssignment removes a key assignment from the current resource
 func (s *Shell) removeKeyAssignment(args []string) string {
 	if len(args) == 0 {
@@ -1311,6 +1736,26 @@ func (s *Shell) cmdLs() string {
 		return s.lsAttribute()
 	case "attribute-values":
 		return s.lsAttributeValues()
+	case "value":
+		return s.lsValue()
+	case "keys":
+		return s.lsKeys()
+	case "key":
+		return s.lsKey()
+	case "key-assignments":
+		return s.lsKeyAssignments()
+	case "key-assignment":
+		return s.lsKeyAssignment()
+	case "kas-registry":
+		return s.lsKasRegistry()
+	case "kas":
+		return s.lsKas()
+	case "kas-keys":
+		return s.lsKasKeys()
+	case "providers":
+		return s.lsProviders()
+	case "provider":
+		return s.lsProvider()
 	case "registered-resources":
 		return s.lsRegisteredResources()
 	default:
@@ -1320,7 +1765,7 @@ func (s *Shell) cmdLs() string {
 
 // lsRoot lists top-level categories
 func (s *Shell) lsRoot() string {
-	return "namespaces/\nregistered-resources/"
+	return "namespaces/\nkas-registry/\nkeys/\nproviders/\nregistered-resources/"
 }
 
 // lsNamespaces lists all namespaces
@@ -1347,7 +1792,7 @@ func (s *Shell) lsNamespaces() string {
 
 // lsNamespace lists contents of a namespace
 func (s *Shell) lsNamespace() string {
-	return "attribute-definitions/"
+	return "attribute-definitions/\nkey-assignments/"
 }
 
 // lsAttributeDefinitions lists attributes in a namespace
@@ -1386,7 +1831,7 @@ func (s *Shell) lsAttributeDefinitions() string {
 
 // lsAttribute lists contents of an attribute
 func (s *Shell) lsAttribute() string {
-	return "attribute-values/"
+	return "attribute-values/\nkey-assignments/"
 }
 
 // lsAttributeValues lists values of an attribute
@@ -1422,6 +1867,284 @@ func (s *Shell) lsAttributeValues() string {
 func (s *Shell) lsRegisteredResources() string {
 	// TODO: Implement when SDK supports registered resources listing
 	return "Registered resources listing not yet implemented"
+}
+
+// lsKasRegistry lists all KAS servers
+func (s *Shell) lsKasRegistry() string {
+	resp, err := s.handler.ListKasRegistryEntries(s.ctx, 100, 0)
+	if err != nil {
+		return errorStyle.Render(fmt.Sprintf("Error listing KAS servers: %v", err))
+	}
+
+	entries := resp.GetKeyAccessServers()
+	if len(entries) == 0 {
+		return shellHelpStyle.Render("No KAS servers registered\nUse 'create' to register a new KAS")
+	}
+
+	var sb strings.Builder
+	for _, kas := range entries {
+		name := kas.GetName()
+		if name == "" {
+			name = kas.GetUri()
+		}
+		sb.WriteString(fmt.Sprintf("%s/\n", name))
+	}
+	return strings.TrimRight(sb.String(), "\n")
+}
+
+// lsKas lists contents of a KAS (keys/ subdirectory)
+func (s *Shell) lsKas() string {
+	return "keys/"
+}
+
+// lsKasKeys lists keys for the current KAS
+func (s *Shell) lsKasKeys() string {
+	kasID := s.getKasID()
+	if kasID == "" {
+		return errorStyle.Render("Error: could not determine KAS")
+	}
+
+	resp, err := s.handler.ListKasKeys(s.ctx, 100, 0, 0, handlers.KasIdentifier{ID: kasID}, nil)
+	if err != nil {
+		return errorStyle.Render(fmt.Sprintf("Error listing keys: %v", err))
+	}
+
+	keys := resp.GetKasKeys()
+	if len(keys) == 0 {
+		return shellHelpStyle.Render("No keys found for this KAS\nUse 'create' to create a new key")
+	}
+
+	var sb strings.Builder
+	for _, kasKey := range keys {
+		key := kasKey.GetKey()
+		sb.WriteString(fmt.Sprintf("%s/\n", key.GetKeyId()))
+	}
+	return strings.TrimRight(sb.String(), "\n")
+}
+
+// lsProviders lists all provider configurations
+func (s *Shell) lsProviders() string {
+	resp, err := s.handler.ListProviderConfigs(s.ctx, 100, 0)
+	if err != nil {
+		return errorStyle.Render(fmt.Sprintf("Error listing providers: %v", err))
+	}
+
+	providers := resp.GetProviderConfigs()
+	if len(providers) == 0 {
+		return shellHelpStyle.Render("No provider configurations found\nUse 'create' to create a new provider config")
+	}
+
+	var sb strings.Builder
+	for _, pc := range providers {
+		sb.WriteString(fmt.Sprintf("%s/\n", pc.GetName()))
+	}
+	return strings.TrimRight(sb.String(), "\n")
+}
+
+// lsProvider shows details of a specific provider
+func (s *Shell) lsProvider() string {
+	providerID := s.getProviderID()
+	if providerID == "" {
+		return errorStyle.Render("Error: could not determine provider")
+	}
+
+	pc, err := s.handler.GetProviderConfig(s.ctx, providerID, "")
+	if err != nil {
+		return errorStyle.Render(fmt.Sprintf("Error getting provider: %v", err))
+	}
+
+	var sb strings.Builder
+	sb.WriteString(titleStyle.Render("Provider Configuration") + "\n\n")
+	sb.WriteString(fmt.Sprintf("%s: %s\n", outputStyle.Render("Name"), successStyle.Render(pc.GetName())))
+	sb.WriteString(fmt.Sprintf("%s: %s\n", outputStyle.Render("ID"), shellHelpStyle.Render(pc.GetId())))
+	sb.WriteString(fmt.Sprintf("%s: %s\n", outputStyle.Render("Manager"), outputStyle.Render(pc.GetManager())))
+	sb.WriteString(fmt.Sprintf("%s: %s\n", outputStyle.Render("Config"), shellHelpStyle.Render(string(pc.GetConfigJson()))))
+
+	return sb.String()
+}
+
+// lsValue lists contents of a value (key-assignments subdirectory)
+func (s *Shell) lsValue() string {
+	return "key-assignments/"
+}
+
+// lsKeys lists all KAS keys in the system
+func (s *Shell) lsKeys() string {
+	resp, err := s.handler.ListKasKeys(s.ctx, 100, 0, 0, handlers.KasIdentifier{}, nil)
+	if err != nil {
+		return errorStyle.Render(fmt.Sprintf("Error listing keys: %v", err))
+	}
+
+	keys := resp.GetKasKeys()
+	if len(keys) == 0 {
+		return shellHelpStyle.Render("No keys found")
+	}
+
+	var sb strings.Builder
+	for _, kasKey := range keys {
+		key := kasKey.GetKey()
+		sb.WriteString(fmt.Sprintf("%s/\n", key.GetKeyId()))
+	}
+	return strings.TrimRight(sb.String(), "\n")
+}
+
+// lsKey shows details of a specific key
+func (s *Shell) lsKey() string {
+	// Get the key info from the current path segment
+	currentSeg := s.context.Path[len(s.context.Path)-1]
+	keyID := currentSeg.ID
+	keyKid := currentSeg.Name
+	kasUri := currentSeg.Value
+
+	// Fetch full key details
+	resp, err := s.handler.ListKasKeys(s.ctx, 100, 0, 0, handlers.KasIdentifier{}, nil)
+	if err != nil {
+		return errorStyle.Render(fmt.Sprintf("Error fetching key: %v", err))
+	}
+
+	var sb strings.Builder
+	sb.WriteString(titleStyle.Render("Key Details") + "\n\n")
+
+	for _, kasKey := range resp.GetKasKeys() {
+		key := kasKey.GetKey()
+		if key.GetId() == keyID || key.GetKeyId() == keyKid {
+			status := key.GetKeyStatus().String()
+			if status == "KEY_STATUS_ACTIVE" {
+				status = successStyle.Render("active")
+			} else {
+				status = shellHelpStyle.Render(status)
+			}
+
+			sb.WriteString(fmt.Sprintf("%s: %s\n", outputStyle.Render("Key ID"), successStyle.Render(key.GetKeyId())))
+			sb.WriteString(fmt.Sprintf("%s: %s\n", outputStyle.Render("ID"), shellHelpStyle.Render(key.GetId())))
+			sb.WriteString(fmt.Sprintf("%s: %s\n", outputStyle.Render("KAS URI"), outputStyle.Render(kasKey.GetKasUri())))
+			sb.WriteString(fmt.Sprintf("%s: %s\n", outputStyle.Render("Algorithm"), outputStyle.Render(key.GetKeyAlgorithm().String())))
+			sb.WriteString(fmt.Sprintf("%s: %s\n", outputStyle.Render("Status"), status))
+
+			// Show resources this key is assigned to
+			mappings, err := s.handler.ListKeyMappings(s.ctx, 100, 0, "", nil)
+			if err == nil {
+				var nsCount, attrCount, valCount int
+				for _, m := range mappings.GetKeyMappings() {
+					if m.GetKid() == key.GetKeyId() {
+						nsCount += len(m.GetNamespaceMappings())
+						attrCount += len(m.GetAttributeMappings())
+						valCount += len(m.GetValueMappings())
+					}
+				}
+				if nsCount > 0 || attrCount > 0 || valCount > 0 {
+					sb.WriteString(fmt.Sprintf("\n%s:\n", outputStyle.Render("Assigned to")))
+					if nsCount > 0 {
+						sb.WriteString(fmt.Sprintf("  %d namespace(s)\n", nsCount))
+					}
+					if attrCount > 0 {
+						sb.WriteString(fmt.Sprintf("  %d attribute(s)\n", attrCount))
+					}
+					if valCount > 0 {
+						sb.WriteString(fmt.Sprintf("  %d value(s)\n", valCount))
+					}
+				}
+			}
+
+			return sb.String()
+		}
+	}
+
+	// Fallback if key not found in list
+	sb.WriteString(fmt.Sprintf("%s: %s\n", outputStyle.Render("Key ID"), successStyle.Render(keyKid)))
+	sb.WriteString(fmt.Sprintf("%s: %s\n", outputStyle.Render("ID"), shellHelpStyle.Render(keyID)))
+	if kasUri != "" {
+		sb.WriteString(fmt.Sprintf("%s: %s\n", outputStyle.Render("KAS URI"), outputStyle.Render(kasUri)))
+	}
+
+	return sb.String()
+}
+
+// lsKeyAssignments lists key assignments for the parent resource
+func (s *Shell) lsKeyAssignments() string {
+	parentType, parentID := s.getKeyAssignmentParent()
+	if parentType == "" || parentID == "" {
+		return errorStyle.Render("Error: Could not determine parent resource")
+	}
+
+	// Get key mappings
+	resp, err := s.handler.ListKeyMappings(s.ctx, 100, 0, "", nil)
+	if err != nil {
+		return errorStyle.Render(fmt.Sprintf("Error listing key mappings: %v", err))
+	}
+
+	var sb strings.Builder
+	found := false
+
+	for _, mapping := range resp.GetKeyMappings() {
+		switch parentType {
+		case "namespace":
+			for _, ns := range mapping.GetNamespaceMappings() {
+				if ns.GetId() == parentID {
+					sb.WriteString(fmt.Sprintf("%s/\n", mapping.GetKid()))
+					found = true
+				}
+			}
+		case "attribute":
+			for _, attr := range mapping.GetAttributeMappings() {
+				if attr.GetId() == parentID {
+					sb.WriteString(fmt.Sprintf("%s/\n", mapping.GetKid()))
+					found = true
+				}
+			}
+		case "value":
+			for _, val := range mapping.GetValueMappings() {
+				if val.GetId() == parentID {
+					sb.WriteString(fmt.Sprintf("%s/\n", mapping.GetKid()))
+					found = true
+				}
+			}
+		}
+	}
+
+	if !found {
+		return shellHelpStyle.Render("No key assignments found\nUse 'create' to assign a key")
+	}
+
+	return strings.TrimRight(sb.String(), "\n")
+}
+
+// lsKeyAssignment shows details of a specific key assignment
+func (s *Shell) lsKeyAssignment() string {
+	currentSeg := s.context.Path[len(s.context.Path)-1]
+	keyKid := currentSeg.Name
+	kasUri := currentSeg.Value
+
+	parentType, parentID := s.getKeyAssignmentParent()
+
+	var sb strings.Builder
+	sb.WriteString(titleStyle.Render("Key Assignment Details") + "\n\n")
+	sb.WriteString(fmt.Sprintf("%s: %s\n", outputStyle.Render("Key ID"), successStyle.Render(keyKid)))
+	if kasUri != "" {
+		sb.WriteString(fmt.Sprintf("%s: %s\n", outputStyle.Render("KAS URI"), outputStyle.Render(kasUri)))
+	}
+
+	// Show what this key is assigned to
+	if parentType != "" && parentID != "" {
+		var resourceName string
+		switch parentType {
+		case "namespace":
+			if ns, err := s.handler.GetNamespace(s.ctx, parentID); err == nil {
+				resourceName = ns.GetName()
+			}
+		case "attribute":
+			if attr, err := s.handler.GetAttribute(s.ctx, parentID); err == nil {
+				resourceName = attr.GetName()
+			}
+		case "value":
+			if val, err := s.handler.GetAttributeValue(s.ctx, parentID); err == nil {
+				resourceName = val.GetValue()
+			}
+		}
+		sb.WriteString(fmt.Sprintf("%s: %s (%s)\n", outputStyle.Render("Assigned to"), successStyle.Render(resourceName), shellHelpStyle.Render(parentType)))
+	}
+
+	return sb.String()
 }
 
 // cmdCd changes the current directory
@@ -1527,6 +2250,20 @@ func (s *Shell) cdInto(name string) string {
 		return s.cdIntoAttribute(name)
 	case "attribute-values":
 		return s.cdIntoAttributeValue(name)
+	case "value":
+		return s.cdIntoValue(name)
+	case "keys":
+		return s.cdIntoKeys(name)
+	case "key-assignments":
+		return s.cdIntoKeyAssignments(name)
+	case "kas-registry":
+		return s.cdIntoKasRegistry(name)
+	case "kas":
+		return s.cdIntoKas(name)
+	case "kas-keys":
+		return s.cdIntoKasKeys(name)
+	case "providers":
+		return s.cdIntoProviders(name)
 	case "registered-resources":
 		return s.cdIntoRegisteredResources(name)
 	default:
@@ -1542,11 +2279,20 @@ func (s *Shell) cdIntoRoot(name string) string {
 	case "namespaces":
 		s.context.Path = append(s.context.Path, PathSegment{Type: "namespaces", Name: "namespaces"})
 		return ""
+	case "kas-registry":
+		s.context.Path = append(s.context.Path, PathSegment{Type: "kas-registry", Name: "kas-registry"})
+		return ""
+	case "keys":
+		s.context.Path = append(s.context.Path, PathSegment{Type: "keys", Name: "keys"})
+		return ""
+	case "providers":
+		s.context.Path = append(s.context.Path, PathSegment{Type: "providers", Name: "providers"})
+		return ""
 	case "registered-resources":
 		s.context.Path = append(s.context.Path, PathSegment{Type: "registered-resources", Name: "registered-resources"})
 		return ""
 	default:
-		return fmt.Sprintf("Unknown directory: %s (available: namespaces, registered-resources)", name)
+		return fmt.Sprintf("Unknown directory: %s (available: namespaces, kas-registry, keys, providers, registered-resources)", name)
 	}
 }
 
@@ -1595,8 +2341,11 @@ func (s *Shell) cdIntoNamespace(name string) string {
 	case "attribute-definitions":
 		s.context.Path = append(s.context.Path, PathSegment{Type: "attribute-definitions", Name: "attribute-definitions"})
 		return ""
+	case "key-assignments":
+		s.context.Path = append(s.context.Path, PathSegment{Type: "key-assignments", Name: "key-assignments"})
+		return ""
 	default:
-		return fmt.Sprintf("Unknown directory: %s (available: attribute-definitions)", name)
+		return fmt.Sprintf("Unknown directory: %s (available: attribute-definitions, key-assignments)", name)
 	}
 }
 
@@ -1664,8 +2413,11 @@ func (s *Shell) cdIntoAttribute(name string) string {
 	case "attribute-values":
 		s.context.Path = append(s.context.Path, PathSegment{Type: "attribute-values", Name: "attribute-values"})
 		return ""
+	case "key-assignments":
+		s.context.Path = append(s.context.Path, PathSegment{Type: "key-assignments", Name: "key-assignments"})
+		return ""
 	default:
-		return fmt.Sprintf("Unknown directory: %s (available: attribute-values)", name)
+		return fmt.Sprintf("Unknown directory: %s (available: attribute-values, key-assignments)", name)
 	}
 }
 
@@ -1711,6 +2463,254 @@ func (s *Shell) cdIntoAttributeValue(name string) string {
 func (s *Shell) cdIntoRegisteredResources(name string) string {
 	// TODO: Implement when SDK supports registered resources
 	return "Registered resources navigation not yet implemented"
+}
+
+// cdIntoKasRegistry navigates from kas-registry into a specific KAS
+func (s *Shell) cdIntoKasRegistry(name string) string {
+	name = strings.TrimSuffix(name, "/")
+
+	// Try to find the KAS by name, URI, or ID
+	kas, err := s.handler.GetKasRegistryEntry(s.ctx, handlers.KasIdentifier{Name: name})
+	if err != nil {
+		// Try by URI
+		kas, err = s.handler.GetKasRegistryEntry(s.ctx, handlers.KasIdentifier{URI: name})
+		if err != nil {
+			// Try by ID
+			kas, err = s.handler.GetKasRegistryEntry(s.ctx, handlers.KasIdentifier{ID: name})
+			if err != nil {
+				return fmt.Sprintf("KAS not found: %s", name)
+			}
+		}
+	}
+
+	displayName := kas.GetName()
+	if displayName == "" {
+		displayName = kas.GetUri()
+	}
+
+	s.context.Path = append(s.context.Path, PathSegment{
+		Type:  "kas",
+		Name:  displayName,
+		ID:    kas.GetId(),
+		Value: kas.GetUri(),
+	})
+	return ""
+}
+
+// cdIntoKas navigates from a KAS into its subdirectories (keys/)
+func (s *Shell) cdIntoKas(name string) string {
+	name = strings.TrimSuffix(name, "/")
+
+	switch name {
+	case "keys":
+		s.context.Path = append(s.context.Path, PathSegment{Type: "kas-keys", Name: "keys"})
+		return ""
+	default:
+		return fmt.Sprintf("Unknown directory: %s (available: keys)", name)
+	}
+}
+
+// cdIntoKasKeys navigates from kas-keys into a specific key
+func (s *Shell) cdIntoKasKeys(name string) string {
+	name = strings.TrimSuffix(name, "/")
+
+	// Get the KAS ID from path
+	kasID := s.getKasID()
+	if kasID == "" {
+		return "Error: could not determine KAS"
+	}
+
+	// List keys for this KAS and find by key ID
+	resp, err := s.handler.ListKasKeys(s.ctx, 100, 0, 0, handlers.KasIdentifier{ID: kasID}, nil)
+	if err != nil {
+		return fmt.Sprintf("Error listing keys: %v", err)
+	}
+
+	for _, kasKey := range resp.GetKasKeys() {
+		key := kasKey.GetKey()
+		if key.GetKeyId() == name || key.GetId() == name {
+			s.context.Path = append(s.context.Path, PathSegment{
+				Type:  "key",
+				Name:  key.GetKeyId(),
+				ID:    key.GetId(),
+				Value: kasKey.GetKasUri(),
+			})
+			return ""
+		}
+	}
+
+	return fmt.Sprintf("Key not found: %s", name)
+}
+
+// cdIntoProviders navigates from providers into a specific provider
+func (s *Shell) cdIntoProviders(name string) string {
+	name = strings.TrimSuffix(name, "/")
+
+	// List providers and find by name or ID
+	resp, err := s.handler.ListProviderConfigs(s.ctx, 100, 0)
+	if err != nil {
+		return fmt.Sprintf("Error listing providers: %v", err)
+	}
+
+	for _, pc := range resp.GetProviderConfigs() {
+		if pc.GetName() == name || pc.GetId() == name {
+			s.context.Path = append(s.context.Path, PathSegment{
+				Type:  "provider",
+				Name:  pc.GetName(),
+				ID:    pc.GetId(),
+				Value: pc.GetManager(),
+			})
+			return ""
+		}
+	}
+
+	return fmt.Sprintf("Provider not found: %s", name)
+}
+
+// getKasID gets the KAS ID from the current path
+func (s *Shell) getKasID() string {
+	for _, seg := range s.context.Path {
+		if seg.Type == "kas" {
+			if seg.ID != "" {
+				return seg.ID
+			}
+			return seg.Name
+		}
+	}
+	return ""
+}
+
+// getProviderID gets the provider ID from the current path
+func (s *Shell) getProviderID() string {
+	for _, seg := range s.context.Path {
+		if seg.Type == "provider" {
+			if seg.ID != "" {
+				return seg.ID
+			}
+			return seg.Name
+		}
+	}
+	return ""
+}
+
+// cdIntoValue navigates from a value into subcategory
+func (s *Shell) cdIntoValue(name string) string {
+	name = strings.TrimSuffix(name, "/")
+
+	switch name {
+	case "key-assignments":
+		s.context.Path = append(s.context.Path, PathSegment{Type: "key-assignments", Name: "key-assignments"})
+		return ""
+	default:
+		return fmt.Sprintf("Unknown directory: %s (available: key-assignments)", name)
+	}
+}
+
+// cdIntoKeys navigates from /keys into a specific key
+func (s *Shell) cdIntoKeys(name string) string {
+	name = strings.TrimSuffix(name, "/")
+
+	// Try to find the key by ID or keyId
+	resp, err := s.handler.ListKasKeys(s.ctx, 100, 0, 0, handlers.KasIdentifier{}, nil)
+	if err != nil {
+		return fmt.Sprintf("Error listing keys: %v", err)
+	}
+
+	for _, kasKey := range resp.GetKasKeys() {
+		key := kasKey.GetKey()
+		if key.GetId() == name || key.GetKeyId() == name {
+			s.context.Path = append(s.context.Path, PathSegment{
+				Type:  "key",
+				Name:  key.GetKeyId(),
+				ID:    key.GetId(),
+				Value: kasKey.GetKasUri(),
+			})
+			return ""
+		}
+	}
+
+	return fmt.Sprintf("Key not found: %s", name)
+}
+
+// cdIntoKeyAssignments navigates into a specific key assignment
+func (s *Shell) cdIntoKeyAssignments(name string) string {
+	name = strings.TrimSuffix(name, "/")
+
+	// Get the parent resource type and ID
+	parentType, parentID := s.getKeyAssignmentParent()
+	if parentType == "" || parentID == "" {
+		return "Error: Could not determine parent resource"
+	}
+
+	// Get key mappings and find assignments for this resource
+	resp, err := s.handler.ListKeyMappings(s.ctx, 100, 0, "", nil)
+	if err != nil {
+		return fmt.Sprintf("Error listing key mappings: %v", err)
+	}
+
+	for _, mapping := range resp.GetKeyMappings() {
+		// Check if this mapping's key matches the name
+		if mapping.GetKid() == name {
+			// Verify this key is actually assigned to the parent resource
+			switch parentType {
+			case "namespace":
+				for _, ns := range mapping.GetNamespaceMappings() {
+					if ns.GetId() == parentID {
+						s.context.Path = append(s.context.Path, PathSegment{
+							Type:  "key-assignment",
+							Name:  mapping.GetKid(),
+							ID:    mapping.GetKid(),
+							Value: mapping.GetKasUri(),
+						})
+						return ""
+					}
+				}
+			case "attribute":
+				for _, attr := range mapping.GetAttributeMappings() {
+					if attr.GetId() == parentID {
+						s.context.Path = append(s.context.Path, PathSegment{
+							Type:  "key-assignment",
+							Name:  mapping.GetKid(),
+							ID:    mapping.GetKid(),
+							Value: mapping.GetKasUri(),
+						})
+						return ""
+					}
+				}
+			case "value":
+				for _, val := range mapping.GetValueMappings() {
+					if val.GetId() == parentID {
+						s.context.Path = append(s.context.Path, PathSegment{
+							Type:  "key-assignment",
+							Name:  mapping.GetKid(),
+							ID:    mapping.GetKid(),
+							Value: mapping.GetKasUri(),
+						})
+						return ""
+					}
+				}
+			}
+		}
+	}
+
+	return fmt.Sprintf("Key assignment not found: %s", name)
+}
+
+// getKeyAssignmentParent returns the parent resource type and ID for key-assignments
+func (s *Shell) getKeyAssignmentParent() (string, string) {
+	// Walk backwards through path to find the parent resource
+	for i := len(s.context.Path) - 1; i >= 0; i-- {
+		seg := s.context.Path[i]
+		switch seg.Type {
+		case "namespace":
+			return "namespace", seg.ID
+		case "attribute":
+			return "attribute", seg.ID
+		case "value":
+			return "value", seg.ID
+		}
+	}
+	return "", ""
 }
 
 // getCurrentType returns the type of the current location
@@ -1930,17 +2930,31 @@ func (s *Shell) getAvailableItems() []string {
 
 	switch currentType {
 	case "root":
-		return []string{"namespaces", "registered-resources"}
+		return []string{"namespaces", "kas-registry", "keys", "providers", "registered-resources"}
 	case "namespaces":
 		return s.getNamespaceNames()
 	case "namespace":
-		return []string{"attribute-definitions"}
+		return []string{"attribute-definitions", "key-assignments"}
 	case "attribute-definitions":
 		return s.getAttributeNames()
 	case "attribute":
-		return []string{"attribute-values"}
+		return []string{"attribute-values", "key-assignments"}
 	case "attribute-values":
 		return s.getAttributeValueNames()
+	case "value":
+		return []string{"key-assignments"}
+	case "keys":
+		return s.getKeyNames()
+	case "key-assignments":
+		return s.getKeyAssignmentNames()
+	case "kas-registry":
+		return s.getKasNames()
+	case "kas":
+		return []string{"keys"}
+	case "kas-keys":
+		return s.getKasKeyNames()
+	case "providers":
+		return s.getProviderNames()
 	case "registered-resources":
 		// TODO: Implement when registered resources are supported
 		return []string{}
@@ -2011,6 +3025,110 @@ func (s *Shell) getAttributeValueNames() []string {
 			name = val.GetId()
 		}
 		names = append(names, name)
+	}
+	return names
+}
+
+// getKeyNames fetches and returns key names (key IDs)
+func (s *Shell) getKeyNames() []string {
+	resp, err := s.handler.ListKasKeys(s.ctx, 100, 0, 0, handlers.KasIdentifier{}, nil)
+	if err != nil {
+		return []string{}
+	}
+
+	var names []string
+	for _, kasKey := range resp.GetKasKeys() {
+		key := kasKey.GetKey()
+		names = append(names, key.GetKeyId())
+	}
+	return names
+}
+
+// getKeyAssignmentNames fetches and returns key assignment names for the parent resource
+func (s *Shell) getKeyAssignmentNames() []string {
+	parentType, parentID := s.getKeyAssignmentParent()
+	if parentType == "" || parentID == "" {
+		return []string{}
+	}
+
+	resp, err := s.handler.ListKeyMappings(s.ctx, 100, 0, "", nil)
+	if err != nil {
+		return []string{}
+	}
+
+	var names []string
+	for _, mapping := range resp.GetKeyMappings() {
+		switch parentType {
+		case "namespace":
+			for _, ns := range mapping.GetNamespaceMappings() {
+				if ns.GetId() == parentID {
+					names = append(names, mapping.GetKid())
+				}
+			}
+		case "attribute":
+			for _, attr := range mapping.GetAttributeMappings() {
+				if attr.GetId() == parentID {
+					names = append(names, mapping.GetKid())
+				}
+			}
+		case "value":
+			for _, val := range mapping.GetValueMappings() {
+				if val.GetId() == parentID {
+					names = append(names, mapping.GetKid())
+				}
+			}
+		}
+	}
+	return names
+}
+
+// getKasNames fetches and returns KAS server names
+func (s *Shell) getKasNames() []string {
+	resp, err := s.handler.ListKasRegistryEntries(s.ctx, 100, 0)
+	if err != nil {
+		return []string{}
+	}
+
+	var names []string
+	for _, kas := range resp.GetKeyAccessServers() {
+		name := kas.GetName()
+		if name == "" {
+			name = kas.GetUri()
+		}
+		names = append(names, name)
+	}
+	return names
+}
+
+// getKasKeyNames fetches and returns key names for the current KAS
+func (s *Shell) getKasKeyNames() []string {
+	kasID := s.getKasID()
+	if kasID == "" {
+		return []string{}
+	}
+
+	resp, err := s.handler.ListKasKeys(s.ctx, 100, 0, 0, handlers.KasIdentifier{ID: kasID}, nil)
+	if err != nil {
+		return []string{}
+	}
+
+	var names []string
+	for _, kasKey := range resp.GetKasKeys() {
+		names = append(names, kasKey.GetKey().GetKeyId())
+	}
+	return names
+}
+
+// getProviderNames fetches and returns provider config names
+func (s *Shell) getProviderNames() []string {
+	resp, err := s.handler.ListProviderConfigs(s.ctx, 100, 0)
+	if err != nil {
+		return []string{}
+	}
+
+	var names []string
+	for _, pc := range resp.GetProviderConfigs() {
+		names = append(names, pc.GetName())
 	}
 	return names
 }

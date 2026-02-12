@@ -30,6 +30,9 @@ command:
     - name: with-client-creds
       description: JSON string containing a 'clientId' and 'clientSecret' for auth via client-credentials flow
       default: ""
+    - name: with-client-creds-scopes
+      description: comma-separated scopes to request when authenticating with client credentials (e.g. openid,email)
+      default: ""
     - name: json
       description: output in JSON format
       default: false

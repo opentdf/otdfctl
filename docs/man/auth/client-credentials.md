@@ -40,3 +40,9 @@ Authenticate with client credentials (secret provided as argument)
 ```shell
 otdfctl auth client-credentials <client-id> <client-secret>
 ```
+
+Authenticate with client credentials and request specific scopes
+
+```shell
+otdfctl auth client-credentials --scopes openid,email <client-id> <client-secret>
+```
