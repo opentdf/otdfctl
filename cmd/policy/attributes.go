@@ -8,7 +8,6 @@ import (
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/handlers"
 	"github.com/opentdf/otdfctl/pkg/man"
-	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/spf13/cobra"
 )
 
@@ -30,24 +29,20 @@ func createAttribute(cmd *cobra.Command, args []string) {
 	attributeValues = c.Flags.GetStringSlice("value", attributeValues, cli.FlagsStringSliceOptions{})
 	namespace := c.Flags.GetRequiredString("namespace")
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
+	allowTraversal := c.Flags.GetOptionalBoolWrapper("allow-traversal")
 
-	attr, err := h.CreateAttribute(cmd.Context(), name, rule, namespace, attributeValues, getMetadataMutable(metadataLabels))
+	attr, err := h.CreateAttribute(cmd.Context(), name, rule, namespace, attributeValues, getMetadataMutable(metadataLabels), allowTraversal)
 	if err != nil {
 		cli.ExitWithError("Failed to create attribute", err)
 	}
 
-	a := cli.GetSimpleAttribute(&policy.Attribute{
-		Id:        attr.GetId(),
-		Name:      attr.GetName(),
-		Rule:      attr.GetRule(),
-		Values:    attr.GetValues(),
-		Namespace: attr.GetNamespace(),
-	})
+	a := cli.GetSimpleAttribute(attr)
 	rows := [][]string{
 		{"Name", a.Name},
 		{"Rule", a.Rule},
 		{"Values", cli.CommaSeparated(a.Values)},
 		{"Namespace", a.Namespace},
+		{"Allow Traversal", a.AllowTraversal},
 	}
 	if mdRows := getMetadataRows(attr.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
@@ -78,6 +73,7 @@ func getAttribute(cmd *cobra.Command, args []string) {
 		{"Rule", a.Rule},
 		{"Values", cli.CommaSeparated(a.Values)},
 		{"Namespace", a.Namespace},
+		{"Allow Traversal", a.AllowTraversal},
 	}
 	if mdRows := getMetadataRows(attr.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
@@ -105,25 +101,21 @@ func listAttributes(cmd *cobra.Command, args []string) {
 		table.NewFlexColumn("namespace", "Namespace", cli.FlexColumnWidthFour),
 		table.NewFlexColumn("name", "Name", cli.FlexColumnWidthThree),
 		table.NewFlexColumn("rule", "Rule", cli.FlexColumnWidthTwo),
+		table.NewFlexColumn("allow_traversal", "Allow Traversal", cli.FlexColumnWidthOne),
 		table.NewFlexColumn("values", "Values", cli.FlexColumnWidthTwo),
 		table.NewFlexColumn("active", "Active", cli.FlexColumnWidthTwo),
-		table.NewFlexColumn("labels", "Labels", cli.FlexColumnWidthOne),
-		table.NewFlexColumn("created_at", "Created At", cli.FlexColumnWidthOne),
-		table.NewFlexColumn("updated_at", "Updated At", cli.FlexColumnWidthOne),
 	)
 	rows := []table.Row{}
 	for _, attr := range resp.GetAttributes() {
 		a := cli.GetSimpleAttribute(attr)
 		rows = append(rows, table.NewRow(table.RowData{
-			"id":         a.ID,
-			"namespace":  a.Namespace,
-			"name":       a.Name,
-			"rule":       a.Rule,
-			"values":     cli.CommaSeparated(a.Values),
-			"active":     a.Active,
-			"labels":     a.Metadata["Labels"],
-			"created_at": a.Metadata["Created At"],
-			"updated_at": a.Metadata["Updated At"],
+			"id":              a.ID,
+			"namespace":       a.Namespace,
+			"name":            a.Name,
+			"rule":            a.Rule,
+			"allow_traversal": a.AllowTraversal,
+			"values":          cli.CommaSeparated(a.Values),
+			"active":          a.Active,
 		}))
 	}
 	t = t.WithRows(rows)
@@ -160,6 +152,7 @@ func deactivateAttribute(cmd *cobra.Command, args []string) {
 		{"Rule", a.Rule},
 		{"Values", cli.CommaSeparated(a.Values)},
 		{"Namespace", a.Namespace},
+		{"Allow Traversal", a.AllowTraversal},
 	}
 	if mdRows := getMetadataRows(attr.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
@@ -234,6 +227,7 @@ func unsafeUpdateAttribute(cmd *cobra.Command, args []string) {
 	name := c.Flags.GetOptionalString("name")
 	rule := c.Flags.GetOptionalString("rule")
 	attributeValuesOrder = c.Flags.GetStringSlice("values-order", attributeValuesOrder, cli.FlagsStringSliceOptions{})
+	allowTraversal := c.Flags.GetOptionalBoolWrapper("allow-traversal")
 
 	a, err := h.GetAttribute(ctx, id)
 	if err != nil {
@@ -245,7 +239,7 @@ func unsafeUpdateAttribute(cmd *cobra.Command, args []string) {
 		cli.ConfirmTextInput(cli.ActionUpdateUnsafe, "attribute", cli.InputNameFQN, a.GetFqn())
 	}
 
-	if err := h.UnsafeUpdateAttribute(ctx, id, name, rule, attributeValuesOrder); err != nil {
+	if err := h.UnsafeUpdateAttribute(ctx, id, name, rule, attributeValuesOrder, allowTraversal); err != nil {
 		cli.ExitWithError(fmt.Sprintf("Failed to update attribute (%s)", id), err)
 	} else {
 		var (
@@ -256,12 +250,16 @@ func unsafeUpdateAttribute(cmd *cobra.Command, args []string) {
 			retrievedVals = append(retrievedVals, v.GetValue())
 			valueIDs = append(valueIDs, v.GetId())
 		}
+		if allowTraversal == nil {
+			allowTraversal = a.GetAllowTraversal()
+		}
 		rows := [][]string{
 			{"Id", a.GetId()},
 			{"Name", a.GetName()},
 			{"Rule", handlers.GetAttributeRuleFromAttributeType(a.GetRule())},
 			{"Values", cli.CommaSeparated(retrievedVals)},
 			{"Value IDs", cli.CommaSeparated(valueIDs)},
+			{"Allow Traversal", allowTraversal.String()},
 		}
 		if mdRows := getMetadataRows(a.GetMetadata()); mdRows != nil {
 			rows = append(rows, mdRows...)
@@ -383,6 +381,11 @@ func initAttributesCommands() {
 		createDoc.GetDocFlag("namespace").Default,
 		createDoc.GetDocFlag("namespace").Description,
 	)
+	createDoc.Flags().Bool(
+		createDoc.GetDocFlag("allow-traversal").Name,
+		false,
+		createDoc.GetDocFlag("allow-traversal").Description,
+	)
 	injectLabelFlags(&createDoc.Command, false)
 
 	// Get an attribute
@@ -489,6 +492,11 @@ func initAttributesCommands() {
 		unsafeUpdateCmd.GetDocFlag("values-order").Shorthand,
 		[]string{},
 		unsafeUpdateCmd.GetDocFlag("values-order").Description,
+	)
+	unsafeUpdateCmd.Flags().Bool(
+		unsafeUpdateCmd.GetDocFlag("allow-traversal").Name,
+		false,
+		unsafeUpdateCmd.GetDocFlag("allow-traversal").Description,
 	)
 
 	keyCmd := man.Docs.GetCommand("policy/attributes/key")
