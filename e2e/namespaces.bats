@@ -101,7 +101,9 @@ teardown_file() {
 @test "Get a namespace - Bad" {
   run_otdfctl_ns get
   assert_failure
-  assert_output --partial "Flag '--id' is required"
+  assert_output --partial "Error: at least one of the flags in the group"
+  assert_output --partial "fqn"
+  assert_output --partial "id"
 
   run_otdfctl_ns get "$NS_ID_FLAG" "$NS_FQN_FLAG"
   assert_failure
