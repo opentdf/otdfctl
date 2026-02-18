@@ -107,7 +107,7 @@ teardown_file() {
 
   run_otdfctl_ns get "$NS_ID_FLAG" "$NS_FQN_FLAG"
   assert_failure
-  assert_output --partial "Flags '--id' and '--fqn' cannot be used together"
+  assert_output --partial "[fqn id] were all set"
 
   run_otdfctl_ns get --id 'example.com'
   assert_failure
