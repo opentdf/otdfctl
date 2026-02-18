@@ -119,13 +119,14 @@ func deactivateAttributeValue(cmd *cobra.Command, args []string) {
 
 	ctx := cmd.Context()
 	id := c.Flags.GetRequiredID("id")
+	force := c.Flags.GetOptionalBool("force")
 
 	value, err := h.GetAttributeValue(ctx, id)
 	if err != nil {
 		cli.ExitWithError(fmt.Sprintf("Failed to get attribute value (%s)", id), err)
 	}
 
-	cli.ConfirmAction(cli.ActionDeactivate, "attribute value", value.GetValue(), false)
+	cli.ConfirmAction(cli.ActionDeactivate, "attribute value", value.GetValue(), force)
 
 	deactivated, err := h.DeactivateAttributeValue(ctx, id)
 	if err != nil {
@@ -342,6 +343,11 @@ func initAttributeValuesCommands() {
 		deactivateCmd.GetDocFlag("id").Shorthand,
 		deactivateCmd.GetDocFlag("id").Default,
 		deactivateCmd.GetDocFlag("id").Description,
+	)
+	deactivateCmd.Flags().Bool(
+		deactivateCmd.GetDocFlag("force").Name,
+		false,
+		deactivateCmd.GetDocFlag("force").Description,
 	)
 
 	keyCmd := man.Docs.GetCommand("policy/attributes/values/key")

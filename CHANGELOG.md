@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.29.0](https://github.com/opentdf/otdfctl/compare/v0.28.0...v0.29.0) (2026-01-28)
+
+
+### ⚠ BREAKING CHANGES
+
+* **core:** remove NanoTDF support ([#736](https://github.com/opentdf/otdfctl/issues/736))
+
+### Features
+
+* **core:** Add allow_traversal to attribute defs. ([#739](https://github.com/opentdf/otdfctl/issues/739)) ([63d71b0](https://github.com/opentdf/otdfctl/commit/63d71b0c0dc93545f50f921f613880f99482c959))
+
+
+### Bug Fixes
+
+* **core:** obligations commands id and fqn flag exclusivity ([#731](https://github.com/opentdf/otdfctl/issues/731)) ([77ebbb4](https://github.com/opentdf/otdfctl/commit/77ebbb49d26b0b96abd254e9e177187504f7abb5)), closes [#728](https://github.com/opentdf/otdfctl/issues/728)
+* **core:** remove NanoTDF support ([#736](https://github.com/opentdf/otdfctl/issues/736)) ([9528821](https://github.com/opentdf/otdfctl/commit/9528821ed1d2e728afa44af29e4d4ebf72030039))
+
 ## [0.28.0](https://github.com/opentdf/otdfctl/compare/v0.27.0...v0.28.0) (2025-12-16)
 
 

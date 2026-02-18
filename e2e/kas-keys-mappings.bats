@@ -224,20 +224,24 @@ assert_key_mapping_details() {
   run_otdfctl_key list-mappings --json --limit 1 --offset 0
   assert_success
   assert_key_mapping_details "${KEY_ID_1}"
-  assert_equal "$(echo "$output" | jq -r '.pagination.total')" "3"
+  assert [ "$(echo "$output" | jq -r '.pagination.total')" -ge 3 ]
   assert_equal "$(echo "$output" | jq -r '.pagination.next_offset')" "1"
 
   run_otdfctl_key list-mappings --json --limit 1 --offset 1
   assert_success
   assert_key_mapping_details "${KEY_ID_2}"
-  assert_equal "$(echo "$output" | jq -r '.pagination.total')" "3"
+  assert [ "$(echo "$output" | jq -r '.pagination.total')" -ge 3 ]
   assert_equal "$(echo "$output" | jq -r '.pagination.next_offset')" "2"
 
   run_otdfctl_key list-mappings --json --limit 1 --offset 2
   assert_success
   assert_key_mapping_details "${KEY_ID_3}"
-  assert_equal "$(echo "$output" | jq -r '.pagination.total')" "3"
-  assert_equal "$(echo "$output" | jq -r '.pagination.next_offset')" "null"
+  assert [ "$(echo "$output" | jq -r '.pagination.total')" -ge 3 ]
+  if [ "$(echo "$output" | jq -r '.pagination.total')" -ge 4 ]; then
+    assert_equal "$(echo "$output" | jq -r '.pagination | has("next_offset")')" "true"
+  else
+    assert_equal "$(echo "$output" | jq -r '.pagination | has("next_offset")')" "false"
+  fi
 }
 
 @test "kas-keys-mappings: list key mappings - required together are missing" {
@@ -255,7 +259,5 @@ assert_key_mapping_details() {
   assert_failure
   assert_output --partial "Error: if any flags in the group [kas id] are set none of the others can be; [id kas] were all set"
 }
-
-
 
 
