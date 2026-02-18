@@ -15,7 +15,7 @@ setup_file() {
   export NS_NAME_UPDATE="updated-test-ns.net"
   export NS_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes namespaces create -n "$NS_NAME" --json | jq -r '.id')
   export NS_ID_FLAG="--id $NS_ID"
-  export NS_FQN_FLAG="--fqn $NS_NAME"
+  export NS_FQN_FLAG="--fqn https://${NS_NAME}"
 
   export KAS_URI="https://test-kas-for-namespace.com"
   export KAS_REG_ID=$(./otdfctl $HOST $WITH_CREDS policy kas-registry create --uri "$KAS_URI" --json | jq -r '.id')
