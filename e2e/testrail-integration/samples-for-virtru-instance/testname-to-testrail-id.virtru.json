@@ -11,6 +11,7 @@
   },
   "Attributes": {
     "Create an attribute - with values": "C793409",
+    "Create an attribute - Allow Traversal": "C875790",
     "Create an attribute - bad": "C793410",
     "Get an attribute definition - good": "C793412",
     "Get an attribute definition - bad": "C793413",
@@ -20,12 +21,16 @@
     "List - comprehensive pagination tests": "C871543",
     "Deactivate then unsafe reactivate an attribute definition": "C793417",
     "Unsafe update an attribute definition": "C793418",
+    "Unsafe Update preserves allow traversal when unchanged": "C875791",
+    "Unsafe Update can disallow traversal": "C875792",
     "Assign/Remove KAS key from attribute definition - With Attribute Id": "C874449",
     "Assign/Remove KAS key from attribute definition - With Attribute FQN": "C874450",
     "Assign/Remove KAS key from attribute value - With Value Id": "C874451",
     "Assign/Remove KAS key from attribute value - With Value FQN": "C874452",
     "KAS key assignment error handling - attribute": "C874453",
-    "KAS key assignment error handling - attribute value": "C874454"
+    "KAS key assignment error handling - attribute value": "C874454",
+    "List attribute values - Good": "C875684",
+    "List attribute values - Bad": "C875685"
   },
   "Auth": {
     "helpful error if wrong platform endpoint host": "C793419",
@@ -38,6 +43,9 @@
     "roundtrip TDF3, no attributes, ec-wrapping, file": "C797126",
     "roundtrip TDF3, one attribute, stdin": "C793424",
     "roundtrip TDF3, one attribute, mixed case FQN, stdin": "C793425",
+    "allow traversal with mapped key uses definition when value missing": "C875793",
+    "allow traversal uses attribute value mapping when value present": "C875794",
+    "allow traversal with inactive attribute value fails": "C875795",
     "roundtrip TDF3, assertions, stdin": "C797127",
     "roundtrip TDF3, assertions with HS256 keys and verification, file": "C797128",
     "roundtrip TDF3, assertions with RS256 keys and verification, file": "C797129",
@@ -164,6 +172,10 @@
     "base-key: set (using non-existent keyId)": "C874523",
     "base-key: set (using non-existent kasId)": "C874524"
   },
+  "Logging": {
+    "version is logged to stderr when debug logging enabled": "C875686",
+    "version is logged to stderr when debug enabled": "C875687"
+  },
   "Namespaces": {
     "Create a namespace - Good": "C793440",
     "Create a namespace - Bad": "C793441",
@@ -215,11 +227,14 @@
   },
   "Profile": {
     "profile create": "C793453",
-    "profile list": "C793454",
-    "profile get": "C793455",
-    "profile delete": "C793456",
-    "profile set-default": "C793457",
-    "profile set-endpoint": "C793458"
+    "profile list shows profiles and default": "C793454",
+    "profile get shows profile details": "C793455",
+    "profile delete removes profile": "C793456",
+    "profile set-default updates default profile": "C793457",
+    "profile set-endpoint updates endpoint": "C793458",
+    "profile delete-all deletes all profiles": "C875688",
+    "profile migrate moves keyring profiles to filesystem": "C875689",
+    "profile keyring cleanup removes all keyring profiles": "C875690"
   },
   "Provider Configuration": {
     "fail to create provider configuration without config": "C874530",
