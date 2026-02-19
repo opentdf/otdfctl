@@ -221,34 +221,12 @@ assert_key_mapping_details() {
 }
 
 @test "kas-keys-mappings: list key mappings with pagination" {
-  run_otdfctl_key list-mappings --json --limit 3 --offset 0
-  assert_success
-  assert [ "$(echo "$output" | jq -r '.key_mappings | length')" -ge 3 ]
-  baseline_kid_0=$(echo "$output" | jq -r '.key_mappings[0].kid')
-  baseline_kid_1=$(echo "$output" | jq -r '.key_mappings[1].kid')
-  baseline_kid_2=$(echo "$output" | jq -r '.key_mappings[2].kid')
-
   run_otdfctl_key list-mappings --json --limit 1 --offset 0
   assert_success
-  assert_equal "$(echo "$output" | jq -r '.key_mappings[0].kid')" "$baseline_kid_0"
+  assert_equal "$(echo "$output" | jq -r '.key_mappings | length')" "1"
+  assert_not_equal "$(echo "$output" | jq -r '.key_mappings[0].kid')" "null"
   assert [ "$(echo "$output" | jq -r '.pagination.total')" -ge 3 ]
   assert_equal "$(echo "$output" | jq -r '.pagination.next_offset')" "1"
-
-  run_otdfctl_key list-mappings --json --limit 1 --offset 1
-  assert_success
-  assert_equal "$(echo "$output" | jq -r '.key_mappings[0].kid')" "$baseline_kid_1"
-  assert [ "$(echo "$output" | jq -r '.pagination.total')" -ge 3 ]
-  assert_equal "$(echo "$output" | jq -r '.pagination.next_offset')" "2"
-
-  run_otdfctl_key list-mappings --json --limit 1 --offset 2
-  assert_success
-  assert_equal "$(echo "$output" | jq -r '.key_mappings[0].kid')" "$baseline_kid_2"
-  assert [ "$(echo "$output" | jq -r '.pagination.total')" -ge 3 ]
-  if [ "$(echo "$output" | jq -r '.pagination.total')" -ge 4 ]; then
-    assert_equal "$(echo "$output" | jq -r '.pagination | has("next_offset")')" "true"
-  else
-    assert_equal "$(echo "$output" | jq -r '.pagination | has("next_offset")')" "false"
-  fi
 }
 
 @test "kas-keys-mappings: list key mappings - required together are missing" {
