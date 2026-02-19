@@ -221,21 +221,38 @@ assert_key_mapping_details() {
 }
 
 @test "kas-keys-mappings: list key mappings with pagination" {
-  run_otdfctl_key list-mappings --kas "${KAS_REGISTRY_ID}" --json --limit 1 --offset 0
+  run_otdfctl_key list-mappings --json --limit 3 --offset 0
   assert_success
-  assert_key_mapping_details "${KEY_ID_1}"
+  assert [ "$(echo "$output" | jq -r '.key_mappings | length')" -ge 3 ]
+  baseline_kid_0=$(echo "$output" | jq -r '.key_mappings[0].kid')
+  baseline_kid_1=$(echo "$output" | jq -r '.key_mappings[1].kid')
+  baseline_kid_2=$(echo "$output" | jq -r '.key_mappings[2].kid')
+  baseline_created_at_0=$(echo "$output" | jq -r '.key_mappings[0].created_at')
+  baseline_created_at_1=$(echo "$output" | jq -r '.key_mappings[1].created_at')
+  baseline_created_at_2=$(echo "$output" | jq -r '.key_mappings[2].created_at')
+  assert_not_equal "$baseline_created_at_0" "null"
+  assert_not_equal "$baseline_created_at_1" "null"
+  assert_not_equal "$baseline_created_at_2" "null"
+  if [[ "$baseline_created_at_0" < "$baseline_created_at_1" || "$baseline_created_at_1" < "$baseline_created_at_2" ]]; then
+    echo "Expected created_at to be in descending order for first page: $baseline_created_at_0 $baseline_created_at_1 $baseline_created_at_2"
+    return 1
+  fi
+
+  run_otdfctl_key list-mappings --json --limit 1 --offset 0
+  assert_success
+  assert_equal "$(echo "$output" | jq -r '.key_mappings[0].kid')" "$baseline_kid_0"
   assert [ "$(echo "$output" | jq -r '.pagination.total')" -ge 3 ]
   assert_equal "$(echo "$output" | jq -r '.pagination.next_offset')" "1"
 
-  run_otdfctl_key list-mappings --kas "${KAS_REGISTRY_ID}" --json --limit 1 --offset 1
+  run_otdfctl_key list-mappings --json --limit 1 --offset 1
   assert_success
-  assert_key_mapping_details "${KEY_ID_2}"
+  assert_equal "$(echo "$output" | jq -r '.key_mappings[0].kid')" "$baseline_kid_1"
   assert [ "$(echo "$output" | jq -r '.pagination.total')" -ge 3 ]
   assert_equal "$(echo "$output" | jq -r '.pagination.next_offset')" "2"
 
-  run_otdfctl_key list-mappings --kas "${KAS_REGISTRY_ID}" --json --limit 1 --offset 2
+  run_otdfctl_key list-mappings --json --limit 1 --offset 2
   assert_success
-  assert_key_mapping_details "${KEY_ID_3}"
+  assert_equal "$(echo "$output" | jq -r '.key_mappings[0].kid')" "$baseline_kid_2"
   assert [ "$(echo "$output" | jq -r '.pagination.total')" -ge 3 ]
   if [ "$(echo "$output" | jq -r '.pagination.total')" -ge 4 ]; then
     assert_equal "$(echo "$output" | jq -r '.pagination | has("next_offset")')" "true"
@@ -259,4 +276,3 @@ assert_key_mapping_details() {
   assert_failure
   assert_output --partial "Error: if any flags in the group [kas id] are set none of the others can be; [id kas] were all set"
 }
-
