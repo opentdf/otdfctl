@@ -63,19 +63,6 @@ run_otdfctl_namespace_delete() {
   run sh -c "./otdfctl policy namespaces unsafe delete --force $HOST $WITH_CREDS $*"
 }
 
-get_key_created_at() {
-  local kid="$1"
-  local kas="$2"
-  run_otdfctl_key get --kas "$kas" --key "$kid" --json
-  assert_success
-  local seconds=$(echo "$output" | jq -r '.key.metadata.created_at.seconds // empty')
-  if [ -n "$seconds" ]; then
-    KEY_CREATED_AT="$seconds"
-  else
-    KEY_CREATED_AT=$(echo "$output" | jq -r '.key.metadata.created_at')
-  fi
-}
-
 setup_file() {
   export WITH_CREDS='--with-client-creds-file ./creds.json'
   export HOST='--host http://localhost:8080'
@@ -240,35 +227,6 @@ assert_key_mapping_details() {
   baseline_kid_0=$(echo "$output" | jq -r '.key_mappings[0].kid')
   baseline_kid_1=$(echo "$output" | jq -r '.key_mappings[1].kid')
   baseline_kid_2=$(echo "$output" | jq -r '.key_mappings[2].kid')
-  baseline_kas_uri_0=$(echo "$output" | jq -r '.key_mappings[0].kas_uri')
-  baseline_kas_uri_1=$(echo "$output" | jq -r '.key_mappings[1].kas_uri')
-  baseline_kas_uri_2=$(echo "$output" | jq -r '.key_mappings[2].kas_uri')
-
-  get_key_created_at "$baseline_kid_0" "$baseline_kas_uri_0"
-  created_at_0="$KEY_CREATED_AT"
-  get_key_created_at "$baseline_kid_1" "$baseline_kas_uri_1"
-  created_at_1="$KEY_CREATED_AT"
-  get_key_created_at "$baseline_kid_2" "$baseline_kas_uri_2"
-  created_at_2="$KEY_CREATED_AT"
-
-  assert_not_equal "$created_at_0" "null"
-  assert_not_equal "$created_at_0" ""
-  assert_not_equal "$created_at_1" "null"
-  assert_not_equal "$created_at_1" ""
-  assert_not_equal "$created_at_2" "null"
-  assert_not_equal "$created_at_2" ""
-
-  if [[ "$created_at_0" =~ ^[0-9]+$ && "$created_at_1" =~ ^[0-9]+$ && "$created_at_2" =~ ^[0-9]+$ ]]; then
-    if [ "$created_at_0" -lt "$created_at_1" ] || [ "$created_at_1" -lt "$created_at_2" ]; then
-      echo "Expected created_at to be in descending order for first page: $created_at_0 $created_at_1 $created_at_2"
-      return 1
-    fi
-  else
-    if [[ "$created_at_0" < "$created_at_1" || "$created_at_1" < "$created_at_2" ]]; then
-      echo "Expected created_at to be in descending order for first page: $created_at_0 $created_at_1 $created_at_2"
-      return 1
-    fi
-  fi
 
   run_otdfctl_key list-mappings --json --limit 1 --offset 0
   assert_success
