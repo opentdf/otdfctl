@@ -29,7 +29,7 @@ const authCallbackPath = "/callback"
 
 type ClientCredentials struct {
 	ClientID     string   `json:"clientId"`
-	ClientSecret string   `json:"clientSecret"`
+	ClientSecret string   `json:"clientSecret"` //nolint:gosec // not a hard-coded secret; populated at runtime
 	Scopes       []string `json:"scopes,omitempty"`
 }
 
