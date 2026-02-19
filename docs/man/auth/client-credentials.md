@@ -9,7 +9,7 @@ command:
     - client-secret
   flags:
     - name: scopes
-      description: OAuth scopes to request (space-separated). If omitted, existing profile scopes are reused; otherwise the server's default scopes are used.
+      description: OAuth scopes to request (space-separated).
 ---
 
 > [!NOTE]
