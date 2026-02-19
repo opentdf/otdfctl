@@ -2,6 +2,8 @@ module github.com/opentdf/otdfctl
 
 go 1.25.0
 
+toolchain go1.25.7
+
 require (
 	github.com/adrg/frontmatter v0.2.0
 	github.com/charmbracelet/bubbles v0.21.1-0.20250623103423-23b8fd6302d7
