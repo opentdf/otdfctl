@@ -26,9 +26,9 @@ command:
     - name: with-access-token
       description: access token for authentication via bearer token
     - name: with-client-creds-file
-      description: path to a JSON file containing a 'clientId' and 'clientSecret' for auth via client-credentials flow
+      description: path to a JSON file containing a 'clientId', 'clientSecret', and optional 'scopes' for auth via client-credentials flow
     - name: with-client-creds
-      description: JSON string containing a 'clientId' and 'clientSecret' for auth via client-credentials flow
+      description: JSON string containing a 'clientId', 'clientSecret', and optional 'scopes' for auth via client-credentials flow
       default: ""
     - name: json
       description: output in JSON format

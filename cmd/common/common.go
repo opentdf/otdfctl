@@ -168,6 +168,7 @@ func NewHandler(c *cli.Cli) handlers.Handler {
 				AuthType:     profiles.AuthTypeClientCredentials,
 				ClientID:     cc.ClientID,
 				ClientSecret: cc.ClientSecret,
+				Scopes:       cc.Scopes,
 			}); err != nil {
 				cli.ExitWithError("Failed to set client credentials", err)
 			}

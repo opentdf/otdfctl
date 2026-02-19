@@ -7,6 +7,9 @@ command:
     - client-id
   arbitrary_args:
     - client-secret
+  flags:
+    - name: scopes
+      description: OAuth scopes to request (space-separated). If omitted, existing profile scopes are reused; otherwise the server's default scopes are used.
 ---
 
 > [!NOTE]
@@ -39,4 +42,10 @@ Authenticate with client credentials (secret provided as argument)
 
 ```shell
 otdfctl auth client-credentials <client-id> <client-secret>
+```
+
+Authenticate with client credentials and explicit scopes
+
+```shell
+otdfctl auth client-credentials <client-id> <client-secret> --scopes "api:access:read api:access:write"
 ```

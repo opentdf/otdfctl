@@ -11,6 +11,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var clientCredScopes []string
+
 func clientCredentialsRun(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	cp := common.InitProfile(c)
@@ -32,11 +34,16 @@ func clientCredentialsRun(cmd *cobra.Command, args []string) {
 		clientSecret = cli.AskForSecret("Enter client secret: ")
 	}
 
+	if !cmd.Flags().Changed("scopes") {
+		clientCredScopes = cp.GetAuthCredentials().Scopes
+	}
+
 	// Set the client credentials
 	err := cp.SetAuthCredentials(profiles.AuthCredentials{
 		AuthType:     profiles.AuthTypeClientCredentials,
 		ClientID:     clientID,
 		ClientSecret: clientSecret,
+		Scopes:       clientCredScopes,
 	})
 	if err != nil {
 		c.ExitWithError("Failed to set client credentials", err)
@@ -55,6 +62,12 @@ func newClientCredentialsCmd() *cobra.Command {
 	doc := man.Docs.GetCommand("auth/client-credentials",
 		man.WithRun(clientCredentialsRun),
 		man.WithHiddenFlags("with-client-creds", "with-client-creds-file"),
+	)
+	doc.Flags().StringSliceVar(
+		&clientCredScopes,
+		doc.GetDocFlag("scopes").Name,
+		[]string{},
+		doc.GetDocFlag("scopes").Description,
 	)
 	return &doc.Command
 }
