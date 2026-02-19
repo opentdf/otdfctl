@@ -19,7 +19,7 @@ require (
 	github.com/opentdf/platform/lib/ocrypto v0.10.0
 	github.com/opentdf/platform/protocol/go v0.16.0
 	github.com/opentdf/platform/sdk v0.13.0
-	github.com/spf13/cobra v1.10.1
+	github.com/spf13/cobra v1.10.2
 	github.com/stretchr/testify v1.11.1
 	github.com/zitadel/oidc/v3 v3.45.1
 	golang.org/x/oauth2 v0.35.0

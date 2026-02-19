@@ -49,7 +49,7 @@ type JWTClaims struct {
 	Expiration int64 `json:"exp"`
 }
 
-func normalizeScopes(scopes []string) []string {
+func NormalizeScopes(scopes []string) []string {
 	if len(scopes) == 0 {
 		return nil
 	}
@@ -67,7 +67,7 @@ func normalizeClientCredScopes(creds *ClientCredentials) {
 	if creds == nil {
 		return
 	}
-	creds.Scopes = normalizeScopes(creds.Scopes)
+	creds.Scopes = NormalizeScopes(creds.Scopes)
 }
 
 // Retrieves credentials by reading specified file
@@ -168,7 +168,7 @@ func GetSDKAuthOptionFromProfile(profile *profiles.OtdfctlProfileStore) (sdk.Opt
 
 	switch c.AuthType {
 	case profiles.AuthTypeClientCredentials:
-		return sdk.WithClientCredentials(c.ClientID, c.ClientSecret, normalizeScopes(c.Scopes)), nil
+		return sdk.WithClientCredentials(c.ClientID, c.ClientSecret, NormalizeScopes(c.Scopes)), nil
 	case profiles.AuthTypeAccessToken:
 		tokenSource := oauth2.StaticTokenSource(buildToken(&c))
 		return sdk.WithOAuthAccessTokenSource(tokenSource), nil
@@ -222,7 +222,7 @@ func GetTokenWithClientCreds(ctx context.Context, endpoint string, clientID stri
 		return nil, err
 	}
 	params := url.Values{}
-	if normalized := normalizeScopes(scopes); len(normalized) > 0 {
+	if normalized := NormalizeScopes(scopes); len(normalized) > 0 {
 		params.Set("scope", strings.Join(normalized, " "))
 	}
 	return oidcrp.ClientCredentials(ctx, rp, params)
