@@ -55,11 +55,7 @@ func normalizeScopes(scopes []string) []string {
 	}
 	normalized := make([]string, 0, len(scopes))
 	for _, scope := range scopes {
-		for _, part := range strings.Fields(scope) {
-			if part != "" {
-				normalized = append(normalized, part)
-			}
-		}
+		normalized = append(normalized, strings.Fields(scope)...)
 	}
 	if len(normalized) == 0 {
 		return nil
