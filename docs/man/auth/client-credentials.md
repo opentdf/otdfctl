@@ -9,7 +9,7 @@ command:
     - client-secret
   flags:
     - name: scopes
-      description: OAuth scopes to request (space-separated).
+      description: OIDC scopes to request (space-separated).
 ---
 
 > [!NOTE]
