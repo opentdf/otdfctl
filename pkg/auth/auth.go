@@ -28,8 +28,9 @@ import (
 const authCallbackPath = "/callback"
 
 type ClientCredentials struct {
-	ClientID     string `json:"clientId"`
-	ClientSecret string `json:"clientSecret"`
+	ClientID     string   `json:"clientId"`
+	ClientSecret string   `json:"clientSecret"` //nolint:gosec // not a hard-coded secret; populated at runtime
+	Scopes       []string `json:"scopes,omitempty"`
 }
 
 type platformConfiguration struct {
@@ -48,6 +49,27 @@ type JWTClaims struct {
 	Expiration int64 `json:"exp"`
 }
 
+func NormalizeScopes(scopes []string) []string {
+	if len(scopes) == 0 {
+		return nil
+	}
+	normalized := make([]string, 0, len(scopes))
+	for _, scope := range scopes {
+		normalized = append(normalized, strings.Fields(scope)...)
+	}
+	if len(normalized) == 0 {
+		return nil
+	}
+	return normalized
+}
+
+func normalizeClientCredScopes(creds *ClientCredentials) {
+	if creds == nil {
+		return
+	}
+	creds.Scopes = NormalizeScopes(creds.Scopes)
+}
+
 // Retrieves credentials by reading specified file
 func GetClientCredsFromFile(filepath string) (ClientCredentials, error) {
 	creds := ClientCredentials{}
@@ -60,6 +82,7 @@ func GetClientCredsFromFile(filepath string) (ClientCredentials, error) {
 	if err := json.NewDecoder(f).Decode(&creds); err != nil {
 		return creds, errors.Join(errors.New("failed to decode creds file"), err)
 	}
+	normalizeClientCredScopes(&creds)
 
 	return creds, nil
 }
@@ -70,6 +93,7 @@ func GetClientCredsFromJSON(credsJSON []byte) (ClientCredentials, error) {
 	if err := json.Unmarshal(credsJSON, &creds); err != nil {
 		return creds, errors.Join(errors.New("failed to decode creds JSON"), err)
 	}
+	normalizeClientCredScopes(&creds)
 
 	return creds, nil
 }
@@ -144,7 +168,7 @@ func GetSDKAuthOptionFromProfile(profile *profiles.OtdfctlProfileStore) (sdk.Opt
 
 	switch c.AuthType {
 	case profiles.AuthTypeClientCredentials:
-		return sdk.WithClientCredentials(c.ClientID, c.ClientSecret, nil), nil
+		return sdk.WithClientCredentials(c.ClientID, c.ClientSecret, NormalizeScopes(c.Scopes)), nil
 	case profiles.AuthTypeAccessToken:
 		tokenSource := oauth2.StaticTokenSource(buildToken(&c))
 		return sdk.WithOAuthAccessTokenSource(tokenSource), nil
@@ -160,7 +184,7 @@ func ValidateProfileAuthCredentials(ctx context.Context, profile *profiles.Otdfc
 	case "":
 		return ErrProfileCredentialsNotFound
 	case profiles.AuthTypeClientCredentials:
-		_, err := GetTokenWithClientCreds(ctx, profile.GetEndpoint(), c.ClientID, c.ClientSecret, profile.GetTLSNoVerify())
+		_, err := GetTokenWithClientCreds(ctx, profile.GetEndpoint(), c.ClientID, c.ClientSecret, profile.GetTLSNoVerify(), c.Scopes)
 		if err != nil {
 			return err
 		}
@@ -180,7 +204,7 @@ func GetTokenWithProfile(ctx context.Context, profile *profiles.OtdfctlProfileSt
 
 	switch c.AuthType {
 	case profiles.AuthTypeClientCredentials:
-		return GetTokenWithClientCreds(ctx, profile.GetEndpoint(), c.ClientID, c.ClientSecret, profile.GetTLSNoVerify())
+		return GetTokenWithClientCreds(ctx, profile.GetEndpoint(), c.ClientID, c.ClientSecret, profile.GetTLSNoVerify(), c.Scopes)
 	case profiles.AuthTypeAccessToken:
 		return buildToken(&c), nil
 	default:
@@ -189,7 +213,7 @@ func GetTokenWithProfile(ctx context.Context, profile *profiles.OtdfctlProfileSt
 }
 
 // Uses the OAuth2 client credentials flow to obtain a token.
-func GetTokenWithClientCreds(ctx context.Context, endpoint string, clientID string, clientSecret string, tlsNoVerify bool) (*oauth2.Token, error) {
+func GetTokenWithClientCreds(ctx context.Context, endpoint string, clientID string, clientSecret string, tlsNoVerify bool, scopes []string) (*oauth2.Token, error) {
 	rp, err := newOidcRelyingParty(ctx, endpoint, tlsNoVerify, oidcClientCredentials{
 		clientID:     clientID,
 		clientSecret: clientSecret,
@@ -197,7 +221,11 @@ func GetTokenWithClientCreds(ctx context.Context, endpoint string, clientID stri
 	if err != nil {
 		return nil, err
 	}
-	return oidcrp.ClientCredentials(ctx, rp, url.Values{})
+	params := url.Values{}
+	if normalized := NormalizeScopes(scopes); len(normalized) > 0 {
+		params.Set("scope", strings.Join(normalized, " "))
+	}
+	return oidcrp.ClientCredentials(ctx, rp, params)
 }
 
 const (
