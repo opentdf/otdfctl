@@ -221,19 +221,19 @@ assert_key_mapping_details() {
 }
 
 @test "kas-keys-mappings: list key mappings with pagination" {
-  run_otdfctl_key list-mappings --json --limit 1 --offset 0
+  run_otdfctl_key list-mappings --kas "${KAS_REGISTRY_ID}" --json --limit 1 --offset 0
   assert_success
   assert_key_mapping_details "${KEY_ID_1}"
   assert [ "$(echo "$output" | jq -r '.pagination.total')" -ge 3 ]
   assert_equal "$(echo "$output" | jq -r '.pagination.next_offset')" "1"
 
-  run_otdfctl_key list-mappings --json --limit 1 --offset 1
+  run_otdfctl_key list-mappings --kas "${KAS_REGISTRY_ID}" --json --limit 1 --offset 1
   assert_success
   assert_key_mapping_details "${KEY_ID_2}"
   assert [ "$(echo "$output" | jq -r '.pagination.total')" -ge 3 ]
   assert_equal "$(echo "$output" | jq -r '.pagination.next_offset')" "2"
 
-  run_otdfctl_key list-mappings --json --limit 1 --offset 2
+  run_otdfctl_key list-mappings --kas "${KAS_REGISTRY_ID}" --json --limit 1 --offset 2
   assert_success
   assert_key_mapping_details "${KEY_ID_3}"
   assert [ "$(echo "$output" | jq -r '.pagination.total')" -ge 3 ]
@@ -259,5 +259,4 @@ assert_key_mapping_details() {
   assert_failure
   assert_output --partial "Error: if any flags in the group [kas id] are set none of the others can be; [id kas] were all set"
 }
-
 
