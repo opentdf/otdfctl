@@ -232,6 +232,11 @@ teardown_file() {
   [ "$(echo "$output" | jq -r '.values[0].value')" = "val2" ]
   [ "$(echo "$output" | jq -r '.values[1].value')" = "val1" ]
 
+  # ensure non-JSON output reflects reordered values immediately
+  run_otdfctl_attr unsafe update --id "$CREATED_ID" --values-order "$VAL1_ID" --values-order "$VAL2_ID" --force
+  assert_success
+  assert_line --regexp "Value IDs\\s+│\\[$VAL1_ID, $VAL2_ID\\]"
+
   run_otdfctl_attr unsafe update --id "$CREATED_ID" --allow-traversal --json --force
   assert_success
   run_otdfctl_attr get --id "$CREATED_ID" --json
