@@ -239,33 +239,34 @@ func unsafeUpdateAttribute(cmd *cobra.Command, args []string) {
 		cli.ConfirmTextInput(cli.ActionUpdateUnsafe, "attribute", cli.InputNameFQN, a.GetFqn())
 	}
 
-	if err := h.UnsafeUpdateAttribute(ctx, id, name, rule, attributeValuesOrder, allowTraversal); err != nil {
+	updatedAttr, err := h.UnsafeUpdateAttribute(ctx, id, name, rule, attributeValuesOrder, allowTraversal)
+	if err != nil {
 		cli.ExitWithError(fmt.Sprintf("Failed to update attribute (%s)", id), err)
 	} else {
 		var (
 			retrievedVals []string
 			valueIDs      []string
 		)
-		for _, v := range a.GetValues() {
+		for _, v := range updatedAttr.GetValues() {
 			retrievedVals = append(retrievedVals, v.GetValue())
 			valueIDs = append(valueIDs, v.GetId())
 		}
 		if allowTraversal == nil {
-			allowTraversal = a.GetAllowTraversal()
+			allowTraversal = updatedAttr.GetAllowTraversal()
 		}
 		rows := [][]string{
-			{"Id", a.GetId()},
-			{"Name", a.GetName()},
-			{"Rule", handlers.GetAttributeRuleFromAttributeType(a.GetRule())},
+			{"Id", updatedAttr.GetId()},
+			{"Name", updatedAttr.GetName()},
+			{"Rule", handlers.GetAttributeRuleFromAttributeType(updatedAttr.GetRule())},
 			{"Values", cli.CommaSeparated(retrievedVals)},
 			{"Value IDs", cli.CommaSeparated(valueIDs)},
 			{"Allow Traversal", allowTraversal.String()},
 		}
-		if mdRows := getMetadataRows(a.GetMetadata()); mdRows != nil {
+		if mdRows := getMetadataRows(updatedAttr.GetMetadata()); mdRows != nil {
 			rows = append(rows, mdRows...)
 		}
 		t := cli.NewTabular(rows...)
-		common.HandleSuccess(cmd, id, t, a)
+		common.HandleSuccess(cmd, id, t, updatedAttr)
 	}
 }
 

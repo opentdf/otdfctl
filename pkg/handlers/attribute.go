@@ -140,7 +140,7 @@ func (h Handler) UnsafeDeleteAttribute(ctx context.Context, id, fqn string) erro
 }
 
 // Deletes and returns error if deletion failed
-func (h Handler) UnsafeUpdateAttribute(ctx context.Context, id, name, rule string, valuesOrder []string, allowTraversal *wrapperspb.BoolValue) error {
+func (h Handler) UnsafeUpdateAttribute(ctx context.Context, id, name, rule string, valuesOrder []string, allowTraversal *wrapperspb.BoolValue) (*policy.Attribute, error) {
 	req := &unsafe.UnsafeUpdateAttributeRequest{
 		Id:   id,
 		Name: name,
@@ -149,7 +149,7 @@ func (h Handler) UnsafeUpdateAttribute(ctx context.Context, id, name, rule strin
 	if rule != "" {
 		r, err := GetAttributeRuleFromReadableString(rule)
 		if err != nil {
-			return fmt.Errorf("invalid attribute rule: %s", rule)
+			return nil, fmt.Errorf("invalid attribute rule: %s", rule)
 		}
 		req.Rule = r
 	}
@@ -161,7 +161,10 @@ func (h Handler) UnsafeUpdateAttribute(ctx context.Context, id, name, rule strin
 	}
 
 	_, err := h.sdk.Unsafe.UnsafeUpdateAttribute(ctx, req)
-	return err
+	if err != nil {
+		return nil, err
+	}
+	return h.GetAttribute(ctx, id)
 }
 
 func (h Handler) AssignKeyToAttribute(ctx context.Context, attr, keyID string) (*attributes.AttributeKey, error) {
