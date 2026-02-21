@@ -15,6 +15,7 @@ setup_file() {
   export NS_NAME_UPDATE="updated-test-ns.net"
   export NS_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes namespaces create -n "$NS_NAME" --json | jq -r '.id')
   export NS_ID_FLAG="--id $NS_ID"
+  export NS_FQN_FLAG="--fqn https://${NS_NAME}"
 
   export KAS_URI="https://test-kas-for-namespace.com"
   export KAS_REG_ID=$(./otdfctl $HOST $WITH_CREDS policy kas-registry create --uri "$KAS_URI" --json | jq -r '.id')
@@ -81,7 +82,17 @@ teardown_file() {
   assert_line --regexp "Id.*$NS_ID"
   assert_line --regexp "Name.*$NS_NAME"
 
+  run_otdfctl_ns get "$NS_FQN_FLAG"
+  assert_success
+  assert_line --regexp "Id.*$NS_ID"
+  assert_line --regexp "Name.*$NS_NAME"
+
   run_otdfctl_ns get "$NS_ID_FLAG" --json
+  assert_success
+  [ "$(echo "$output" | jq -r '.id')" = "$NS_ID" ]
+  [ "$(echo "$output" | jq -r '.name')" = "$NS_NAME" ]
+
+  run_otdfctl_ns get "$NS_FQN_FLAG" --json
   assert_success
   [ "$(echo "$output" | jq -r '.id')" = "$NS_ID" ]
   [ "$(echo "$output" | jq -r '.name')" = "$NS_NAME" ]
@@ -90,7 +101,13 @@ teardown_file() {
 @test "Get a namespace - Bad" {
   run_otdfctl_ns get
   assert_failure
-  assert_output --partial "Flag '--id' is required"
+  assert_output --partial "Error: at least one of the flags in the group"
+  assert_output --partial "fqn"
+  assert_output --partial "id"
+
+  run_otdfctl_ns get "$NS_ID_FLAG" "$NS_FQN_FLAG"
+  assert_failure
+  assert_output --partial "[fqn id] were all set"
 
   run_otdfctl_ns get --id 'example.com'
   assert_failure
