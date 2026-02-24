@@ -59,11 +59,50 @@ jobs:
       - name: Start up the platform with deps and containers
         uses: opentdf/platform/test/start-up-with-containers@main
         with:
-          platform-ref: "main"
-      - uses: opentdf/otdfctl/e2e@main
+          platform-ref: "dspx-2445-ec-curve-bug"
+      # - uses: opentdf/otdfctl/e2e@dspx-2445-higher-ec-curve-tests
+      #   with:
+      #     otdfctl-ref: ${{ github.event.pull_request.head.sha }}
+      #     bats-args: "--filter-tags '!ec_km_kas' e2e"
+      #   env:
+      #     TESTRAIL_USER: ${{ secrets.TESTRAIL_USER }}
+      #     TESTRAIL_PASS: ${{ secrets.TESTRAIL_PASS }}
+      - name: Prepare root key
+        id: root-key-prep
+        run: |-
+          OT_CONFIG_FILE="$(pwd)/opentdf.yaml"
+          echo "OT_CONFIG_FILE=$OT_CONFIG_FILE" >> "$GITHUB_ENV"
+          # Prepare a root key for use by additional KAS instances
+          existing_root_key=$(yq e '.services.kas.root_key' "$OT_CONFIG_FILE" 2>/dev/null || echo "")
+          if [ -n "$existing_root_key" ] && [ "$existing_root_key" != "null" ]; then
+            echo "Using existing root key from config"
+            echo "OT_ROOT_KEY=$existing_root_key" >> "$GITHUB_ENV"
+            echo "root_key=$existing_root_key" >> "$GITHUB_OUTPUT"
+          else
+            echo "Generating a new root key for additional KAS"
+            gen_root_key=$(openssl rand -hex 32)
+            echo "OT_ROOT_KEY=$gen_root_key" >> "$GITHUB_ENV"
+            echo "root_key=$gen_root_key" >> "$GITHUB_OUTPUT"
+          fi
+        working-directory: ${{ steps.run-platform.outputs.platform-working-dir }}
+
+      - name: Start additional KM EC kas (km-ec-kas-1)
+        id: kas-km1
+        uses: opentdf/platform/test/start-additional-kas@main
+        with:
+          ec-tdf-enabled: true
+          key-management: true
+          kas-name: km-ec-kas-1
+          kas-port: 8585
+          root-key: ${{ steps.root-key-prep.outputs.root_key }}
+      - name: Run EC+KM bats tests (km-ec-kas-1)
+        uses: opentdf/otdfctl/e2e@dspx-2445-higher-ec-curve-tests
         with:
           otdfctl-ref: ${{ github.event.pull_request.head.sha }}
+          bats-args: "--filter-tags ec_km_kas e2e"
         env:
+          EC_KM_ROOT_KEY: ${{ steps.root-key-prep.outputs.root_key }}
+          EC_KM_TESTS: "true"
           TESTRAIL_USER: ${{ secrets.TESTRAIL_USER }}
           TESTRAIL_PASS: ${{ secrets.TESTRAIL_PASS }}
 
