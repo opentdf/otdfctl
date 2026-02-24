@@ -11,9 +11,8 @@ type Cli struct {
 	args []string
 
 	// Helpers
-	Flags      *flagHelper
-	FlagHelper *flagHelper
-	printer    *Printer
+	Flags   *flagHelper
+	printer *Printer
 }
 
 // New creates a new Cli object
@@ -35,8 +34,6 @@ func New(cmd *cobra.Command, args []string, options ...cliVariadicOption) *Cli {
 	}
 
 	cli.Flags = newFlagHelper(cmd)
-	// Temp wrapper for FlagHelper until we can remove it
-	cli.FlagHelper = cli.Flags
 
 	cli.printer = newPrinter(cli)
 	if opts.printerJSON {
