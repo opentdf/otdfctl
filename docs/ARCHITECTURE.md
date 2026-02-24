@@ -24,7 +24,6 @@ The codebase follows a three-layer architecture:
 │  ├── policy/         Policy CRUD subcommands        │
 │  ├── tdf/            Encrypt/decrypt/inspect        │
 │  ├── auth/           Login/logout/credentials       │
-│  ├── config/         (deprecated)                   │
 │  ├── dev/            Dev/playground commands         │
 │  ├── common/         Shared command helpers          │
 │  ├── root.go         Root command, init, wiring     │
@@ -145,7 +144,7 @@ Key components:
 - **`sdkHelpers.go`**: SDK data transformers (`GetSimpleAttribute`, `ConstructMetadata`, key algorithm converters)
 - **`pipe.go`**: Stdin/file reading utilities
 
-**Note**: `Cli.FlagHelper` and `Cli.Flags` are the same object (aliased), with `FlagHelper` being the deprecated name.
+All command code accesses flags through `c.Flags` (e.g., `c.Flags.GetRequiredString("name")`).
 
 ### Dual Output Mode
 
@@ -237,8 +236,6 @@ otdfctl
 │   ├── resource-mappings [get, list, create, update, delete]
 │   ├── resource-mapping-groups [get, list, create, update, delete]
 │   └── registered-resources [get, list, create, update, delete]
-├── config (deprecated → use profile)
-│   └── output
 ├── dev
 │   ├── design-system
 │   └── selectors [generate, test]
@@ -324,9 +321,9 @@ Build-time injection via `-ldflags`: `Version`, `CommitSha`, `BuildTime`, and op
 
 ### Decided Direction
 
-**`FlagHelper` → `Flags` migration**: The `FlagHelper` field on `Cli` is a temporary alias introduced in `d6932f30` with the explicit comment "Temp wrapper for FlagHelper until we can remove it". Migration is ~93% complete (289 usages of `Flags` vs 20 remaining `FlagHelper` call sites across 6 files). Direction: complete the migration and remove the `FlagHelper` field.
+**`FlagHelper` → `Flags` migration**: Complete. The deprecated `FlagHelper` alias was removed; all code now uses `c.Flags`.
 
-**Deprecated `config` command**: The `config` command was deprecated in PR #719 when output format storage moved to the profile system. It currently prints a Cobra deprecation warning but still executes. Direction: remove the `config` command entirely since the functionality is fully available via `profile` commands.
+**Deprecated `config` command**: Removed. The `config` command was deprecated in PR #719 when output format storage moved to the profile system, and has since been deleted along with its docs.
 
 **Testing strategy**: E2E (BATS) is the primary testing approach and provides good coverage for the CRUD-heavy command surface. Unit tests are appropriate for non-CRUD helpers and utility functions (e.g., `pkg/utils/`, `pkg/cli/` helpers, `pkg/man/` parsing). Direction: add unit tests for non-trivial helper logic, not for CRUD command wiring.
 
@@ -354,8 +351,8 @@ From `cmd/common/common.go`:
 
 | Area | Status | Notes |
 |------|--------|-------|
-| `FlagHelper` → `Flags` | 93% migrated | 20 remaining call sites in 6 files |
-| Deprecated `config` cmd | Still present | Functional but warns; should be removed |
+| `FlagHelper` → `Flags` | Complete | All code uses `c.Flags`; alias removed |
+| Deprecated `config` cmd | Removed | Deleted along with docs |
 | Unit test coverage | Low | Only 3 test files; non-CRUD helpers lack coverage |
 | Pattern consistency | Mostly consistent | Policy commands follow the same pattern well |
 | Output formatting | Consistent | Dual-mode (styled/JSON) is well-implemented |
