@@ -55,28 +55,24 @@ func getAttributeValue(cmd *cobra.Command, args []string) {
 }
 
 func filterValuesByState(values []*policy.Value, state policycommon.ActiveStateEnum) []*policy.Value {
+	var shouldBeActive bool
 	switch state {
 	case policycommon.ActiveStateEnum_ACTIVE_STATE_ENUM_ACTIVE:
-		filtered := make([]*policy.Value, 0, len(values))
-		for _, v := range values {
-			if v.GetActive().GetValue() {
-				filtered = append(filtered, v)
-			}
-		}
-		return filtered
+		shouldBeActive = true
 	case policycommon.ActiveStateEnum_ACTIVE_STATE_ENUM_INACTIVE:
-		filtered := make([]*policy.Value, 0, len(values))
-		for _, v := range values {
-			if !v.GetActive().GetValue() {
-				filtered = append(filtered, v)
-			}
-		}
-		return filtered
+		shouldBeActive = false
 	case policycommon.ActiveStateEnum_ACTIVE_STATE_ENUM_ANY,
 		policycommon.ActiveStateEnum_ACTIVE_STATE_ENUM_UNSPECIFIED:
 		return values
 	}
-	return values
+
+	filtered := make([]*policy.Value, 0, len(values))
+	for _, v := range values {
+		if v.GetActive().GetValue() == shouldBeActive {
+			filtered = append(filtered, v)
+		}
+	}
+	return filtered
 }
 
 func paginateValues(values []*policy.Value, limit, offset int32) ([]*policy.Value, *policy.PageResponse) {
@@ -87,6 +83,9 @@ func paginateValues(values []*policy.Value, limit, offset int32) ([]*policy.Valu
 	}
 
 	off := int(offset)
+	if off < 0 {
+		return nil, pagination
+	}
 	if off >= total {
 		return nil, pagination
 	}

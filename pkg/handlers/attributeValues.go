@@ -11,6 +11,7 @@ import (
 	"github.com/opentdf/platform/protocol/go/policy/unsafe"
 )
 
+// ListAttributeValues fetches all values via GetAttribute; client-side filtering replaces the deprecated ListAttributeValues RPC.
 func (h *Handler) ListAttributeValues(ctx context.Context, attributeID string) ([]*policy.Value, error) {
 	attr, err := h.GetAttribute(ctx, attributeID)
 	if err != nil {
