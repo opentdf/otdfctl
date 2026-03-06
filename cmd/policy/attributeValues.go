@@ -7,7 +7,9 @@ import (
 	"github.com/opentdf/otdfctl/cmd/common"
 	"github.com/opentdf/otdfctl/pkg/cli"
 	"github.com/opentdf/otdfctl/pkg/man"
+	policycommon "github.com/opentdf/platform/protocol/go/common"
 	"github.com/opentdf/platform/protocol/go/policy"
+	"github.com/opentdf/platform/protocol/go/policy/attributes"
 	"github.com/spf13/cobra"
 )
 
@@ -51,6 +53,49 @@ func getAttributeValue(cmd *cobra.Command, args []string) {
 	handleValueSuccess(cmd, v)
 }
 
+func filterValuesByState(values []*policy.Value, state policycommon.ActiveStateEnum) []*policy.Value {
+	switch state {
+	case policycommon.ActiveStateEnum_ACTIVE_STATE_ENUM_ACTIVE:
+		filtered := make([]*policy.Value, 0, len(values))
+		for _, v := range values {
+			if v.GetActive().GetValue() {
+				filtered = append(filtered, v)
+			}
+		}
+		return filtered
+	case policycommon.ActiveStateEnum_ACTIVE_STATE_ENUM_INACTIVE:
+		filtered := make([]*policy.Value, 0, len(values))
+		for _, v := range values {
+			if !v.GetActive().GetValue() {
+				filtered = append(filtered, v)
+			}
+		}
+		return filtered
+	default:
+		return values
+	}
+}
+
+func paginateValues(values []*policy.Value, limit, offset int32) ([]*policy.Value, *policy.PageResponse) {
+	total := int32(len(values))
+	pagination := &policy.PageResponse{
+		Total:         total,
+		CurrentOffset: offset,
+	}
+
+	if offset >= total {
+		return nil, pagination
+	}
+	values = values[offset:]
+
+	if limit > 0 && limit < int32(len(values)) {
+		values = values[:limit]
+		pagination.NextOffset = offset + limit
+	}
+
+	return values, pagination
+}
+
 func listAttributeValue(cmd *cobra.Command, args []string) {
 	c := cli.New(cmd, args)
 	h := common.NewHandler(c)
@@ -61,10 +106,14 @@ func listAttributeValue(cmd *cobra.Command, args []string) {
 	limit := c.Flags.GetRequiredInt32("limit")
 	offset := c.Flags.GetRequiredInt32("offset")
 
-	resp, err := h.ListAttributeValues(cmd.Context(), attrID, state, limit, offset)
+	values, err := h.ListAttributeValues(cmd.Context(), attrID)
 	if err != nil {
 		cli.ExitWithError("Failed to list attribute values", err)
 	}
+
+	filtered := filterValuesByState(values, state)
+	paged, pagination := paginateValues(filtered, limit, offset)
+
 	t := cli.NewTable(
 		cli.NewUUIDColumn(),
 		table.NewFlexColumn("fqn", "Fqn", cli.FlexColumnWidthFour),
@@ -74,7 +123,7 @@ func listAttributeValue(cmd *cobra.Command, args []string) {
 		table.NewFlexColumn("updated_at", "Updated At", cli.FlexColumnWidthOne),
 	)
 	rows := []table.Row{}
-	for _, val := range resp.GetValues() {
+	for _, val := range paged {
 		v := cli.GetSimpleAttributeValue(val)
 		rows = append(rows, table.NewRow(table.RowData{
 			"id":         v.ID,
@@ -86,7 +135,12 @@ func listAttributeValue(cmd *cobra.Command, args []string) {
 		}))
 	}
 	t = t.WithRows(rows)
-	t = cli.WithListPaginationFooter(t, resp.GetPagination())
+	t = cli.WithListPaginationFooter(t, pagination)
+
+	resp := &attributes.ListAttributeValuesResponse{
+		Values:     paged,
+		Pagination: pagination,
+	}
 	common.HandleSuccess(cmd, "", t, resp)
 }
 

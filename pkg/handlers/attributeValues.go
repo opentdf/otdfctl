@@ -11,15 +11,12 @@ import (
 	"github.com/opentdf/platform/protocol/go/policy/unsafe"
 )
 
-func (h *Handler) ListAttributeValues(ctx context.Context, attributeID string, state common.ActiveStateEnum, limit, offset int32) (*attributes.ListAttributeValuesResponse, error) {
-	return h.sdk.Attributes.ListAttributeValues(ctx, &attributes.ListAttributeValuesRequest{
-		AttributeId: attributeID,
-		State:       state,
-		Pagination: &policy.PageRequest{
-			Limit:  limit,
-			Offset: offset,
-		},
-	})
+func (h *Handler) ListAttributeValues(ctx context.Context, attributeID string) ([]*policy.Value, error) {
+	attr, err := h.GetAttribute(ctx, attributeID)
+	if err != nil {
+		return nil, err
+	}
+	return attr.GetValues(), nil
 }
 
 // Creates and returns the created value
