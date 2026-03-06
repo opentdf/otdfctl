@@ -2,6 +2,7 @@ package policy
 
 import (
 	"fmt"
+	"math"
 
 	"github.com/evertras/bubble-table/table"
 	"github.com/opentdf/otdfctl/cmd/common"
@@ -71,25 +72,29 @@ func filterValuesByState(values []*policy.Value, state policycommon.ActiveStateE
 			}
 		}
 		return filtered
-	default:
+	case policycommon.ActiveStateEnum_ACTIVE_STATE_ENUM_ANY,
+		policycommon.ActiveStateEnum_ACTIVE_STATE_ENUM_UNSPECIFIED:
 		return values
 	}
+	return values
 }
 
 func paginateValues(values []*policy.Value, limit, offset int32) ([]*policy.Value, *policy.PageResponse) {
-	total := int32(len(values))
+	total := len(values)
 	pagination := &policy.PageResponse{
-		Total:         total,
+		Total:         int32(min(total, math.MaxInt32)), //nolint:gosec // bounded by min
 		CurrentOffset: offset,
 	}
 
-	if offset >= total {
+	off := int(offset)
+	if off >= total {
 		return nil, pagination
 	}
-	values = values[offset:]
+	values = values[off:]
 
-	if limit > 0 && limit < int32(len(values)) {
-		values = values[:limit]
+	lim := int(limit)
+	if lim > 0 && lim < len(values) {
+		values = values[:lim]
 		pagination.NextOffset = offset + limit
 	}
 
