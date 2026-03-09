@@ -19,8 +19,8 @@ require (
 	github.com/jrschumacher/go-osprofiles v0.0.0-20251201220924-3d077c5481e5
 	github.com/opentdf/platform/lib/flattening v0.1.3
 	github.com/opentdf/platform/lib/ocrypto v0.10.0
-	github.com/opentdf/platform/protocol/go v0.16.1-0.20260309172017-5c302e00354d
-	github.com/opentdf/platform/sdk v0.13.1-0.20260309172017-5c302e00354d
+	github.com/opentdf/platform/protocol/go v0.16.1-0.20260309203441-36c0f69089d7
+	github.com/opentdf/platform/sdk v0.13.1-0.20260309203441-36c0f69089d7
 	github.com/spf13/cobra v1.10.2
 	github.com/stretchr/testify v1.11.1
 	github.com/zitadel/oidc/v3 v3.45.1
