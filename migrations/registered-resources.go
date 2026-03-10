@@ -1,3 +1,4 @@
+//nolint:forbidigo // migration output requires direct terminal printing for interactive prompts and styled output
 package migrations
 
 import (
@@ -123,9 +124,9 @@ func buildRegisteredResourcePlan(ctx context.Context, h MigrationHandler) ([]Reg
 		if qty > math.MaxInt32 || offset+int32(qty) < 0 {
 			return nil, errors.New("resource count exceeded safe limit")
 		}
-		offset += int32(qty) //nolint:gosec // G115
+		offset += int32(qty)
 
-		if int32(qty) < pageSize { //nolint:gosec // G115
+		if int32(qty) < pageSize {
 			break
 		}
 	}
@@ -158,9 +159,9 @@ func fetchAllResourceValues(ctx context.Context, h MigrationHandler, resourceID 
 		if qty > math.MaxInt32 || offset+int32(qty) < 0 {
 			break
 		}
-		offset += int32(qty) //nolint:gosec // G115
+		offset += int32(qty)
 
-		if int32(qty) < pageSize { //nolint:gosec // G115
+		if int32(qty) < pageSize {
 			break
 		}
 	}
@@ -193,9 +194,9 @@ func listAvailableNamespaces(ctx context.Context, h MigrationHandler) ([]*policy
 		if qty > math.MaxInt32 || offset+int32(qty) < 0 {
 			break
 		}
-		offset += int32(qty) //nolint:gosec // G115
+		offset += int32(qty)
 
-		if int32(qty) < pageSize { //nolint:gosec // G115
+		if int32(qty) < pageSize {
 			break
 		}
 	}
@@ -327,7 +328,7 @@ func runInteractiveRegisteredResourceMigration(ctx context.Context, h MigrationH
 	// Add skip and abort options
 	skipOpt := huh.NewOption("Skip this resource", optSkipResource)
 	abortOpt := huh.NewOption("Abort entire migration", optAbortAll)
-	nsOptsWithControls := append(nsOpts, skipOpt, abortOpt)
+	nsOptsWithControls := append(append([]huh.Option[string]{}, nsOpts...), skipOpt, abortOpt)
 
 	successCount := 0
 	skippedCount := 0
