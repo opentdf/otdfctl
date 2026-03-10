@@ -218,12 +218,18 @@ func TestCommitRegisteredResourceMigration(t *testing.T) {
 		err := commitRegisteredResourceMigration(context.Background(), mock, plan)
 		require.NoError(t, err)
 
-		// Verify resource was created with correct params
+		// Verify resource was created without values (values are created individually)
 		require.Len(t, mock.CreatedResources, 1)
 		assert.Equal(t, "https://example.com", mock.CreatedResources[0].Namespace)
 		assert.Equal(t, "my-resource", mock.CreatedResources[0].Name)
-		assert.Equal(t, []string{"val-a", "val-b"}, mock.CreatedResources[0].Values)
+		assert.Nil(t, mock.CreatedResources[0].Values)
 		assert.Equal(t, map[string]string{"env": "prod"}, mock.CreatedResources[0].Metadata.GetLabels())
+
+		// Verify values were created individually
+		require.Len(t, mock.CreatedResourceValues, 2)
+		assert.Equal(t, "new-resource-id", mock.CreatedResourceValues[0].ResourceID)
+		assert.Equal(t, "val-a", mock.CreatedResourceValues[0].Value)
+		assert.Equal(t, "val-b", mock.CreatedResourceValues[1].Value)
 
 		// Verify old resource was deleted
 		assert.Contains(t, mock.DeletedResourceIDs, "old-id")

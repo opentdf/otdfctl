@@ -426,12 +426,6 @@ func commitRegisteredResourceMigration(ctx context.Context, h MigrationHandler, 
 
 	resource := plan.Resource
 
-	// Collect value strings for the initial resource creation
-	valueStrings := make([]string, 0, len(plan.Values))
-	for _, v := range plan.Values {
-		valueStrings = append(valueStrings, v.GetValue())
-	}
-
 	// Build metadata for the new resource
 	var metadata *common.MetadataMutable
 	if resource.GetMetadata() != nil && len(resource.GetMetadata().GetLabels()) > 0 {
@@ -440,48 +434,30 @@ func commitRegisteredResourceMigration(ctx context.Context, h MigrationHandler, 
 		}
 	}
 
-	// Step 1: Create new resource under target namespace
-	newResource, err := h.CreateRegisteredResource(ctx, plan.TargetNamespace, resource.GetName(), valueStrings, metadata)
+	// Step 1: Create new resource under target namespace (without values — we create them individually)
+	newResource, err := h.CreateRegisteredResource(ctx, plan.TargetNamespace, resource.GetName(), nil, metadata)
 	if err != nil {
 		return fmt.Errorf("failed to create resource under namespace %s: %w", plan.TargetNamespace, err)
 	}
 
-	// Step 2: Re-create each value with its action-attribute mappings
-	// Build a map from value string to the new resource's value IDs
-	newValuesByString := make(map[string]*policy.RegisteredResourceValue)
-	for _, nv := range newResource.GetValues() {
-		newValuesByString[nv.GetValue()] = nv
-	}
-
+	// Step 2: Create each value individually, preserving action-attribute mappings
 	for _, oldValue := range plan.Values {
-		newValue, ok := newValuesByString[oldValue.GetValue()]
-		if !ok {
-			// Value was already created as part of CreateRegisteredResource, skip
-			continue
+		oldAAVs := oldValue.GetActionAttributeValues()
+		var aavRequests []*registeredresources.ActionAttributeValue
+		if len(oldAAVs) > 0 {
+			aavRequests = convertActionAttributeValues(oldAAVs)
 		}
 
-		// If the old value had action-attribute mappings, re-create them
-		oldAAVs := oldValue.GetActionAttributeValues()
-		if len(oldAAVs) > 0 {
-			aavRequests := convertActionAttributeValues(oldAAVs)
-
-			var valueMetadata *common.MetadataMutable
-			if oldValue.GetMetadata() != nil && len(oldValue.GetMetadata().GetLabels()) > 0 {
-				valueMetadata = &common.MetadataMutable{
-					Labels: oldValue.GetMetadata().GetLabels(),
-				}
+		var valueMetadata *common.MetadataMutable
+		if oldValue.GetMetadata() != nil && len(oldValue.GetMetadata().GetLabels()) > 0 {
+			valueMetadata = &common.MetadataMutable{
+				Labels: oldValue.GetMetadata().GetLabels(),
 			}
+		}
 
-			// Delete the auto-created value and re-create with action-attribute mappings
-			if err := h.DeleteRegisteredResource(ctx, newValue.GetId()); err != nil {
-				// If we can't delete the auto-created value, try creating a new one anyway
-				_ = err
-			}
-
-			_, err := h.CreateRegisteredResourceValue(ctx, newResource.GetId(), oldValue.GetValue(), aavRequests, valueMetadata)
-			if err != nil {
-				return fmt.Errorf("failed to re-create value %s with action-attribute mappings: %w", oldValue.GetValue(), err)
-			}
+		_, err := h.CreateRegisteredResourceValue(ctx, newResource.GetId(), oldValue.GetValue(), aavRequests, valueMetadata)
+		if err != nil {
+			return fmt.Errorf("failed to create value %s for resource %s: %w", oldValue.GetValue(), newResource.GetId(), err)
 		}
 	}
 
