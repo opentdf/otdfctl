@@ -42,14 +42,6 @@ type RegisteredResourceMigrationPlan struct {
 func MigrateRegisteredResources(ctx context.Context, h MigrationHandler, commit, interactive bool) error {
 	styles := initMigrationDisplayStyles()
 
-	didBackup, err := backupForm()
-	if err != nil {
-		return err
-	}
-	if !didBackup {
-		return errors.New("user did not confirm backup")
-	}
-
 	plan, err := buildRegisteredResourcePlan(ctx, h)
 	if err != nil {
 		return err
@@ -67,6 +59,16 @@ func MigrateRegisteredResources(ctx context.Context, h MigrationHandler, commit,
 
 	if len(availableNamespaces) == 0 {
 		return errors.New("no namespaces available - please create at least one namespace before running migration")
+	}
+
+	if commit {
+		didBackup, err := backupForm()
+		if err != nil {
+			return err
+		}
+		if !didBackup {
+			return errors.New("user did not confirm backup")
+		}
 	}
 
 	switch {
@@ -209,10 +211,12 @@ func buildNamespaceOptions(nsList []*policy.Namespace) []huh.Option[string] {
 	opts := make([]huh.Option[string], 0, len(nsList))
 	for _, ns := range nsList {
 		label := ns.GetFqn()
+		value := ns.GetFqn()
 		if label == "" {
 			label = ns.GetName() + " (" + ns.GetId() + ")"
+			value = ns.GetId()
 		}
-		opts = append(opts, huh.NewOption(label, ns.GetFqn()))
+		opts = append(opts, huh.NewOption(label, value))
 	}
 	return opts
 }
@@ -315,6 +319,7 @@ func runBatchRegisteredResourceMigration(ctx context.Context, h MigrationHandler
 		for id, errMsg := range failedResources {
 			fmt.Printf("    - Resource ID %s: %s\n", styles.styleResourceID.Render(id), errMsg)
 		}
+		return fmt.Errorf("%d of %d resources failed to migrate", len(failedResources), len(plan))
 	}
 
 	return nil
@@ -330,9 +335,12 @@ func runInteractiveRegisteredResourceMigration(ctx context.Context, h MigrationH
 	abortOpt := huh.NewOption("Abort entire migration", optAbortAll)
 	nsOptsWithControls := append(append([]huh.Option[string]{}, nsOpts...), skipOpt, abortOpt)
 
-	successCount := 0
-	skippedCount := 0
-	failedResources := make(map[string]string)
+	var (
+		successCount    int
+		skippedCount    int
+		aborted         bool
+		failedResources = make(map[string]string)
+	)
 
 	for i, p := range plan {
 		fmt.Println(styles.styleSeparator.Render(styles.separatorText))
@@ -367,6 +375,7 @@ func runInteractiveRegisteredResourceMigration(ctx context.Context, h MigrationH
 		if err := namespaceForm.Run(); err != nil {
 			if errors.Is(err, huh.ErrUserAborted) {
 				fmt.Println(styles.styleWarning.Render("Migration aborted by user."))
+				aborted = true
 				break
 			}
 			fmt.Println(styles.styleWarning.Render(fmt.Sprintf("Error during prompt: %v. Skipping resource.", err)))
@@ -381,6 +390,7 @@ func runInteractiveRegisteredResourceMigration(ctx context.Context, h MigrationH
 			continue
 		case optAbortAll:
 			fmt.Println(styles.styleWarning.Render("Aborting migration."))
+			aborted = true
 			goto summary
 		}
 
@@ -414,6 +424,13 @@ summary:
 		for id, errMsg := range failedResources {
 			fmt.Printf("    - Resource ID %s: %s\n", styles.styleResourceID.Render(id), errMsg)
 		}
+	}
+
+	if aborted {
+		return errors.New("migration aborted by user")
+	}
+	if len(failedResources) > 0 {
+		return fmt.Errorf("%d of %d resources failed to migrate", len(failedResources), len(plan))
 	}
 
 	return nil
