@@ -66,7 +66,7 @@ func (h Handler) CreateAction(ctx context.Context, name string, namespace string
 }
 
 func (h Handler) UpdateAction(ctx context.Context, id, name string, metadata *common.MetadataMutable, behavior common.MetadataUpdateEnum) (*policy.Action, error) {
-	resp, err := h.sdk.Actions.UpdateAction(ctx, &actions.UpdateActionRequest{
+	_, err := h.sdk.Actions.UpdateAction(ctx, &actions.UpdateActionRequest{
 		Id:                     id,
 		Metadata:               metadata,
 		Name:                   name,
@@ -75,7 +75,7 @@ func (h Handler) UpdateAction(ctx context.Context, id, name string, metadata *co
 	if err != nil {
 		return nil, err
 	}
-	return resp.GetAction(), nil
+	return h.GetAction(ctx, id, "", "")
 }
 
 func (h Handler) DeleteAction(ctx context.Context, id string) error {
