@@ -9,6 +9,13 @@ import (
 	"github.com/opentdf/platform/protocol/go/policy/actions"
 )
 
+func getNamespaceIDAndFQN(namespace string) (id string, fqn string) {
+	if _, err := uuid.Parse(namespace); err != nil {
+		return "", namespace
+	}
+	return namespace, ""
+}
+
 func (h Handler) GetAction(ctx context.Context, id string, name string, namespace string) (*policy.Action, error) {
 	req := &actions.GetActionRequest{}
 	if id != "" {
@@ -21,11 +28,7 @@ func (h Handler) GetAction(ctx context.Context, id string, name string, namespac
 		}
 	}
 
-	if _, err := uuid.Parse(namespace); err != nil {
-		req.NamespaceFqn = namespace
-	} else {
-		req.NamespaceId = namespace
-	}
+	req.NamespaceId, req.NamespaceFqn = getNamespaceIDAndFQN(namespace)
 
 	resp, err := h.sdk.Actions.GetAction(ctx, req)
 	if err != nil {
@@ -42,11 +45,7 @@ func (h Handler) ListActions(ctx context.Context, limit, offset int32, namespace
 			Offset: offset,
 		},
 	}
-	if _, err := uuid.Parse(namespace); err != nil {
-		req.NamespaceFqn = namespace
-	} else {
-		req.NamespaceId = namespace
-	}
+	req.NamespaceId, req.NamespaceFqn = getNamespaceIDAndFQN(namespace)
 
 	return h.sdk.Actions.ListActions(ctx, req)
 }
@@ -56,11 +55,7 @@ func (h Handler) CreateAction(ctx context.Context, name string, namespace string
 		Name:     name,
 		Metadata: metadata,
 	}
-	if _, err := uuid.Parse(namespace); err != nil {
-		req.NamespaceFqn = namespace
-	} else {
-		req.NamespaceId = namespace
-	}
+	req.NamespaceId, req.NamespaceFqn = getNamespaceIDAndFQN(namespace)
 
 	resp, err := h.sdk.Actions.CreateAction(ctx, req)
 	if err != nil {
