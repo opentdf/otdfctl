@@ -68,6 +68,7 @@ teardown_file() {
   # get by name to retrieve the ID
   UPDATE_ACTION_ID=$(./otdfctl policy actions get --name update --namespace "$ACTION_NAMESPACE" --json $HOST $WITH_CREDS | jq -r '.id')
 
+  # ensure getting by id does not require namespace
   run_otdfctl_action get --id "$UPDATE_ACTION_ID" --json
     assert_success
     [ "$(echo "$output" | jq -r '.id')" = "$UPDATE_ACTION_ID" ]
@@ -82,6 +83,10 @@ teardown_file() {
   run_otdfctl_action get --id 'testing_get'
     assert_failure
     assert_output --partial "must be a valid UUID"
+
+  run_otdfctl_action get --name 'test_action_create'
+    assert_failure
+    assert_output --partial "namespace' must be provided when using 'name'"
 }
 
 @test "List actions" {
