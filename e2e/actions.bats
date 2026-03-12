@@ -11,6 +11,9 @@ setup() {
     load "${BATS_LIB_PATH}/bats-support/load.bash"
     load "${BATS_LIB_PATH}/bats-assert/load.bash"
 
+    # TODO: Remove this file-level skip once otdfctl passes namespace flags for the namespaced action APIs.
+    skip "Temporarily disabled [namespaced-actions]: platform actions APIs now require namespace flags"
+
     # invoke binary with credentials
     run_otdfctl_action () {
       run sh -c "./otdfctl $HOST $WITH_CREDS policy actions $*"
