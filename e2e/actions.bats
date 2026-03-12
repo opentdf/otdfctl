@@ -57,7 +57,19 @@ teardown_file() {
   # conflict
     run_otdfctl_action create -n "read" --namespace "$ACTION_NAMESPACE"
         assert_failure
+        assert_output --partial "intended action would violate a restriction"
+
+  # duplicate custom action
+    run_otdfctl_action create --name test_action_conflict --namespace "$ACTION_NAMESPACE"
+        assert_success
+    conflict_action_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
+
+    run_otdfctl_action create --name test_action_conflict --namespace "$ACTION_NAMESPACE"
+        assert_failure
         assert_output --partial "already_exists"
+
+  # cleanup
+    run_otdfctl_action delete --id "$conflict_action_id" --force
 }
 
 @test "Get an action - Good" {
