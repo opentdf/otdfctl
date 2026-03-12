@@ -7,10 +7,6 @@ command:
       shorthand: i
       description: ID of the custom action
       required: true
-    - name: namespace
-      shorthand: s
-      description: Namespace ID or FQN
-      required: true
     - name: force
       description: Force deletion without interactive confirmation
 ---
@@ -28,5 +24,5 @@ For more information about Actions, see the manual for the `actions` subcommand.
 ## Example 
 
 ```shell
-otdfctl policy actions delete --id 217b300a-47f9-4bee-be8c-d38c880053f7 --namespace https://example.com
+otdfctl policy actions delete --id 217b300a-47f9-4bee-be8c-d38c880053f7
 ```

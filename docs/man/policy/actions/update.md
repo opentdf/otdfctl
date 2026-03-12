@@ -9,10 +9,6 @@ command:
       shorthand: i
       description: ID of the action to update
       required: true
-    - name: namespace
-      shorthand: s
-      description: Namespace ID or FQN
-      required: true
     - name: name
       shorthand: n
       description: Optional updated name of the custom action (must be unique within a namespace)
@@ -36,5 +32,5 @@ For more information about Actions, see the manual for the `actions` subcommand.
 ## Example 
 
 ```shell
-otdfctl policy actions update --id 34c62145-5d99-45cb-a732-13cb16270e63 --name new_action_name --namespace https://example.com
+otdfctl policy actions update --id 34c62145-5d99-45cb-a732-13cb16270e63 --name new_action_name
 ```

@@ -14,10 +14,11 @@ command:
     - name: namespace
       shorthand: s
       description: Namespace ID or FQN
-      required: true
 ---
 
 If both `id` and `name` flag values are provided, `id` is preferred.
+
+When using `--name`, `--namespace` is required.
 
 For more information about Actions, see the manual for the `actions` subcommand.
 

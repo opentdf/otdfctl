@@ -17,10 +17,13 @@ func policyGetAction(cmd *cobra.Command, args []string) {
 
 	id := c.Flags.GetOptionalID("id")
 	name := c.Flags.GetOptionalString("name")
-	namespace := c.Flags.GetRequiredString("namespace")
+	namespace := c.Flags.GetOptionalString("namespace")
 
 	if id == "" && name == "" {
 		cli.ExitWithError("Either 'id' or 'name' must be provided", nil)
+	}
+	if id == "" && name != "" && namespace == "" {
+		cli.ExitWithError("'namespace' must be provided when using 'name'", nil)
 	}
 
 	action, err := h.GetAction(cmd.Context(), id, name, namespace)
@@ -117,11 +120,10 @@ func policyDeleteAction(cmd *cobra.Command, args []string) {
 	defer h.Close()
 
 	id := c.Flags.GetRequiredID("id")
-	namespace := c.Flags.GetRequiredString("namespace")
 	force := c.Flags.GetOptionalBool("force")
 	ctx := cmd.Context()
 
-	action, err := h.GetAction(ctx, id, "", namespace)
+	action, err := h.GetAction(ctx, id, "", "")
 	if err != nil {
 		errMsg := fmt.Sprintf("Failed to find action (%s)", id)
 		cli.ExitWithError(errMsg, err)
@@ -148,7 +150,6 @@ func policyUpdateAction(cmd *cobra.Command, args []string) {
 	defer h.Close()
 
 	id := c.Flags.GetRequiredID("id")
-	namespace := c.Flags.GetRequiredString("namespace")
 	name := c.Flags.GetOptionalString("name")
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
@@ -156,7 +157,6 @@ func policyUpdateAction(cmd *cobra.Command, args []string) {
 		cmd.Context(),
 		id,
 		name,
-		namespace,
 		getMetadataMutable(metadataLabels),
 		getMetadataUpdateBehavior(),
 	)
@@ -170,6 +170,15 @@ func policyUpdateAction(cmd *cobra.Command, args []string) {
 	t := cli.NewTabular(rows...)
 
 	common.HandleSuccess(cmd, id, t, updated)
+}
+
+func injectNamespaceFlag(doc *man.Doc) {
+	doc.Flags().StringP(
+		doc.GetDocFlag("namespace").Name,
+		doc.GetDocFlag("namespace").Shorthand,
+		doc.GetDocFlag("namespace").Default,
+		doc.GetDocFlag("namespace").Description,
+	)
 }
 
 func initActionsCommands() {
@@ -188,22 +197,12 @@ func initActionsCommands() {
 		getDoc.GetDocFlag("name").Default,
 		getDoc.GetDocFlag("name").Description,
 	)
-	getDoc.Flags().StringP(
-		getDoc.GetDocFlag("namespace").Name,
-		getDoc.GetDocFlag("namespace").Shorthand,
-		getDoc.GetDocFlag("namespace").Default,
-		getDoc.GetDocFlag("namespace").Description,
-	)
+	injectNamespaceFlag(getDoc)
 
 	listDoc := man.Docs.GetCommand("policy/actions/list",
 		man.WithRun(policyListActions),
 	)
-	listDoc.Flags().StringP(
-		listDoc.GetDocFlag("namespace").Name,
-		listDoc.GetDocFlag("namespace").Shorthand,
-		listDoc.GetDocFlag("namespace").Default,
-		listDoc.GetDocFlag("namespace").Description,
-	)
+	injectNamespaceFlag(listDoc)
 	injectListPaginationFlags(listDoc)
 
 	createDoc := man.Docs.GetCommand("policy/actions/create",
@@ -215,12 +214,7 @@ func initActionsCommands() {
 		createDoc.GetDocFlag("name").Default,
 		createDoc.GetDocFlag("name").Description,
 	)
-	createDoc.Flags().StringP(
-		createDoc.GetDocFlag("namespace").Name,
-		createDoc.GetDocFlag("namespace").Shorthand,
-		createDoc.GetDocFlag("namespace").Default,
-		createDoc.GetDocFlag("namespace").Description,
-	)
+	injectNamespaceFlag(createDoc)
 	injectLabelFlags(&createDoc.Command, false)
 
 	updateDoc := man.Docs.GetCommand("policy/actions/update",
@@ -238,12 +232,6 @@ func initActionsCommands() {
 		updateDoc.GetDocFlag("name").Default,
 		updateDoc.GetDocFlag("name").Description,
 	)
-	updateDoc.Flags().StringP(
-		updateDoc.GetDocFlag("namespace").Name,
-		updateDoc.GetDocFlag("namespace").Shorthand,
-		updateDoc.GetDocFlag("namespace").Default,
-		updateDoc.GetDocFlag("namespace").Description,
-	)
 	injectLabelFlags(&updateDoc.Command, true)
 
 	deleteDoc := man.Docs.GetCommand("policy/actions/delete",
@@ -254,12 +242,6 @@ func initActionsCommands() {
 		deleteDoc.GetDocFlag("id").Shorthand,
 		deleteDoc.GetDocFlag("id").Default,
 		deleteDoc.GetDocFlag("id").Description,
-	)
-	deleteDoc.Flags().StringP(
-		deleteDoc.GetDocFlag("namespace").Name,
-		deleteDoc.GetDocFlag("namespace").Shorthand,
-		deleteDoc.GetDocFlag("namespace").Default,
-		deleteDoc.GetDocFlag("namespace").Description,
 	)
 	deleteDoc.Flags().Bool(
 		deleteDoc.GetDocFlag("force").Name,
