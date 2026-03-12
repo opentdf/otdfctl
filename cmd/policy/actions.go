@@ -17,12 +17,13 @@ func policyGetAction(cmd *cobra.Command, args []string) {
 
 	id := c.Flags.GetOptionalID("id")
 	name := c.Flags.GetOptionalString("name")
+	namespace := c.Flags.GetRequiredString("namespace")
 
 	if id == "" && name == "" {
 		cli.ExitWithError("Either 'id' or 'name' must be provided", nil)
 	}
 
-	action, err := h.GetAction(cmd.Context(), id, name)
+	action, err := h.GetAction(cmd.Context(), id, name, namespace)
 	if err != nil {
 		identifier := fmt.Sprintf("id: %s", id)
 		if id == "" {
@@ -51,8 +52,9 @@ func policyListActions(cmd *cobra.Command, args []string) {
 
 	limit := c.Flags.GetRequiredInt32("limit")
 	offset := c.Flags.GetRequiredInt32("offset")
+	namespace := c.Flags.GetRequiredString("namespace")
 
-	resp, err := h.ListActions(cmd.Context(), limit, offset)
+	resp, err := h.ListActions(cmd.Context(), limit, offset, namespace)
 	if err != nil {
 		cli.ExitWithError("Failed to list actions", err)
 	}
@@ -88,9 +90,10 @@ func policyCreateAction(cmd *cobra.Command, args []string) {
 	defer h.Close()
 
 	name := c.Flags.GetRequiredString("name")
+	namespace := c.Flags.GetRequiredString("namespace")
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
-	action, err := h.CreateAction(cmd.Context(), name, getMetadataMutable(metadataLabels))
+	action, err := h.CreateAction(cmd.Context(), name, namespace, getMetadataMutable(metadataLabels))
 	if err != nil {
 		cli.ExitWithError("Failed to create action", err)
 	}
@@ -114,10 +117,11 @@ func policyDeleteAction(cmd *cobra.Command, args []string) {
 	defer h.Close()
 
 	id := c.Flags.GetRequiredID("id")
+	namespace := c.Flags.GetRequiredString("namespace")
 	force := c.Flags.GetOptionalBool("force")
 	ctx := cmd.Context()
 
-	action, err := h.GetAction(ctx, id, "")
+	action, err := h.GetAction(ctx, id, "", namespace)
 	if err != nil {
 		errMsg := fmt.Sprintf("Failed to find action (%s)", id)
 		cli.ExitWithError(errMsg, err)
@@ -144,6 +148,7 @@ func policyUpdateAction(cmd *cobra.Command, args []string) {
 	defer h.Close()
 
 	id := c.Flags.GetRequiredID("id")
+	namespace := c.Flags.GetRequiredString("namespace")
 	name := c.Flags.GetOptionalString("name")
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
@@ -151,6 +156,7 @@ func policyUpdateAction(cmd *cobra.Command, args []string) {
 		cmd.Context(),
 		id,
 		name,
+		namespace,
 		getMetadataMutable(metadataLabels),
 		getMetadataUpdateBehavior(),
 	)
@@ -182,9 +188,21 @@ func initActionsCommands() {
 		getDoc.GetDocFlag("name").Default,
 		getDoc.GetDocFlag("name").Description,
 	)
+	getDoc.Flags().StringP(
+		getDoc.GetDocFlag("namespace").Name,
+		getDoc.GetDocFlag("namespace").Shorthand,
+		getDoc.GetDocFlag("namespace").Default,
+		getDoc.GetDocFlag("namespace").Description,
+	)
 
 	listDoc := man.Docs.GetCommand("policy/actions/list",
 		man.WithRun(policyListActions),
+	)
+	listDoc.Flags().StringP(
+		listDoc.GetDocFlag("namespace").Name,
+		listDoc.GetDocFlag("namespace").Shorthand,
+		listDoc.GetDocFlag("namespace").Default,
+		listDoc.GetDocFlag("namespace").Description,
 	)
 	injectListPaginationFlags(listDoc)
 
@@ -196,6 +214,12 @@ func initActionsCommands() {
 		createDoc.GetDocFlag("name").Shorthand,
 		createDoc.GetDocFlag("name").Default,
 		createDoc.GetDocFlag("name").Description,
+	)
+	createDoc.Flags().StringP(
+		createDoc.GetDocFlag("namespace").Name,
+		createDoc.GetDocFlag("namespace").Shorthand,
+		createDoc.GetDocFlag("namespace").Default,
+		createDoc.GetDocFlag("namespace").Description,
 	)
 	injectLabelFlags(&createDoc.Command, false)
 
@@ -214,6 +238,12 @@ func initActionsCommands() {
 		updateDoc.GetDocFlag("name").Default,
 		updateDoc.GetDocFlag("name").Description,
 	)
+	updateDoc.Flags().StringP(
+		updateDoc.GetDocFlag("namespace").Name,
+		updateDoc.GetDocFlag("namespace").Shorthand,
+		updateDoc.GetDocFlag("namespace").Default,
+		updateDoc.GetDocFlag("namespace").Description,
+	)
 	injectLabelFlags(&updateDoc.Command, true)
 
 	deleteDoc := man.Docs.GetCommand("policy/actions/delete",
@@ -224,6 +254,12 @@ func initActionsCommands() {
 		deleteDoc.GetDocFlag("id").Shorthand,
 		deleteDoc.GetDocFlag("id").Default,
 		deleteDoc.GetDocFlag("id").Description,
+	)
+	deleteDoc.Flags().StringP(
+		deleteDoc.GetDocFlag("namespace").Name,
+		deleteDoc.GetDocFlag("namespace").Shorthand,
+		deleteDoc.GetDocFlag("namespace").Default,
+		deleteDoc.GetDocFlag("namespace").Description,
 	)
 	deleteDoc.Flags().Bool(
 		deleteDoc.GetDocFlag("force").Name,

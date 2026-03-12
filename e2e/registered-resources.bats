@@ -16,11 +16,11 @@ setup_file() {
 
     # create custom action to be used in registered resource values tests
     export CUSTOM_ACTION_NAME="test_action_for_values"
-    export CUSTOM_ACTION_ID=$(./otdfctl $HOST $WITH_CREDS policy actions create --name "$CUSTOM_ACTION_NAME" --json | jq -r '.id')
+    export CUSTOM_ACTION_ID=$(./otdfctl $HOST $WITH_CREDS policy actions create --name "$CUSTOM_ACTION_NAME" --namespace "$NS_ID" --json | jq -r '.id')
 
     # get standard read action id to use in registered resource values tests
     export READ_ACTION_NAME="read"
-    export READ_ACTION_ID=$(./otdfctl $HOST $WITH_CREDS policy actions get --name "$READ_ACTION_NAME" --json | jq -r '.id')
+    export READ_ACTION_ID=$(./otdfctl $HOST $WITH_CREDS policy actions get --name "$READ_ACTION_NAME" --namespace "$NS_ID" --json | jq -r '.id')
     export ATTR_NAME=test_rr_attr
     attr_id=$(./otdfctl $HOST $WITH_CREDS policy attributes create --namespace "$NS_ID" --name "$ATTR_NAME" --rule ANY_OF -l key=value --json | jq -r '.id')
     export ATTR_VAL_1_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes values create --attribute-id "$attr_id" --value test_reg_res_attr__val_1 --json | jq -r '.id')
@@ -49,7 +49,7 @@ teardown_file() {
   ./otdfctl $HOST $WITH_CREDS policy registered-resources delete --id "$RR_ID" --force
 
   # remove the custom action used in registered resource values tests
-  ./otdfctl $HOST $WITH_CREDS policy actions delete --id "$CUSTOM_ACTION_ID" --force
+  ./otdfctl $HOST $WITH_CREDS policy actions delete --id "$CUSTOM_ACTION_ID" --namespace "$NS_ID" --force
 
   # remove the namespace and cascade delete attributes and values used in registered resource values tests
   ./otdfctl $HOST $WITH_CREDS policy attributes namespaces unsafe delete --id "$NS_ID" --force
@@ -212,7 +212,6 @@ teardown_file() {
 # Tests for registered resource values
 
 @test "Create a registered resource value - Good" {
-  skip "Temporarily disabled [namespaced-actions]: action-name validation/path is failing in CI"
   # simple by resource ID
   run_otdfctl_reg_res_values create --resource "$RR_ID" --value test_create_rr_val
     assert_output --partial "SUCCESS"
@@ -286,7 +285,6 @@ teardown_file() {
 }
 
 @test "Get a registered resource value - Good" {
-  skip "Temporarily disabled [namespaced-actions]: action-name validation/path is failing in CI"
   # setup a resource value to get
   run_otdfctl_reg_res_values create --resource "$RR_ID" --value test_get_rr_val --action-attribute-value "\"$READ_ACTION_ID;$ATTR_VAL_1_ID\""
     assert_success
@@ -333,7 +331,6 @@ teardown_file() {
 }
 
 @test "List registered resource values - Good" {
-  skip "Temporarily disabled [namespaced-actions]: dependent registered resource value setup is failing in CI"
   # setup values to list
   run_otdfctl_reg_res_values create --resource "$RR_ID" --value test_list_rr_val_1 --action-attribute-value "\"$READ_ACTION_ID;$ATTR_VAL_1_ID\""
   reg_res_val1_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
@@ -385,7 +382,6 @@ teardown_file() {
 }
 
 @test "Update registered resource values" {
-  skip "Temporarily disabled [namespaced-actions]: action-name validation/path is failing in CI"
   # setup a resource value to update
   run_otdfctl_reg_res_values create --resource "$RR_ID" --value test_update_rr_val --action-attribute-value "\"$READ_ACTION_ID;$ATTR_VAL_1_ID\""
     assert_success

@@ -5,6 +5,7 @@
 setup_file() {
     export WITH_CREDS='--with-client-creds-file ./creds.json'
     export HOST='--host http://localhost:8080'
+    export ACTION_NAMESPACE='https://example.com'
 }
 
 setup() {
@@ -13,17 +14,16 @@ setup() {
 
     # invoke binary with credentials
     run_otdfctl_action () {
-      run sh -c "./otdfctl $HOST $WITH_CREDS policy actions $*"
+      run sh -c "./otdfctl $HOST $WITH_CREDS policy actions $* --namespace $ACTION_NAMESPACE"
     }
 }
 
 teardown_file() {
   # clear out all test env vars
-  unset HOST WITH_CREDS
+  unset HOST WITH_CREDS ACTION_NAMESPACE
 }
 
 @test "Create a new custom action - Good" {
-  skip "Temporarily disabled [namespaced-actions]: actions now require namespace flags"
   run_otdfctl_action create --name test_action_create
     assert_output --partial "SUCCESS"
     assert_line --regexp "Name.*test_action_create"
@@ -37,7 +37,6 @@ teardown_file() {
 }
 
 @test "Create a new action - Bad" {
-  skip "Temporarily disabled [namespaced-actions]: actions now require namespace flags"
   # bad action names
     run_otdfctl_action create --name ends_underscored_
         assert_failure
@@ -58,14 +57,13 @@ teardown_file() {
 }
 
 @test "Get an action - Good" {
-  skip "Temporarily disabled [namespaced-actions]: actions now require namespace flags"
   run_otdfctl_action get --name "read"
     assert_success
     assert_line --partial "Id"
     assert_line --regexp "Name.*read"
 
   # get by name to retrieve the ID
-  UPDATE_ACTION_ID=$(./otdfctl policy actions get --name update --json $HOST $WITH_CREDS | jq -r '.id')
+  UPDATE_ACTION_ID=$(./otdfctl policy actions get --name update --namespace "$ACTION_NAMESPACE" --json $HOST $WITH_CREDS | jq -r '.id')
 
   run_otdfctl_action get --id "$UPDATE_ACTION_ID" --json
     assert_success
@@ -84,7 +82,6 @@ teardown_file() {
 }
 
 @test "List actions" {
-  skip "Temporarily disabled [namespaced-actions]: actions now require namespace flags"
   run_otdfctl_action list  
     assert_output --partial "create"
     assert_output --partial "read"
@@ -105,8 +102,7 @@ teardown_file() {
 }
 
 @test "Update action" {
-  skip "Temporarily disabled [namespaced-actions]: actions now require namespace flags"
-  ACTION_TO_UPDATE=$(./otdfctl policy actions create --name testing_updation $HOST $WITH_CREDS --json | jq -r '.id')
+  ACTION_TO_UPDATE=$(./otdfctl policy actions create --name testing_updation --namespace "$ACTION_NAMESPACE" $HOST $WITH_CREDS --json | jq -r '.id')
   # extend labels
   run_otdfctl_action update --id "$ACTION_TO_UPDATE" -l key=value --label test=true
     assert_success
@@ -137,14 +133,13 @@ teardown_file() {
 }
 
 @test "Delete action - bad" {
-  STANDARD_ACTION=$(./otdfctl policy actions get --name update $HOST $WITH_CREDS --json | jq -r '.id')
+  STANDARD_ACTION=$(./otdfctl policy actions get --name update --namespace "$ACTION_NAMESPACE" $HOST $WITH_CREDS --json | jq -r '.id')
   run_otdfctl_action delete --id "$STANDARD_ACTION" --force
     assert_failure
 }
 
 @test "Delete action - good" {
-  skip "Temporarily disabled [namespaced-actions]: actions now require namespace flags"
-  DELETABLE_ACTION=$(./otdfctl policy actions create --name testing-delete $HOST $WITH_CREDS --json | jq -r '.id')
+  DELETABLE_ACTION=$(./otdfctl policy actions create --name testing-delete --namespace "$ACTION_NAMESPACE" $HOST $WITH_CREDS --json | jq -r '.id')
   run_otdfctl_action delete --id "$DELETABLE_ACTION" --force
     assert_success
 }

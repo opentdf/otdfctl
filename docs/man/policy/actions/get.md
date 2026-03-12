@@ -11,6 +11,10 @@ command:
     - name: name
       shorthand: n
       description: Name of the action
+    - name: namespace
+      shorthand: s
+      description: Namespace ID or FQN
+      required: true
 ---
 
 If both `id` and `name` flag values are provided, `id` is preferred.
@@ -28,5 +32,5 @@ otdfctl policy actions get --id e1402c63-eeaa-45e2-85d2-b939d135941f
 Get by Name:
 
 ```shell
-otdfctl policy actions get --name read
+otdfctl policy actions get --name read --namespace https://example.com
 ```
