@@ -14,7 +14,7 @@ setup() {
 
     # invoke binary with credentials
     run_otdfctl_action () {
-      run sh -c "./otdfctl $HOST $WITH_CREDS policy actions $* --namespace $ACTION_NAMESPACE"
+      run sh -c "./otdfctl $HOST $WITH_CREDS policy actions $*"
     }
 }
 
@@ -24,7 +24,7 @@ teardown_file() {
 }
 
 @test "Create a new custom action - Good" {
-  run_otdfctl_action create --name test_action_create
+  run_otdfctl_action create --name test_action_create --namespace "$ACTION_NAMESPACE"
     assert_output --partial "SUCCESS"
     assert_line --regexp "Name.*test_action_create"
     assert_output --partial "Id"
@@ -38,26 +38,30 @@ teardown_file() {
 
 @test "Create a new action - Bad" {
   # bad action names
-    run_otdfctl_action create --name ends_underscored_
+    run_otdfctl_action create --name ends_underscored_ --namespace "$ACTION_NAMESPACE"
         assert_failure
-    run_otdfctl_action create --name -first-char-hyphen
+    run_otdfctl_action create --name -first-char-hyphen --namespace "$ACTION_NAMESPACE"
         assert_failure
-    run_otdfctl_action create --name inval!d.chars
+    run_otdfctl_action create --name inval!d.chars --namespace "$ACTION_NAMESPACE"
         assert_failure
 
   # missing flag
-    run_otdfctl_action create
+    run_otdfctl_action create --namespace "$ACTION_NAMESPACE"
         assert_failure
         assert_output --partial "Flag '--name' is required"
+
+    run_otdfctl_action create --name no_namespace
+        assert_failure
+        assert_output --partial "Flag '--namespace' is required"
   
   # conflict
-    run_otdfctl_action create -n "read"
+    run_otdfctl_action create -n "read" --namespace "$ACTION_NAMESPACE"
         assert_failure
         assert_output --partial "already_exists"
 }
 
 @test "Get an action - Good" {
-  run_otdfctl_action get --name "read"
+  run_otdfctl_action get --name "read" --namespace "$ACTION_NAMESPACE"
     assert_success
     assert_line --partial "Id"
     assert_line --regexp "Name.*read"
@@ -81,13 +85,13 @@ teardown_file() {
     assert_failure
     assert_output --partial "must be a valid UUID"
 
-  run_otdfctl_action get --name 'test_action_create'
+  run_otdfctl_action get --name 'testing_get'
     assert_failure
     assert_output --partial "namespace' must be provided when using 'name'"
 }
 
 @test "List actions" {
-  run_otdfctl_action list  
+  run_otdfctl_action list --namespace "$ACTION_NAMESPACE"
     assert_output --partial "create"
     assert_output --partial "read"
     assert_output --partial "update"
@@ -95,7 +99,7 @@ teardown_file() {
     assert_output --partial "Total"
     assert_line --regexp "Current Offset.*0"
   
-  run_otdfctl_action list --json
+  run_otdfctl_action list --namespace "$ACTION_NAMESPACE" --json
   assert_success
   assert_not_equal $(echo "$output" | jq -r 'pagination') "null"
   assert_output --partial "create"
