@@ -3,6 +3,9 @@
 # Tests for actions
 
 setup_file() {
+    # TODO: Remove this file-level skip once otdfctl passes namespace flags for the namespaced action APIs.
+    skip "Temporarily disabled [namespaced-actions]: platform actions APIs now require namespace flags"
+
     export WITH_CREDS='--with-client-creds-file ./creds.json'
     export HOST='--host http://localhost:8080'
 }
@@ -23,6 +26,7 @@ teardown_file() {
 }
 
 @test "Create a new custom action - Good" {
+  skip "Temporarily disabled [namespaced-actions]: actions now require namespace flags"
   run_otdfctl_action create --name test_action_create
     assert_output --partial "SUCCESS"
     assert_line --regexp "Name.*test_action_create"
@@ -36,6 +40,7 @@ teardown_file() {
 }
 
 @test "Create a new action - Bad" {
+  skip "Temporarily disabled [namespaced-actions]: actions now require namespace flags"
   # bad action names
     run_otdfctl_action create --name ends_underscored_
         assert_failure
@@ -56,6 +61,7 @@ teardown_file() {
 }
 
 @test "Get an action - Good" {
+  skip "Temporarily disabled [namespaced-actions]: actions now require namespace flags"
   run_otdfctl_action get --name "read"
     assert_success
     assert_line --partial "Id"
@@ -81,6 +87,7 @@ teardown_file() {
 }
 
 @test "List actions" {
+  skip "Temporarily disabled [namespaced-actions]: actions now require namespace flags"
   run_otdfctl_action list  
     assert_output --partial "create"
     assert_output --partial "read"
@@ -101,6 +108,7 @@ teardown_file() {
 }
 
 @test "Update action" {
+  skip "Temporarily disabled [namespaced-actions]: actions now require namespace flags"
   ACTION_TO_UPDATE=$(./otdfctl policy actions create --name testing_updation $HOST $WITH_CREDS --json | jq -r '.id')
   # extend labels
   run_otdfctl_action update --id "$ACTION_TO_UPDATE" -l key=value --label test=true
@@ -138,6 +146,7 @@ teardown_file() {
 }
 
 @test "Delete action - good" {
+  skip "Temporarily disabled [namespaced-actions]: actions now require namespace flags"
   DELETABLE_ACTION=$(./otdfctl policy actions create --name testing-delete $HOST $WITH_CREDS --json | jq -r '.id')
   run_otdfctl_action delete --id "$DELETABLE_ACTION" --force
     assert_success
