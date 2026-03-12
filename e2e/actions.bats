@@ -3,6 +3,9 @@
 # Tests for actions
 
 setup_file() {
+    # TODO: Remove this file-level skip once otdfctl passes namespace flags for the namespaced action APIs.
+    skip "Temporarily disabled [namespaced-actions]: platform actions APIs now require namespace flags"
+
     export WITH_CREDS='--with-client-creds-file ./creds.json'
     export HOST='--host http://localhost:8080'
 }
@@ -10,9 +13,6 @@ setup_file() {
 setup() {
     load "${BATS_LIB_PATH}/bats-support/load.bash"
     load "${BATS_LIB_PATH}/bats-assert/load.bash"
-
-    # TODO: Remove this file-level skip once otdfctl passes namespace flags for the namespaced action APIs.
-    skip "Temporarily disabled [namespaced-actions]: platform actions APIs now require namespace flags"
 
     # invoke binary with credentials
     run_otdfctl_action () {

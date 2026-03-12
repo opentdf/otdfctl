@@ -3,6 +3,10 @@
 # Tests for subject condition sets
 
 setup_file() {
+
+  # TODO: Remove this file-level skip once otdfctl passes namespace flags for the namespaced subject condition set APIs.
+  skip "Temporarily disabled [namespaced-subject-mappings]: platform subject condition set creation now requires namespace flags"
+
   export WITH_CREDS='--with-client-creds-file ./creds.json'
   export HOST='--host http://localhost:8080'
 
@@ -14,9 +18,6 @@ setup_file() {
 setup() {
   load "${BATS_LIB_PATH}/bats-support/load.bash"
   load "${BATS_LIB_PATH}/bats-assert/load.bash"
-
-  # TODO: Remove this file-level skip once otdfctl passes namespace flags for the namespaced subject condition set APIs.
-  skip "Temporarily disabled [namespaced-subject-mappings]: platform subject condition set creation now requires namespace flags"
 
   # invoke binary with credentials
   run_otdfctl_scs () {
