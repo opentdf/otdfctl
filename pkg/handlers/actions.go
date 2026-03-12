@@ -9,7 +9,7 @@ import (
 	"github.com/opentdf/platform/protocol/go/policy/actions"
 )
 
-func getNamespaceIDAndFQN(namespace string) (id string, fqn string) {
+func getNamespaceIDAndFQN(namespace string) (string, string) {
 	if _, err := uuid.Parse(namespace); err != nil {
 		return "", namespace
 	}
