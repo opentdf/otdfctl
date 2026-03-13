@@ -109,7 +109,7 @@ func policyCreateSubjectMapping(cmd *cobra.Command, args []string) {
 	h := common.NewHandler(c)
 	defer h.Close()
 
-	namespace := c.Flags.GetRequiredString("namespace")
+	namespace := c.Flags.GetOptionalString("namespace")
 	attrValueID := c.Flags.GetRequiredID("attribute-value-id")
 	actionFlagValues = c.Flags.GetStringSlice("action", actionFlagValues, cli.FlagsStringSliceOptions{Min: 0})
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})

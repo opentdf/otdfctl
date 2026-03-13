@@ -55,7 +55,7 @@ func createSubjectConditionSet(cmd *cobra.Command, args []string) {
 	defer h.Close()
 	var ssBytes []byte
 
-	namespace := c.Flags.GetRequiredString("namespace")
+	namespace := c.Flags.GetOptionalString("namespace")
 	ssFlagJSON := c.Flags.GetOptionalString("subject-sets")
 	ssFileJSON := c.Flags.GetOptionalString("subject-sets-file-json")
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})

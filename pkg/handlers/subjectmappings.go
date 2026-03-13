@@ -43,7 +43,6 @@ func (h Handler) ListSubjectMappings(ctx context.Context, limit, offset int32) (
 
 // Creates and returns the created subject mapping
 func (h Handler) CreateNewSubjectMapping(ctx context.Context, namespace string, attrValID string, actions []*policy.Action, existingSCSId string, newScs *subjectmapping.SubjectConditionSetCreate, m *common.MetadataMutable) (*policy.SubjectMapping, error) {
-	namespaceID, namespaceFQN := parseNamespaceIDOrFQN(namespace)
 	req := &subjectmapping.CreateSubjectMappingRequest{
 		AttributeValueId:              attrValID,
 		Actions:                       actions,
@@ -51,10 +50,13 @@ func (h Handler) CreateNewSubjectMapping(ctx context.Context, namespace string, 
 		NewSubjectConditionSet:        newScs,
 		Metadata:                      m,
 	}
-	if namespaceID != "" {
-		req.NamespaceId = namespaceID
-	} else {
-		req.NamespaceFqn = namespaceFQN
+	if namespace != "" {
+		namespaceID, namespaceFQN := parseNamespaceIDOrFQN(namespace)
+		if namespaceID != "" {
+			req.NamespaceId = namespaceID
+		} else {
+			req.NamespaceFqn = namespaceFQN
+		}
 	}
 	resp, err := h.sdk.SubjectMapping.CreateSubjectMapping(ctx, req)
 	if err != nil {

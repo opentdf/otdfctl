@@ -8,8 +8,8 @@ command:
     - c
   flags:
     - name: namespace
-      description: Namespace ID or FQN for the subject mapping and any newly created subject condition set
-      required: true
+      description: Optional namespace ID or FQN for the subject mapping and any newly created subject condition set
+      required: false
     - name: attribute-value-id
       description: The ID of the attribute value to map to a subject condition set
       shorthand: a

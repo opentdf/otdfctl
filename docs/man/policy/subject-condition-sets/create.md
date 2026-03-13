@@ -9,8 +9,8 @@ command:
     - new
   flags:
     - name: namespace
-      description: Namespace ID or FQN for the subject condition set
-      required: true
+      description: Optional namespace ID or FQN for the subject condition set
+      required: false
       default: ''
     - name: subject-sets
       description: A JSON array of subject sets, containing a list of condition groups, each with one or more conditions
