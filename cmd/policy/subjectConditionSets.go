@@ -55,6 +55,7 @@ func createSubjectConditionSet(cmd *cobra.Command, args []string) {
 	defer h.Close()
 	var ssBytes []byte
 
+	namespace := c.Flags.GetRequiredString("namespace")
 	ssFlagJSON := c.Flags.GetOptionalString("subject-sets")
 	ssFileJSON := c.Flags.GetOptionalString("subject-sets-file-json")
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
@@ -88,7 +89,7 @@ func createSubjectConditionSet(cmd *cobra.Command, args []string) {
 		cli.ExitWithError("Error unmarshalling subject sets", err)
 	}
 
-	scs, err := h.CreateSubjectConditionSet(cmd.Context(), ss, getMetadataMutable(metadataLabels))
+	scs, err := h.CreateSubjectConditionSet(cmd.Context(), namespace, ss, getMetadataMutable(metadataLabels))
 	if err != nil {
 		cli.ExitWithError("Error creating subject condition set", err)
 	}
@@ -101,6 +102,9 @@ func createSubjectConditionSet(cmd *cobra.Command, args []string) {
 	rows := [][]string{
 		{"Id", scs.GetId()},
 		{"SubjectSets", string(subjectSetsJSON)},
+	}
+	if scs.GetNamespace() != nil {
+		rows = append(rows, []string{"Namespace: FQN", scs.GetNamespace().GetFqn()})
 	}
 
 	if mdRows := getMetadataRows(scs.GetMetadata()); mdRows != nil {
@@ -321,6 +325,11 @@ func initSubjectConditionSetsCommands() {
 		man.WithRun(createSubjectConditionSet),
 	)
 	injectLabelFlags(&createDoc.Command, false)
+	createDoc.Flags().String(
+		createDoc.GetDocFlag("namespace").Name,
+		createDoc.GetDocFlag("namespace").Default,
+		createDoc.GetDocFlag("namespace").Description,
+	)
 	createDoc.Flags().StringP(
 		createDoc.GetDocFlag("subject-sets").Name,
 		createDoc.GetDocFlag("subject-sets").Shorthand,

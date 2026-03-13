@@ -29,13 +29,20 @@ func (h Handler) ListSubjectConditionSets(ctx context.Context, limit, offset int
 }
 
 // Creates and returns the created subject condition set
-func (h Handler) CreateSubjectConditionSet(ctx context.Context, ss []*policy.SubjectSet, metadata *common.MetadataMutable) (*policy.SubjectConditionSet, error) {
-	resp, err := h.sdk.SubjectMapping.CreateSubjectConditionSet(ctx, &subjectmapping.CreateSubjectConditionSetRequest{
+func (h Handler) CreateSubjectConditionSet(ctx context.Context, namespace string, ss []*policy.SubjectSet, metadata *common.MetadataMutable) (*policy.SubjectConditionSet, error) {
+	namespaceID, namespaceFQN := parseNamespaceIDOrFQN(namespace)
+	req := &subjectmapping.CreateSubjectConditionSetRequest{
 		SubjectConditionSet: &subjectmapping.SubjectConditionSetCreate{
 			SubjectSets: ss,
 			Metadata:    metadata,
 		},
-	})
+	}
+	if namespaceID != "" {
+		req.NamespaceId = namespaceID
+	} else {
+		req.NamespaceFqn = namespaceFQN
+	}
+	resp, err := h.sdk.SubjectMapping.CreateSubjectConditionSet(ctx, req)
 	if err != nil {
 		return nil, err
 	}

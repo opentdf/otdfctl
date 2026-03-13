@@ -8,6 +8,10 @@ command:
     - add
     - new
   flags:
+    - name: namespace
+      description: Namespace ID or FQN for the subject condition set
+      required: true
+      default: ''
     - name: subject-sets
       description: A JSON array of subject sets, containing a list of condition groups, each with one or more conditions
       shorthand: s
@@ -100,7 +104,7 @@ For more information about subject condition sets, see the `subject-condition-se
 The following subject condition set would resolve to true if the field at `.example.field.one` is 
 `myvalue` or `myothervalue1`, or the field at `.example.field.two` is not equal to `notpresentvalue`.
 ```shell
-otdfctl policy subject-condition-set create --subject-sets '[
+otdfctl policy subject-condition-set create --namespace https://example.com --subject-sets '[
   {
     "condition_groups": [
       {

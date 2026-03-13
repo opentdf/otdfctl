@@ -109,6 +109,7 @@ func policyCreateSubjectMapping(cmd *cobra.Command, args []string) {
 	h := common.NewHandler(c)
 	defer h.Close()
 
+	namespace := c.Flags.GetRequiredString("namespace")
 	attrValueID := c.Flags.GetRequiredID("attribute-value-id")
 	actionFlagValues = c.Flags.GetStringSlice("action", actionFlagValues, cli.FlagsStringSliceOptions{Min: 0})
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
@@ -147,7 +148,7 @@ func policyCreateSubjectMapping(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	mapping, err := h.CreateNewSubjectMapping(cmd.Context(), attrValueID, actions, existingSCSId, scs, getMetadataMutable(metadataLabels))
+	mapping, err := h.CreateNewSubjectMapping(cmd.Context(), namespace, attrValueID, actions, existingSCSId, scs, getMetadataMutable(metadataLabels))
 	if err != nil {
 		cli.ExitWithError("Failed to create subject mapping", err)
 	}
@@ -170,6 +171,9 @@ func policyCreateSubjectMapping(cmd *cobra.Command, args []string) {
 		{"Actions", string(actionsJSON)},
 		{"Subject Condition Set: Id", mapping.GetSubjectConditionSet().GetId()},
 		{"Subject Condition Set", string(subjectSetsJSON)},
+	}
+	if mapping.GetNamespace() != nil {
+		rows = append(rows, []string{"Namespace: FQN", mapping.GetNamespace().GetFqn()})
 	}
 
 	if mdRows := getMetadataRows(mapping.GetMetadata()); mdRows != nil {
@@ -335,6 +339,11 @@ func initSubjectMappingsCommands() {
 
 	createDoc := man.Docs.GetCommand("policy/subject-mappings/create",
 		man.WithRun(policyCreateSubjectMapping),
+	)
+	createDoc.Flags().String(
+		createDoc.GetDocFlag("namespace").Name,
+		createDoc.GetDocFlag("namespace").Default,
+		createDoc.GetDocFlag("namespace").Description,
 	)
 	createDoc.Flags().StringP(
 		createDoc.GetDocFlag("attribute-value-id").Name,
