@@ -7,6 +7,9 @@ command:
     - add
     - c
   flags:
+    - name: namespace
+      description: Optional namespace ID or FQN for the subject mapping and any newly created subject condition set
+      required: false
     - name: attribute-value-id
       description: The ID of the attribute value to map to a subject condition set
       shorthand: a
@@ -45,12 +48,12 @@ For more information about subject condition sets, see the `subject-condition-se
 
 Create a subject mapping for a 'read' action linking to an existing subject condition set:
 ```shell
-otdfctl policy subject-mapping create --attribute-value-id 891cfe85-b381-4f85-9699-5f7dbfe2a9ab --action read --subject-condition-set-id 8dc98f65-5f0a-4444-bfd1-6a818dc7b447
+otdfctl policy subject-mapping create --namespace 7650f02a-be00-4faa-a1d1-37cded5e23dc --attribute-value-id 891cfe85-b381-4f85-9699-5f7dbfe2a9ab --action read --subject-condition-set-id 8dc98f65-5f0a-4444-bfd1-6a818dc7b447
 ```
 
 Or you can create a mapping for 'read' or 'create' linking to a new subject condition set:
 ```shell
-otdfctl policy subject-mapping create --attribute-value-id 891cfe85-b381-4f85-9699-5f7dbfe2a9ab --action create --action update --subject-condition-set-new '[                                           
+otdfctl policy subject-mapping create --namespace https://example.com --attribute-value-id 891cfe85-b381-4f85-9699-5f7dbfe2a9ab --action create --action update --subject-condition-set-new '[                                           
   {
     "condition_groups": [
       {
