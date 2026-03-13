@@ -39,7 +39,12 @@ func policyGetAction(cmd *cobra.Command, args []string) {
 	rows := [][]string{
 		{"Id", action.GetId()},
 		{"Name", action.GetName()},
-		{"Namespace", action.GetNamespace().GetFqn()},
+		{"Namespace", func() string {
+			if action.GetNamespace() != nil {
+				return action.GetNamespace().GetFqn()
+			}
+			return ""
+		}()},
 	}
 	if mdRows := getMetadataRows(action.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
@@ -89,7 +94,12 @@ func policyListActions(cmd *cobra.Command, args []string) {
 			"id":          a.GetId(),
 			"action_type": "custom",
 			"name":        a.GetName(),
-			"namespace":   a.GetNamespace().GetFqn(),
+			"namespace": func() string {
+				if a.GetNamespace() != nil {
+					return a.GetNamespace().GetFqn()
+				}
+				return ""
+			}(),
 		}))
 	}
 
@@ -115,7 +125,12 @@ func policyCreateAction(cmd *cobra.Command, args []string) {
 	rows := [][]string{
 		{"Id", action.GetId()},
 		{"Name", action.GetName()},
-		{"Namespace", action.GetNamespace().GetFqn()},
+		{"Namespace", func() string {
+			if action.GetNamespace() != nil {
+				return action.GetNamespace().GetFqn()
+			}
+			return ""
+		}()},
 	}
 
 	if mdRows := getMetadataRows(action.GetMetadata()); mdRows != nil {
@@ -151,7 +166,12 @@ func policyDeleteAction(cmd *cobra.Command, args []string) {
 	rows := [][]string{
 		{"Id", id},
 		{"Name", action.GetName()},
-		{"Namespace", action.GetNamespace().GetFqn()},
+		{"Namespace", func() string {
+			if action.GetNamespace() != nil {
+				return action.GetNamespace().GetFqn()
+			}
+			return ""
+		}()},
 	}
 	if mdRows := getMetadataRows(action.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
@@ -182,7 +202,12 @@ func policyUpdateAction(cmd *cobra.Command, args []string) {
 	rows := [][]string{
 		{"Id", id},
 		{"Name", updated.GetName()},
-		{"Namespace", updated.GetNamespace().GetFqn()},
+		{"Namespace", func() string {
+			if updated.GetNamespace() != nil {
+				return updated.GetNamespace().GetFqn()
+			}
+			return ""
+		}()},
 	}
 	if mdRows := getMetadataRows(updated.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
