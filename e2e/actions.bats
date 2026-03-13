@@ -120,6 +120,15 @@ teardown_file() {
   assert_output --partial "delete"
   total=$(echo "$output" | jq -r '.pagination.total')
   [[ "$total" -ge 1 ]]
+
+  # listing without namespace should succeed
+  run_otdfctl_action list
+    assert_output --partial "create"
+    assert_output --partial "read"
+    assert_output --partial "update"
+    assert_output --partial "delete"
+    assert_output --partial "Total"
+    assert_line --regexp "Current Offset.*0"
 }
 
 @test "Update action" {

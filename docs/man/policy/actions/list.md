@@ -8,7 +8,6 @@ command:
     - name: namespace
       shorthand: s
       description: Namespace ID or FQN
-      required: true
     - name: limit
       shorthand: l
       description: Limit retrieved count

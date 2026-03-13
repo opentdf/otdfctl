@@ -55,7 +55,7 @@ func policyListActions(cmd *cobra.Command, args []string) {
 
 	limit := c.Flags.GetRequiredInt32("limit")
 	offset := c.Flags.GetRequiredInt32("offset")
-	namespace := c.Flags.GetRequiredString("namespace")
+	namespace := c.Flags.GetOptionalString("namespace")
 
 	resp, err := h.ListActions(cmd.Context(), limit, offset, namespace)
 	if err != nil {
