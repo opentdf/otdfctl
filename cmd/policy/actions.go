@@ -39,6 +39,7 @@ func policyGetAction(cmd *cobra.Command, args []string) {
 	rows := [][]string{
 		{"Id", action.GetId()},
 		{"Name", action.GetName()},
+		{"Namespace", action.GetNamespace().GetFqn()},
 	}
 	if mdRows := getMetadataRows(action.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
@@ -65,6 +66,7 @@ func policyListActions(cmd *cobra.Command, args []string) {
 		cli.NewUUIDColumn(),
 		table.NewFlexColumn("name", "Name", cli.FlexColumnWidthFour),
 		table.NewFlexColumn("action_type", "Action Type", cli.FlexColumnWidthFour),
+		table.NewFlexColumn("namespace", "Namespace", cli.FlexColumnWidthFour),
 	)
 	rows := []table.Row{}
 	for _, a := range resp.GetActionsStandard() {
@@ -72,13 +74,22 @@ func policyListActions(cmd *cobra.Command, args []string) {
 			"id":          a.GetId(),
 			"action_type": "standard",
 			"name":        a.GetName(),
+			// for standard actions we should only include the namespace if it is not null
+			"namespace": func() string {
+				if a.GetNamespace() != nil {
+					return a.GetNamespace().GetFqn()
+				}
+				return ""
+			}(),
 		}))
 	}
+
 	for _, a := range resp.GetActionsCustom() {
 		rows = append(rows, table.NewRow(table.RowData{
 			"id":          a.GetId(),
 			"action_type": "custom",
 			"name":        a.GetName(),
+			"namespace":   a.GetNamespace().GetFqn(),
 		}))
 	}
 
@@ -104,6 +115,7 @@ func policyCreateAction(cmd *cobra.Command, args []string) {
 	rows := [][]string{
 		{"Id", action.GetId()},
 		{"Name", action.GetName()},
+		{"Namespace", action.GetNamespace().GetFqn()},
 	}
 
 	if mdRows := getMetadataRows(action.GetMetadata()); mdRows != nil {
@@ -136,7 +148,11 @@ func policyDeleteAction(cmd *cobra.Command, args []string) {
 		errMsg := fmt.Sprintf("Failed to delete action (%s)", id)
 		cli.ExitWithError(errMsg, err)
 	}
-	rows := [][]string{{"Id", id}, {"Name", action.GetName()}}
+	rows := [][]string{
+		{"Id", id},
+		{"Name", action.GetName()},
+		{"Namespace", action.GetNamespace().GetFqn()},
+	}
 	if mdRows := getMetadataRows(action.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
 	}
@@ -163,7 +179,11 @@ func policyUpdateAction(cmd *cobra.Command, args []string) {
 	if err != nil {
 		cli.ExitWithError("Failed to update action", err)
 	}
-	rows := [][]string{{"Id", id}, {"Name", updated.GetName()}}
+	rows := [][]string{
+		{"Id", id},
+		{"Name", updated.GetName()},
+		{"Namespace", updated.GetNamespace().GetFqn()},
+	}
 	if mdRows := getMetadataRows(updated.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
 	}

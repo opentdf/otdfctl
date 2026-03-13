@@ -27,6 +27,7 @@ teardown_file() {
   run_otdfctl_action create --name test_action_create --namespace "$ACTION_NAMESPACE"
     assert_output --partial "SUCCESS"
     assert_line --regexp "Name.*test_action_create"
+    assert_line --regexp "Namespace.*$ACTION_NAMESPACE"
     assert_output --partial "Id"
     assert_output --partial "Created At"
     assert_line --partial "Updated At"
@@ -77,6 +78,7 @@ teardown_file() {
     assert_success
     assert_line --partial "Id"
     assert_line --regexp "Name.*read"
+    assert_line --regexp "Namespace.*$ACTION_NAMESPACE"
 
   # get by name to retrieve the ID
   UPDATE_ACTION_ID=$(./otdfctl policy actions get --name update --namespace "$ACTION_NAMESPACE" --json $HOST $WITH_CREDS | jq -r '.id')
@@ -104,6 +106,8 @@ teardown_file() {
 
 @test "List actions" {
   run_otdfctl_action list --namespace "$ACTION_NAMESPACE"
+    assert_output --partial "Namespace"
+    assert_output --partial "$ACTION_NAMESPACE"
     assert_output --partial "create"
     assert_output --partial "read"
     assert_output --partial "update"
@@ -138,6 +142,7 @@ teardown_file() {
     assert_success
     assert_line --regexp "Id.*$ACTION_TO_UPDATE"
     assert_line --regexp "Name.*testing_updation"
+    assert_line --regexp "Namespace.*$ACTION_NAMESPACE"
     assert_line --regexp "Labels.*key: value"
     assert_line --regexp "Labels.*test: true"
 
@@ -146,6 +151,7 @@ teardown_file() {
     assert_success
     assert_line --regexp "Id.*$ACTION_TO_UPDATE"
     assert_line --regexp "Name.*testing_updation"
+    assert_line --regexp "Namespace.*$ACTION_NAMESPACE"
     assert_line --regexp "Labels.*key: other"
     refute_output --regexp "Labels.*key: value"
     refute_output --regexp "Labels.*test: true"
@@ -156,6 +162,7 @@ teardown_file() {
     assert_success
     assert_line --regexp "Id.*$ACTION_TO_UPDATE"
     assert_line --regexp "Name.*updated_action_in_test"
+    assert_line --regexp "Namespace.*$ACTION_NAMESPACE"
     refute_output --regexp "Name.*testing_updation"
 
   # clean up
@@ -172,4 +179,5 @@ teardown_file() {
   DELETABLE_ACTION=$(./otdfctl policy actions create --name testing-delete --namespace "$ACTION_NAMESPACE" $HOST $WITH_CREDS --json | jq -r '.id')
   run_otdfctl_action delete --id "$DELETABLE_ACTION" --force
     assert_success
+    assert_line --regexp "Namespace.*$ACTION_NAMESPACE"
 }
