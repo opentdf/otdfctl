@@ -484,15 +484,16 @@ func displayRegisteredResourcePlan(styles *migrationDisplayStyles, plan []Regist
 	fmt.Println(styles.styleInfo.Render("Run with --interactive --commit for per-resource namespace assignment."))
 }
 
+type indexedPlan struct {
+	index int
+	plan  RegisteredResourceMigrationPlan
+}
+
 // runBatchRegisteredResourceMigration auto-detects namespaces where possible and prompts for the rest.
 func runBatchRegisteredResourceMigration(ctx context.Context, h MigrationHandler, prompter MigrationPrompter, styles *migrationDisplayStyles, plan []RegisteredResourceMigrationPlan, nsList []*policy.Namespace) error {
 	displayRegisteredResourcePlan(styles, plan)
 
 	// Phase 1: Auto-detect namespaces
-	type indexedPlan struct {
-		index int
-		plan  RegisteredResourceMigrationPlan
-	}
 	var needsSelection []indexedPlan
 
 	fmt.Println(styles.styleTitle.Render("\nNamespace Detection:"))
@@ -528,54 +529,8 @@ func runBatchRegisteredResourceMigration(ctx context.Context, h MigrationHandler
 	}
 
 	// Phase 2: Prompt for resources that need selection
-	if len(needsSelection) > 0 {
-		// Check if all are NoAAVs — if so, offer a single batch prompt
-		allNoAAVs := true
-		for _, ip := range needsSelection {
-			d := detectRequiredNamespace(ip.plan)
-			if !d.NoAAVs {
-				allNoAAVs = false
-				break
-			}
-		}
-
-		if allNoAAVs {
-			fmt.Printf("\n%s\n", styles.styleInfo.Render(fmt.Sprintf(
-				"%d resource(s) have no AAVs and can be freely assigned:", len(needsSelection),
-			)))
-			batchNs, err := prompter.SelectBatchNamespace(nsList)
-			if err != nil {
-				return err
-			}
-			for _, ip := range needsSelection {
-				plan[ip.index].TargetNamespace = batchNs
-			}
-		} else {
-			fmt.Printf("\n%s\n", styles.styleInfo.Render(fmt.Sprintf(
-				"%d resource(s) need manual namespace selection:", len(needsSelection),
-			)))
-			for _, ip := range needsSelection {
-				detection := detectRequiredNamespace(ip.plan)
-				promptNsList := nsList
-				if len(detection.Conflicting) > 0 {
-					filtered := filterNamespacesByFQN(nsList, detection.Conflicting)
-					if len(filtered) > 0 {
-						promptNsList = filtered
-					}
-				}
-				ns, err := prompter.SelectResourceNamespace(ip.plan.Resource.GetName(), promptNsList)
-				if err != nil {
-					return err
-				}
-				if ns == optAbortAll {
-					return errors.New("migration aborted by user")
-				}
-				if ns == optSkipResource {
-					continue // TargetNamespace remains empty
-				}
-				plan[ip.index].TargetNamespace = ns
-			}
-		}
+	if err := resolveUndetectedNamespaces(styles, prompter, plan, needsSelection, nsList); err != nil {
+		return err
 	}
 
 	// Phase 3: Execute all migrations
@@ -621,6 +576,62 @@ func runBatchRegisteredResourceMigration(ctx context.Context, h MigrationHandler
 		return fmt.Errorf("%d of %d resources failed to migrate", len(failedResources), len(plan))
 	}
 
+	return nil
+}
+
+// resolveUndetectedNamespaces prompts for namespace selection on resources where auto-detection was not possible.
+func resolveUndetectedNamespaces(styles *migrationDisplayStyles, prompter MigrationPrompter, plan []RegisteredResourceMigrationPlan, needsSelection []indexedPlan, nsList []*policy.Namespace) error {
+	if len(needsSelection) == 0 {
+		return nil
+	}
+
+	allNoAAVs := true
+	for _, ip := range needsSelection {
+		d := detectRequiredNamespace(ip.plan)
+		if !d.NoAAVs {
+			allNoAAVs = false
+			break
+		}
+	}
+
+	if allNoAAVs {
+		fmt.Printf("\n%s\n", styles.styleInfo.Render(fmt.Sprintf(
+			"%d resource(s) have no AAVs and can be freely assigned:", len(needsSelection),
+		)))
+		batchNs, err := prompter.SelectBatchNamespace(nsList)
+		if err != nil {
+			return err
+		}
+		for _, ip := range needsSelection {
+			plan[ip.index].TargetNamespace = batchNs
+		}
+		return nil
+	}
+
+	fmt.Printf("\n%s\n", styles.styleInfo.Render(fmt.Sprintf(
+		"%d resource(s) need manual namespace selection:", len(needsSelection),
+	)))
+	for _, ip := range needsSelection {
+		detection := detectRequiredNamespace(ip.plan)
+		promptNsList := nsList
+		if len(detection.Conflicting) > 0 {
+			filtered := filterNamespacesByFQN(nsList, detection.Conflicting)
+			if len(filtered) > 0 {
+				promptNsList = filtered
+			}
+		}
+		ns, err := prompter.SelectResourceNamespace(ip.plan.Resource.GetName(), promptNsList)
+		if err != nil {
+			return err
+		}
+		if ns == optAbortAll {
+			return errors.New("migration aborted by user")
+		}
+		if ns == optSkipResource {
+			continue // TargetNamespace remains empty
+		}
+		plan[ip.index].TargetNamespace = ns
+	}
 	return nil
 }
 
@@ -827,4 +838,3 @@ func convertActionAttributeValues(aavs []*policy.RegisteredResourceValue_ActionA
 	}
 	return result
 }
-
