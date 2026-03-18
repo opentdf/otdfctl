@@ -52,7 +52,7 @@ func migrateRegisteredResources(cmd *cobra.Command, args []string) {
 		cli.ExitWithError("could not read --interactive flag", err)
 	}
 
-	if err := migrations.MigrateRegisteredResources(cmd.Context(), h, commit, interactive); err != nil {
+	if err := migrations.MigrateRegisteredResources(cmd.Context(), h, &migrations.HuhPrompter{}, commit, interactive); err != nil {
 		cli.ExitWithError("could not migrate registered resources", err)
 	}
 }

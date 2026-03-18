@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"strings"
 
 	"github.com/charmbracelet/huh"
 	"github.com/opentdf/platform/protocol/go/common"
@@ -30,6 +31,126 @@ type MigrationHandler interface {
 	ListNamespaces(ctx context.Context, state common.ActiveStateEnum, limit, offset int32) (*namespaces.ListNamespacesResponse, error)
 }
 
+// MigrationPrompter abstracts interactive prompts so they can be mocked in tests.
+type MigrationPrompter interface {
+	// ConfirmBackup prompts the user to confirm they have taken a backup.
+	ConfirmBackup() (bool, error)
+
+	// SelectBatchNamespace prompts the user to select one namespace for all resources.
+	SelectBatchNamespace(nsList []*policy.Namespace) (string, error)
+
+	// SelectResourceNamespace prompts the user to select a namespace for a specific resource.
+	// The returned string may be a namespace FQN/ID, optSkipResource, or optAbortAll.
+	SelectResourceNamespace(resourceName string, nsList []*policy.Namespace) (string, error)
+
+	// ConfirmResourceNamespace shows the auto-detected namespace and asks the user to confirm,
+	// skip the resource, or abort. Returns the namespace FQN, optSkipResource, or optAbortAll.
+	ConfirmResourceNamespace(resourceName, detectedNamespaceFQN string) (string, error)
+}
+
+// HuhPrompter implements MigrationPrompter using charmbracelet/huh forms.
+type HuhPrompter struct{}
+
+func (p *HuhPrompter) ConfirmBackup() (bool, error) {
+	var backupResponse bool
+	styles := initMigrationDisplayStyles()
+
+	fmt.Println(styles.styleWarning.Render("WARNING: This operation will delete and re-create registered resources under new namespaces."))
+	fmt.Println(styles.styleWarning.Render("It is STRONGLY recommended to take a complete backup of your system before proceeding.\n"))
+
+	form := huh.NewForm(
+		huh.NewGroup(
+			huh.NewSelect[bool]().
+				Title("Have you taken a complete backup? (yes/no): ").
+				Options(
+					huh.NewOption("yes", true),
+					huh.NewOption("no", false),
+					huh.NewOption("cancel", false),
+				).
+				Value(&backupResponse),
+		),
+	)
+
+	if err := form.Run(); err != nil {
+		if errors.Is(err, huh.ErrUserAborted) {
+			return false, errors.New("user aborted backup form")
+		}
+		return false, err
+	}
+	return backupResponse, nil
+}
+
+func (p *HuhPrompter) SelectBatchNamespace(nsList []*policy.Namespace) (string, error) {
+	var targetNamespace string
+	nsOpts := buildNamespaceOptions(nsList)
+
+	form := huh.NewForm(
+		huh.NewGroup(
+			huh.NewSelect[string]().
+				Title("Select a target namespace for ALL registered resources:").
+				Options(nsOpts...).
+				Value(&targetNamespace),
+		),
+	)
+
+	if err := form.Run(); err != nil {
+		if errors.Is(err, huh.ErrUserAborted) {
+			return "", errors.New("migration aborted by user")
+		}
+		return "", fmt.Errorf("namespace selection failed: %w", err)
+	}
+	return targetNamespace, nil
+}
+
+func (p *HuhPrompter) SelectResourceNamespace(resourceName string, nsList []*policy.Namespace) (string, error) {
+	nsOpts := buildNamespaceOptions(nsList)
+	skipOpt := huh.NewOption("Skip this resource", optSkipResource)
+	abortOpt := huh.NewOption("Abort entire migration", optAbortAll)
+	nsOptsWithControls := append(append([]huh.Option[string]{}, nsOpts...), skipOpt, abortOpt)
+
+	var targetNamespace string
+	form := huh.NewForm(
+		huh.NewGroup(
+			huh.NewSelect[string]().
+				Title(fmt.Sprintf("Select namespace for resource '%s':", resourceName)).
+				Options(nsOptsWithControls...).
+				Value(&targetNamespace),
+		),
+	)
+
+	if err := form.Run(); err != nil {
+		if errors.Is(err, huh.ErrUserAborted) {
+			return "", huh.ErrUserAborted
+		}
+		return "", err
+	}
+	return targetNamespace, nil
+}
+
+func (p *HuhPrompter) ConfirmResourceNamespace(resourceName, detectedNamespaceFQN string) (string, error) {
+	var choice string
+	form := huh.NewForm(
+		huh.NewGroup(
+			huh.NewSelect[string]().
+				Title(fmt.Sprintf("Resource '%s' belongs in namespace '%s' (detected from AAVs):", resourceName, detectedNamespaceFQN)).
+				Options(
+					huh.NewOption(fmt.Sprintf("Confirm: %s", detectedNamespaceFQN), detectedNamespaceFQN),
+					huh.NewOption("Skip this resource", optSkipResource),
+					huh.NewOption("Abort entire migration", optAbortAll),
+				).
+				Value(&choice),
+		),
+	)
+
+	if err := form.Run(); err != nil {
+		if errors.Is(err, huh.ErrUserAborted) {
+			return "", huh.ErrUserAborted
+		}
+		return "", err
+	}
+	return choice, nil
+}
+
 // RegisteredResourceMigrationPlan holds an existing resource with its values and the target namespace.
 type RegisteredResourceMigrationPlan struct {
 	Resource        *policy.RegisteredResource
@@ -38,8 +159,88 @@ type RegisteredResourceMigrationPlan struct {
 	Commit          bool
 }
 
+// namespaceDetectionResult holds the result of inspecting a resource's AAVs for namespace info.
+type namespaceDetectionResult struct {
+	Deterministic string   // single namespace FQN if all AAVs agree
+	Conflicting   []string // distinct FQNs when AAVs reference multiple namespaces
+	Undetermined  bool     // AAVs exist but namespace data unavailable
+	NoAAVs        bool     // resource has no AAVs at all
+}
+
+// extractNamespaceFQNFromValue attempts to derive the namespace FQN from an attribute value.
+func extractNamespaceFQNFromValue(val *policy.Value) string {
+	// Primary: full chain Value → Attribute → Namespace
+	if ns := val.GetAttribute().GetNamespace(); ns != nil {
+		if fqn := ns.GetFqn(); fqn != "" {
+			return fqn
+		}
+	}
+	// Fallback: parse from the value's own FQN (e.g. "https://example.com/attr/color/value/red")
+	if fqn := val.GetFqn(); fqn != "" {
+		if idx := strings.Index(fqn, "/attr/"); idx > 0 {
+			return fqn[:idx]
+		}
+	}
+	return ""
+}
+
+// detectRequiredNamespace inspects a resource's AAVs to determine which namespace it should belong to.
+func detectRequiredNamespace(plan RegisteredResourceMigrationPlan) namespaceDetectionResult {
+	nsSet := make(map[string]struct{})
+	hasAAVs := false
+
+	for _, v := range plan.Values {
+		for _, aav := range v.GetActionAttributeValues() {
+			hasAAVs = true
+			attrVal := aav.GetAttributeValue()
+			if attrVal == nil {
+				continue
+			}
+			nsFQN := extractNamespaceFQNFromValue(attrVal)
+			if nsFQN != "" {
+				nsSet[nsFQN] = struct{}{}
+			}
+		}
+	}
+
+	if !hasAAVs {
+		return namespaceDetectionResult{NoAAVs: true}
+	}
+
+	if len(nsSet) == 0 {
+		return namespaceDetectionResult{Undetermined: true}
+	}
+
+	if len(nsSet) == 1 {
+		for fqn := range nsSet {
+			return namespaceDetectionResult{Deterministic: fqn}
+		}
+	}
+
+	conflicting := make([]string, 0, len(nsSet))
+	for fqn := range nsSet {
+		conflicting = append(conflicting, fqn)
+	}
+	return namespaceDetectionResult{Conflicting: conflicting}
+}
+
+// filterNamespacesByFQN returns only the namespaces whose FQN matches one of the given FQNs.
+func filterNamespacesByFQN(nsList []*policy.Namespace, fqns []string) []*policy.Namespace {
+	fqnSet := make(map[string]struct{}, len(fqns))
+	for _, f := range fqns {
+		fqnSet[f] = struct{}{}
+	}
+	var filtered []*policy.Namespace
+	for _, ns := range nsList {
+		if _, ok := fqnSet[ns.GetFqn()]; ok {
+			filtered = append(filtered, ns)
+		}
+	}
+	return filtered
+}
+
 // MigrateRegisteredResources is the main entry point for migrating registered resources to namespaces.
-func MigrateRegisteredResources(ctx context.Context, h MigrationHandler, commit, interactive bool) error {
+func MigrateRegisteredResources(ctx context.Context, h MigrationHandler, prompter MigrationPrompter, commit, interactive bool) error {
 	styles := initMigrationDisplayStyles()
 
 	plan, err := buildRegisteredResourcePlan(ctx, h)
@@ -62,7 +263,7 @@ func MigrateRegisteredResources(ctx context.Context, h MigrationHandler, commit,
 	}
 
 	if commit {
-		didBackup, err := backupForm()
+		didBackup, err := prompter.ConfirmBackup()
 		if err != nil {
 			return err
 		}
@@ -73,9 +274,9 @@ func MigrateRegisteredResources(ctx context.Context, h MigrationHandler, commit,
 
 	switch {
 	case interactive && commit:
-		return runInteractiveRegisteredResourceMigration(ctx, h, styles, plan, availableNamespaces)
+		return runInteractiveRegisteredResourceMigration(ctx, h, prompter, styles, plan, availableNamespaces)
 	case commit:
-		return runBatchRegisteredResourceMigration(ctx, h, styles, plan, availableNamespaces)
+		return runBatchRegisteredResourceMigration(ctx, h, prompter, styles, plan, availableNamespaces)
 	default:
 		displayRegisteredResourcePlan(styles, plan)
 		if interactive {
@@ -252,6 +453,29 @@ func displayRegisteredResourcePlan(styles *migrationDisplayStyles, plan []Regist
 		} else {
 			fmt.Printf("   %s\n", styles.styleInfo.Render("Values: (none)"))
 		}
+
+		detection := detectRequiredNamespace(p)
+		switch {
+		case detection.Deterministic != "":
+			fmt.Printf("   %s %s\n",
+				styles.styleInfo.Render("Detected namespace:"),
+				styles.styleNamespace.Render(detection.Deterministic),
+			)
+		case len(detection.Conflicting) > 0:
+			fmt.Printf("   %s %v\n",
+				styles.styleWarning.Render("CONFLICT - AAVs reference multiple namespaces:"),
+				detection.Conflicting,
+			)
+		case detection.Undetermined:
+			fmt.Printf("   %s\n",
+				styles.styleWarning.Render("AAVs present but namespace could not be determined"),
+			)
+		default:
+			fmt.Printf("   %s\n",
+				styles.styleInfo.Render("No AAVs - namespace can be freely chosen"),
+			)
+		}
+
 		fmt.Println()
 	}
 
@@ -260,43 +484,117 @@ func displayRegisteredResourcePlan(styles *migrationDisplayStyles, plan []Regist
 	fmt.Println(styles.styleInfo.Render("Run with --interactive --commit for per-resource namespace assignment."))
 }
 
-// runBatchRegisteredResourceMigration prompts once for a namespace, then migrates all resources.
-func runBatchRegisteredResourceMigration(ctx context.Context, h MigrationHandler, styles *migrationDisplayStyles, plan []RegisteredResourceMigrationPlan, nsList []*policy.Namespace) error {
+// runBatchRegisteredResourceMigration auto-detects namespaces where possible and prompts for the rest.
+func runBatchRegisteredResourceMigration(ctx context.Context, h MigrationHandler, prompter MigrationPrompter, styles *migrationDisplayStyles, plan []RegisteredResourceMigrationPlan, nsList []*policy.Namespace) error {
 	displayRegisteredResourcePlan(styles, plan)
 
-	// Prompt for target namespace
-	var targetNamespace string
-	nsOpts := buildNamespaceOptions(nsList)
+	// Phase 1: Auto-detect namespaces
+	type indexedPlan struct {
+		index int
+		plan  RegisteredResourceMigrationPlan
+	}
+	var needsSelection []indexedPlan
 
-	namespaceForm := huh.NewForm(
-		huh.NewGroup(
-			huh.NewSelect[string]().
-				Title("Select a target namespace for ALL registered resources:").
-				Options(nsOpts...).
-				Value(&targetNamespace),
-		),
-	)
-
-	if err := namespaceForm.Run(); err != nil {
-		if errors.Is(err, huh.ErrUserAborted) {
-			return errors.New("migration aborted by user")
+	fmt.Println(styles.styleTitle.Render("\nNamespace Detection:"))
+	for i := range plan {
+		detection := detectRequiredNamespace(plan[i])
+		switch {
+		case detection.Deterministic != "":
+			plan[i].TargetNamespace = detection.Deterministic
+			fmt.Printf("  %s '%s' -> %s (auto-detected from AAVs)\n",
+				styles.styleInfo.Render("Resource"),
+				styles.styleName.Render(plan[i].Resource.GetName()),
+				styles.styleNamespace.Render(detection.Deterministic),
+			)
+		case len(detection.Conflicting) > 0:
+			fmt.Printf("  %s '%s' has AAVs in multiple namespaces: %v\n",
+				styles.styleWarning.Render("CONFLICT: Resource"),
+				plan[i].Resource.GetName(), detection.Conflicting,
+			)
+			needsSelection = append(needsSelection, indexedPlan{index: i, plan: plan[i]})
+		case detection.Undetermined:
+			fmt.Printf("  %s '%s' has AAVs but namespace could not be determined\n",
+				styles.styleWarning.Render("WARNING: Resource"),
+				plan[i].Resource.GetName(),
+			)
+			needsSelection = append(needsSelection, indexedPlan{index: i, plan: plan[i]})
+		default:
+			fmt.Printf("  %s '%s' has no AAVs - needs manual assignment\n",
+				styles.styleInfo.Render("Resource"),
+				plan[i].Resource.GetName(),
+			)
+			needsSelection = append(needsSelection, indexedPlan{index: i, plan: plan[i]})
 		}
-		return fmt.Errorf("namespace selection failed: %w", err)
 	}
 
-	fmt.Println(styles.styleInfo.Render(fmt.Sprintf("\nMigrating all %d resources to namespace: %s\n", len(plan), styles.styleNamespace.Render(targetNamespace))))
+	// Phase 2: Prompt for resources that need selection
+	if len(needsSelection) > 0 {
+		// Check if all are NoAAVs — if so, offer a single batch prompt
+		allNoAAVs := true
+		for _, ip := range needsSelection {
+			d := detectRequiredNamespace(ip.plan)
+			if !d.NoAAVs {
+				allNoAAVs = false
+				break
+			}
+		}
 
+		if allNoAAVs {
+			fmt.Printf("\n%s\n", styles.styleInfo.Render(fmt.Sprintf(
+				"%d resource(s) have no AAVs and can be freely assigned:", len(needsSelection),
+			)))
+			batchNs, err := prompter.SelectBatchNamespace(nsList)
+			if err != nil {
+				return err
+			}
+			for _, ip := range needsSelection {
+				plan[ip.index].TargetNamespace = batchNs
+			}
+		} else {
+			fmt.Printf("\n%s\n", styles.styleInfo.Render(fmt.Sprintf(
+				"%d resource(s) need manual namespace selection:", len(needsSelection),
+			)))
+			for _, ip := range needsSelection {
+				detection := detectRequiredNamespace(ip.plan)
+				promptNsList := nsList
+				if len(detection.Conflicting) > 0 {
+					filtered := filterNamespacesByFQN(nsList, detection.Conflicting)
+					if len(filtered) > 0 {
+						promptNsList = filtered
+					}
+				}
+				ns, err := prompter.SelectResourceNamespace(ip.plan.Resource.GetName(), promptNsList)
+				if err != nil {
+					return err
+				}
+				if ns == optAbortAll {
+					return errors.New("migration aborted by user")
+				}
+				if ns == optSkipResource {
+					continue // TargetNamespace remains empty
+				}
+				plan[ip.index].TargetNamespace = ns
+			}
+		}
+	}
+
+	// Phase 3: Execute all migrations
 	successCount := 0
+	skippedCount := 0
 	failedResources := make(map[string]string)
 
 	for _, p := range plan {
-		p.TargetNamespace = targetNamespace
+		if p.TargetNamespace == "" {
+			skippedCount++
+			continue
+		}
 		p.Commit = true
 
-		fmt.Printf("%s %s (%s)...\n",
+		fmt.Printf("%s %s (%s) to %s...\n",
 			styles.styleInfo.Render("Migrating resource"),
 			styles.styleName.Render(p.Resource.GetName()),
 			styles.styleResourceID.Render(p.Resource.GetId()),
+			styles.styleNamespace.Render(p.TargetNamespace),
 		)
 
 		if err := commitRegisteredResourceMigration(ctx, h, p); err != nil {
@@ -313,6 +611,7 @@ func runBatchRegisteredResourceMigration(ctx context.Context, h MigrationHandler
 	fmt.Println(styles.styleTitle.Render("\nBatch Migration Summary:"))
 	fmt.Printf("  Total Resources: %d\n", len(plan))
 	fmt.Printf("  Successfully Migrated: %d\n", successCount)
+	fmt.Printf("  Skipped: %d\n", skippedCount)
 	fmt.Printf("  Failed: %d\n", len(failedResources))
 	if len(failedResources) > 0 {
 		fmt.Println(styles.styleWarning.Render("  Failed Resources:"))
@@ -326,14 +625,8 @@ func runBatchRegisteredResourceMigration(ctx context.Context, h MigrationHandler
 }
 
 // runInteractiveRegisteredResourceMigration prompts per-resource for namespace assignment.
-func runInteractiveRegisteredResourceMigration(ctx context.Context, h MigrationHandler, styles *migrationDisplayStyles, plan []RegisteredResourceMigrationPlan, nsList []*policy.Namespace) error {
+func runInteractiveRegisteredResourceMigration(ctx context.Context, h MigrationHandler, prompter MigrationPrompter, styles *migrationDisplayStyles, plan []RegisteredResourceMigrationPlan, nsList []*policy.Namespace) error {
 	fmt.Println(styles.styleInfo.Render("Interactive mode: processing resources one by one..."))
-
-	nsOpts := buildNamespaceOptions(nsList)
-	// Add skip and abort options
-	skipOpt := huh.NewOption("Skip this resource", optSkipResource)
-	abortOpt := huh.NewOption("Abort entire migration", optAbortAll)
-	nsOptsWithControls := append(append([]huh.Option[string]{}, nsOpts...), skipOpt, abortOpt)
 
 	var (
 		successCount    int
@@ -362,23 +655,45 @@ func runInteractiveRegisteredResourceMigration(ctx context.Context, h MigrationH
 			}
 		}
 
-		var targetNamespace string
-		namespaceForm := huh.NewForm(
-			huh.NewGroup(
-				huh.NewSelect[string]().
-					Title(fmt.Sprintf("Select namespace for resource '%s':", p.Resource.GetName())).
-					Options(nsOptsWithControls...).
-					Value(&targetNamespace),
-			),
-		)
+		detection := detectRequiredNamespace(p)
 
-		if err := namespaceForm.Run(); err != nil {
-			if errors.Is(err, huh.ErrUserAborted) {
+		var targetNamespace string
+		var promptErr error
+
+		switch {
+		case detection.Deterministic != "":
+			fmt.Printf("  %s %s\n",
+				styles.styleInfo.Render("Detected required namespace from AAVs:"),
+				styles.styleNamespace.Render(detection.Deterministic),
+			)
+			targetNamespace, promptErr = prompter.ConfirmResourceNamespace(p.Resource.GetName(), detection.Deterministic)
+		case len(detection.Conflicting) > 0:
+			fmt.Println(styles.styleWarning.Render(fmt.Sprintf(
+				"  WARNING: Resource '%s' has AAVs referencing multiple namespaces: %v",
+				p.Resource.GetName(), detection.Conflicting,
+			)))
+			filtered := filterNamespacesByFQN(nsList, detection.Conflicting)
+			if len(filtered) == 0 {
+				filtered = nsList
+			}
+			targetNamespace, promptErr = prompter.SelectResourceNamespace(p.Resource.GetName(), filtered)
+		case detection.Undetermined:
+			fmt.Println(styles.styleWarning.Render(fmt.Sprintf(
+				"  WARNING: Resource '%s' has AAVs but namespace could not be determined from server response.",
+				p.Resource.GetName(),
+			)))
+			targetNamespace, promptErr = prompter.SelectResourceNamespace(p.Resource.GetName(), nsList)
+		default:
+			targetNamespace, promptErr = prompter.SelectResourceNamespace(p.Resource.GetName(), nsList)
+		}
+
+		if promptErr != nil {
+			if errors.Is(promptErr, huh.ErrUserAborted) {
 				fmt.Println(styles.styleWarning.Render("Migration aborted by user."))
 				aborted = true
 				break
 			}
-			fmt.Println(styles.styleWarning.Render(fmt.Sprintf("Error during prompt: %v. Skipping resource.", err)))
+			fmt.Println(styles.styleWarning.Render(fmt.Sprintf("Error during prompt: %v. Skipping resource.", promptErr)))
 			skippedCount++
 			continue
 		}
@@ -513,32 +828,3 @@ func convertActionAttributeValues(aavs []*policy.RegisteredResourceValue_ActionA
 	return result
 }
 
-// backupForm prompts the user to confirm they have taken a backup.
-func backupForm() (bool, error) {
-	var backupResponse bool
-	styles := initMigrationDisplayStyles()
-
-	fmt.Println(styles.styleWarning.Render("WARNING: This operation will delete and re-create registered resources under new namespaces."))
-	fmt.Println(styles.styleWarning.Render("It is STRONGLY recommended to take a complete backup of your system before proceeding.\n"))
-
-	backupResponseForm := huh.NewForm(
-		huh.NewGroup(
-			huh.NewSelect[bool]().
-				Title("Have you taken a complete backup? (yes/no): ").
-				Options(
-					huh.NewOption("yes", true),
-					huh.NewOption("no", false),
-					huh.NewOption("cancel", false),
-				).
-				Value(&backupResponse),
-		),
-	)
-
-	if err := backupResponseForm.Run(); err != nil {
-		if errors.Is(err, huh.ErrUserAborted) {
-			return false, errors.New("user aborted backup form")
-		}
-		return false, err
-	}
-	return backupResponse, nil
-}
