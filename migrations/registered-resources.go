@@ -6,9 +6,9 @@ import (
 	"errors"
 	"fmt"
 	"math"
-	"strings"
 
 	"github.com/charmbracelet/huh"
+	"github.com/opentdf/platform/lib/identifier"
 	"github.com/opentdf/platform/protocol/go/common"
 	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/opentdf/platform/protocol/go/policy/namespaces"
@@ -177,8 +177,8 @@ func extractNamespaceFQNFromValue(val *policy.Value) string {
 	}
 	// Fallback: parse from the value's own FQN (e.g. "https://example.com/attr/color/value/red")
 	if fqn := val.GetFqn(); fqn != "" {
-		if idx := strings.Index(fqn, "/attr/"); idx > 0 {
-			return fqn[:idx]
+		if parsed, err := identifier.Parse[*identifier.FullyQualifiedAttribute](fqn); err == nil && parsed.Namespace != "" {
+			return "https://" + parsed.Namespace
 		}
 	}
 	return ""
