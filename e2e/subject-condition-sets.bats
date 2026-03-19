@@ -3,12 +3,11 @@
 # Tests for subject condition sets
 
 setup_file() {
-
-  # TODO: Remove this file-level skip once otdfctl passes namespace flags for the namespaced subject condition set APIs.
-  skip "Temporarily disabled [namespaced-subject-mappings]: platform subject condition set creation now requires namespace flags"
-
   export WITH_CREDS='--with-client-creds-file ./creds.json'
   export HOST='--host http://localhost:8080'
+
+  export NS_NAME="subject-condition-sets.net"
+  export NS_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes namespaces create -n "$NS_NAME" --json | jq -r '.id')
 
   export SCS_1='[{"condition_groups":[{"conditions":[{"operator":1,"subject_external_values":["marketing"],"subject_external_selector_value":".org.name"},{"operator":1,"subject_external_values":["ShinyThing"],"subject_external_selector_value":".team.name"}],"boolean_operator":1}]}]'
   export SCS_2='[{"condition_groups":[{"conditions":[{"operator":3,"subject_external_values":["piedpiper.com","hooli.com"],"subject_external_selector_value":".emailAddress"},{"operator":1,"subject_external_values":["sales"],"subject_external_selector_value":".department"}],"boolean_operator":2}]}]'
@@ -26,15 +25,18 @@ setup() {
 
   run_delete_scs () {
      # Capture the first argument as the ID
-    local id="$1" 
+    local id="$1"
 
-    run sh -c "./otdfctl $HOST $WITH_CREDS policy scs delete --id $id --force" 
+    run sh -c "./otdfctl $HOST $WITH_CREDS policy scs delete --id $id --force"
   }
 }
 
 teardown_file() {
+  # remove the created namespace with all underneath upon test suite completion
+  ./otdfctl $HOST $WITH_CREDS policy attributes namespaces unsafe delete --force --id "$NS_ID"
+
   # clear out all test env vars
-  unset HOST WITH_CREDS NS_NAME NS_ID ATTR_NAME_RANDOM
+  unset HOST WITH_CREDS NS_NAME NS_ID SCS_1 SCS_2 SCS_3
 
   rm scs.json
 }
@@ -130,6 +132,56 @@ teardown_file() {
   run_delete_scs "$CREATED_ID"
     assert_success
     assert_output --partial "$CREATED_ID"
+}
+
+@test "Create a SCS without namespace" {
+  run ./otdfctl $HOST $WITH_CREDS policy scs create --subject-sets "$SCS_3"
+  assert_success
+  assert_output --partial "Id"
+  assert_output --partial "SubjectSets"
+  assert_output --partial ".team.name"
+
+  CREATED_ID=$(echo "$output" | grep -oP 'Id\s+\K[0-9a-f-]+' | head -1)
+  run_delete_scs "$CREATED_ID"
+}
+
+@test "Create a SCS with namespace FQN" {
+  run ./otdfctl $HOST $WITH_CREDS policy scs create --subject-sets "$SCS_1" --namespace "$NS_NAME"
+  assert_success
+  assert_output --partial "Id"
+  assert_output --partial "SubjectSets"
+  assert_output --partial ".org.name"
+}
+
+@test "List SCS with namespace ID filter" {
+  CREATED_ID=$(./otdfctl $HOST $WITH_CREDS policy scs create --subject-sets "$SCS_2" --namespace "$NS_ID" --json | jq -r '.id')
+
+  run_otdfctl_scs list --namespace "$NS_ID"
+    assert_success
+    assert_output --partial "$CREATED_ID"
+    assert_output --partial "Total"
+
+  run_otdfctl_scs list --namespace "$NS_ID" --json
+    assert_success
+    matched_object=$(echo "$output" | jq -r --arg id "$CREATED_ID" '.subject_condition_sets[] | select(.id == $id)')
+    [ -n "$matched_object" ]
+
+  run_delete_scs "$CREATED_ID"
+}
+
+@test "List SCS with namespace FQN filter" {
+  CREATED_ID=$(./otdfctl $HOST $WITH_CREDS policy scs create --subject-sets "$SCS_3" --namespace "$NS_NAME" --json | jq -r '.id')
+
+  run_otdfctl_scs list --namespace "$NS_NAME"
+    assert_success
+    assert_output --partial "$CREATED_ID"
+
+  run_otdfctl_scs list --namespace "$NS_NAME" --json
+    assert_success
+    matched_object=$(echo "$output" | jq -r --arg id "$CREATED_ID" '.subject_condition_sets[] | select(.id == $id)')
+    [ -n "$matched_object" ]
+
+  run_delete_scs "$CREATED_ID"
 }
 
 @test "Prune SCS - deletes unmapped SCS alone" {

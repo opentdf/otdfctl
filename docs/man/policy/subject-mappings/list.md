@@ -5,6 +5,9 @@ command:
   aliases:
     - l
   flags:
+    - name: namespace
+      shorthand: n
+      description: Namespace ID or FQN to filter results
     - name: limit
       shorthand: l
       description: Limit retrieved count

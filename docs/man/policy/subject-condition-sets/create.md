@@ -18,6 +18,9 @@ command:
       shorthand: j
       default: ''
       required: false
+    - name: namespace
+      description: Namespace ID or FQN
+      shorthand: n
     - name: label
       description: "Optional metadata 'labels' in the format: key=value"
       shorthand: l

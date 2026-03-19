@@ -3,14 +3,11 @@
 # Tests for subject mappings
 
 setup_file() {
-    # TODO: Remove this file-level skip once otdfctl passes namespace flags for the namespaced action and subject mapping APIs.
-    skip "Temporarily disabled [namespaced-subject-mappings]: platform action and subject mapping APIs now require namespace flags"
-
     export WITH_CREDS='--with-client-creds-file ./creds.json'
     export HOST='--host http://localhost:8080'
 
     # Create two namespaced values to be used in other tests
-    NS_NAME="subject-mappings.net"
+    export NS_NAME="subject-mappings.net"
     export NS_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes namespaces create -n "$NS_NAME" --json | jq -r '.id')
     ATTR_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes create --namespace "$NS_ID" --name attr1 --rule ANY_OF --json | jq -r '.id')
     # Names prefixed with SM to avoid conflicts across tests when running in parallel
@@ -41,7 +38,7 @@ teardown_file() {
     # remove the created namespace with all underneath upon test suite completion
     ./otdfctl $HOST $WITH_CREDS policy attributes namespaces unsafe delete --force --id "$NS_ID"
 
-    unset HOST WITH_CREDS SM_VAL1_ID SM_VAL2_ID NS_ID SCS_1 SCS_2
+    unset HOST WITH_CREDS SM_VAL1_ID SM_VAL2_ID NS_ID NS_NAME SCS_1 SCS_2
 }
 
 @test "Create subject mapping" {
@@ -106,7 +103,7 @@ teardown_file() {
     assert_not_equal "$created" ""
     assert_not_equal "$scs_1_id" "null"
     assert_not_equal "$scs_1_id" ""
-    
+
     # table
     run_otdfctl_sm get --id "$created"
         assert_success
@@ -167,6 +164,49 @@ teardown_file() {
     assert_not_equal $(echo "$output" | jq -r 'pagination') "null"
     total=$(echo "$output" | jq -r '.pagination.total')
     [[ "$total" -ge 1 ]]
+}
+
+@test "Create subject mapping without namespace" {
+    run ./otdfctl $HOST $WITH_CREDS policy subject-mappings create -a "$SM_VAL1_ID" --action "$ACTION_CREATE_NAME" --subject-condition-set-new "$SCS_1"
+        assert_success
+        assert_output --partial "Subject Condition Set: Id"
+        assert_output --partial ".team.name"
+        assert_line --regexp "Attribute Value Id.*$SM_VAL1_ID"
+}
+
+@test "Create subject mapping with namespace FQN" {
+    run ./otdfctl $HOST $WITH_CREDS policy subject-mappings create -a "$SM_VAL2_ID" --action "$ACTION_READ_NAME" --subject-condition-set-new "$SCS_2" --namespace "$NS_NAME"
+        assert_success
+        assert_output --partial "Subject Condition Set: Id"
+        assert_output --partial ".team.name"
+        assert_line --regexp "Attribute Value Id.*$SM_VAL2_ID"
+}
+
+@test "List subject mappings with namespace ID filter" {
+    created=$(./otdfctl $HOST $WITH_CREDS policy sm create -a "$SM_VAL1_ID" --action "$ACTION_CREATE_NAME" --subject-condition-set-new "$SCS_2" --namespace "$NS_ID" --json | jq -r '.id')
+
+    run_otdfctl_sm list --namespace "$NS_ID"
+        assert_success
+        assert_output --partial "$created"
+        assert_output --partial "Total"
+
+    run_otdfctl_sm list --namespace "$NS_ID" --json
+        assert_success
+        matched=$(echo "$output" | jq -r --arg id "$created" '.subject_mappings[] | select(.id == $id)')
+        [ -n "$matched" ]
+}
+
+@test "List subject mappings with namespace FQN filter" {
+    created=$(./otdfctl $HOST $WITH_CREDS policy sm create -a "$SM_VAL2_ID" --action "$ACTION_READ_NAME" --subject-condition-set-new "$SCS_1" --namespace "$NS_NAME" --json | jq -r '.id')
+
+    run_otdfctl_sm list --namespace "$NS_NAME"
+        assert_success
+        assert_output --partial "$created"
+
+    run_otdfctl_sm list --namespace "$NS_NAME" --json
+        assert_success
+        matched=$(echo "$output" | jq -r --arg id "$created" '.subject_mappings[] | select(.id == $id)')
+        [ -n "$matched" ]
 }
 
 @test "Delete subject mapping" {

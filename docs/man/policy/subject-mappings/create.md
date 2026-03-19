@@ -17,6 +17,9 @@ command:
       description: Known preexisting Subject Condition Set Id
     - name: subject-condition-set-new
       description: JSON array of Subject Sets to create a new Subject Condition Set associated with the created Subject Mapping
+    - name: namespace
+      description: Namespace ID or FQN
+      shorthand: n
     - name: label
       description: "Optional metadata 'labels' in the format: key=value"
       shorthand: l
