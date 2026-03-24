@@ -49,7 +49,7 @@ teardown_file() {
   ./otdfctl $HOST $WITH_CREDS policy registered-resources delete --id "$RR_ID" --force
 
   # remove the custom action used in registered resource values tests
-  ./otdfctl $HOST $WITH_CREDS policy actions delete --id "$CUSTOM_ACTION_ID" --namespace "$NS_ID" --force
+  ./otdfctl $HOST $WITH_CREDS policy actions delete --id "$CUSTOM_ACTION_ID" --force
 
   # remove the namespace and cascade delete attributes and values used in registered resource values tests
   ./otdfctl $HOST $WITH_CREDS policy attributes namespaces unsafe delete --id "$NS_ID" --force
