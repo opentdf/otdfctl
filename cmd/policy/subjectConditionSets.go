@@ -101,6 +101,7 @@ func createSubjectConditionSet(cmd *cobra.Command, args []string) {
 
 	rows := [][]string{
 		{"Id", scs.GetId()},
+		{"Namespace", scs.GetNamespace().GetFqn()},
 		{"SubjectSets", string(subjectSetsJSON)},
 	}
 
@@ -130,6 +131,7 @@ func getSubjectConditionSet(cmd *cobra.Command, args []string) {
 
 	rows := [][]string{
 		{"Id", scs.GetId()},
+		{"Namespace", scs.GetNamespace().GetFqn()},
 		{"SubjectSets", string(subjectSetsJSON)},
 	}
 	if mdRows := getMetadataRows(scs.GetMetadata()); mdRows != nil {
@@ -156,6 +158,7 @@ func listSubjectConditionSets(cmd *cobra.Command, args []string) {
 
 	t := cli.NewTable(
 		cli.NewUUIDColumn(),
+		table.NewFlexColumn("namespace", "Namespace", cli.FlexColumnWidthTwo),
 		table.NewFlexColumn("subject_sets", "SubjectSets", cli.FlexColumnWidthFour),
 		table.NewFlexColumn("labels", "Labels", cli.FlexColumnWidthOne),
 		table.NewFlexColumn("created_at", "Created At", cli.FlexColumnWidthOne),
@@ -170,6 +173,7 @@ func listSubjectConditionSets(cmd *cobra.Command, args []string) {
 		metadata := cli.ConstructMetadata(scs.GetMetadata())
 		rows = append(rows, table.NewRow(table.RowData{
 			"id":           scs.GetId(),
+			"namespace":    scs.GetNamespace().GetFqn(),
 			"subject_sets": string(subjectSetsJSON),
 			"labels":       metadata["Labels"],
 			"created_at":   metadata["Created At"],

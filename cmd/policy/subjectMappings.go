@@ -44,6 +44,7 @@ func policyGetSubjectMapping(cmd *cobra.Command, args []string) {
 
 	rows := [][]string{
 		{"Id", mapping.GetId()},
+		{"Namespace", mapping.GetNamespace().GetFqn()},
 		{"Attribute Value: Id", mapping.GetAttributeValue().GetId()},
 		{"Attribute Value: Value", mapping.GetAttributeValue().GetValue()},
 		{"Actions", string(actionsJSON)},
@@ -73,6 +74,7 @@ func policyListSubjectMappings(cmd *cobra.Command, args []string) {
 	}
 	t := cli.NewTable(
 		cli.NewUUIDColumn(),
+		table.NewFlexColumn("namespace", "Namespace", cli.FlexColumnWidthTwo),
 		table.NewFlexColumn("value_id", "Attribute Value Id", cli.FlexColumnWidthFour),
 		table.NewFlexColumn("value_fqn", "Attibribute Value FQN", cli.FlexColumnWidthFour),
 		table.NewFlexColumn("actions", "Actions", cli.FlexColumnWidthTwo),
@@ -93,6 +95,7 @@ func policyListSubjectMappings(cmd *cobra.Command, args []string) {
 
 		rows = append(rows, table.NewRow(table.RowData{
 			"id":                       sm.GetId(),
+			"namespace":                sm.GetNamespace().GetFqn(),
 			"value_id":                 sm.GetAttributeValue().GetId(),
 			"value_fqn":                sm.GetAttributeValue().GetFqn(),
 			"actions":                  string(actionsJSON),
@@ -168,6 +171,7 @@ func policyCreateSubjectMapping(cmd *cobra.Command, args []string) {
 
 	rows := [][]string{
 		{"Id", mapping.GetId()},
+		{"Namespace", mapping.GetNamespace().GetFqn()},
 		{"Attribute Value Id", mapping.GetAttributeValue().GetId()},
 		{"Actions", string(actionsJSON)},
 		{"Subject Condition Set: Id", mapping.GetSubjectConditionSet().GetId()},
@@ -246,7 +250,9 @@ func policyUpdateSubjectMapping(cmd *cobra.Command, args []string) {
 	if err != nil {
 		cli.ExitWithError("Failed to update subject mapping", err)
 	}
-	rows := [][]string{{"Id", id}}
+	rows := [][]string{
+		{"Id", id},
+	}
 	if mdRows := getMetadataRows(updated.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
 	}

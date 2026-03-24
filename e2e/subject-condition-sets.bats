@@ -7,6 +7,7 @@ setup_file() {
   export HOST='--host http://localhost:8080'
 
   export NS_NAME="subject-condition-sets.net"
+  export NS_FQN="https://$NS_NAME"
   export NS_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes namespaces create -n "$NS_NAME" --json | jq -r '.id')
 
   export SCS_1='[{"condition_groups":[{"conditions":[{"operator":1,"subject_external_values":["marketing"],"subject_external_selector_value":".org.name"},{"operator":1,"subject_external_values":["ShinyThing"],"subject_external_selector_value":".team.name"}],"boolean_operator":1}]}]'
@@ -36,7 +37,7 @@ teardown_file() {
   ./otdfctl $HOST $WITH_CREDS policy attributes namespaces unsafe delete --force --id "$NS_ID"
 
   # clear out all test env vars
-  unset HOST WITH_CREDS NS_NAME NS_ID SCS_1 SCS_2 SCS_3
+  unset HOST WITH_CREDS NS_NAME NS_FQN NS_ID SCS_1 SCS_2 SCS_3
 
   rm scs.json
 }
@@ -47,6 +48,7 @@ teardown_file() {
   run_otdfctl_scs create --subject-sets-file-json scs.json -l fromfile=true
   assert_success
   assert_output --partial "Id"
+  assert_output --partial "Namespace"
   assert_output --partial "SubjectSets"
   assert_output --partial ".org.name"
   assert_output --partial "SUBJECT_MAPPING_OPERATOR_ENUM_IN"
@@ -57,6 +59,7 @@ teardown_file() {
   run ./otdfctl $HOST $WITH_CREDS policy scs create --subject-sets "$SCS_2"
   assert_success
   assert_output --partial "Id"
+  assert_output --partial "Namespace"
   assert_output --partial "SubjectSets"
   assert_output --partial ".emailAddress"
   assert_output --partial "SUBJECT_MAPPING_OPERATOR_ENUM_IN"
@@ -67,6 +70,7 @@ teardown_file() {
   run_otdfctl_scs get --id "$CREATED_ID"
   assert_success
   assert_line --regexp "Id.*$CREATED_ID"
+  assert_output --partial "Namespace"
   assert_output --partial "Labels"
   assert_output --partial "hello: world"
   assert_output --partial "Created At"
@@ -134,23 +138,15 @@ teardown_file() {
     assert_output --partial "$CREATED_ID"
 }
 
-@test "Create a SCS without namespace" {
-  run ./otdfctl $HOST $WITH_CREDS policy scs create --subject-sets "$SCS_3"
-  assert_success
-  assert_output --partial "Id"
-  assert_output --partial "SubjectSets"
-  assert_output --partial ".team.name"
-
-  CREATED_ID=$(echo "$output" | grep -oP 'Id\s+\K[0-9a-f-]+' | head -1)
-  run_delete_scs "$CREATED_ID"
-}
-
 @test "Create a SCS with namespace FQN" {
-  run ./otdfctl $HOST $WITH_CREDS policy scs create --subject-sets "$SCS_1" --namespace "$NS_NAME"
+  CREATED_ID=$(./otdfctl $HOST $WITH_CREDS policy scs create --subject-sets "$SCS_2" --namespace "$NS_FQN" --json | jq -r '.id')
   assert_success
   assert_output --partial "Id"
+  assert_output --partial "Namespace"
   assert_output --partial "SubjectSets"
   assert_output --partial ".org.name"
+
+  run_delete_scs "$CREATED_ID"
 }
 
 @test "List SCS with namespace ID filter" {
@@ -170,13 +166,13 @@ teardown_file() {
 }
 
 @test "List SCS with namespace FQN filter" {
-  CREATED_ID=$(./otdfctl $HOST $WITH_CREDS policy scs create --subject-sets "$SCS_3" --namespace "$NS_NAME" --json | jq -r '.id')
+  CREATED_ID=$(./otdfctl $HOST $WITH_CREDS policy scs create --subject-sets "$SCS_3" --namespace "$NS_FQN" --json | jq -r '.id')
 
-  run_otdfctl_scs list --namespace "$NS_NAME"
+  run_otdfctl_scs list --namespace "$NS_FQN"
     assert_success
     assert_output --partial "$CREATED_ID"
 
-  run_otdfctl_scs list --namespace "$NS_NAME" --json
+  run_otdfctl_scs list --namespace "$NS_FQN" --json
     assert_success
     matched_object=$(echo "$output" | jq -r --arg id "$CREATED_ID" '.subject_condition_sets[] | select(.id == $id)')
     [ -n "$matched_object" ]
