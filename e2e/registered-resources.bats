@@ -8,11 +8,13 @@ setup_file() {
 
     # create namespace first (needed for registered resource creation)
     export NS_NAME="test-rr.org"
-    export NS_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes namespaces create --name "$NS_NAME" --json | jq -r '.id')
+    NS_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes namespaces create --name "$NS_NAME" --json | jq -r '.id')
+    export NS_ID
 
     # create registered resource used in registered resource values tests
     export RR_NAME="test_rr_for_values"
-    export RR_ID=$(./otdfctl $HOST $WITH_CREDS policy registered-resources create --name "$RR_NAME" --namespace "$NS_ID" --json | jq -r '.id')
+    RR_ID=$(./otdfctl $HOST $WITH_CREDS policy registered-resources create --name "$RR_NAME" --namespace "$NS_ID" --json | jq -r '.id')
+    export RR_ID
 
     # create custom action to be used in registered resource values tests
     export CUSTOM_ACTION_NAME="test_action_for_values"
@@ -25,10 +27,14 @@ setup_file() {
     export READ_ACTION_ID
     export ATTR_NAME=test_rr_attr
     attr_id=$(./otdfctl $HOST $WITH_CREDS policy attributes create --namespace "$NS_ID" --name "$ATTR_NAME" --rule ANY_OF -l key=value --json | jq -r '.id')
-    export ATTR_VAL_1_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes values create --attribute-id "$attr_id" --value test_reg_res_attr__val_1 --json | jq -r '.id')
-    export ATTR_VAL_1_FQN=$(./otdfctl $HOST $WITH_CREDS policy attributes values get --id "$ATTR_VAL_1_ID" --json | jq -r '.fqn')
-    export ATTR_VAL_2_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes values create --attribute-id "$attr_id" --value test_reg_res_attr__val_2 --json | jq -r '.id')
-    export ATTR_VAL_2_FQN=$(./otdfctl $HOST $WITH_CREDS policy attributes values get --id "$ATTR_VAL_2_ID" --json | jq -r '.fqn')
+    ATTR_VAL_1_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes values create --attribute-id "$attr_id" --value test_reg_res_attr__val_1 --json | jq -r '.id')
+    export ATTR_VAL_1_ID
+    ATTR_VAL_1_FQN=$(./otdfctl $HOST $WITH_CREDS policy attributes values get --id "$ATTR_VAL_1_ID" --json | jq -r '.fqn')
+    export ATTR_VAL_1_FQN
+    ATTR_VAL_2_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes values create --attribute-id "$attr_id" --value test_reg_res_attr__val_2 --json | jq -r '.id')
+    export ATTR_VAL_2_ID
+    ATTR_VAL_2_FQN=$(./otdfctl $HOST $WITH_CREDS policy attributes values get --id "$ATTR_VAL_2_ID" --json | jq -r '.fqn')
+    export ATTR_VAL_2_FQN
 
     echo "FQN: $ATTR_VAL_1_FQN"
 }
