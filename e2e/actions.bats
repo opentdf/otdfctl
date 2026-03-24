@@ -5,7 +5,10 @@
 setup_file() {
     export WITH_CREDS='--with-client-creds-file ./creds.json'
     export HOST='--host http://localhost:8080'
-    export ACTION_NAMESPACE='https://example.com'
+    export ACTION_NAMESPACE_NAME='test-act.org'
+    export ACTION_NAMESPACE="https://$ACTION_NAMESPACE_NAME"
+    # create namespace first (needed for action creation)
+    export NS_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes namespaces create --name "$ACTION_NAMESPACE_NAME" --json | jq -r '.id')
 }
 
 setup() {
@@ -20,8 +23,11 @@ setup() {
 
 teardown_file() {
   # clear out all test env vars
-  unset HOST WITH_CREDS ACTION_NAMESPACE
+  # remove the namespace and cascade delete attributes and values used in registered resource values tests
+  ./otdfctl $HOST $WITH_CREDS policy attributes namespaces unsafe delete --id "$NS_ID" --force
+  unset HOST WITH_CREDS ACTION_NAMESPACE ACTION_NAMESPACE_NAME NS_ID
 }
+
 
 @test "Create a new custom action - Good" {
   run_otdfctl_action create --name test_action_create --namespace "$ACTION_NAMESPACE"
@@ -91,6 +97,13 @@ teardown_file() {
     assert_success
     [ "$(echo "$output" | jq -r '.id')" = "$UPDATE_ACTION_ID" ]
     [ "$(echo "$output" | jq -r '.name')" = "update" ]
+
+  # ensure you can use the namespace id instead of the fqn
+  run_otdfctl_action get --name "read" --namespace "$NS_ID"
+    assert_success
+    assert_line --partial "Id"
+    assert_line --regexp "Name.*read"
+    assert_line --regexp "Namespace.*$ACTION_NAMESPACE"
 }
 
 @test "Get an action - Bad" {
