@@ -14,7 +14,6 @@ command:
     - name: namespace
       shorthand: s
       description: Namespace ID or FQN
-      required: true
     - name: label
       description: "Optional metadata 'labels' in the format: key=value"
       shorthand: l

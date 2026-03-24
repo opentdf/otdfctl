@@ -114,7 +114,7 @@ func policyCreateAction(cmd *cobra.Command, args []string) {
 	defer h.Close()
 
 	name := c.Flags.GetRequiredString("name")
-	namespace := c.Flags.GetRequiredString("namespace")
+	namespace := c.Flags.GetOptionalString("namespace")
 	metadataLabels = c.Flags.GetStringSlice("label", metadataLabels, cli.FlagsStringSliceOptions{Min: 0})
 
 	action, err := h.CreateAction(cmd.Context(), name, namespace, getMetadataMutable(metadataLabels))
