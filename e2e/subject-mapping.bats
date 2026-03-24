@@ -8,7 +8,7 @@ setup_file() {
 
     # Create two namespaced values to be used in other tests
     export NS_NAME="subject-mappings-test.net"
-    export NS_FQN="https://$NS_FQN"
+    export NS_FQN="https://$NS_NAME"
     export NS_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes namespaces create -n "$NS_NAME" --json | jq -r '.id')
     ATTR_ID=$(./otdfctl $HOST $WITH_CREDS policy attributes create --namespace "$NS_ID" --name attr1 --rule ANY_OF --json | jq -r '.id')
     # Names prefixed with SM to avoid conflicts across tests when running in parallel
