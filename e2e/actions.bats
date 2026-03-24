@@ -102,9 +102,10 @@ teardown_file() {
     assert_failure
     assert_output --partial "must be a valid UUID"
 
-  run_otdfctl_action get --name 'testing_get'
-    assert_failure
-    assert_output --partial "namespace' must be provided when using 'name'"
+  # TODO: re-enable when namespace is required
+  # run_otdfctl_action get --name 'testing_get'
+  #   assert_failure
+  #   assert_output --partial "namespace' must be provided when using 'name'"
 }
 
 @test "List actions" {

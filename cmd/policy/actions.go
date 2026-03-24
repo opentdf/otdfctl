@@ -22,9 +22,10 @@ func policyGetAction(cmd *cobra.Command, args []string) {
 	if id == "" && name == "" {
 		cli.ExitWithError("Either 'id' or 'name' must be provided", nil)
 	}
-	if id == "" && name != "" && namespace == "" {
-		cli.ExitWithError("'namespace' must be provided when using 'name'", nil)
-	}
+	// TODO: re-enable when namespace is required
+	// if id == "" && name != "" && namespace == "" {
+	// 	cli.ExitWithError("'namespace' must be provided when using 'name'", nil)
+	// }
 
 	action, err := h.GetAction(cmd.Context(), id, name, namespace)
 	if err != nil {
