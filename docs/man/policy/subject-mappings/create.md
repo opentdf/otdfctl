@@ -44,6 +44,18 @@ For more information about subject mappings, see the `subject-mappings` subcomma
 
 For more information about subject condition sets, see the `subject-condition-sets` subcommand.
 
+## Namespacing subject mappings
+
+The following rules must be applied when attempting to namespace a subject mapping:
+
+- Either all policy constructs (action, subject mappings, subject condition set, attribute value) are within the same
+  namespace
+- Subject mapping, subject condition set, action are all not within a namespace.
+
+You cannot, for example:
+
+- Create a subject mapping that is not within the same namespace as an action that is passed in
+
 ## Examples
 
 Create a subject mapping for a 'read' action linking to an existing subject condition set:
@@ -74,4 +86,10 @@ otdfctl policy subject-mapping create --attribute-value-id 891cfe85-b381-4f85-96
     ]
   }
 ]'
+```
+
+Create a subject mapping under a namespace
+
+```shell
+otdfctl policy subject-mapping create --attribute-value-id 891cfe85-b381-4f85-9699-5f7dbfe2a9ab --action read --subject-condition-set-id 8dc98f65-5f0a-4444-bfd1-6a818dc7b447 --namespace "https://example.com"
 ```
