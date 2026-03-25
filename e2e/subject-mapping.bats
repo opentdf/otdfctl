@@ -210,14 +210,14 @@ teardown_file() {
 
     run_otdfctl_sm list --namespace "$test_ns_id" --json
         assert_success
-        assert_equal "$(echo "$output" | jq -r --arg id "$created" '.subject_mappings[] | select(.id == $id)')" "$created"
+        assert_equal "$(echo "$output" | jq -r --arg id "$created" '.subject_mappings[] | select(.id == $id) | .id')" "$created"
         # Ensure only subject mappings from the filtered namespace are returned
         assert_equal "$(echo "$output" | jq -r --arg ns "$test_ns_id" '[.subject_mappings[] | select(.namespace.id != $ns)] | length')" "0"
 
     # Filter by namespace fqn
     run_otdfctl_sm list --namespace "$test_ns_fqn" --json
         assert_success
-        assert_equal "$(echo "$output" | jq -r --arg id "$created" '.subject_mappings[] | select(.id == $id)')" "$created"
+        assert_equal "$(echo "$output" | jq -r --arg id "$created" '.subject_mappings[] | select(.id == $id) | .id')" "$created"
         # Ensure only subject mappings from the filtered namespace are returned
         assert_equal "$(echo "$output" | jq -r --arg ns "$test_ns_id" '[.subject_mappings[] | select(.namespace.id != $ns)] | length')" "0"
 
