@@ -147,6 +147,13 @@ teardown_file() {
 }
 
 @test "List actions" {
+  run_otdfctl_action create --name test_action_list_namespaced --namespace "$ACTION_NAMESPACE" --json
+  assert_success
+  created_id=$(echo "$output" | jq -r '.id')
+  run_otdfctl_action create --name test_action_list_unnamespaced --json
+  assert_success
+  created_id_2=$(echo "$output" | jq -r '.id')
+
   run_otdfctl_action list --namespace "$ACTION_NAMESPACE"
     assert_output --partial "Namespace"
     assert_output --partial "$ACTION_NAMESPACE"
@@ -156,6 +163,8 @@ teardown_file() {
     assert_output --partial "delete"
     assert_output --partial "Total"
     assert_line --regexp "Current Offset.*0"
+    assert_output --partial "test_action_list_namespaced"
+    refute_output --partial "test_action_list_unnamespaced"
   
   run_otdfctl_action list --namespace "$ACTION_NAMESPACE" --json
   assert_success
@@ -167,7 +176,7 @@ teardown_file() {
   total=$(echo "$output" | jq -r '.pagination.total')
   [[ "$total" -ge 1 ]]
 
-  # listing without namespace should succeed
+  # listing without namespace should succeed and should not include namespaced actions
   run_otdfctl_action list
     assert_output --partial "create"
     assert_output --partial "read"
@@ -175,6 +184,11 @@ teardown_file() {
     assert_output --partial "delete"
     assert_output --partial "Total"
     assert_line --regexp "Current Offset.*0"
+    assert_output --partial "test_action_list_namespaced"
+    assert_output --partial "test_action_list_unnamespaced"
+
+  run_otdfctl_action delete --id $created_id --force
+  run_otdfctl_action delete --id $created_id_2 --force
 }
 
 @test "Update action" {
