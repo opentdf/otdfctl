@@ -176,7 +176,7 @@ teardown_file() {
   total=$(echo "$output" | jq -r '.pagination.total')
   [[ "$total" -ge 1 ]]
 
-  # listing without namespace should succeed and should not include namespaced actions
+  # listing without namespace should succeed and should include both namespaced and un-namespaced actions (namespace field should be empty for un-namespaced actions)
   run_otdfctl_action list
     assert_output --partial "create"
     assert_output --partial "read"
