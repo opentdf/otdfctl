@@ -3,18 +3,10 @@ package handlers
 import (
 	"context"
 
-	"github.com/google/uuid"
 	"github.com/opentdf/platform/protocol/go/common"
 	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/opentdf/platform/protocol/go/policy/actions"
 )
-
-func getNamespaceIDAndFQN(namespace string) (string, string) {
-	if _, err := uuid.Parse(namespace); err != nil {
-		return "", namespace
-	}
-	return namespace, ""
-}
 
 func (h Handler) GetAction(ctx context.Context, id string, name string, namespace string) (*policy.Action, error) {
 	req := &actions.GetActionRequest{}

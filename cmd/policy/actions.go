@@ -17,15 +17,12 @@ func policyGetAction(cmd *cobra.Command, args []string) {
 
 	id := c.Flags.GetOptionalID("id")
 	name := c.Flags.GetOptionalString("name")
+	// TODO: switch to required namespace if id not provided once namespacing is required by policy
 	namespace := c.Flags.GetOptionalString("namespace")
 
 	if id == "" && name == "" {
 		cli.ExitWithError("Either 'id' or 'name' must be provided", nil)
 	}
-	// TODO: re-enable when namespace is required
-	// if id == "" && name != "" && namespace == "" {
-	// 	cli.ExitWithError("'namespace' must be provided when using 'name'", nil)
-	// }
 
 	action, err := h.GetAction(cmd.Context(), id, name, namespace)
 	if err != nil {
@@ -40,12 +37,7 @@ func policyGetAction(cmd *cobra.Command, args []string) {
 	rows := [][]string{
 		{"Id", action.GetId()},
 		{"Name", action.GetName()},
-		{"Namespace", func() string {
-			if action.GetNamespace() != nil {
-				return action.GetNamespace().GetFqn()
-			}
-			return ""
-		}()},
+		{"Namespace", action.GetNamespace().GetFqn()},
 	}
 	if mdRows := getMetadataRows(action.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
@@ -80,13 +72,7 @@ func policyListActions(cmd *cobra.Command, args []string) {
 			"id":          a.GetId(),
 			"action_type": "standard",
 			"name":        a.GetName(),
-			// for standard actions we should only include the namespace if it is not null
-			"namespace": func() string {
-				if a.GetNamespace() != nil {
-					return a.GetNamespace().GetFqn()
-				}
-				return ""
-			}(),
+			"namespace":   a.GetNamespace().GetFqn(),
 		}))
 	}
 
@@ -95,12 +81,7 @@ func policyListActions(cmd *cobra.Command, args []string) {
 			"id":          a.GetId(),
 			"action_type": "custom",
 			"name":        a.GetName(),
-			"namespace": func() string {
-				if a.GetNamespace() != nil {
-					return a.GetNamespace().GetFqn()
-				}
-				return ""
-			}(),
+			"namespace":   a.GetNamespace().GetFqn(),
 		}))
 	}
 

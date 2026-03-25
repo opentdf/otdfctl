@@ -30,15 +30,29 @@ teardown_file() {
 
 
 @test "Create a new custom action - Good" {
-  run_otdfctl_action create --name test_action_create --namespace "$ACTION_NAMESPACE"
+  # with a namespace
+  run_otdfctl_action create --name test_action_create_namespaced --namespace "$ACTION_NAMESPACE"
     assert_output --partial "SUCCESS"
-    assert_line --regexp "Name.*test_action_create"
+    assert_line --regexp "Name.*test_action_create_namespaced"
     assert_line --regexp "Namespace.*$ACTION_NAMESPACE"
     assert_output --partial "Id"
     assert_output --partial "Created At"
     assert_line --partial "Updated At"
 
   # cleanup
+  created_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
+  run_otdfctl_action delete --id $created_id --force
+
+  # without a namespace (should default to un-namespaced)
+  run_otdfctl_action create --name test_action_create
+    assert_output --partial "SUCCESS"
+    assert_line --regexp "Name.*test_action_create"
+    assert_output --partial "Id"
+    assert_output --partial "Created At"
+    assert_line --partial "Updated At"
+    # ensure namespace is empty for un-namespaced actions
+    refute_line --regexp "Namespace.*$ACTION_NAMESPACE"
+
   created_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
   run_otdfctl_action delete --id $created_id --force
 }
@@ -57,13 +71,17 @@ teardown_file() {
         assert_failure
         assert_output --partial "Flag '--name' is required"
 
-    # TODO: re-enable when namespace is optional
+    # TODO: re-enable when namespace is required
     # run_otdfctl_action create --name no_namespace
     #     assert_failure
     #     assert_output --partial "Flag '--namespace' is required"
   
   # conflict
     run_otdfctl_action create -n "read" --namespace "$ACTION_NAMESPACE"
+        assert_failure
+        assert_output --partial "intended action would violate a restriction"
+    
+    run_otdfctl_action create -n "read"
         assert_failure
         assert_output --partial "intended action would violate a restriction"
 
@@ -104,6 +122,13 @@ teardown_file() {
     assert_line --partial "Id"
     assert_line --regexp "Name.*read"
     assert_line --regexp "Namespace.*$ACTION_NAMESPACE"
+
+  # ensure get without namespace still works for un-namespaced actions
+  run_otdfctl_action get --name "read"
+    assert_success
+    assert_line --partial "Id"
+    assert_line --regexp "Name.*read"
+    refute_line --regexp "Namespace.*$ACTION_NAMESPACE"
 }
 
 @test "Get an action - Bad" {
