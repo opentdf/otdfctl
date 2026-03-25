@@ -22,4 +22,6 @@ For more information about subject mappings, see the `subject-mappings` subcomma
 
 ```shell
 otdfctl policy subject-mappings list
+
+otdfctl policy subject-mappings list --namespace "https://example.com"
 ```

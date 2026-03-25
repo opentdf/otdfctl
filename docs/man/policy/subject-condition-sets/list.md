@@ -23,4 +23,6 @@ For more information about subject condition sets, see the `subject-condition-se
 
 ```shell
 otdfctl policy subject-condition-set list
+
+otdfctl policy subject-condition-set list --namespace "https://example.com"
 ```
