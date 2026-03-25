@@ -152,35 +152,31 @@ teardown_file() {
   assert_output --partial "SubjectSets"
 }
 
-@test "List SCS with namespace ID filter" {
-  CREATED_ID=$(./otdfctl $HOST $WITH_CREDS policy scs create --subject-sets "$SCS_2" --namespace "$NS_ID" --json | jq -r '.id')
+@test "List SCS with namespace filter" {
+  test_ns_name="scs-list-$BATS_TEST_NUMBER.net"
+  test_ns_fqn="https://$test_ns_name"
+  test_ns_id=$(./otdfctl $HOST $WITH_CREDS policy attributes namespaces create -n "$test_ns_name" --json | jq -r '.id')
+  CREATED_ID=$(./otdfctl $HOST $WITH_CREDS policy scs create --subject-sets "$SCS_2" --namespace "$test_ns_id" --json | jq -r '.id')
 
-  run_otdfctl_scs list --namespace "$NS_ID"
+  run_otdfctl_scs list --namespace "$test_ns_id"
     assert_success
     assert_output --partial "$CREATED_ID"
     assert_output --partial "Total"
 
-  run_otdfctl_scs list --namespace "$NS_ID" --json
+  run_otdfctl_scs list --namespace "$test_ns_id" --json
     assert_success
-    matched_object=$(echo "$output" | jq -r --arg id "$CREATED_ID" '.subject_condition_sets[] | select(.id == $id)')
-    [ -n "$matched_object" ]
+    assert_equal "$(echo "$output" | jq -r --arg id "$CREATED_ID" '.subject_condition_sets[] | select(.id == $id) | .id')" "$CREATED_ID"
+    # Ensure only SCS from the filtered namespace are returned
+    assert_equal "$(echo "$output" | jq -r --arg ns "$test_ns_id" '[.subject_condition_sets[] | select(.namespace.id != $ns)] | length')" "0"
 
-  run_delete_scs "$CREATED_ID"
-}
-
-@test "List SCS with namespace FQN filter" {
-  CREATED_ID=$(./otdfctl $HOST $WITH_CREDS policy scs create --subject-sets "$SCS_3" --namespace "$NS_FQN" --json | jq -r '.id')
-
-  run_otdfctl_scs list --namespace "$NS_FQN"
+  # Filter by namespace FQN
+  run_otdfctl_scs list --namespace "$test_ns_fqn" --json
     assert_success
-    assert_output --partial "$CREATED_ID"
+    assert_equal "$(echo "$output" | jq -r --arg id "$CREATED_ID" '.subject_condition_sets[] | select(.id == $id) | .id')" "$CREATED_ID"
+    # Ensure only SCS from the filtered namespace are returned
+    assert_equal "$(echo "$output" | jq -r --arg ns "$test_ns_id" '[.subject_condition_sets[] | select(.namespace.id != $ns)] | length')" "0"
 
-  run_otdfctl_scs list --namespace "$NS_FQN" --json
-    assert_success
-    matched_object=$(echo "$output" | jq -r --arg id "$CREATED_ID" '.subject_condition_sets[] | select(.id == $id)')
-    [ -n "$matched_object" ]
-
-  run_delete_scs "$CREATED_ID"
+  ./otdfctl $HOST $WITH_CREDS policy attributes namespaces unsafe delete --force --id "$test_ns_id"
 }
 
 @test "Prune SCS - deletes unmapped SCS alone" {

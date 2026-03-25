@@ -197,6 +197,7 @@ teardown_file() {
 
 @test "List subject mappings with namespace" {
     test_ns_name="subject-mappings-list-$BATS_TEST_NUMBER.net"
+    test_ns_fqn="https://$test_ns_name"
     test_ns_id=$(./otdfctl $HOST $WITH_CREDS policy attributes namespaces create -n "$test_ns_name" --json | jq -r '.id')
     test_attr_id=$(./otdfctl $HOST $WITH_CREDS policy attributes create --namespace "$test_ns_id" --name attr-list --rule ANY_OF --json | jq -r '.id')
     test_val_id=$(./otdfctl $HOST $WITH_CREDS policy attributes values create --attribute-id "$test_attr_id" --value val-list --json | jq -r '.id')
@@ -209,8 +210,16 @@ teardown_file() {
 
     run_otdfctl_sm list --namespace "$test_ns_id" --json
         assert_success
-        matched=$(echo "$output" | jq -r --arg id "$created" '.subject_mappings[] | select(.id == $id)')
-        [ -n "$matched" ]
+        assert_equal "$(echo "$output" | jq -r --arg id "$created" '.subject_mappings[] | select(.id == $id)')" "$created"
+        # Ensure only subject mappings from the filtered namespace are returned
+        assert_equal "$(echo "$output" | jq -r --arg ns "$test_ns_id" '[.subject_mappings[] | select(.namespace.id != $ns)] | length')" "0"
+
+    # Filter by namespace fqn
+    run_otdfctl_sm list --namespace "$test_ns_fqn" --json
+        assert_success
+        assert_equal "$(echo "$output" | jq -r --arg id "$created" '.subject_mappings[] | select(.id == $id)')" "$created"
+        # Ensure only subject mappings from the filtered namespace are returned
+        assert_equal "$(echo "$output" | jq -r --arg ns "$test_ns_id" '[.subject_mappings[] | select(.namespace.id != $ns)] | length')" "0"
 
     ./otdfctl $HOST $WITH_CREDS policy attributes namespaces unsafe delete --force --id "$test_ns_id"
 }
