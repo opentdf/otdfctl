@@ -3,7 +3,6 @@ package handlers
 import (
 	"context"
 
-	"github.com/google/uuid"
 	"github.com/opentdf/platform/protocol/go/common"
 	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/opentdf/platform/protocol/go/policy/subjectmapping"
@@ -27,13 +26,7 @@ func (h Handler) ListSubjectConditionSets(ctx context.Context, limit, offset int
 			Offset: offset,
 		},
 	}
-	if namespace != "" {
-		if _, err := uuid.Parse(namespace); err != nil {
-			req.NamespaceFqn = namespace
-		} else {
-			req.NamespaceId = namespace
-		}
-	}
+	req.NamespaceId, req.NamespaceFqn = getNamespaceIDAndFQN(namespace)
 	return h.sdk.SubjectMapping.ListSubjectConditionSets(ctx, req)
 }
 
@@ -45,13 +38,7 @@ func (h Handler) CreateSubjectConditionSet(ctx context.Context, ss []*policy.Sub
 			Metadata:    metadata,
 		},
 	}
-	if namespace != "" {
-		if _, err := uuid.Parse(namespace); err != nil {
-			req.NamespaceFqn = namespace
-		} else {
-			req.NamespaceId = namespace
-		}
-	}
+	req.NamespaceId, req.NamespaceFqn = getNamespaceIDAndFQN(namespace)
 	resp, err := h.sdk.SubjectMapping.CreateSubjectConditionSet(ctx, req)
 	if err != nil {
 		return nil, err

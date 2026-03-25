@@ -3,7 +3,6 @@ package handlers
 import (
 	"context"
 
-	"github.com/google/uuid"
 	"github.com/opentdf/platform/protocol/go/common"
 	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/opentdf/platform/protocol/go/policy/subjectmapping"
@@ -32,13 +31,7 @@ func (h Handler) ListSubjectMappings(ctx context.Context, limit, offset int32, n
 			Offset: offset,
 		},
 	}
-	if namespace != "" {
-		if _, err := uuid.Parse(namespace); err != nil {
-			req.NamespaceFqn = namespace
-		} else {
-			req.NamespaceId = namespace
-		}
-	}
+	req.NamespaceId, req.NamespaceFqn = getNamespaceIDAndFQN(namespace)
 	return h.sdk.SubjectMapping.ListSubjectMappings(ctx, req)
 }
 
@@ -51,13 +44,7 @@ func (h Handler) CreateNewSubjectMapping(ctx context.Context, attrValID string, 
 		NewSubjectConditionSet:        newScs,
 		Metadata:                      m,
 	}
-	if namespace != "" {
-		if _, err := uuid.Parse(namespace); err != nil {
-			req.NamespaceFqn = namespace
-		} else {
-			req.NamespaceId = namespace
-		}
-	}
+	req.NamespaceId, req.NamespaceFqn = getNamespaceIDAndFQN(namespace)
 	resp, err := h.sdk.SubjectMapping.CreateSubjectMapping(ctx, req)
 	if err != nil {
 		return nil, err
