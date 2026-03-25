@@ -139,7 +139,7 @@ teardown_file() {
 }
 
 @test "Create a SCS with namespace id" {
-  ./otdfctl $HOST $WITH_CREDS policy scs create --subject-sets "$SCS_2" --namespace "$$NS_ID"
+  run_otdfctl_scs create --subject-sets "$SCS_2" --namespace "$$NS_ID"
   assert_output --partial "Id"
   assert_output --partial "Namespace"
   assert_output --partial "SubjectSets"
@@ -147,7 +147,7 @@ teardown_file() {
 }
 
 @test "Create a SCS with namespace FQN" {
-  ./otdfctl $HOST $WITH_CREDS policy scs create --subject-sets "$SCS_2" --namespace "$NS_FQN"
+  run_otdfctl_scs create --subject-sets "$SCS_2" --namespace "$NS_FQN"
   assert_output --partial "Id"
   assert_output --partial "Namespace"
   assert_output --partial "SubjectSets"
