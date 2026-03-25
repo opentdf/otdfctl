@@ -107,12 +107,7 @@ func policyCreateAction(cmd *cobra.Command, args []string) {
 	rows := [][]string{
 		{"Id", action.GetId()},
 		{"Name", action.GetName()},
-		{"Namespace", func() string {
-			if action.GetNamespace() != nil {
-				return action.GetNamespace().GetFqn()
-			}
-			return ""
-		}()},
+		{"Namespace", action.GetNamespace().GetFqn()},
 	}
 
 	if mdRows := getMetadataRows(action.GetMetadata()); mdRows != nil {
@@ -148,12 +143,7 @@ func policyDeleteAction(cmd *cobra.Command, args []string) {
 	rows := [][]string{
 		{"Id", id},
 		{"Name", action.GetName()},
-		{"Namespace", func() string {
-			if action.GetNamespace() != nil {
-				return action.GetNamespace().GetFqn()
-			}
-			return ""
-		}()},
+		{"Namespace", action.GetNamespace().GetFqn()},
 	}
 	if mdRows := getMetadataRows(action.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
@@ -184,12 +174,7 @@ func policyUpdateAction(cmd *cobra.Command, args []string) {
 	rows := [][]string{
 		{"Id", id},
 		{"Name", updated.GetName()},
-		{"Namespace", func() string {
-			if updated.GetNamespace() != nil {
-				return updated.GetNamespace().GetFqn()
-			}
-			return ""
-		}()},
+		{"Namespace", updated.GetNamespace().GetFqn()},
 	}
 	if mdRows := getMetadataRows(updated.GetMetadata()); mdRows != nil {
 		rows = append(rows, mdRows...)
