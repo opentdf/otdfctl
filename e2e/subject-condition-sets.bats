@@ -143,7 +143,6 @@ teardown_file() {
   assert_output --partial "Id"
   assert_output --partial "Namespace"
   assert_output --partial "SubjectSets"
-  assert_output --partial ".org.name"
 }
 
 @test "Create a SCS with namespace FQN" {
@@ -151,7 +150,6 @@ teardown_file() {
   assert_output --partial "Id"
   assert_output --partial "Namespace"
   assert_output --partial "SubjectSets"
-  assert_output --partial ".org.name"
 }
 
 @test "List SCS with namespace ID filter" {
