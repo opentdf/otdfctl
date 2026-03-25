@@ -138,14 +138,20 @@ teardown_file() {
     assert_output --partial "$CREATED_ID"
 }
 
-@test "Create a SCS with namespace FQN" {
-  CREATED_ID=$(./otdfctl $HOST $WITH_CREDS policy scs create --subject-sets "$SCS_2" --namespace "$NS_FQN" --json | jq -r '.id')
+@test "Create a SCS with namespace id" {
+  ./otdfctl $HOST $WITH_CREDS policy scs create --subject-sets "$SCS_2" --namespace "$$NS_ID"
   assert_output --partial "Id"
   assert_output --partial "Namespace"
   assert_output --partial "SubjectSets"
   assert_output --partial ".org.name"
+}
 
-  run_delete_scs "$CREATED_ID"
+@test "Create a SCS with namespace FQN" {
+  ./otdfctl $HOST $WITH_CREDS policy scs create --subject-sets "$SCS_2" --namespace "$NS_FQN"
+  assert_output --partial "Id"
+  assert_output --partial "Namespace"
+  assert_output --partial "SubjectSets"
+  assert_output --partial ".org.name"
 }
 
 @test "List SCS with namespace ID filter" {
