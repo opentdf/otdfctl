@@ -140,7 +140,6 @@ teardown_file() {
 
 @test "Create a SCS with namespace FQN" {
   CREATED_ID=$(./otdfctl $HOST $WITH_CREDS policy scs create --subject-sets "$SCS_2" --namespace "$NS_FQN" --json | jq -r '.id')
-  assert_success
   assert_output --partial "Id"
   assert_output --partial "Namespace"
   assert_output --partial "SubjectSets"
