@@ -158,7 +158,7 @@ func listSubjectConditionSets(cmd *cobra.Command, args []string) {
 
 	t := cli.NewTable(
 		cli.NewUUIDColumn(),
-		table.NewFlexColumn("namespace", "Namespace", cli.FlexColumnWidthTwo),
+		table.NewFlexColumn("namespace", "Namespace", cli.FlexColumnWidthFour),
 		table.NewFlexColumn("subject_sets", "SubjectSets", cli.FlexColumnWidthFour),
 		table.NewFlexColumn("labels", "Labels", cli.FlexColumnWidthOne),
 		table.NewFlexColumn("created_at", "Created At", cli.FlexColumnWidthOne),

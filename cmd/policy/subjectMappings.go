@@ -74,7 +74,7 @@ func policyListSubjectMappings(cmd *cobra.Command, args []string) {
 	}
 	t := cli.NewTable(
 		cli.NewUUIDColumn(),
-		table.NewFlexColumn("namespace", "Namespace", cli.FlexColumnWidthTwo),
+		table.NewFlexColumn("namespace", "Namespace", cli.FlexColumnWidthFour),
 		table.NewFlexColumn("value_id", "Attribute Value Id", cli.FlexColumnWidthFour),
 		table.NewFlexColumn("value_fqn", "Attibribute Value FQN", cli.FlexColumnWidthFour),
 		table.NewFlexColumn("actions", "Actions", cli.FlexColumnWidthTwo),
