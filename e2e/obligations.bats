@@ -995,7 +995,7 @@ EOF
   # Verify all our triggers are present
   actual_triggers=$(echo "$output" | jq -r '.triggers | length')
   assert [ "$actual_triggers" -ge 2 ]
-  validate_triggers "$output" "2" "$LIST_ATTR_2_VAL_1_ID;$LIST_ATTR_2_VAL_1_FQN;$ACTION_2_ID;$ACTION_2_NAME;$CLIENT_ID_LIST;$LIST_OBL_2_VAL_ID;$LIST_OBL_VAL_2_FQN" "$LIST_ATTR_1_VAL_1_ID;$LIST_ATTR_1_VAL_1_FQN;$ACTION_1_ID;$ACTION_1_NAME;$CLIENT_ID_LIST;$LIST_OBL_1_VAL_ID;$LIST_OBL_VAL_1_FQN"
+  validate_triggers "$output" "2" "$LIST_ATTR_2_VAL_1_ID;$LIST_ATTR_2_VAL_1_FQN;$LIST_ACTION_2_ID;$LIST_ACTION_2_NAME;$CLIENT_ID_LIST;$LIST_OBL_2_VAL_ID;$LIST_OBL_VAL_2_FQN" "$LIST_ATTR_1_VAL_1_ID;$LIST_ATTR_1_VAL_1_FQN;$LIST_ACTION_1_ID;$LIST_ACTION_1_NAME;$CLIENT_ID_LIST;$LIST_OBL_1_VAL_ID;$LIST_OBL_VAL_1_FQN"
   validate_pagination "$output" "null" "2" "null"
 }
 
@@ -1004,13 +1004,13 @@ EOF
   run_otdfctl_obl_triggers list --limit 1 --offset 0 --json
   assert_success
   assert_equal "$(echo "$output" | jq -r '.triggers | length')" "1"
-  validate_triggers "$output" "1" "$LIST_ATTR_2_VAL_1_ID;$LIST_ATTR_2_VAL_1_FQN;$ACTION_2_ID;$ACTION_2_NAME;$CLIENT_ID_LIST;$LIST_OBL_2_VAL_ID;$LIST_OBL_VAL_2_FQN"
+  validate_triggers "$output" "1" "$LIST_ATTR_2_VAL_1_ID;$LIST_ATTR_2_VAL_1_FQN;$LIST_ACTION_2_ID;$LIST_ACTION_2_NAME;$CLIENT_ID_LIST;$LIST_OBL_2_VAL_ID;$LIST_OBL_VAL_2_FQN"
   validate_pagination "$output" "null" "2" "1"
 
   run_otdfctl_obl_triggers list --limit 1 --offset 1 --json
   assert_success
   assert_equal "$(echo "$output" | jq -r '.triggers | length')" "1"
-  validate_triggers "$output" "1" "$LIST_ATTR_1_VAL_1_ID;$LIST_ATTR_1_VAL_1_FQN;$ACTION_1_ID;$ACTION_1_NAME;$CLIENT_ID_LIST;$LIST_OBL_1_VAL_ID;$LIST_OBL_VAL_1_FQN"
+  validate_triggers "$output" "1" "$LIST_ATTR_1_VAL_1_ID;$LIST_ATTR_1_VAL_1_FQN;$LIST_ACTION_1_ID;$LIST_ACTION_1_NAME;$CLIENT_ID_LIST;$LIST_OBL_1_VAL_ID;$LIST_OBL_VAL_1_FQN"
   validate_pagination "$output" "1" "2" "null"
 }
 
@@ -1019,7 +1019,7 @@ EOF
   run_otdfctl_obl_triggers list --namespace "$LIST_NS_1_ID" --json
   assert_success
   assert_equal "$(echo "$output" | jq -r '.triggers | length')" "1"
-  validate_triggers "$output" "1" "$LIST_ATTR_1_VAL_1_ID;$LIST_ATTR_1_VAL_1_FQN;$ACTION_1_ID;$ACTION_1_NAME;$CLIENT_ID_LIST;$LIST_OBL_1_VAL_ID;$LIST_OBL_VAL_1_FQN"
+  validate_triggers "$output" "1" "$LIST_ATTR_1_VAL_1_ID;$LIST_ATTR_1_VAL_1_FQN;$LIST_ACTION_1_ID;$LIST_ACTION_1_NAME;$CLIENT_ID_LIST;$LIST_OBL_1_VAL_ID;$LIST_OBL_VAL_1_FQN"
   validate_pagination "$output" "null" "1" "null"
 }
 
@@ -1028,6 +1028,6 @@ EOF
   run_otdfctl_obl_triggers list --namespace "https://$LIST_NS_2_NAME" --json
   assert_success
   assert_equal "$(echo "$output" | jq -r '.triggers | length')" "1"
-  validate_triggers "$output" "1" "$LIST_ATTR_2_VAL_1_ID;$LIST_ATTR_2_VAL_1_FQN;$ACTION_2_ID;$ACTION_2_NAME;$CLIENT_ID_LIST;$LIST_OBL_2_VAL_ID;$LIST_OBL_VAL_2_FQN"
+  validate_triggers "$output" "1" "$LIST_ATTR_2_VAL_1_ID;$LIST_ATTR_2_VAL_1_FQN;$LIST_ACTION_2_ID;$LIST_ACTION_2_NAME;$CLIENT_ID_LIST;$LIST_OBL_2_VAL_ID;$LIST_OBL_VAL_2_FQN"
   validate_pagination "$output" "null" "1" "null"
 }
