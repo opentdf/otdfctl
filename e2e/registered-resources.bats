@@ -81,16 +81,13 @@ teardown_file() {
   run_otdfctl_reg_res delete --id $created_id --force
 
   # without a namespace (should default to un-namespaced)
-  run_otdfctl_reg_res create --name test_create_rr_no_ns
-    assert_output --partial "SUCCESS"
-    assert_line --regexp "Name.*test_create_rr_no_ns"
-    assert_output --partial "Id"
-    assert_output --partial "Created At"
-    assert_line --partial "Updated At"
+  run_otdfctl_reg_res create --name test_create_rr_no_ns --json
+    assert_success
+    [ "$(echo "$output" | jq -r '.name')" = "test_create_rr_no_ns" ]
     # ensure namespace is empty for un-namespaced resources
-    refute_line --regexp "Namespace.*https://$NS_NAME"
+    [ "$(echo "$output" | jq -r '.namespace.fqn // empty')" = "" ]
 
-  created_id=$(echo "$output" | grep Id | awk -F'│' '{print $3}' | xargs)
+  created_id=$(echo "$output" | jq -r '.id')
   run_otdfctl_reg_res delete --id $created_id --force
 }
 
