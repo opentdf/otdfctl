@@ -414,28 +414,28 @@ func buildNamespacesCommandTree() *cobra.Command {
 	deleteDoc := man.Docs.GetDoc("policy/namespaces/unsafe/delete")
 	deleteCmd := newCommandFromDoc(deleteDoc, unsafeDeleteAttributeNamespace)
 	deleteCmd.Flags().StringP(
-		deactivateDoc.GetDocFlag("id").Name,
-		deactivateDoc.GetDocFlag("id").Shorthand,
-		deactivateDoc.GetDocFlag("id").Default,
-		deactivateDoc.GetDocFlag("id").Description,
+		deleteDoc.GetDocFlag("id").Name,
+		deleteDoc.GetDocFlag("id").Shorthand,
+		deleteDoc.GetDocFlag("id").Default,
+		deleteDoc.GetDocFlag("id").Description,
 	)
 
 	reactivateDoc := man.Docs.GetDoc("policy/namespaces/unsafe/reactivate")
 	reactivateCmd := newCommandFromDoc(reactivateDoc, unsafeReactivateAttributeNamespace)
 	reactivateCmd.Flags().StringP(
-		deactivateDoc.GetDocFlag("id").Name,
-		deactivateDoc.GetDocFlag("id").Shorthand,
-		deactivateDoc.GetDocFlag("id").Default,
-		deactivateDoc.GetDocFlag("id").Description,
+		reactivateDoc.GetDocFlag("id").Name,
+		reactivateDoc.GetDocFlag("id").Shorthand,
+		reactivateDoc.GetDocFlag("id").Default,
+		reactivateDoc.GetDocFlag("id").Description,
 	)
 
 	unsafeUpdateDoc := man.Docs.GetDoc("policy/namespaces/unsafe/update")
 	unsafeUpdateCmd := newCommandFromDoc(unsafeUpdateDoc, unsafeUpdateAttributeNamespace)
 	unsafeUpdateCmd.Flags().StringP(
-		deactivateDoc.GetDocFlag("id").Name,
-		deactivateDoc.GetDocFlag("id").Shorthand,
-		deactivateDoc.GetDocFlag("id").Default,
-		deactivateDoc.GetDocFlag("id").Description,
+		unsafeUpdateDoc.GetDocFlag("id").Name,
+		unsafeUpdateDoc.GetDocFlag("id").Shorthand,
+		unsafeUpdateDoc.GetDocFlag("id").Default,
+		unsafeUpdateDoc.GetDocFlag("id").Description,
 	)
 	unsafeUpdateCmd.Flags().StringP(
 		unsafeUpdateDoc.GetDocFlag("name").Name,
