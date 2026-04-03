@@ -27,6 +27,11 @@ command:
       default: ''
 ---
 
+:::warning Deprecated flags
+`--public-keys` and `--public-key-remote` are deprecated and will be removed in an upcoming release.
+Use `otdfctl policy kas-registry key create` to manage KAS keys instead.
+:::
+
 ## Examples
 
 ```shell
