@@ -6,7 +6,6 @@ import (
 	"os"
 
 	"github.com/opentdf/otdfctl/cmd/auth"
-	cfg "github.com/opentdf/otdfctl/cmd/config"
 	"github.com/opentdf/otdfctl/cmd/dev"
 	"github.com/opentdf/otdfctl/cmd/policy"
 	"github.com/opentdf/otdfctl/cmd/tdf"
@@ -84,8 +83,6 @@ func init() {
 	}
 
 	RootCmd.AddCommand(
-		// config
-		cfg.Cmd,
 		// tdf
 		tdf.EncryptCmd,
 		tdf.DecryptCmd,
@@ -159,7 +156,6 @@ func init() {
 	RootCmd.AddGroup(&cobra.Group{ID: tdf.GroupID})
 
 	// Initialize all subcommands that have been refactored to use explicit initialization
-	cfg.InitCommands()
 	auth.InitCommands()
 	policy.InitCommands()
 	dev.InitCommands()
