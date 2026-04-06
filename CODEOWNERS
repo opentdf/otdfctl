@@ -5,3 +5,8 @@
 # @opentdf/security added on 2025-02-04 go.mod,go.sum
 go.mod @opentdf/cli @opentdf/security
 go.sum @opentdf/cli @opentdf/security
+
+## Documentation
+
+*.md   @opentdf/cli @opentdf/documentation
+/docs/ @opentdf/cli @opentdf/documentation
