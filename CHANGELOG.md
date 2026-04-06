@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.31.0](https://github.com/opentdf/otdfctl/compare/v0.30.0...v0.31.0) (2026-04-01)
+
+
+### Features
+
+* add policy namespaces as direct subcommand of policy ([#789](https://github.com/opentdf/otdfctl/issues/789)) ([2d8a147](https://github.com/opentdf/otdfctl/commit/2d8a147341fe58904501710c3516da366c176f28))
+
 ## [0.30.0](https://github.com/opentdf/otdfctl/compare/v0.29.0...v0.30.0) (2026-03-31)
 
 
