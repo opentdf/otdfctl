@@ -1,11 +1,10 @@
-package artifact_test
+package artifact
 
 import (
 	"bytes"
 	"testing"
 
 	"github.com/Masterminds/semver/v3"
-	"github.com/opentdf/otdfctl/migrations/artifact"
 	artifactmetadata "github.com/opentdf/otdfctl/migrations/artifact/metadata"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -14,18 +13,18 @@ import (
 func TestNewRejectsUnsupportedSchemaVersion(t *testing.T) {
 	t.Parallel()
 
-	_, err := artifact.New(artifact.ArtifactOpts{
+	_, err := New(ArtifactOpts{
 		Version: semver.MustParse("v2.0.0"),
 	})
 	require.Error(t, err)
-	assert.ErrorIs(t, err, artifact.ErrUnsupportedSchemaVersion)
+	assert.ErrorIs(t, err, ErrUnsupportedSchemaVersion)
 }
 
 func TestNewDefaultsCurrentVersion(t *testing.T) {
 	t.Parallel()
 
 	var buf bytes.Buffer
-	doc, err := artifact.New(artifact.ArtifactOpts{Writer: &buf})
+	doc, err := New(ArtifactOpts{Writer: &buf})
 	require.NoError(t, err)
 
 	require.NoError(t, doc.Write())
@@ -36,7 +35,7 @@ func TestNewDefaultsCurrentVersion(t *testing.T) {
 func TestArtifactSummaryReturnsEncodedJSON(t *testing.T) {
 	t.Parallel()
 
-	doc, err := artifact.New(artifact.ArtifactOpts{})
+	doc, err := New(ArtifactOpts{})
 	require.NoError(t, err)
 
 	summary, err := doc.Summary()
@@ -57,7 +56,7 @@ func TestArtifactSummaryReturnsEncodedJSON(t *testing.T) {
 func TestArtifactBuildAndCommitAreNotImplemented(t *testing.T) {
 	t.Parallel()
 
-	doc, err := artifact.New(artifact.ArtifactOpts{})
+	doc, err := New(ArtifactOpts{})
 	require.NoError(t, err)
 
 	buildErr := doc.Build()
