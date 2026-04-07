@@ -103,37 +103,3 @@ func TestWriteFailsWithoutWriter(t *testing.T) {
 	require.Error(t, err)
 	assert.ErrorIs(t, err, ErrNilWriter)
 }
-
-func TestWriteFailsWithNilArtifact(t *testing.T) {
-	t.Parallel()
-
-	var doc *artifact
-
-	err := doc.Write()
-	require.Error(t, err)
-	assert.ErrorIs(t, err, ErrNilArtifact)
-}
-
-func TestSummaryFailsWithNilArtifact(t *testing.T) {
-	t.Parallel()
-
-	var doc *artifact
-
-	_, err := doc.Summary()
-	require.Error(t, err)
-	assert.ErrorIs(t, err, ErrNilArtifact)
-}
-
-func TestNormalizeFillsMissingMetadata(t *testing.T) {
-	t.Parallel()
-
-	doc := &artifact{}
-	doc.normalize()
-
-	assert.Equal(t, SchemaVersion, doc.MetadataData.SchemaValue)
-	assert.Equal(t, artifactmetadata.ArtifactName, doc.MetadataData.Name())
-	assert.NotEmpty(t, doc.MetadataData.RunID())
-	assert.False(t, doc.MetadataData.CreatedAt().IsZero())
-	require.NotNil(t, doc.Actions)
-	require.NotNil(t, doc.Skipped)
-}

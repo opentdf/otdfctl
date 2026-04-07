@@ -14,7 +14,6 @@ import (
 const SchemaVersion = "v1.0.0"
 
 var (
-	ErrNilArtifact     = errors.New("nil artifact")
 	ErrNilWriter       = errors.New("nil writer")
 	ErrWriteArtifact   = errors.New("write artifact")
 	ErrSummaryArtifact = errors.New("summary artifact")
@@ -190,7 +189,7 @@ type obligationTriggerTarget struct {
 }
 
 func New(writer io.Writer) *artifact {
-	doc := &artifact{
+	return &artifact{
 		MetadataData:         artifactmetadata.New(SchemaVersion, uuid.NewString(), time.Now().UTC()),
 		Skipped:              []skippedEntry{},
 		Namespaces:           []namespaceIndexEntry{},
@@ -201,8 +200,6 @@ func New(writer io.Writer) *artifact {
 		ObligationTriggers:   []obligationTriggerRecord{},
 		writer:               writer,
 	}
-	_, _ = doc.Summary()
-	return doc
 }
 
 func (a *artifact) Build() error {
@@ -214,28 +211,23 @@ func (a *artifact) Commit() error {
 }
 
 func (a *artifact) Metadata() artifactmetadata.ArtifactMetadata {
-	if a == nil {
-		return artifactmetadata.ArtifactMetadata{}
-	}
 	return a.MetadataData
 }
 
 func (a *artifact) Summary() ([]byte, error) {
-	if a == nil {
-		return nil, ErrNilArtifact
+	summary := Summary{
+		Counts: SummaryCounts{
+			Namespaces:           len(a.Namespaces),
+			Actions:              len(a.Actions),
+			SubjectConditionSets: len(a.SubjectConditionSets),
+			SubjectMappings:      len(a.SubjectMappings),
+			RegisteredResources:  len(a.RegisteredResources),
+			ObligationTriggers:   len(a.ObligationTriggers),
+			Skipped:              len(a.Skipped),
+		},
 	}
 
-	a.SummaryData.Counts = SummaryCounts{
-		Namespaces:           len(a.Namespaces),
-		Actions:              len(a.Actions),
-		SubjectConditionSets: len(a.SubjectConditionSets),
-		SubjectMappings:      len(a.SubjectMappings),
-		RegisteredResources:  len(a.RegisteredResources),
-		ObligationTriggers:   len(a.ObligationTriggers),
-		Skipped:              len(a.Skipped),
-	}
-
-	encoded, err := json.Marshal(a.SummaryData)
+	encoded, err := json.Marshal(summary)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %w", ErrSummaryArtifact, err)
 	}
@@ -244,17 +236,11 @@ func (a *artifact) Summary() ([]byte, error) {
 }
 
 func (a *artifact) Write() error {
-	if a == nil {
-		return ErrNilArtifact
-	}
 	if a.writer == nil {
 		return ErrNilWriter
 	}
 
-	a.normalize()
-	if _, err := a.Summary(); err != nil {
-		return err
-	}
+	a.updateSummary()
 
 	encoder := json.NewEncoder(a.writer)
 	encoder.SetIndent("", "  ")
@@ -265,46 +251,16 @@ func (a *artifact) Write() error {
 	return nil
 }
 
-func (a *artifact) normalize() {
-	if a == nil {
-		return
-	}
-
-	schema := SchemaVersion
-	if version := a.MetadataData.Schema(); version != nil {
-		schema = version.Original()
-	}
-
-	runID := a.MetadataData.RunID()
-	if runID == "" {
-		runID = uuid.NewString()
-	}
-
-	createdAt := a.MetadataData.CreatedAt()
-	if createdAt.IsZero() {
-		createdAt = time.Now().UTC()
-	}
-
-	a.MetadataData = artifactmetadata.New(schema, runID, createdAt)
-	if a.Skipped == nil {
-		a.Skipped = []skippedEntry{}
-	}
-	if a.Namespaces == nil {
-		a.Namespaces = []namespaceIndexEntry{}
-	}
-	if a.Actions == nil {
-		a.Actions = []actionRecord{}
-	}
-	if a.SubjectConditionSets == nil {
-		a.SubjectConditionSets = []subjectConditionSetRecord{}
-	}
-	if a.SubjectMappings == nil {
-		a.SubjectMappings = []subjectMappingRecord{}
-	}
-	if a.RegisteredResources == nil {
-		a.RegisteredResources = []registeredResourceRecord{}
-	}
-	if a.ObligationTriggers == nil {
-		a.ObligationTriggers = []obligationTriggerRecord{}
+func (a *artifact) updateSummary() {
+	a.SummaryData = Summary{
+		Counts: SummaryCounts{
+			Namespaces:           len(a.Namespaces),
+			Actions:              len(a.Actions),
+			SubjectConditionSets: len(a.SubjectConditionSets),
+			SubjectMappings:      len(a.SubjectMappings),
+			RegisteredResources:  len(a.RegisteredResources),
+			ObligationTriggers:   len(a.ObligationTriggers),
+			Skipped:              len(a.Skipped),
+		},
 	}
 }
