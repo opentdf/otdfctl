@@ -17,16 +17,14 @@ func TestNewRejectsUnsupportedSchemaVersion(t *testing.T) {
 	_, err := New(ArtifactOpts{
 		Version: semver.MustParse("v2.0.0"),
 	})
-	require.Error(t, err)
-	assert.ErrorIs(t, err, ErrUnsupportedSchemaVersion)
+	require.ErrorIs(t, err, ErrUnsupportedSchemaVersion)
 }
 
 func TestNewRejectsNilWriter(t *testing.T) {
 	t.Parallel()
 
 	_, err := New(ArtifactOpts{})
-	require.Error(t, err)
-	assert.ErrorIs(t, err, artifactv1.ErrNilWriter)
+	require.ErrorIs(t, err, artifactv1.ErrNilWriter)
 }
 
 func TestNewDefaultsCurrentVersion(t *testing.T) {
@@ -71,10 +69,8 @@ func TestArtifactBuildAndCommitAreNotImplemented(t *testing.T) {
 	require.NoError(t, err)
 
 	buildErr := doc.Build()
-	require.Error(t, buildErr)
-	assert.ErrorIs(t, buildErr, artifactv1.ErrNotImplemented)
+	require.ErrorIs(t, buildErr, artifactv1.ErrNotImplemented)
 
 	commitErr := doc.Commit()
-	require.Error(t, commitErr)
-	assert.ErrorIs(t, commitErr, artifactv1.ErrNotImplemented)
+	require.ErrorIs(t, commitErr, artifactv1.ErrNotImplemented)
 }

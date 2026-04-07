@@ -103,6 +103,5 @@ func TestNewFailsWithoutWriter(t *testing.T) {
 	t.Parallel()
 
 	_, err := New(nil)
-	require.Error(t, err)
-	assert.ErrorIs(t, err, ErrNilWriter)
+	require.ErrorIs(t, err, ErrNilWriter)
 }
