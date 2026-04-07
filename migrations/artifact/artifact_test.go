@@ -6,6 +6,7 @@ import (
 
 	"github.com/Masterminds/semver/v3"
 	artifactmetadata "github.com/opentdf/otdfctl/migrations/artifact/metadata"
+	artifactv1 "github.com/opentdf/otdfctl/migrations/artifact/v1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -18,6 +19,14 @@ func TestNewRejectsUnsupportedSchemaVersion(t *testing.T) {
 	})
 	require.Error(t, err)
 	assert.ErrorIs(t, err, ErrUnsupportedSchemaVersion)
+}
+
+func TestNewRejectsNilWriter(t *testing.T) {
+	t.Parallel()
+
+	_, err := New(ArtifactOpts{})
+	require.Error(t, err)
+	assert.ErrorIs(t, err, artifactv1.ErrNilWriter)
 }
 
 func TestNewDefaultsCurrentVersion(t *testing.T) {
@@ -35,7 +44,8 @@ func TestNewDefaultsCurrentVersion(t *testing.T) {
 func TestArtifactSummaryReturnsEncodedJSON(t *testing.T) {
 	t.Parallel()
 
-	doc, err := New(ArtifactOpts{})
+	var buf bytes.Buffer
+	doc, err := New(ArtifactOpts{Writer: &buf})
 	require.NoError(t, err)
 
 	summary, err := doc.Summary()
@@ -56,14 +66,15 @@ func TestArtifactSummaryReturnsEncodedJSON(t *testing.T) {
 func TestArtifactBuildAndCommitAreNotImplemented(t *testing.T) {
 	t.Parallel()
 
-	doc, err := New(ArtifactOpts{})
+	var buf bytes.Buffer
+	doc, err := New(ArtifactOpts{Writer: &buf})
 	require.NoError(t, err)
 
 	buildErr := doc.Build()
 	require.Error(t, buildErr)
-	assert.ErrorContains(t, buildErr, "not implemented")
+	assert.ErrorIs(t, buildErr, artifactv1.ErrNotImplemented)
 
 	commitErr := doc.Commit()
 	require.Error(t, commitErr)
-	assert.ErrorContains(t, commitErr, "not implemented")
+	assert.ErrorIs(t, commitErr, artifactv1.ErrNotImplemented)
 }

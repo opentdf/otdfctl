@@ -14,7 +14,9 @@ import (
 func TestNewInitializesCanonicalShape(t *testing.T) {
 	t.Parallel()
 
-	doc := New(nil)
+	var buf bytes.Buffer
+	doc, err := New(&buf)
+	require.NoError(t, err)
 
 	require.NotNil(t, doc)
 	assert.Equal(t, SchemaVersion, doc.MetadataData.SchemaValue)
@@ -36,7 +38,9 @@ func TestNewInitializesCanonicalShape(t *testing.T) {
 func TestSummaryReturnsEncodedJSON(t *testing.T) {
 	t.Parallel()
 
-	doc := New(nil)
+	var buf bytes.Buffer
+	doc, err := New(&buf)
+	require.NoError(t, err)
 	doc.Actions = append(doc.Actions, actionRecord{})
 	doc.Skipped = append(doc.Skipped, skippedEntry{})
 
@@ -60,7 +64,8 @@ func TestWriteProducesJSONDocument(t *testing.T) {
 	t.Parallel()
 
 	var buf bytes.Buffer
-	doc := New(&buf)
+	doc, err := New(&buf)
+	require.NoError(t, err)
 	doc.Actions = append(doc.Actions, actionRecord{
 		Source: actionSource{
 			ID:         "action-export-legacy",
@@ -94,12 +99,10 @@ func TestWriteProducesJSONDocument(t *testing.T) {
 	assert.Equal(t, 1, decoded.SummaryData.Counts.Skipped)
 }
 
-func TestWriteFailsWithoutWriter(t *testing.T) {
+func TestNewFailsWithoutWriter(t *testing.T) {
 	t.Parallel()
 
-	doc := New(nil)
-
-	err := doc.Write()
+	_, err := New(nil)
 	require.Error(t, err)
 	assert.ErrorIs(t, err, ErrNilWriter)
 }

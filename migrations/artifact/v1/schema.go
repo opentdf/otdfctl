@@ -14,6 +14,7 @@ import (
 const SchemaVersion = "v1.0.0"
 
 var (
+	ErrNotImplemented  = errors.New("not implemented")
 	ErrNilWriter       = errors.New("nil writer")
 	ErrWriteArtifact   = errors.New("write artifact")
 	ErrSummaryArtifact = errors.New("summary artifact")
@@ -188,7 +189,11 @@ type obligationTriggerTarget struct {
 	ID                string `json:"id"`
 }
 
-func New(writer io.Writer) *artifact {
+func New(writer io.Writer) (*artifact, error) {
+	if writer == nil {
+		return nil, ErrNilWriter
+	}
+
 	return &artifact{
 		MetadataData:         artifactmetadata.New(SchemaVersion, uuid.NewString(), time.Now().UTC()),
 		Skipped:              []skippedEntry{},
@@ -199,15 +204,15 @@ func New(writer io.Writer) *artifact {
 		RegisteredResources:  []registeredResourceRecord{},
 		ObligationTriggers:   []obligationTriggerRecord{},
 		writer:               writer,
-	}
+	}, nil
 }
 
 func (a *artifact) Build() error {
-	return fmt.Errorf("artifact build for schema %s: not implemented", SchemaVersion)
+	return fmt.Errorf("%w: artifact build for schema %s", ErrNotImplemented, SchemaVersion)
 }
 
 func (a *artifact) Commit() error {
-	return fmt.Errorf("artifact commit for schema %s: not implemented", SchemaVersion)
+	return fmt.Errorf("%w: artifact commit for schema %s", ErrNotImplemented, SchemaVersion)
 }
 
 func (a *artifact) Metadata() artifactmetadata.ArtifactMetadata {
@@ -236,10 +241,6 @@ func (a *artifact) Summary() ([]byte, error) {
 }
 
 func (a *artifact) Write() error {
-	if a.writer == nil {
-		return ErrNilWriter
-	}
-
 	a.updateSummary()
 
 	encoder := json.NewEncoder(a.writer)

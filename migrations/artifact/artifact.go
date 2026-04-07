@@ -50,7 +50,7 @@ func New(opts ArtifactOpts) (Artifact, error) {
 func newDocumentForVersion(version *semver.Version, writer io.Writer) (Artifact, error) {
 	switch version.Major() {
 	case 1:
-		return artifactv1.New(writer), nil
+		return artifactv1.New(writer)
 	default:
 		return nil, fmt.Errorf("%w: %s", ErrUnsupportedSchemaVersion, version.Original())
 	}
