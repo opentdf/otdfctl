@@ -5,7 +5,6 @@ on:
   push:
     branches:
       - main
-      - ab-2168-otdfctl-manual-trigger
   schedule:
     - cron: "45 0 * * *"
   workflow_dispatch:
@@ -67,7 +66,7 @@ jobs:
         uses: opentdf/platform/test/start-up-with-containers@main
         with:
           platform-ref: "main"
-      - uses: opentdf/otdfctl/e2e@ab-2168-otdfctl-manual-trigger
+      - uses: opentdf/otdfctl/e2e@main
         with:
           otdfctl-ref: ${{ github.event.pull_request.head.sha || github.sha }}
           testrail-run-name-for-cli-test: ${{ inputs.testrail-run-name-for-cli-test }}
