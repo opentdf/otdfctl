@@ -1,5 +1,8 @@
 # otdfctl: cli to manage OpenTDF Platform
 
+> [!WARNING]
+> This repository has been archived and is no longer actively maintained.
+
 This command line interface is used to manage OpenTDF Platform.
 
 The main goals are to:
