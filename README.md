@@ -2,6 +2,8 @@
 
 > [!WARNING]
 > This repository has been archived and is no longer actively maintained.
+>
+> The codebase and CLI have been moved to the [OpenTDF Platform monorepo](https://github.com/opentdf/platform/tree/main/otdfctl).
 
 This command line interface is used to manage OpenTDF Platform.
 
