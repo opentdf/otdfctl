@@ -10,6 +10,10 @@
         {
             "type": "generic",
             "path": "pkg/config/config.go"
+        },
+        {
+            "type": "generic",
+            "path": "INSTALL.md"
         }
     ]
 }
